@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>nor叔 1.0 下载</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #f5f5f7;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+            text-align: center;
+            max-width: 360px;
+            width: 100%;
+        }
+        .card h1 {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+            color: #1d1d1f;
+        }
+        .card .sub {
+            color: #86868b;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+        .download-btn {
+            display: inline-block;
+            background: #0071e3;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 18px;
+            padding: 14px 48px;
+            border-radius: 999px;
+            transition: background 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .download-btn:hover {
+            background: #0077ed;
+        }
+        .footer-note {
+            margin-top: 24px;
+            font-size: 13px;
+            color: #86868b;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>nor叔</h1>
+        <div class="sub">版本 1.0 · 点击下方按钮下载</div>
+        <!-- 下载按钮：指向同目录下的 apk 文件 -->
+        <a href="nor叔_1.0.apk" download class="download-btn">下载 APK</a>
+        <div class="footer-note">直接安装即可使用</div>
+    </div>
+</body>
+</html>

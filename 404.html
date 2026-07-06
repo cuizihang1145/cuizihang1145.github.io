@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>404 · 页面走丢了</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #FAFAFE;
+            color: #1A1A2E;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            transition: background 0.4s ease, color 0.3s ease;
+            margin: 0;
+        }
+
+        body.dark {
+            background: #14131F;
+            color: #E8E6F0;
+        }
+
+        .bg-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: radial-gradient(circle at 30% 30%, #F6F2FF, #FFFFFF);
+            transition: background 0.5s ease;
+        }
+        body.dark .bg-glow {
+            background: radial-gradient(circle at 30% 30%, #28253D, #0E0D18);
+        }
+
+        .glow-orb {
+            position: fixed;
+            width: 60vw;
+            height: 60vw;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(160, 130, 230, 0.18), rgba(210, 190, 255, 0) 70%);
+            top: -20vh;
+            right: -15vw;
+            z-index: -1;
+            filter: blur(80px);
+            animation: floatOrb 22s infinite alternate ease-in-out;
+            transition: background 0.5s ease;
+        }
+        body.dark .glow-orb {
+            background: radial-gradient(circle, rgba(120, 100, 200, 0.20), rgba(60, 40, 120, 0) 70%);
+        }
+
+        .glow-orb-2 {
+            position: fixed;
+            width: 50vw;
+            height: 50vw;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(200, 180, 255, 0.10), rgba(255, 240, 255, 0) 70%);
+            bottom: -15vh;
+            left: -10vw;
+            z-index: -1;
+            filter: blur(70px);
+            animation: floatOrb2 26s infinite alternate ease-in-out;
+            transition: background 0.5s ease;
+        }
+        body.dark .glow-orb-2 {
+            background: radial-gradient(circle, rgba(90, 70, 160, 0.15), rgba(30, 20, 60, 0) 70%);
+        }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+            100% { transform: translate(4%, 8%) scale(1.2); opacity: 0.8; }
+        }
+        @keyframes floatOrb2 {
+            0% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+            100% { transform: translate(-6%, -5%) scale(1.3); opacity: 0.6; }
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 24px;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 60px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: #4F4F78;
+            cursor: pointer;
+            transition: 0.3s ease;
+            box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
+            user-select: none;
+        }
+        .theme-toggle:hover {
+            transform: scale(1.05) rotate(8deg);
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 10px 28px rgba(80, 60, 160, 0.18);
+        }
+        body.dark .theme-toggle {
+            background: rgba(30, 28, 50, 0.7);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #D0CAF0;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        body.dark .theme-toggle:hover {
+            background: rgba(50, 45, 80, 0.8);
+        }
+
+        .error-card {
+            max-width: 480px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 3rem;
+            padding: 3rem 2.2rem 2.6rem;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 24px 60px rgba(80, 60, 160, 0.10);
+            text-align: center;
+            transition: background 0.4s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+        body.dark .error-card {
+            background: rgba(30, 28, 50, 0.50);
+            border-color: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.30);
+        }
+
+        .error-icon {
+            font-size: 4.4rem;
+            color: #8A7AD0;
+            margin-bottom: 0.6rem;
+            display: block;
+            opacity: 0.7;
+        }
+        body.dark .error-icon {
+            color: #A89FD0;
+        }
+
+        .error-code {
+            font-size: 5.6rem;
+            font-weight: 700;
+            line-height: 1;
+            background: linear-gradient(135deg, #201D3A, #5B4DAF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -4px;
+            margin-bottom: 0.2rem;
+        }
+        body.dark .error-code {
+            background: linear-gradient(135deg, #C8C0F0, #8F7BE0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .error-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2D2D4A;
+            margin-bottom: 0.6rem;
+            transition: color 0.3s ease;
+        }
+        body.dark .error-title {
+            color: #D0CAF0;
+        }
+
+        .error-desc {
+            font-size: 0.95rem;
+            color: #6A6A92;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+            transition: color 0.3s ease;
+        }
+        body.dark .error-desc {
+            color: #A8A4C8;
+        }
+
+        .error-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            align-items: center;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.7rem;
+            width: 100%;
+            padding: 0.95rem 2rem;
+            border: none;
+            border-radius: 80px;
+            background: linear-gradient(145deg, #7A6BCF, #624ED0);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.25s ease;
+            box-shadow: 0 12px 32px rgba(90, 70, 170, 0.25);
+            letter-spacing: 0.3px;
+        }
+        .btn-primary i {
+            font-size: 1.1rem;
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 18px 40px rgba(90, 70, 170, 0.35);
+        }
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+        body.dark .btn-primary {
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+        }
+        body.dark .btn-primary:hover {
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .footer-note {
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            color: #8A8AB5;
+            letter-spacing: 0.2px;
+            transition: color 0.3s ease;
+        }
+        body.dark .footer-note {
+            color: #6A6A8A;
+        }
+
+        @media (max-width: 480px) {
+            .error-card {
+                padding: 2.2rem 1.6rem 2rem;
+                border-radius: 2rem;
+            }
+            .error-code {
+                font-size: 4.2rem;
+                letter-spacing: -2px;
+            }
+            .error-icon {
+                font-size: 3.4rem;
+            }
+            .error-title {
+                font-size: 1.2rem;
+            }
+            .theme-toggle {
+                top: 14px;
+                right: 16px;
+                width: 42px;
+                height: 42px;
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .error-card {
+                padding: 1.8rem 1.2rem 1.6rem;
+            }
+            .error-code {
+                font-size: 3.6rem;
+            }
+            .btn-primary {
+                font-size: 0.85rem;
+                padding: 0.75rem 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+    <div class="glow-orb"></div>
+    <div class="glow-orb-2"></div>
+
+    <div class="theme-toggle" id="themeToggle" role="button" aria-label="切换深色/亮色模式">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <div class="error-card">
+        <span class="error-icon">🔍</span>
+        <div class="error-code">404</div>
+        <h1 class="error-title">页面走丢了</h1>
+        <p class="error-desc">
+            好像迷路了……<br />
+            要不，先回首页看看？
+        </p>
+
+        <div class="error-actions">
+            <a href="index.html" class="btn-primary">
+                <i class="fas fa-home"></i> 回到首页
+            </a>
+        </div>
+
+        <p class="footer-note">
+            <i class="far fa-smile"></i> ks · 404
+        </p>
+    </div>
+
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const icon = themeToggle.querySelector('i');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        let currentTheme = localStorage.getItem('ks-theme') || (prefersDark ? 'dark' : 'light');
+
+        function setTheme(theme) {
+            document.body.classList.toggle('dark', theme === 'dark');
+            icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            localStorage.setItem('ks-theme', theme);
+            currentTheme = theme;
+        }
+
+        setTheme(currentTheme);
+
+        themeToggle.addEventListener('click', () => {
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+    </script>
+
+</body>
+</html>

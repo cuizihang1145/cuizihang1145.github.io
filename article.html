@@ -28,7 +28,6 @@
             color: #E8E6F0;
         }
 
-        /* ===== Lightbox 样式 ===== */
         .lightbox-overlay {
             position: fixed;
             top: 0;
@@ -61,7 +60,7 @@
             transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
             cursor: default;
             touch-action: none;
-            overflow: hidden;
+            overflow: visible;
         }
         .lightbox-overlay.active .lightbox-container {
             transform: scale(1) translateY(0);
@@ -76,6 +75,7 @@
             height: 100%;
             touch-action: none;
             cursor: grab;
+            overflow: visible;
         }
         .lightbox-overlay .lightbox-container .lightbox-img-wrapper:active {
             cursor: grabbing;
@@ -92,6 +92,7 @@
             touch-action: none;
             transform-origin: center center;
             will-change: transform;
+            transition: transform 0.1s ease-out;
         }
 
         .lightbox-overlay .lightbox-close {
@@ -536,7 +537,7 @@
     }
 
     // ============================================================
-    // Markdown 渲染（简化版，只保留基本功能）
+    // Markdown 渲染（简化版）
     // ============================================================
     function renderMarkdown(md) {
         if (!md) return '';
@@ -683,7 +684,7 @@
     }
 
     // ============================================================
-    // Lightbox（支持缩放）
+    // Lightbox（支持缩放 + 回弹 + 允许拖出屏幕）
     // ============================================================
     function initLightbox() {
         const images = document.querySelectorAll('.detail-content img');
@@ -715,26 +716,19 @@
         document.body.appendChild(overlay);
         document.body.style.overflow = 'hidden';
 
-        // 触发入场动画
         requestAnimationFrame(() => {
             overlay.classList.add('active');
         });
 
-        // ===== 缩放逻辑 =====
         const imgWrapper = overlay.querySelector('.lightbox-img-wrapper');
         const img = overlay.querySelector('img');
         let scale = 1;
         let translateX = 0;
         let translateY = 0;
-        let isDragging = false;
-        let startX = 0;
-        let startY = 0;
-        let lastTranslateX = 0;
-        let lastTranslateY = 0;
-        let lastPinchDist = 0;
-        let lastScale = 1;
 
-        function updateTransform() {
+        // ===== 回弹 =====
+        function updateTransform(animate = false) {
+            img.style.transition = animate ? 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none';
             img.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
         }
 
@@ -743,35 +737,36 @@
             e.preventDefault();
             const delta = e.deltaY > 0 ? -0.1 : 0.1;
             const newScale = Math.min(Math.max(0.5, scale + delta), 5);
-            // 以鼠标位置为中心缩放
             const rect = img.getBoundingClientRect();
-            const cx = e.clientX - rect.left;
-            const cy = e.clientY - rect.top;
-            const ratioX = cx / rect.width;
-            const ratioY = cy / rect.height;
+            const ratioX = (e.clientX - rect.left) / rect.width;
+            const ratioY = (e.clientY - rect.top) / rect.height;
             const oldScale = scale;
             scale = newScale;
-            // 调整平移，使鼠标位置保持不动
             translateX += (1 - newScale / oldScale) * (rect.width / 2 - rect.width * ratioX);
             translateY += (1 - newScale / oldScale) * (rect.height / 2 - rect.height * ratioY);
-            updateTransform();
+            updateTransform(false);
         }, { passive: false });
 
-        // ===== 双指缩放（触摸） =====
+        // ===== 触摸：双指缩放 + 单指拖拽 =====
         let touchStartDist = 0;
         let touchStartScale = 1;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchLastX = 0;
+        let touchLastY = 0;
+        let isDragging = false;
 
         imgWrapper.addEventListener('touchstart', function(e) {
             if (e.touches.length === 2) {
                 const t = e.touches;
                 touchStartDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
                 touchStartScale = scale;
-            } else if (e.touches.length === 1 && scale > 1) {
+            } else if (e.touches.length === 1) {
                 isDragging = true;
-                startX = e.touches[0].clientX;
-                startY = e.touches[0].clientY;
-                lastTranslateX = translateX;
-                lastTranslateY = translateY;
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                touchLastX = translateX;
+                touchLastY = translateY;
                 imgWrapper.style.cursor = 'grabbing';
             }
         }, { passive: true });
@@ -780,24 +775,44 @@
             if (e.touches.length === 2) {
                 const t = e.touches;
                 const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
-                const delta = dist / touchStartDist;
-                scale = Math.min(Math.max(0.5, touchStartScale * delta), 5);
-                updateTransform();
+                scale = Math.min(Math.max(0.5, touchStartScale * (dist / touchStartDist)), 5);
+                updateTransform(false);
             } else if (e.touches.length === 1 && isDragging) {
-                const dx = e.touches[0].clientX - startX;
-                const dy = e.touches[0].clientY - startY;
-                translateX = lastTranslateX + dx;
-                translateY = lastTranslateY + dy;
-                updateTransform();
+                const dx = e.touches[0].clientX - touchStartX;
+                const dy = e.touches[0].clientY - touchStartY;
+                translateX = touchLastX + dx;
+                translateY = touchLastY + dy;
+                updateTransform(false);
             }
         }, { passive: true });
 
         imgWrapper.addEventListener('touchend', function(e) {
             isDragging = false;
             imgWrapper.style.cursor = 'grab';
+            // 回弹到中心
+            if (scale < 0.6) {
+                scale = 0.6;
+                translateX = 0;
+                translateY = 0;
+                updateTransform(true);
+            } else if (scale < 1) {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform(true);
+            } else if (scale > 3) {
+                scale = 3;
+                updateTransform(true);
+            }
+            // 如果拖太远，回弹到中心
+            if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) {
+                translateX = 0;
+                translateY = 0;
+                updateTransform(true);
+            }
         }, { passive: true });
 
-        // ===== 鼠标拖拽（仅当缩放 > 1 时） =====
+        // ===== 鼠标拖拽 =====
         let mouseDown = false;
         let mouseStartX = 0;
         let mouseStartY = 0;
@@ -805,15 +820,13 @@
         let mouseLastY = 0;
 
         imgWrapper.addEventListener('mousedown', function(e) {
-            if (scale > 1) {
-                mouseDown = true;
-                mouseStartX = e.clientX;
-                mouseStartY = e.clientY;
-                mouseLastX = translateX;
-                mouseLastY = translateY;
-                imgWrapper.style.cursor = 'grabbing';
-                e.preventDefault();
-            }
+            mouseDown = true;
+            mouseStartX = e.clientX;
+            mouseStartY = e.clientY;
+            mouseLastX = translateX;
+            mouseLastY = translateY;
+            imgWrapper.style.cursor = 'grabbing';
+            e.preventDefault();
         });
 
         document.addEventListener('mousemove', function(e) {
@@ -822,7 +835,7 @@
                 const dy = e.clientY - mouseStartY;
                 translateX = mouseLastX + dx;
                 translateY = mouseLastY + dy;
-                updateTransform();
+                updateTransform(false);
             }
         });
 
@@ -830,6 +843,26 @@
             if (mouseDown) {
                 mouseDown = false;
                 imgWrapper.style.cursor = 'grab';
+                // 回弹
+                if (scale < 0.6) {
+                    scale = 0.6;
+                    translateX = 0;
+                    translateY = 0;
+                    updateTransform(true);
+                } else if (scale < 1) {
+                    scale = 1;
+                    translateX = 0;
+                    translateY = 0;
+                    updateTransform(true);
+                } else if (scale > 3) {
+                    scale = 3;
+                    updateTransform(true);
+                }
+                if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) {
+                    translateX = 0;
+                    translateY = 0;
+                    updateTransform(true);
+                }
             }
         });
 
@@ -859,11 +892,10 @@
         });
         document.addEventListener('keydown', escHandler);
 
-        // 重置缩放状态
         scale = 1;
         translateX = 0;
         translateY = 0;
-        updateTransform();
+        updateTransform(false);
     }
 
     // ============================================================

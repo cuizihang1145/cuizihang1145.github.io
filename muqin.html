@@ -701,7 +701,6 @@
             line-height: 1.5;
         }
 
-        /* 详情弹窗里的署名：默认隐藏，分享模式有署名才显示 */
         .signature-area {
             display: none;
             margin-top: 20px;
@@ -796,7 +795,6 @@
 
     <div class="edit-hint" id="editHint">✏️ 点击"分享"打开编辑面板 · 改完生成链接</div>
 
-    <!-- ===== 编辑面板 ===== -->
     <div class="edit-panel" id="editPanel">
         <div class="panel-title"><i class="fas fa-pen"></i> 自定义祝福内容</div>
         
@@ -824,7 +822,6 @@
         </div>
     </div>
 
-    <!-- ===== 详情弹窗 ===== -->
     <div class="modal-overlay" id="detailModal">
         <div class="modal-content">
             <h2>❤️ 母亲节 · 2026</h2>
@@ -888,7 +885,6 @@
                 <div class="movie-item">🎞️ 《母亲》(2020) — 长泽雅美演绎的另类母爱</div>
             </div>
 
-            <!-- 详情弹窗署名：默认隐藏，分享模式有署名才显示 -->
             <div class="signature-area" id="signatureArea">
                 <span class="signature-label">— 祝福来自 —</span>
                 <span class="signature-text" id="signatureText"></span>
@@ -898,7 +894,6 @@
         </div>
     </div>
 
-    <!-- ===== 分享弹窗 ===== -->
     <div class="share-modal-overlay" id="shareModal">
         <div class="share-modal-content">
             <h3>🔗 分享链接已生成</h3>
@@ -914,12 +909,11 @@
     <script>
         (function() {
             // ============================================================
-            // 编码/解码（修复版：使用更稳定的方式）
+            // 编码/解码（与 fuqin.html 保持一致）
             // ============================================================
             function encodeShareData(line1, line2, sig) {
                 const data = { l1: line1, l2: line2, s: sig || '' };
                 const jsonStr = JSON.stringify(data);
-                // 将 UTF-8 字符串转为 Base64
                 const utf8Bytes = new TextEncoder().encode(jsonStr);
                 let binary = '';
                 for (let i = 0; i < utf8Bytes.length; i++) {
@@ -954,7 +948,6 @@
             let decoded = null;
             if (encodedData) {
                 decoded = decodeShareData(encodedData);
-                // 调试：如果解码失败，在控制台输出错误
                 if (!decoded) {
                     console.warn('分享数据解码失败，请检查链接参数');
                 }
@@ -975,7 +968,6 @@
             const backText = document.getElementById('backText');
             const backIcon = document.querySelector('#backButton i');
 
-            // 编辑面板
             const editPanel = document.getElementById('editPanel');
             const inputLine1 = document.getElementById('inputLine1');
             const inputLine2 = document.getElementById('inputLine2');
@@ -994,10 +986,8 @@
                 if (decoded.l1) msgLine1.textContent = decoded.l1;
                 if (decoded.l2) msgLine2.textContent = decoded.l2;
                 
-                // 主页面署名
                 if (decoded.s) {
                     signatureHome.textContent = '—— ' + decoded.s;
-                    // 详情弹窗署名
                     signatureText.textContent = decoded.s;
                     signatureArea.classList.add('show');
                 } else {
@@ -1005,7 +995,6 @@
                     signatureArea.classList.remove('show');
                 }
                 
-                // 返回按钮改成"去主页"
                 backText.textContent = '去主页';
                 backIcon.className = 'fas fa-home';
             }
@@ -1094,7 +1083,6 @@
 
                 let isEditing = false;
 
-                // 字数统计
                 function updateCounts() {
                     count1.textContent = inputLine1.value.length;
                     count2.textContent = inputLine2.value.length;
@@ -1107,7 +1095,6 @@
                 inputLine2.addEventListener('input', updateCounts);
                 inputSignature.addEventListener('input', updateCounts);
 
-                // 点击输入框自动全选（第一行和第二行都支持）
                 inputLine1.addEventListener('focus', function() {
                     this.select();
                 });
@@ -1141,7 +1128,6 @@
                     editHint.classList.remove('show');
                     editPanel.classList.remove('open');
                     
-                    // 取消时恢复当前页面的文字
                     inputLine1.value = msgLine1.textContent.trim();
                     inputLine2.value = msgLine2.textContent.trim();
                     const currentSig = signatureHome.textContent.replace('—— ', '').trim();
@@ -1154,7 +1140,6 @@
                     const line2 = inputLine2.value.trim();
                     const sig = inputSignature.value.trim();
 
-                    // 检查是否跟默认文字一样
                     const defaultLine1 = msgLine1.textContent.trim();
                     const defaultLine2 = msgLine2.textContent.trim();
 

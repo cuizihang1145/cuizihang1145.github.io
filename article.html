@@ -6,8 +6,8 @@
     <title>文章详情 · ks</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- ===== Highlight.js monokai 主题（高饱和，辨识度极高） ===== -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
+    <!-- ===== Highlight.js github 主题（亮色深色通吃，过渡平滑） ===== -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         * {
@@ -29,6 +29,37 @@
         body.dark {
             background: #14131F;
             color: #E8E6F0;
+        }
+
+        /* ===== 所有会变色的元素统一加过渡 ===== */
+        .bg-glow,
+        .glow-soft,
+        .glow-soft-2,
+        .back-btn,
+        .theme-toggle,
+        .article-detail,
+        .detail-title,
+        .detail-date,
+        .detail-divider,
+        .detail-content p,
+        .detail-content strong,
+        .detail-content em,
+        .detail-content a,
+        .detail-content h1,
+        .detail-content h2,
+        .detail-content h3,
+        .detail-content h4,
+        .detail-content h5,
+        .detail-content h6,
+        .detail-content blockquote,
+        .detail-content hr,
+        .detail-content ul,
+        .detail-content ol,
+        .detail-content li,
+        .detail-content code,
+        .not-found,
+        .loading {
+            transition: background 0.4s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .bg-glow {
@@ -115,7 +146,7 @@
             font-weight: 500;
             color: #4F4F78;
             text-decoration: none;
-            transition: 0.25s ease;
+            transition: 0.25s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
             cursor: pointer;
             font-family: 'Inter', sans-serif;
@@ -154,7 +185,7 @@
             font-size: 1.4rem;
             color: #4F4F78;
             cursor: pointer;
-            transition: 0.3s ease;
+            transition: 0.3s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
             user-select: none;
         }
@@ -186,6 +217,7 @@
             color: #1A1A2E;
             margin-bottom: 0.3rem;
             line-height: 1.3;
+            transition: color 0.3s ease;
         }
         body.dark .article-detail .detail-title {
             color: #E8E6F0;
@@ -196,6 +228,7 @@
             color: #8A8AB5;
             margin-bottom: 1.5rem;
             display: block;
+            transition: color 0.3s ease;
         }
         body.dark .article-detail .detail-date {
             color: #7A7AA0;
@@ -205,6 +238,7 @@
             border: none;
             border-top: 1px solid rgba(0,0,0,0.06);
             margin-bottom: 1.5rem;
+            transition: border-color 0.3s ease;
         }
         body.dark .article-detail .detail-divider {
             border-top-color: rgba(255,255,255,0.06);
@@ -215,6 +249,7 @@
             line-height: 1.9;
             color: #2D2D4A;
             word-break: break-word;
+            transition: color 0.3s ease;
         }
         body.dark .article-detail .detail-content {
             color: #D0CAF0;
@@ -230,6 +265,7 @@
             margin: 1.2rem 0 0.6rem 0;
             line-height: 1.3;
             color: #1A1A2E;
+            transition: color 0.3s ease;
         }
         body.dark .article-detail .detail-content h1,
         body.dark .article-detail .detail-content h2,
@@ -248,6 +284,7 @@
 
         .article-detail .detail-content p {
             margin-bottom: 0.8rem;
+            transition: color 0.3s ease;
         }
         .article-detail .detail-content p:last-child {
             margin-bottom: 0;
@@ -256,6 +293,7 @@
         .article-detail .detail-content strong {
             color: #3D2D8A;
             font-weight: 700;
+            transition: color 0.3s ease;
         }
         body.dark .article-detail .detail-content strong {
             color: #C8C0F0;
@@ -264,6 +302,7 @@
         .article-detail .detail-content em {
             font-style: italic;
             color: #6A6A92;
+            transition: color 0.3s ease;
         }
         body.dark .article-detail .detail-content em {
             color: #A8A4C8;
@@ -273,6 +312,7 @@
             color: #6B5ACF;
             text-decoration: underline;
             text-underline-offset: 2px;
+            transition: color 0.3s ease;
         }
         body.dark .article-detail .detail-content a {
             color: #88ccff;
@@ -304,31 +344,39 @@
             padding: 0.1rem 0.4rem;
             border-radius: 4px;
             color: #D14C4C;
+            transition: background 0.3s ease, color 0.3s ease;
         }
         body.dark .article-detail .detail-content code {
             background: rgba(255, 255, 255, 0.06);
             color: #E8A87C;
         }
 
-        /* ===== 代码块容器 ===== */
+        /* ===== 代码块：完全固定，不参与主题切换 ===== */
+        .code-block-wrapper,
+        .code-block-body,
+        .code-block-header,
+        .code-content,
+        .line-numbers,
+        .code-block-header .lang-label,
+        .code-block-header .code-stats,
+        .code-block-header .copy-btn {
+            transition: none !important;
+        }
+
         .code-block-wrapper {
-            background: #1E1F22;
+            background: #1E1F22 !important;
             border-radius: 12px;
             margin: 0.8rem 0;
             overflow: hidden;
         }
-        body.dark .code-block-wrapper {
-            background: #1E1F22;
-        }
 
-        /* ===== 标题栏 ===== */
         .code-block-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 8px 14px;
-            background: rgba(255, 255, 255, 0.04);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
             flex-shrink: 0;
             min-height: 40px;
             gap: 12px;
@@ -338,7 +386,7 @@
         .code-block-header .lang-label {
             font-size: 0.7rem;
             font-weight: 600;
-            color: #ABB2BF;
+            color: #ABB2BF !important;
             letter-spacing: 0.5px;
             text-transform: uppercase;
             font-family: 'Inter', sans-serif;
@@ -346,7 +394,7 @@
 
         .code-block-header .code-stats {
             font-size: 0.65rem;
-            color: #5C6370;
+            color: #5C6370 !important;
             font-family: 'Inter', sans-serif;
             letter-spacing: 0.3px;
             flex: 1;
@@ -357,15 +405,15 @@
         }
 
         .code-block-header .copy-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-radius: 6px;
             padding: 2px 12px;
             font-size: 0.65rem;
             font-weight: 500;
-            color: #ABB2BF;
+            color: #ABB2BF !important;
             cursor: pointer;
-            transition: 0.2s ease;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease !important;
             font-family: 'Inter', sans-serif;
             line-height: 1.8;
             flex-shrink: 0;
@@ -374,19 +422,18 @@
             gap: 4px;
         }
         .code-block-header .copy-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: #E8E6F0;
+            background: rgba(255, 255, 255, 0.15) !important;
+            color: #E8E6F0 !important;
         }
         .code-block-header .copy-btn.copied {
-            background: rgba(46, 204, 113, 0.2);
-            color: #2ecc71;
-            border-color: rgba(46, 204, 113, 0.2);
+            background: rgba(46, 204, 113, 0.2) !important;
+            color: #2ecc71 !important;
+            border-color: rgba(46, 204, 113, 0.2) !important;
         }
         .code-block-header .copy-btn i {
             font-size: 0.7rem;
         }
 
-        /* ===== 代码主体：行号 + 代码 ===== */
         .code-block-body {
             display: flex;
             overflow-x: auto;
@@ -394,20 +441,21 @@
             font-family: 'JetBrains Mono', 'Courier New', monospace;
             font-size: 0.85rem;
             line-height: 1.7;
-            background: #1E1F22;
+            background: #1E1F22 !important;
         }
+
         .code-block-body .line-numbers {
             flex-shrink: 0;
             padding: 0.8rem 0.6rem 0.8rem 1.2rem;
             text-align: right;
-            color: #5C6370;
+            color: #5C6370 !important;
             user-select: none;
             font-family: inherit;
             font-size: inherit;
             line-height: inherit;
-            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
             min-width: 2.8rem;
-            background: transparent;
+            background: transparent !important;
         }
         .code-block-body .line-numbers span {
             display: block;
@@ -422,8 +470,8 @@
             font-size: inherit;
             line-height: inherit;
             white-space: pre;
-            color: #ABB2BF;
-            background: transparent;
+            color: #ABB2BF !important;
+            background: transparent !important;
         }
 
         /* ===== Highlight.js 覆盖 ===== */
@@ -448,6 +496,7 @@
             margin: 0.8rem 0;
             color: #6A6A92;
             font-style: italic;
+            transition: border-color 0.3s ease, color 0.3s ease;
         }
         body.dark .article-detail .detail-content blockquote {
             border-left-color: #88ccff;
@@ -458,6 +507,7 @@
             border: none;
             border-top: 2px solid rgba(0, 0, 0, 0.08);
             margin: 1.5rem 0;
+            transition: border-color 0.3s ease;
         }
         body.dark .article-detail .detail-content hr {
             border-top-color: rgba(255, 255, 255, 0.08);
@@ -466,6 +516,10 @@
         .not-found {
             text-align: center;
             padding: 4rem 1rem;
+            color: #8A8AB5;
+            transition: color 0.3s ease;
+        }
+        body.dark .not-found {
             color: #8A8AB5;
         }
         .not-found i {
@@ -478,6 +532,10 @@
         .loading {
             text-align: center;
             padding: 4rem 1rem;
+            color: #8A8AB5;
+            transition: color 0.3s ease;
+        }
+        body.dark .loading {
             color: #8A8AB5;
         }
         .loading i {

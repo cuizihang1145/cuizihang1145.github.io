@@ -275,6 +275,25 @@
             color: #88ccff;
         }
 
+        .article-detail .detail-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin: 0.8rem 0;
+            display: block;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            transition: box-shadow 0.3s ease;
+        }
+        body.dark .article-detail .detail-content img {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+        .article-detail .detail-content img:hover {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        }
+        body.dark .article-detail .detail-content img:hover {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
         .article-detail .detail-content code {
             font-family: 'JetBrains Mono', 'Courier New', monospace;
             font-size: 0.9em;
@@ -298,6 +317,7 @@
             font-size: 0.85rem;
             line-height: 1.7;
             color: #2D2D4A;
+            position: relative;
         }
         body.dark .article-detail .detail-content pre {
             background: rgba(255, 255, 255, 0.06);
@@ -308,6 +328,55 @@
             padding: 0;
             color: inherit;
             font-size: inherit;
+        }
+
+        /* ===== 代码块复制按钮 ===== */
+        .code-copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #6A6A92;
+            cursor: pointer;
+            transition: 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .article-detail .detail-content pre:hover .code-copy-btn {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .code-copy-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: #1A1A2E;
+        }
+        .code-copy-btn.copied {
+            background: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+            border-color: rgba(46, 204, 113, 0.2);
+        }
+        body.dark .code-copy-btn {
+            color: #9A96B8;
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+        body.dark .code-copy-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #E8E6F0;
+        }
+        body.dark .code-copy-btn.copied {
+            background: rgba(46, 204, 113, 0.15);
+            color: #2ecc71;
+            border-color: rgba(46, 204, 113, 0.15);
         }
 
         .article-detail .detail-content ul,
@@ -388,6 +457,15 @@
                 font-size: 0.75rem;
                 padding: 0.8rem 1rem;
             }
+            .article-detail .detail-content img {
+                border-radius: 8px;
+            }
+            .code-copy-btn {
+                font-size: 0.6rem;
+                padding: 2px 8px;
+                opacity: 1;
+                pointer-events: auto;
+            }
         }
     </style>
 </head>
@@ -453,6 +531,7 @@
         let blockquoteLines = [];
         let inCodeBlock = false;
         let codeBlockLines = [];
+        let codeBlockCounter = 0;
 
         function flushBlockquote() {
             if (blockquoteLines.length > 0) {
@@ -466,7 +545,14 @@
         function flushCodeBlock() {
             if (codeBlockLines.length > 0) {
                 const code = codeBlockLines.join('\n');
-                result += '<pre><code>' + escapeHtml(code) + '</code></pre>';
+                const escapedCode = escapeHtml(code);
+                const copyId = 'code-' + Date.now() + '-' + (codeBlockCounter++);
+                result += `
+                    <pre class="code-block-wrapper">
+                        <button class="code-copy-btn" data-copy="${copyId}">复制</button>
+                        <code id="${copyId}">${escapedCode}</code>
+                    </pre>
+                `;
                 codeBlockLines = [];
                 inCodeBlock = false;
             }
@@ -485,6 +571,7 @@
             html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+            html = html.replace(/!\[([^\]]*)\]\(([^)]*)\)/g, '<img src="$2" alt="$1" loading="lazy" />');
             html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
             return html;
         }
@@ -575,6 +662,43 @@
         return result;
     }
 
+    // ===== 代码块复制事件（委托） =====
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.code-copy-btn');
+        if (!btn) return;
+
+        const targetId = btn.dataset.copy;
+        if (!targetId) return;
+
+        const codeEl = document.getElementById(targetId);
+        if (!codeEl) return;
+
+        const text = codeEl.textContent;
+
+        navigator.clipboard.writeText(text).then(() => {
+            btn.textContent = '已复制';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = '复制';
+                btn.classList.remove('copied');
+            }, 2000);
+        }).catch(() => {
+            // 降级方案
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            btn.textContent = '已复制';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = '复制';
+                btn.classList.remove('copied');
+            }, 2000);
+        });
+    });
+
     const appContent = document.getElementById('appContent');
 
     function renderArticle() {
@@ -618,7 +742,7 @@
                 appContent.innerHTML = `
                     <div class="article-detail">
                         <h1 class="detail-title">${escapeHtml(title)}</h1>
-                        ${date ? `<span class="detail-date">📅 ${escapeHtml(date)}</span>` : ''}
+                        ${date ? `<span class="detail-date">${escapeHtml(date)}</span>` : ''}
                         <hr class="detail-divider">
                         <div class="detail-content">${renderedContent}</div>
                     </div>
@@ -637,14 +761,20 @@
 
     renderArticle();
 
-    // ===== 返回按钮动态跳转 =====
+    // ===== 返回按钮动态跳转（带页码） =====
     const from = getParam('from');
+    const page = getParam('page');
     const backBtn = document.getElementById('backButton');
-    if (from === 'archive') {
-        backBtn.href = 'index.html?return=archive';
-    } else {
-        backBtn.href = 'index.html?return=articles';
+
+    let returnUrl = 'index.html?return=articles';
+    if (page) {
+        returnUrl += '&page=' + page;
     }
+    if (from === 'archive') {
+        returnUrl = 'index.html?return=archive';
+    }
+
+    backBtn.href = returnUrl;
 </script>
 </body>
 </html>

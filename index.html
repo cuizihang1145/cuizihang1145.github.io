@@ -1905,9 +1905,9 @@
         } else {
             switchPage('recommend', defaultActive || navLinks[0]);
         }
-        const cleanUrl = window.location.pathname + window.location.search.replace(/[?&]return=archive/, '').replace(/^&/, '?');
-        const finalUrl = cleanUrl === '?' ? window.location.pathname : cleanUrl;
-        window.history.replaceState({}, '', finalUrl);
+        // 清除 URL 参数，防止刷新后再次跳转
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, '', cleanUrl);
     } else if (returnParam === 'articles' || getUrlParam('page')) {
         const articleLink = document.querySelector('.nav a[data-page="articles"]');
         if (articleLink) {
@@ -1915,6 +1915,9 @@
         } else {
             switchPage('recommend', defaultActive || navLinks[0]);
         }
+        // 清除 URL 参数，防止刷新后再次跳转
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, '', cleanUrl);
     } else {
         if (defaultActive) {
             switchPage('recommend', defaultActive);

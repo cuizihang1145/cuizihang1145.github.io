@@ -6,6 +6,9 @@
     <title>文章详情 · ks</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- ===== Highlight.js 全量引入 ===== -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -28,95 +31,37 @@
             color: #E8E6F0;
         }
 
-        .lightbox-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, background 0.3s ease, visibility 0.3s ease;
-            cursor: default;
-            overflow: hidden;
-        }
-        .lightbox-overlay.active {
-            opacity: 1;
-            visibility: visible;
-            background: rgba(0, 0, 0, 0.9);
-        }
-
-        .lightbox-overlay .lightbox-container {
-            max-width: 90%;
-            max-height: 85vh;
-            transform: scale(0.92) translateY(20px);
-            opacity: 0;
-            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
-            cursor: default;
-            touch-action: none;
-            overflow: visible;
-        }
-        .lightbox-overlay.active .lightbox-container {
-            transform: scale(1) translateY(0);
-            opacity: 1;
+        /* ===== 所有会变色的元素统一加过渡 ===== */
+        .bg-glow,
+        .glow-soft,
+        .glow-soft-2,
+        .back-btn,
+        .theme-toggle,
+        .article-detail,
+        .detail-title,
+        .detail-date,
+        .detail-divider,
+        .detail-content p,
+        .detail-content strong,
+        .detail-content em,
+        .detail-content a,
+        .detail-content h1,
+        .detail-content h2,
+        .detail-content h3,
+        .detail-content h4,
+        .detail-content h5,
+        .detail-content h6,
+        .detail-content blockquote,
+        .detail-content hr,
+        .detail-content ul,
+        .detail-content ol,
+        .detail-content li,
+        .detail-content code,
+        .not-found,
+        .loading {
+            transition: background 0.4s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .lightbox-overlay .lightbox-container .lightbox-img-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-            touch-action: none;
-            cursor: grab;
-            overflow: visible;
-        }
-        .lightbox-overlay .lightbox-container .lightbox-img-wrapper:active {
-            cursor: grabbing;
-        }
-
-        .lightbox-overlay .lightbox-container img {
-            max-width: 100%;
-            max-height: 80vh;
-            border-radius: 0 !important;
-            display: block;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-            user-select: none;
-            -webkit-user-drag: none;
-            touch-action: none;
-            transform-origin: center center;
-            will-change: transform;
-            transition: transform 0.1s ease-out;
-        }
-
-        .lightbox-overlay .lightbox-close {
-            position: fixed;
-            top: 20px;
-            right: 28px;
-            color: #fff;
-            font-size: 2.8rem;
-            cursor: pointer;
-            transition: 0.2s ease;
-            opacity: 0.6;
-            background: none;
-            border: none;
-            font-family: 'Inter', sans-serif;
-            line-height: 1;
-            padding: 0.5rem;
-            z-index: 10000;
-        }
-        .lightbox-overlay .lightbox-close:hover {
-            opacity: 1;
-            transform: scale(1.1) rotate(90deg);
-        }
-
-        /* ===== 其余样式保持原样 ===== */
         .bg-glow {
             position: fixed;
             top: 0;
@@ -201,7 +146,7 @@
             font-weight: 500;
             color: #4F4F78;
             text-decoration: none;
-            transition: 0.25s ease;
+            transition: 0.25s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
             cursor: pointer;
             font-family: 'Inter', sans-serif;
@@ -218,6 +163,9 @@
         }
         body.dark .back-btn:hover {
             background: rgba(50, 45, 80, 0.8);
+        }
+        .back-btn i {
+            font-size: 0.9rem;
         }
 
         .theme-toggle {
@@ -237,7 +185,7 @@
             font-size: 1.4rem;
             color: #4F4F78;
             cursor: pointer;
-            transition: 0.3s ease;
+            transition: 0.3s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
             user-select: none;
         }
@@ -390,6 +338,26 @@
             color: #88ccff;
         }
 
+        /* ===== 文章图片：有圆角 ===== */
+        .article-detail .detail-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin: 0.8rem 0;
+            display: block;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            transition: box-shadow 0.3s ease;
+        }
+        body.dark .article-detail .detail-content img {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+        .article-detail .detail-content img:hover {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        }
+        body.dark .article-detail .detail-content img:hover {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
         .article-detail .detail-content code {
             font-family: 'JetBrains Mono', 'Courier New', monospace;
             font-size: 0.9em;
@@ -402,6 +370,123 @@
         body.dark .article-detail .detail-content code {
             background: rgba(255, 255, 255, 0.06);
             color: #E8A87C;
+        }
+
+        /* ===== 代码块容器（完整版） ===== */
+        .code-block-wrapper {
+            background: #1E1F22;
+            border-radius: 12px;
+            margin: 0.8rem 0;
+            overflow: hidden;
+        }
+
+        .code-block-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+            min-height: 40px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .code-block-header .lang-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #ABB2BF;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .code-block-header .code-stats {
+            font-size: 0.65rem;
+            color: #5C6370;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.3px;
+            flex: 1;
+            text-align: center;
+        }
+        .code-block-header .code-stats span {
+            margin: 0 2px;
+        }
+
+        .code-block-header .copy-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 2px 12px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            color: #ABB2BF;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.8;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .code-block-header .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #E8E6F0;
+        }
+        .code-block-header .copy-btn.copied {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+            border-color: rgba(46, 204, 113, 0.2);
+        }
+        .code-block-header .copy-btn i {
+            font-size: 0.7rem;
+        }
+
+        .code-block-body {
+            display: flex;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            background: #1E1F22;
+        }
+
+        .code-block-body .line-numbers {
+            flex-shrink: 0;
+            padding: 0.8rem 0.6rem 0.8rem 1.2rem;
+            text-align: right;
+            color: #5C6370;
+            user-select: none;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            min-width: 2.8rem;
+            background: transparent;
+        }
+        .code-block-body .line-numbers span {
+            display: block;
+        }
+
+        .code-block-body .code-content {
+            flex: 1;
+            padding: 0.8rem 1.2rem;
+            overflow-x: auto;
+            min-width: 0;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            white-space: pre;
+            color: #ABB2BF;
+            background: transparent;
+        }
+
+        .code-block-body .code-content.hljs {
+            background: transparent !important;
+            padding: 0 !important;
         }
 
         .article-detail .detail-content ul,
@@ -468,14 +553,158 @@
             margin-bottom: 1rem;
         }
 
+        /* ===== Lightbox 放大预览：无圆角 ===== */
+        .lightbox-overlay .lightbox-container img {
+            border-radius: 0 !important;
+        }
+
+        /* ===== Lightbox ===== */
+        .lightbox-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, background 0.3s ease, visibility 0.3s ease;
+            cursor: default;
+            overflow: hidden;
+        }
+        .lightbox-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .lightbox-overlay .lightbox-container {
+            max-width: 90%;
+            max-height: 85vh;
+            transform: scale(0.92) translateY(20px);
+            opacity: 0;
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+            cursor: default;
+            touch-action: none;
+            overflow: visible;
+        }
+        .lightbox-overlay.active .lightbox-container {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .lightbox-overlay .lightbox-container .lightbox-img-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            cursor: grab;
+            overflow: visible;
+        }
+        .lightbox-overlay .lightbox-container .lightbox-img-wrapper:active {
+            cursor: grabbing;
+        }
+
+        .lightbox-overlay .lightbox-container img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 0 !important;
+            display: block;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            user-select: none;
+            -webkit-user-drag: none;
+            touch-action: none;
+            transform-origin: center center;
+            will-change: transform;
+        }
+
+        .lightbox-overlay .lightbox-close {
+            position: fixed;
+            top: 20px;
+            right: 28px;
+            color: #fff;
+            font-size: 2.8rem;
+            cursor: pointer;
+            transition: 0.2s ease;
+            opacity: 0.6;
+            background: none;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            line-height: 1;
+            padding: 0.5rem;
+            z-index: 10000;
+        }
+        .lightbox-overlay .lightbox-close:hover {
+            opacity: 1;
+            transform: scale(1.1) rotate(90deg);
+        }
+
         @media (max-width: 560px) {
-            .container { padding: 2rem 1.2rem 1.5rem; }
-            .back-btn { top: 14px; left: 14px; padding: 0.4rem 1rem 0.4rem 0.8rem; font-size: 0.75rem; }
-            .theme-toggle { top: 14px; right: 16px; width: 42px; height: 42px; font-size: 1.2rem; }
-            .article-detail .detail-title { font-size: 1.6rem; }
-            .article-detail .detail-content img { border-radius: 8px; }
-            .lightbox-overlay .lightbox-container img { max-height: 70vh; }
-            .lightbox-overlay .lightbox-close { top: 16px; right: 18px; font-size: 2rem; }
+            .container {
+                padding: 2rem 1.2rem 1.5rem;
+            }
+            .back-btn {
+                top: 14px;
+                left: 14px;
+                padding: 0.4rem 1rem 0.4rem 0.8rem;
+                font-size: 0.75rem;
+            }
+            .theme-toggle {
+                top: 14px;
+                right: 16px;
+                width: 42px;
+                height: 42px;
+                font-size: 1.2rem;
+            }
+            .article-detail .detail-title {
+                font-size: 1.6rem;
+            }
+            .article-detail .detail-content img {
+                border-radius: 8px;
+            }
+            .code-block-header {
+                padding: 6px 10px;
+                min-height: 34px;
+                gap: 6px;
+            }
+            .code-block-header .lang-label {
+                font-size: 0.6rem;
+            }
+            .code-block-header .code-stats {
+                font-size: 0.55rem;
+            }
+            .code-block-header .copy-btn {
+                font-size: 0.55rem;
+                padding: 1px 8px;
+            }
+            .code-block-header .copy-btn i {
+                font-size: 0.6rem;
+            }
+            .code-block-body {
+                font-size: 0.75rem;
+            }
+            .code-block-body .line-numbers {
+                padding: 0.6rem 0.4rem 0.6rem 0.8rem;
+                min-width: 2rem;
+            }
+            .code-block-body .code-content {
+                padding: 0.6rem 0.8rem;
+            }
+            .lightbox-overlay .lightbox-container img {
+                max-height: 70vh;
+            }
+            .lightbox-overlay .lightbox-close {
+                top: 16px;
+                right: 18px;
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
@@ -502,9 +731,6 @@
 </div>
 
 <script>
-    // ============================================================
-    // 主题切换
-    // ============================================================
     const themeToggle = document.getElementById('themeToggle');
     const icon = themeToggle.querySelector('i');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -521,9 +747,6 @@
         setTheme(currentTheme === 'dark' ? 'light' : 'dark');
     });
 
-    // ============================================================
-    // 工具函数
-    // ============================================================
     function getParam(name) {
         const url = new URL(window.location.href);
         return url.searchParams.get(name);
@@ -536,11 +759,9 @@
         return div.innerHTML;
     }
 
-    // ============================================================
-    // Markdown 渲染（简化版）
-    // ============================================================
     function renderMarkdown(md) {
         if (!md) return '';
+
         const lines = md.split('\n');
         let result = '';
         let inList = false;
@@ -550,6 +771,7 @@
         let inCodeBlock = false;
         let codeBlockLines = [];
         let codeLang = '';
+        let codeBlockCounter = 0;
 
         function flushBlockquote() {
             if (blockquoteLines.length > 0) {
@@ -557,6 +779,51 @@
                 result += '<blockquote>' + renderInline(content) + '</blockquote>';
                 blockquoteLines = [];
                 inBlockquote = false;
+            }
+        }
+
+        function flushCodeBlock() {
+            if (codeBlockLines.length > 0) {
+                const code = codeBlockLines.join('\n');
+                const escapedCode = escapeHtml(code);
+                const lang = codeLang || 'text';
+                const copyId = 'code-' + Date.now() + '-' + (codeBlockCounter++);
+
+                // 统计信息
+                const lineCount = codeBlockLines.length;
+                let maxLineLength = 0;
+                let totalChars = 0;
+                for (let i = 0; i < codeBlockLines.length; i++) {
+                    const lineLen = codeBlockLines[i].length;
+                    if (lineLen > maxLineLength) maxLineLength = lineLen;
+                    totalChars += lineLen;
+                }
+                totalChars += lineCount > 0 ? lineCount - 1 : 0;
+
+                // 行号 HTML
+                let lineNumbersHtml = '';
+                for (let i = 1; i <= lineCount; i++) {
+                    lineNumbersHtml += '<span>' + i + '</span>';
+                }
+
+                const statsHtml = `<span>${lineCount} 行</span> · <span>${maxLineLength} 列</span> · <span>${totalChars} 字符</span>`;
+
+                result += `
+                    <div class="code-block-wrapper">
+                        <div class="code-block-header">
+                            <span class="lang-label">${escapeHtml(lang)}</span>
+                            <span class="code-stats">${statsHtml}</span>
+                            <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
+                        </div>
+                        <div class="code-block-body">
+                            <div class="line-numbers">${lineNumbersHtml}</div>
+                            <code class="code-content" id="${copyId}">${escapedCode}</code>
+                        </div>
+                    </div>
+                `;
+                codeBlockLines = [];
+                inCodeBlock = false;
+                codeLang = '';
             }
         }
 
@@ -589,17 +856,7 @@
                     inCodeBlock = true;
                     codeLang = codeBlockStart[1] || 'text';
                 } else {
-                    if (codeBlockLines.length > 0) {
-                        const code = codeBlockLines.join('\n');
-                        const escapedCode = escapeHtml(code);
-                        const lang = codeLang || 'text';
-                        result += `
-                            <pre class="code-block"><code class="language-${lang}">${escapedCode}</code></pre>
-                        `;
-                        codeBlockLines = [];
-                        inCodeBlock = false;
-                        codeLang = '';
-                    }
+                    flushCodeBlock();
                 }
                 continue;
             }
@@ -670,21 +927,52 @@
         }
 
         flushBlockquote();
+        flushCodeBlock();
         flushList();
-        if (inCodeBlock && codeBlockLines.length > 0) {
-            const code = codeBlockLines.join('\n');
-            const escapedCode = escapeHtml(code);
-            const lang = codeLang || 'text';
-            result += `
-                <pre class="code-block"><code class="language-${lang}">${escapedCode}</code></pre>
-            `;
-        }
 
         return result;
     }
 
+    // ===== 代码块复制事件 =====
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.copy-btn');
+        if (!btn) return;
+
+        const targetId = btn.dataset.copy;
+        if (!targetId) return;
+
+        const codeEl = document.getElementById(targetId);
+        if (!codeEl) return;
+
+        const text = codeEl.textContent;
+
+        navigator.clipboard.writeText(text).then(() => {
+            btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-copy"></i> 复制';
+                btn.classList.remove('copied');
+            }, 2000);
+        }).catch(() => {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-copy"></i> 复制';
+                btn.classList.remove('copied');
+            }, 2000);
+        });
+    });
+
+    const appContent = document.getElementById('appContent');
+
     // ============================================================
-    // Lightbox（支持缩放 + 回弹 + 允许拖出屏幕）
+    // Lightbox（支持缩放 + 回弹）
     // ============================================================
     function initLightbox() {
         const images = document.querySelectorAll('.detail-content img');
@@ -726,13 +1014,12 @@
         let translateX = 0;
         let translateY = 0;
 
-        // ===== 回弹 =====
         function updateTransform(animate = false) {
             img.style.transition = animate ? 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none';
             img.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
         }
 
-        // ===== 鼠标滚轮缩放 =====
+        // 滚轮缩放
         img.addEventListener('wheel', function(e) {
             e.preventDefault();
             const delta = e.deltaY > 0 ? -0.1 : 0.1;
@@ -747,7 +1034,7 @@
             updateTransform(false);
         }, { passive: false });
 
-        // ===== 触摸：双指缩放 + 单指拖拽 =====
+        // 触摸
         let touchStartDist = 0;
         let touchStartScale = 1;
         let touchStartX = 0;
@@ -789,7 +1076,6 @@
         imgWrapper.addEventListener('touchend', function(e) {
             isDragging = false;
             imgWrapper.style.cursor = 'grab';
-            // 回弹到中心
             if (scale < 0.6) {
                 scale = 0.6;
                 translateX = 0;
@@ -804,7 +1090,6 @@
                 scale = 3;
                 updateTransform(true);
             }
-            // 如果拖太远，回弹到中心
             if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) {
                 translateX = 0;
                 translateY = 0;
@@ -812,7 +1097,7 @@
             }
         }, { passive: true });
 
-        // ===== 鼠标拖拽 =====
+        // 鼠标拖拽
         let mouseDown = false;
         let mouseStartX = 0;
         let mouseStartY = 0;
@@ -843,7 +1128,6 @@
             if (mouseDown) {
                 mouseDown = false;
                 imgWrapper.style.cursor = 'grab';
-                // 回弹
                 if (scale < 0.6) {
                     scale = 0.6;
                     translateX = 0;
@@ -866,7 +1150,7 @@
             }
         });
 
-        // ===== 关闭 =====
+        // 关闭
         function closeLightbox() {
             overlay.classList.remove('active');
             setTimeout(() => {
@@ -897,11 +1181,6 @@
         translateY = 0;
         updateTransform(false);
     }
-
-    // ============================================================
-    // 渲染文章
-    // ============================================================
-    const appContent = document.getElementById('appContent');
 
     function renderArticle() {
         const id = getParam('id');
@@ -950,6 +1229,12 @@
                     </div>
                 `;
 
+                // ===== Highlight.js 语法高亮 =====
+                document.querySelectorAll('.code-content').forEach(el => {
+                    hljs.highlightElement(el);
+                });
+
+                // ===== 初始化 Lightbox =====
                 initLightbox();
             })
             .catch(() => {
@@ -965,9 +1250,7 @@
 
     renderArticle();
 
-    // ============================================================
-    // 返回按钮
-    // ============================================================
+    // ===== 返回按钮动态跳转 =====
     const from = getParam('from');
     const page = getParam('page');
     const backBtn = document.getElementById('backButton');
@@ -979,6 +1262,7 @@
     if (from === 'archive') {
         returnUrl = 'index.html?return=archive';
     }
+
     backBtn.href = returnUrl;
 </script>
 </body>

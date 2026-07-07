@@ -396,7 +396,7 @@
         .software-toggle-card {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(8px);
             padding: 1rem 1.6rem;
@@ -409,7 +409,7 @@
             font-weight: 500;
             font-size: 0.95rem;
             cursor: pointer;
-            gap: 0.8rem;
+            gap: 0.5rem;
             width: 100%;
         }
         body.dark .software-toggle-card {
@@ -420,7 +420,7 @@
         }
         .software-toggle-card:hover {
             background: rgba(255, 255, 255, 0.95);
-            transform: translateY(-3px) scale(1.01);
+            transform: translateY(-2px) scale(1.01);
             box-shadow: 0 14px 30px rgba(80, 60, 160, 0.16);
             border-color: #D6CCFF;
         }
@@ -432,6 +432,7 @@
         .software-toggle-card .icon-arrow {
             transition: transform 0.3s ease;
             color: #A89FD0;
+            flex-shrink: 0;
         }
         body.dark .software-toggle-card .icon-arrow {
             color: #7A6AA8;
@@ -441,14 +442,17 @@
         }
 
         .software-list {
-            display: none;
-            flex-direction: column;
-            gap: 0.5rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, padding 0.3s ease;
+            opacity: 0;
+            padding: 0 0 0 0.5rem;
             width: 100%;
-            padding-left: 0.5rem;
         }
         .software-list.open {
-            display: flex;
+            max-height: 200px;
+            opacity: 1;
+            padding: 0.5rem 0 0.2rem 0.5rem;
         }
 
         .software-item {
@@ -457,7 +461,7 @@
             justify-content: space-between;
             background: rgba(255, 255, 255, 0.65);
             backdrop-filter: blur(8px);
-            padding: 1rem 1.6rem;
+            padding: 0.8rem 1.4rem;
             border-radius: 60px;
             border: 1px solid rgba(200, 180, 255, 0.3);
             box-shadow: 0 6px 18px rgba(80, 60, 160, 0.06);
@@ -465,8 +469,9 @@
             text-decoration: none;
             color: #1E1C3A;
             font-weight: 500;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             cursor: pointer;
+            margin-bottom: 0.4rem;
         }
         body.dark .software-item {
             background: rgba(40, 38, 65, 0.7);
@@ -1052,7 +1057,7 @@
                 -webkit-line-clamp: 2;
                 max-height: 3.2em;
             }
-            .software-item { padding: 0.8rem 1.2rem; font-size: 0.85rem; }
+            .software-item { padding: 0.7rem 1rem; font-size: 0.8rem; }
             .software-toggle-card { padding: 0.8rem 1.2rem; font-size: 0.85rem; }
         }
 
@@ -1165,6 +1170,42 @@
         }, 100);
     });
 
+    // ============================================================
+    // 折叠菜单状态管理
+    // ============================================================
+    const SOFTWARE_STATE_KEY = 'software_folded_state';
+
+    function getStoredState() {
+        try {
+            return sessionStorage.getItem(SOFTWARE_STATE_KEY) === 'true';
+        } catch {
+            return false;
+        }
+    }
+
+    function setStoredState(isOpen) {
+        try {
+            sessionStorage.setItem(SOFTWARE_STATE_KEY, String(isOpen));
+        } catch {}
+    }
+
+    function applySoftwareState(forceState) {
+        const toggle = document.getElementById('softwareToggle');
+        const list = document.getElementById('softwareList');
+        const arrow = document.getElementById('softwareArrow');
+        if (!toggle || !list || !arrow) return;
+
+        const shouldOpen = forceState !== undefined ? forceState : getStoredState();
+
+        if (shouldOpen) {
+            list.classList.add('open');
+            arrow.classList.add('open');
+        } else {
+            list.classList.remove('open');
+            arrow.classList.remove('open');
+        }
+    }
+
     const recommendHTML = `
         <div class="content-placeholder" style="justify-content: flex-start; padding-top: 0.2rem;">
             <div style="margin-bottom: 1.4rem; font-size: 0.95rem; color: #6F6F96; font-weight: 400; transition: color 0.3s ease;">
@@ -1186,11 +1227,11 @@
                         <span class="icon-arrow" id="softwareArrow"><i class="fas fa-chevron-down"></i></span>
                     </div>
                     <div class="software-list" id="softwareList">
-                        <a href="nordownload.html" class="software-item">
+                        <a href="nordownload.html" class="software-item" id="norLink">
                             <span class="item-label"><i class="fas fa-clock" style="color: #6E9FDF;"></i> nor叔</span>
                             <span class="item-arrow"><i class="fas fa-arrow-right"></i></span>
                         </a>
-                        <a href="zhuanhuandownload.html" class="software-item">
+                        <a href="zhuanhuandownload.html" class="software-item" id="zhuanhuanLink">
                             <span class="item-label"><i class="fas fa-font" style="color: #E88BB0;"></i> 特殊字符转换器</span>
                             <span class="item-arrow"><i class="fas fa-arrow-right"></i></span>
                         </a>
@@ -1208,13 +1249,38 @@
         const toggle = document.getElementById('softwareToggle');
         const list = document.getElementById('softwareList');
         const arrow = document.getElementById('softwareArrow');
+
+        // 恢复上次状态
+        applySoftwareState();
+
         if (toggle && list && arrow) {
             toggle.addEventListener('click', function(e) {
                 e.stopPropagation();
-                list.classList.toggle('open');
+                const isOpen = list.classList.toggle('open');
                 arrow.classList.toggle('open');
+                setStoredState(isOpen);
             });
         }
+
+        // 点击软件链接时，保存状态再跳转
+        const norLink = document.getElementById('norLink');
+        const zhuanhuanLink = document.getElementById('zhuanhuanLink');
+        const currentState = getStoredState();
+
+        [norLink, zhuanhuanLink].forEach(link => {
+            if (link) {
+                link.addEventListener('click', function(e) {
+                    // 保存当前折叠状态到 sessionStorage
+                    setStoredState(currentState);
+                    // 不阻止默认行为，正常跳转
+                });
+            }
+        });
+    });
+
+    // 页面加载后，如果从其他页面返回，恢复状态
+    window.addEventListener('pageshow', function() {
+        applySoftwareState();
     });
 
     // ===== 文章相关 =====
@@ -1757,7 +1823,13 @@
 
     const appContent = document.getElementById('appContent');
 
-    function renderRecommend() { appContent.innerHTML = recommendHTML; }
+    function renderRecommend() {
+        appContent.innerHTML = recommendHTML;
+        // 渲染完后恢复折叠状态
+        setTimeout(function() {
+            applySoftwareState();
+        }, 50);
+    }
     function renderAbout() { appContent.innerHTML = aboutHTML; }
 
     function switchPage(pageId, linkElement) {

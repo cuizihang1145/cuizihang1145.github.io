@@ -6,6 +6,9 @@
     <title>文章详情 · ks</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- ===== Highlight.js 全量引入 ===== -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -309,13 +312,13 @@
 
         /* ===== 代码块容器 ===== */
         .code-block-wrapper {
-            background: rgba(0, 0, 0, 0.06);
+            background: #282C34;
             border-radius: 12px;
             margin: 0.8rem 0;
             overflow: hidden;
         }
         body.dark .code-block-wrapper {
-            background: rgba(255, 255, 255, 0.06);
+            background: #282C34;
         }
 
         /* ===== 标题栏 ===== */
@@ -324,38 +327,43 @@
             align-items: center;
             justify-content: space-between;
             padding: 8px 14px;
-            background: rgba(0, 0, 0, 0.04);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            background: rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             flex-shrink: 0;
             min-height: 40px;
-        }
-        body.dark .code-block-header {
-            background: rgba(255, 255, 255, 0.04);
-            border-bottom-color: rgba(255, 255, 255, 0.06);
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .code-block-header .lang-label {
             font-size: 0.7rem;
             font-weight: 600;
-            color: #6A6A92;
+            color: #ABB2BF;
             letter-spacing: 0.5px;
             text-transform: uppercase;
             font-family: 'Inter', sans-serif;
         }
-        body.dark .code-block-header .lang-label {
-            color: #8A8AB5;
+
+        .code-block-header .code-stats {
+            font-size: 0.65rem;
+            color: #5C6370;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.3px;
+            flex: 1;
+            text-align: center;
+        }
+        .code-block-header .code-stats span {
+            margin: 0 2px;
         }
 
         .code-block-header .copy-btn {
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 6px;
             padding: 2px 12px;
             font-size: 0.65rem;
             font-weight: 500;
-            color: #6A6A92;
+            color: #ABB2BF;
             cursor: pointer;
             transition: 0.2s ease;
             font-family: 'Inter', sans-serif;
@@ -365,28 +373,14 @@
             align-items: center;
             gap: 4px;
         }
-        body.dark .code-block-header .copy-btn {
-            color: #9A96B8;
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(255, 255, 255, 0.06);
-        }
         .code-block-header .copy-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
-            color: #1A1A2E;
-        }
-        body.dark .code-block-header .copy-btn:hover {
             background: rgba(255, 255, 255, 0.15);
             color: #E8E6F0;
         }
         .code-block-header .copy-btn.copied {
             background: rgba(46, 204, 113, 0.2);
-            color: #27ae60;
-            border-color: rgba(46, 204, 113, 0.2);
-        }
-        body.dark .code-block-header .copy-btn.copied {
-            background: rgba(46, 204, 113, 0.15);
             color: #2ecc71;
-            border-color: rgba(46, 204, 113, 0.15);
+            border-color: rgba(46, 204, 113, 0.2);
         }
         .code-block-header .copy-btn i {
             font-size: 0.7rem;
@@ -400,24 +394,20 @@
             font-family: 'JetBrains Mono', 'Courier New', monospace;
             font-size: 0.85rem;
             line-height: 1.7;
-            background: transparent;
+            background: #282C34;
         }
         .code-block-body .line-numbers {
             flex-shrink: 0;
             padding: 0.8rem 0.6rem 0.8rem 1.2rem;
             text-align: right;
-            color: #8A8AB5;
+            color: #5C6370;
             user-select: none;
             font-family: inherit;
             font-size: inherit;
             line-height: inherit;
-            border-right: 1px solid rgba(0, 0, 0, 0.08);
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
             min-width: 2.8rem;
             background: transparent;
-        }
-        body.dark .code-block-body .line-numbers {
-            color: #6A6A8A;
-            border-right-color: rgba(255, 255, 255, 0.06);
         }
         .code-block-body .line-numbers span {
             display: block;
@@ -432,11 +422,14 @@
             font-size: inherit;
             line-height: inherit;
             white-space: pre;
-            color: #2D2D4A;
+            color: #ABB2BF;
             background: transparent;
         }
-        body.dark .code-block-body .code-content {
-            color: #D0CAF0;
+
+        /* ===== Highlight.js 覆盖 ===== */
+        .code-block-body .code-content.hljs {
+            background: transparent !important;
+            padding: 0 !important;
         }
 
         .article-detail .detail-content ul,
@@ -519,9 +512,13 @@
             .code-block-header {
                 padding: 6px 10px;
                 min-height: 34px;
+                gap: 6px;
             }
             .code-block-header .lang-label {
                 font-size: 0.6rem;
+            }
+            .code-block-header .code-stats {
+                font-size: 0.55rem;
             }
             .code-block-header .copy-btn {
                 font-size: 0.55rem;
@@ -606,7 +603,6 @@
         let inCodeBlock = false;
         let codeBlockLines = [];
         let codeLang = '';
-        let codeLines = [];
 
         function flushBlockquote() {
             if (blockquoteLines.length > 0) {
@@ -624,17 +620,32 @@
                 const lang = codeLang || 'text';
                 const copyId = 'code-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
 
-                // 计算行号
+                // 统计：行数、列数、字符数
                 const lineCount = codeBlockLines.length;
+                let maxLineLength = 0;
+                let totalChars = 0;
+                for (let i = 0; i < codeBlockLines.length; i++) {
+                    const lineLen = codeBlockLines[i].length;
+                    if (lineLen > maxLineLength) maxLineLength = lineLen;
+                    totalChars += lineLen;
+                }
+                // 加上换行符
+                totalChars += lineCount > 0 ? lineCount - 1 : 0;
+
+                // 行号 HTML
                 let lineNumbersHtml = '';
                 for (let i = 1; i <= lineCount; i++) {
                     lineNumbersHtml += '<span>' + i + '</span>';
                 }
 
+                // 统计信息
+                const statsHtml = `<span>${lineCount} 行</span> · <span>${maxLineLength} 列</span> · <span>${totalChars} 字符</span>`;
+
                 result += `
                     <div class="code-block-wrapper">
                         <div class="code-block-header">
                             <span class="lang-label">${escapeHtml(lang)}</span>
+                            <span class="code-stats">${statsHtml}</span>
                             <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
                         </div>
                         <div class="code-block-body">
@@ -767,6 +778,7 @@
         const codeEl = document.getElementById(targetId);
         if (!codeEl) return;
 
+        // 获取纯文本内容（不含高亮标签）
         const text = codeEl.textContent;
 
         navigator.clipboard.writeText(text).then(() => {
@@ -840,6 +852,11 @@
                         <div class="detail-content">${renderedContent}</div>
                     </div>
                 `;
+
+                // ===== Highlight.js 语法高亮 =====
+                document.querySelectorAll('.code-content').forEach(el => {
+                    hljs.highlightElement(el);
+                });
             })
             .catch(() => {
                 appContent.innerHTML = `

@@ -393,6 +393,111 @@
             color: #7A6AA8;
         }
 
+        .software-toggle-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            padding: 1rem 1.6rem;
+            border-radius: 60px;
+            border: 1px solid #D6CCFF;
+            box-shadow: 0 6px 18px rgba(80, 60, 160, 0.08);
+            transition: 0.25s ease;
+            text-decoration: none;
+            color: #1E1C3A;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            gap: 0.8rem;
+            width: 100%;
+        }
+        body.dark .software-toggle-card {
+            background: rgba(55, 50, 90, 0.8);
+            border-color: rgba(160, 140, 220, 0.3);
+            color: #E0DCF5;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+        }
+        .software-toggle-card:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 14px 30px rgba(80, 60, 160, 0.16);
+            border-color: #D6CCFF;
+        }
+        body.dark .software-toggle-card:hover {
+            background: rgba(70, 60, 110, 0.85);
+            border-color: rgba(160, 140, 220, 0.4);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+        }
+        .software-toggle-card .icon-arrow {
+            transition: transform 0.3s ease;
+            color: #A89FD0;
+        }
+        body.dark .software-toggle-card .icon-arrow {
+            color: #7A6AA8;
+        }
+        .software-toggle-card .icon-arrow.open {
+            transform: rotate(180deg);
+        }
+
+        .software-list {
+            display: none;
+            flex-direction: column;
+            gap: 0.5rem;
+            width: 100%;
+            padding-left: 0.5rem;
+        }
+        .software-list.open {
+            display: flex;
+        }
+
+        .software-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(8px);
+            padding: 1rem 1.6rem;
+            border-radius: 60px;
+            border: 1px solid rgba(200, 180, 255, 0.3);
+            box-shadow: 0 6px 18px rgba(80, 60, 160, 0.06);
+            transition: 0.25s ease;
+            text-decoration: none;
+            color: #1E1C3A;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+        body.dark .software-item {
+            background: rgba(40, 38, 65, 0.7);
+            border-color: rgba(255, 255, 255, 0.06);
+            color: #E0DCF5;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+        }
+        .software-item:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 14px 30px rgba(80, 60, 160, 0.14);
+            border-color: #D6CCFF;
+        }
+        body.dark .software-item:hover {
+            background: rgba(55, 50, 90, 0.8);
+            border-color: rgba(160, 140, 220, 0.3);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+        }
+        .software-item .item-label {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .software-item .item-arrow {
+            color: #A89FD0;
+            font-size: 0.9rem;
+        }
+        body.dark .software-item .item-arrow {
+            color: #7A6AA8;
+        }
+
         .about-card {
             background: rgba(255, 255, 255, 0.65);
             backdrop-filter: blur(12px);
@@ -947,6 +1052,8 @@
                 -webkit-line-clamp: 2;
                 max-height: 3.2em;
             }
+            .software-item { padding: 0.8rem 1.2rem; font-size: 0.85rem; }
+            .software-toggle-card { padding: 0.8rem 1.2rem; font-size: 0.85rem; }
         }
 
         @media (max-width: 400px) {
@@ -1072,16 +1179,43 @@
                     <span class="link-label"><i class="fas fa-star" style="color: #6E9FDF;"></i> 父亲节庆祝页面</span>
                     <span class="link-arrow"><i class="fas fa-arrow-right"></i></span>
                 </a>
-                <a href="nordownload.html" class="link-card">
-                    <span class="link-label"><i class="fas fa-download" style="color: #8F7BE0;"></i> nor叔软件下载</span>
-                    <span class="link-arrow"><i class="fas fa-arrow-right"></i></span>
-                </a>
+                <!-- 软件下载 - 折叠 -->
+                <div style="display:flex; flex-direction:column; gap:0.5rem; width:100%;">
+                    <div class="software-toggle-card" id="softwareToggle">
+                        <span class="link-label"><i class="fas fa-box" style="color: #8F7BE0;"></i> 下载软件</span>
+                        <span class="icon-arrow" id="softwareArrow"><i class="fas fa-chevron-down"></i></span>
+                    </div>
+                    <div class="software-list" id="softwareList">
+                        <a href="nordownload.html" class="software-item">
+                            <span class="item-label"><i class="fas fa-clock" style="color: #6E9FDF;"></i> nor叔</span>
+                            <span class="item-arrow"><i class="fas fa-arrow-right"></i></span>
+                        </a>
+                        <a href="zhuanhuandownload.html" class="software-item">
+                            <span class="item-label"><i class="fas fa-font" style="color: #E88BB0;"></i> 特殊字符转换器</span>
+                            <span class="item-arrow"><i class="fas fa-arrow-right"></i></span>
+                        </a>
+                    </div>
+                </div>
             </div>
             <div style="margin-top: 1.6rem; font-size: 0.75rem; color: #AEAECB; letter-spacing: 0.2px; transition: color 0.3s ease;">
                 <i class="far fa-clock"></i> 保持好奇，保持诚实
             </div>
         </div>
     `;
+
+    // ===== 折叠控制 =====
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggle = document.getElementById('softwareToggle');
+        const list = document.getElementById('softwareList');
+        const arrow = document.getElementById('softwareArrow');
+        if (toggle && list && arrow) {
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                list.classList.toggle('open');
+                arrow.classList.toggle('open');
+            });
+        }
+    });
 
     // ===== 文章相关 =====
     let allArticles = [];

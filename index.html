@@ -1206,6 +1206,41 @@
         }
     }
 
+    function bindSoftwareToggle() {
+        const toggle = document.getElementById('softwareToggle');
+        const list = document.getElementById('softwareList');
+        const arrow = document.getElementById('softwareArrow');
+        if (!toggle || !list || !arrow) return;
+
+        // 移除所有已绑定的监听器（通过克隆替换）
+        const newToggle = toggle.cloneNode(true);
+        toggle.parentNode.replaceChild(newToggle, toggle);
+
+        const newList = document.getElementById('softwareList');
+        const newArrow = document.getElementById('softwareArrow');
+        const newToggleBtn = document.getElementById('softwareToggle');
+
+        // 恢复状态
+        const isOpen = getStoredState();
+        if (isOpen) {
+            newList.classList.add('open');
+            newArrow.classList.add('open');
+        } else {
+            newList.classList.remove('open');
+            newArrow.classList.remove('open');
+        }
+
+        // 绑定点击事件
+        newToggleBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const listEl = document.getElementById('softwareList');
+            const arrowEl = document.getElementById('softwareArrow');
+            const isCurrentlyOpen = listEl.classList.toggle('open');
+            arrowEl.classList.toggle('open');
+            setStoredState(isCurrentlyOpen);
+        });
+    }
+
     const recommendHTML = `
         <div class="content-placeholder" style="justify-content: flex-start; padding-top: 0.2rem;">
             <div style="margin-bottom: 1.4rem; font-size: 0.95rem; color: #6F6F96; font-weight: 400; transition: color 0.3s ease;">
@@ -1243,45 +1278,6 @@
             </div>
         </div>
     `;
-
-    // ===== 折叠控制 =====
-    document.addEventListener('DOMContentLoaded', function() {
-        const toggle = document.getElementById('softwareToggle');
-        const list = document.getElementById('softwareList');
-        const arrow = document.getElementById('softwareArrow');
-
-        // 恢复上次状态
-        applySoftwareState();
-
-        if (toggle && list && arrow) {
-            toggle.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const isOpen = list.classList.toggle('open');
-                arrow.classList.toggle('open');
-                setStoredState(isOpen);
-            });
-        }
-
-        // 点击软件链接时，保存状态再跳转
-        const norLink = document.getElementById('norLink');
-        const zhuanhuanLink = document.getElementById('zhuanhuanLink');
-        const currentState = getStoredState();
-
-        [norLink, zhuanhuanLink].forEach(link => {
-            if (link) {
-                link.addEventListener('click', function(e) {
-                    // 保存当前折叠状态到 sessionStorage
-                    setStoredState(currentState);
-                    // 不阻止默认行为，正常跳转
-                });
-            }
-        });
-    });
-
-    // 页面加载后，如果从其他页面返回，恢复状态
-    window.addEventListener('pageshow', function() {
-        applySoftwareState();
-    });
 
     // ===== 文章相关 =====
     let allArticles = [];
@@ -1825,11 +1821,12 @@
 
     function renderRecommend() {
         appContent.innerHTML = recommendHTML;
-        // 渲染完后恢复折叠状态
+        // 渲染完后重新绑定折叠事件
         setTimeout(function() {
-            applySoftwareState();
+            bindSoftwareToggle();
         }, 50);
     }
+
     function renderAbout() { appContent.innerHTML = aboutHTML; }
 
     function switchPage(pageId, linkElement) {
@@ -1893,6 +1890,13 @@
     // ===== 启动逻辑 =====
     const returnParam = getUrlParam('return');
     const defaultActive = document.querySelector('.nav a.active');
+
+    // 页面加载时恢复折叠状态
+    window.addEventListener('pageshow', function() {
+        if (document.getElementById('softwareToggle')) {
+            applySoftwareState();
+        }
+    });
 
     if (returnParam === 'archive') {
         const archiveLink = document.querySelector('.nav a[data-page="archive"]');

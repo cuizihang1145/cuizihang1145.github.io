@@ -6,7 +6,7 @@
     <title>文章详情 · ks</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- ===== Highlight.js 全量引入 ===== -->
+    <!-- ===== Highlight.js monokai 主题（辨识度极高） ===== -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
@@ -255,26 +255,6 @@
             color: #D0CAF0;
         }
 
-        .article-detail .detail-content img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 12px;
-            margin: 0.8rem 0;
-            display: block;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-            transition: box-shadow 0.3s ease;
-            cursor: pointer;
-        }
-        body.dark .article-detail .detail-content img {
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-        }
-        .article-detail .detail-content img:hover {
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-        }
-        body.dark .article-detail .detail-content img:hover {
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
         .article-detail .detail-content h1,
         .article-detail .detail-content h2,
         .article-detail .detail-content h3,
@@ -338,7 +318,7 @@
             color: #88ccff;
         }
 
-        /* ===== 文章图片：有圆角 ===== */
+        /* ===== 文章图片 ===== */
         .article-detail .detail-content img {
             max-width: 100%;
             height: auto;
@@ -347,6 +327,7 @@
             display: block;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
             transition: box-shadow 0.3s ease;
+            cursor: pointer;
         }
         body.dark .article-detail .detail-content img {
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
@@ -356,6 +337,11 @@
         }
         body.dark .article-detail .detail-content img:hover {
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ===== Lightbox 放大预览：无圆角 ===== */
+        .lightbox-overlay .lightbox-container img {
+            border-radius: 0 !important;
         }
 
         .article-detail .detail-content code {
@@ -372,9 +358,20 @@
             color: #E8A87C;
         }
 
-        /* ===== 代码块容器（完整版） ===== */
+        /* ===== 代码块：完全固定，不随主题变化 ===== */
+        .code-block-wrapper,
+        .code-block-body,
+        .code-block-header,
+        .code-content,
+        .line-numbers,
+        .code-block-header .lang-label,
+        .code-block-header .code-stats,
+        .code-block-header .copy-btn {
+            transition: none !important;
+        }
+
         .code-block-wrapper {
-            background: #1E1F22;
+            background: #1E1F22 !important;
             border-radius: 12px;
             margin: 0.8rem 0;
             overflow: hidden;
@@ -385,8 +382,8 @@
             align-items: center;
             justify-content: space-between;
             padding: 8px 14px;
-            background: rgba(255, 255, 255, 0.04);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
             flex-shrink: 0;
             min-height: 40px;
             gap: 12px;
@@ -396,7 +393,7 @@
         .code-block-header .lang-label {
             font-size: 0.7rem;
             font-weight: 600;
-            color: #ABB2BF;
+            color: #ABB2BF !important;
             letter-spacing: 0.5px;
             text-transform: uppercase;
             font-family: 'Inter', sans-serif;
@@ -404,7 +401,7 @@
 
         .code-block-header .code-stats {
             font-size: 0.65rem;
-            color: #5C6370;
+            color: #5C6370 !important;
             font-family: 'Inter', sans-serif;
             letter-spacing: 0.3px;
             flex: 1;
@@ -415,13 +412,13 @@
         }
 
         .code-block-header .copy-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-radius: 6px;
             padding: 2px 12px;
             font-size: 0.65rem;
             font-weight: 500;
-            color: #ABB2BF;
+            color: #ABB2BF !important;
             cursor: pointer;
             transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
             font-family: 'Inter', sans-serif;
@@ -432,13 +429,13 @@
             gap: 4px;
         }
         .code-block-header .copy-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: #E8E6F0;
+            background: rgba(255, 255, 255, 0.15) !important;
+            color: #E8E6F0 !important;
         }
         .code-block-header .copy-btn.copied {
-            background: rgba(46, 204, 113, 0.2);
-            color: #2ecc71;
-            border-color: rgba(46, 204, 113, 0.2);
+            background: rgba(46, 204, 113, 0.2) !important;
+            color: #2ecc71 !important;
+            border-color: rgba(46, 204, 113, 0.2) !important;
         }
         .code-block-header .copy-btn i {
             font-size: 0.7rem;
@@ -451,21 +448,21 @@
             font-family: 'JetBrains Mono', 'Courier New', monospace;
             font-size: 0.85rem;
             line-height: 1.7;
-            background: #1E1F22;
+            background: #1E1F22 !important;
         }
 
         .code-block-body .line-numbers {
             flex-shrink: 0;
             padding: 0.8rem 0.6rem 0.8rem 1.2rem;
             text-align: right;
-            color: #5C6370;
+            color: #5C6370 !important;
             user-select: none;
             font-family: inherit;
             font-size: inherit;
             line-height: inherit;
-            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
             min-width: 2.8rem;
-            background: transparent;
+            background: transparent !important;
         }
         .code-block-body .line-numbers span {
             display: block;
@@ -480,10 +477,11 @@
             font-size: inherit;
             line-height: inherit;
             white-space: pre;
-            color: #ABB2BF;
-            background: transparent;
+            color: #ABB2BF !important;
+            background: transparent !important;
         }
 
+        /* Highlight.js 覆盖 */
         .code-block-body .code-content.hljs {
             background: transparent !important;
             padding: 0 !important;
@@ -551,11 +549,6 @@
             font-size: 2rem;
             display: block;
             margin-bottom: 1rem;
-        }
-
-        /* ===== Lightbox 放大预览：无圆角 ===== */
-        .lightbox-overlay .lightbox-container img {
-            border-radius: 0 !important;
         }
 
         /* ===== Lightbox ===== */
@@ -647,64 +640,21 @@
         }
 
         @media (max-width: 560px) {
-            .container {
-                padding: 2rem 1.2rem 1.5rem;
-            }
-            .back-btn {
-                top: 14px;
-                left: 14px;
-                padding: 0.4rem 1rem 0.4rem 0.8rem;
-                font-size: 0.75rem;
-            }
-            .theme-toggle {
-                top: 14px;
-                right: 16px;
-                width: 42px;
-                height: 42px;
-                font-size: 1.2rem;
-            }
-            .article-detail .detail-title {
-                font-size: 1.6rem;
-            }
-            .article-detail .detail-content img {
-                border-radius: 8px;
-            }
-            .code-block-header {
-                padding: 6px 10px;
-                min-height: 34px;
-                gap: 6px;
-            }
-            .code-block-header .lang-label {
-                font-size: 0.6rem;
-            }
-            .code-block-header .code-stats {
-                font-size: 0.55rem;
-            }
-            .code-block-header .copy-btn {
-                font-size: 0.55rem;
-                padding: 1px 8px;
-            }
-            .code-block-header .copy-btn i {
-                font-size: 0.6rem;
-            }
-            .code-block-body {
-                font-size: 0.75rem;
-            }
-            .code-block-body .line-numbers {
-                padding: 0.6rem 0.4rem 0.6rem 0.8rem;
-                min-width: 2rem;
-            }
-            .code-block-body .code-content {
-                padding: 0.6rem 0.8rem;
-            }
-            .lightbox-overlay .lightbox-container img {
-                max-height: 70vh;
-            }
-            .lightbox-overlay .lightbox-close {
-                top: 16px;
-                right: 18px;
-                font-size: 2rem;
-            }
+            .container { padding: 2rem 1.2rem 1.5rem; }
+            .back-btn { top: 14px; left: 14px; padding: 0.4rem 1rem 0.4rem 0.8rem; font-size: 0.75rem; }
+            .theme-toggle { top: 14px; right: 16px; width: 42px; height: 42px; font-size: 1.2rem; }
+            .article-detail .detail-title { font-size: 1.6rem; }
+            .article-detail .detail-content img { border-radius: 8px; }
+            .code-block-header { padding: 6px 10px; min-height: 34px; gap: 6px; }
+            .code-block-header .lang-label { font-size: 0.6rem; }
+            .code-block-header .code-stats { font-size: 0.55rem; }
+            .code-block-header .copy-btn { font-size: 0.55rem; padding: 1px 8px; }
+            .code-block-header .copy-btn i { font-size: 0.6rem; }
+            .code-block-body { font-size: 0.75rem; }
+            .code-block-body .line-numbers { padding: 0.6rem 0.4rem 0.6rem 0.8rem; min-width: 2rem; }
+            .code-block-body .code-content { padding: 0.6rem 0.8rem; }
+            .lightbox-overlay .lightbox-container img { max-height: 70vh; }
+            .lightbox-overlay .lightbox-close { top: 16px; right: 18px; font-size: 2rem; }
         }
     </style>
 </head>
@@ -789,7 +739,6 @@
                 const lang = codeLang || 'text';
                 const copyId = 'code-' + Date.now() + '-' + (codeBlockCounter++);
 
-                // 统计信息
                 const lineCount = codeBlockLines.length;
                 let maxLineLength = 0;
                 let totalChars = 0;
@@ -800,7 +749,6 @@
                 }
                 totalChars += lineCount > 0 ? lineCount - 1 : 0;
 
-                // 行号 HTML
                 let lineNumbersHtml = '';
                 for (let i = 1; i <= lineCount; i++) {
                     lineNumbersHtml += '<span>' + i + '</span>';
@@ -972,7 +920,7 @@
     const appContent = document.getElementById('appContent');
 
     // ============================================================
-    // Lightbox（支持缩放 + 回弹）
+    // Lightbox（缩放 + 回弹）
     // ============================================================
     function initLightbox() {
         const images = document.querySelectorAll('.detail-content img');
@@ -1229,12 +1177,12 @@
                     </div>
                 `;
 
-                // ===== Highlight.js 语法高亮 =====
+                // Highlight.js 语法高亮
                 document.querySelectorAll('.code-content').forEach(el => {
                     hljs.highlightElement(el);
                 });
 
-                // ===== 初始化 Lightbox =====
+                // Lightbox
                 initLightbox();
             })
             .catch(() => {

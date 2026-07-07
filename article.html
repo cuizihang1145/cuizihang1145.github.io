@@ -307,76 +307,103 @@
             color: #E8A87C;
         }
 
-        .article-detail .detail-content pre {
+        /* ===== 代码块容器 ===== */
+        .code-block-wrapper {
             background: rgba(0, 0, 0, 0.06);
-            padding: 1rem 1.2rem;
             border-radius: 12px;
-            overflow-x: auto;
             margin: 0.8rem 0;
-            font-family: 'JetBrains Mono', 'Courier New', monospace;
-            font-size: 0.85rem;
-            line-height: 1.7;
-            color: #2D2D4A;
-            position: relative;
+            overflow: hidden;
         }
-        body.dark .article-detail .detail-content pre {
+        body.dark .code-block-wrapper {
             background: rgba(255, 255, 255, 0.06);
-            color: #D0CAF0;
-        }
-        .article-detail .detail-content pre code {
-            background: transparent;
-            padding: 0;
-            color: inherit;
-            font-size: inherit;
         }
 
-        /* ===== 代码块复制按钮 ===== */
-        .code-copy-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
+        /* ===== 标题栏 ===== */
+        .code-block-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 14px;
+            background: rgba(0, 0, 0, 0.04);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            flex-shrink: 0;
+            min-height: 40px;
+        }
+        body.dark .code-block-header {
+            background: rgba(255, 255, 255, 0.04);
+            border-bottom-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .code-block-header .lang-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #6A6A92;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-family: 'Inter', sans-serif;
+        }
+        body.dark .code-block-header .lang-label {
+            color: #8A8AB5;
+        }
+
+        .code-block-header .copy-btn {
             background: rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 8px;
-            padding: 4px 12px;
-            font-size: 0.7rem;
+            border-radius: 6px;
+            padding: 2px 12px;
+            font-size: 0.65rem;
             font-weight: 500;
             color: #6A6A92;
             cursor: pointer;
             transition: 0.2s ease;
             font-family: 'Inter', sans-serif;
-            line-height: 1.6;
-            opacity: 0;
-            pointer-events: none;
+            line-height: 1.8;
+            flex-shrink: 0;
         }
-        .article-detail .detail-content pre:hover .code-copy-btn {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .code-copy-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
-            color: #1A1A2E;
-        }
-        .code-copy-btn.copied {
-            background: rgba(46, 204, 113, 0.2);
-            color: #27ae60;
-            border-color: rgba(46, 204, 113, 0.2);
-        }
-        body.dark .code-copy-btn {
+        body.dark .code-block-header .copy-btn {
             color: #9A96B8;
             background: rgba(255, 255, 255, 0.06);
             border-color: rgba(255, 255, 255, 0.06);
         }
-        body.dark .code-copy-btn:hover {
+        .code-block-header .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: #1A1A2E;
+        }
+        body.dark .code-block-header .copy-btn:hover {
             background: rgba(255, 255, 255, 0.15);
             color: #E8E6F0;
         }
-        body.dark .code-copy-btn.copied {
+        .code-block-header .copy-btn.copied {
+            background: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+            border-color: rgba(46, 204, 113, 0.2);
+        }
+        body.dark .code-block-header .copy-btn.copied {
             background: rgba(46, 204, 113, 0.15);
             color: #2ecc71;
             border-color: rgba(46, 204, 113, 0.15);
+        }
+
+        /* ===== 代码滚动区 ===== */
+        .code-block-body {
+            overflow-x: auto;
+            padding: 0.8rem 1.2rem;
+            -webkit-overflow-scrolling: touch;
+        }
+        .code-block-body code {
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            color: #2D2D4A;
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            white-space: pre;
+        }
+        body.dark .code-block-body code {
+            color: #D0CAF0;
         }
 
         .article-detail .detail-content ul,
@@ -453,18 +480,25 @@
             .article-detail .detail-title {
                 font-size: 1.6rem;
             }
-            .article-detail .detail-content pre {
-                font-size: 0.75rem;
-                padding: 0.8rem 1rem;
-            }
             .article-detail .detail-content img {
                 border-radius: 8px;
             }
-            .code-copy-btn {
+            .code-block-header {
+                padding: 6px 10px;
+                min-height: 34px;
+            }
+            .code-block-header .lang-label {
                 font-size: 0.6rem;
-                padding: 2px 8px;
-                opacity: 1;
-                pointer-events: auto;
+            }
+            .code-block-header .copy-btn {
+                font-size: 0.55rem;
+                padding: 1px 8px;
+            }
+            .code-block-body {
+                padding: 0.6rem 0.8rem;
+            }
+            .code-block-body code {
+                font-size: 0.75rem;
             }
         }
     </style>
@@ -531,7 +565,7 @@
         let blockquoteLines = [];
         let inCodeBlock = false;
         let codeBlockLines = [];
-        let codeBlockCounter = 0;
+        let codeLang = '';
 
         function flushBlockquote() {
             if (blockquoteLines.length > 0) {
@@ -546,15 +580,22 @@
             if (codeBlockLines.length > 0) {
                 const code = codeBlockLines.join('\n');
                 const escapedCode = escapeHtml(code);
-                const copyId = 'code-' + Date.now() + '-' + (codeBlockCounter++);
+                const lang = codeLang || 'text';
+                const copyId = 'code-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
                 result += `
-                    <pre class="code-block-wrapper">
-                        <button class="code-copy-btn" data-copy="${copyId}">复制</button>
-                        <code id="${copyId}">${escapedCode}</code>
-                    </pre>
+                    <div class="code-block-wrapper">
+                        <div class="code-block-header">
+                            <span class="lang-label">${escapeHtml(lang)}</span>
+                            <button class="copy-btn" data-copy="${copyId}">📋 复制</button>
+                        </div>
+                        <div class="code-block-body">
+                            <code id="${copyId}">${escapedCode}</code>
+                        </div>
+                    </div>
                 `;
                 codeBlockLines = [];
                 inCodeBlock = false;
+                codeLang = '';
             }
         }
 
@@ -579,11 +620,14 @@
         for (let i = 0; i < lines.length; i++) {
             let line = lines[i];
 
-            if (line.startsWith('```')) {
+            // 检测代码块开始
+            const codeBlockStart = line.match(/^```(\w*)/);
+            if (codeBlockStart) {
                 if (!inCodeBlock) {
                     flushBlockquote();
                     flushList();
                     inCodeBlock = true;
+                    codeLang = codeBlockStart[1] || 'text';
                 } else {
                     flushCodeBlock();
                 }
@@ -664,7 +708,7 @@
 
     // ===== 代码块复制事件（委托） =====
     document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.code-copy-btn');
+        const btn = e.target.closest('.copy-btn');
         if (!btn) return;
 
         const targetId = btn.dataset.copy;
@@ -676,24 +720,23 @@
         const text = codeEl.textContent;
 
         navigator.clipboard.writeText(text).then(() => {
-            btn.textContent = '已复制';
+            btn.textContent = '✅ 已复制';
             btn.classList.add('copied');
             setTimeout(() => {
-                btn.textContent = '复制';
+                btn.textContent = '📋 复制';
                 btn.classList.remove('copied');
             }, 2000);
         }).catch(() => {
-            // 降级方案
             const ta = document.createElement('textarea');
             ta.value = text;
             document.body.appendChild(ta);
             ta.select();
             document.execCommand('copy');
             document.body.removeChild(ta);
-            btn.textContent = '已复制';
+            btn.textContent = '✅ 已复制';
             btn.classList.add('copied');
             setTimeout(() => {
-                btn.textContent = '复制';
+                btn.textContent = '📋 复制';
                 btn.classList.remove('copied');
             }, 2000);
         });

@@ -361,6 +361,9 @@
             font-family: 'Inter', sans-serif;
             line-height: 1.8;
             flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
         body.dark .code-block-header .copy-btn {
             color: #9A96B8;
@@ -385,24 +388,54 @@
             color: #2ecc71;
             border-color: rgba(46, 204, 113, 0.15);
         }
-
-        /* ===== 代码滚动区 ===== */
-        .code-block-body {
-            overflow-x: auto;
-            padding: 0.8rem 1.2rem;
-            -webkit-overflow-scrolling: touch;
+        .code-block-header .copy-btn i {
+            font-size: 0.7rem;
         }
-        .code-block-body code {
+
+        /* ===== 代码主体：行号 + 代码 ===== */
+        .code-block-body {
+            display: flex;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
             font-family: 'JetBrains Mono', 'Courier New', monospace;
             font-size: 0.85rem;
             line-height: 1.7;
+            background: transparent;
+        }
+        .code-block-body .line-numbers {
+            flex-shrink: 0;
+            padding: 0.8rem 0.6rem 0.8rem 1.2rem;
+            text-align: right;
+            color: #8A8AB5;
+            user-select: none;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            border-right: 1px solid rgba(0, 0, 0, 0.08);
+            min-width: 2.8rem;
+            background: transparent;
+        }
+        body.dark .code-block-body .line-numbers {
+            color: #6A6A8A;
+            border-right-color: rgba(255, 255, 255, 0.06);
+        }
+        .code-block-body .line-numbers span {
+            display: block;
+        }
+
+        .code-block-body .code-content {
+            flex: 1;
+            padding: 0.8rem 1.2rem;
+            overflow-x: auto;
+            min-width: 0;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            white-space: pre;
             color: #2D2D4A;
             background: transparent;
-            padding: 0;
-            border-radius: 0;
-            white-space: pre;
         }
-        body.dark .code-block-body code {
+        body.dark .code-block-body .code-content {
             color: #D0CAF0;
         }
 
@@ -494,11 +527,18 @@
                 font-size: 0.55rem;
                 padding: 1px 8px;
             }
-            .code-block-body {
-                padding: 0.6rem 0.8rem;
+            .code-block-header .copy-btn i {
+                font-size: 0.6rem;
             }
-            .code-block-body code {
+            .code-block-body {
                 font-size: 0.75rem;
+            }
+            .code-block-body .line-numbers {
+                padding: 0.6rem 0.4rem 0.6rem 0.8rem;
+                min-width: 2rem;
+            }
+            .code-block-body .code-content {
+                padding: 0.6rem 0.8rem;
             }
         }
     </style>
@@ -566,6 +606,7 @@
         let inCodeBlock = false;
         let codeBlockLines = [];
         let codeLang = '';
+        let codeLines = [];
 
         function flushBlockquote() {
             if (blockquoteLines.length > 0) {
@@ -582,14 +623,23 @@
                 const escapedCode = escapeHtml(code);
                 const lang = codeLang || 'text';
                 const copyId = 'code-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+
+                // 计算行号
+                const lineCount = codeBlockLines.length;
+                let lineNumbersHtml = '';
+                for (let i = 1; i <= lineCount; i++) {
+                    lineNumbersHtml += '<span>' + i + '</span>';
+                }
+
                 result += `
                     <div class="code-block-wrapper">
                         <div class="code-block-header">
                             <span class="lang-label">${escapeHtml(lang)}</span>
-                            <button class="copy-btn" data-copy="${copyId}">📋 复制</button>
+                            <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
                         </div>
                         <div class="code-block-body">
-                            <code id="${copyId}">${escapedCode}</code>
+                            <div class="line-numbers">${lineNumbersHtml}</div>
+                            <code class="code-content" id="${copyId}">${escapedCode}</code>
                         </div>
                     </div>
                 `;
@@ -706,7 +756,7 @@
         return result;
     }
 
-    // ===== 代码块复制事件（委托） =====
+    // ===== 代码块复制事件 =====
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('.copy-btn');
         if (!btn) return;
@@ -720,10 +770,10 @@
         const text = codeEl.textContent;
 
         navigator.clipboard.writeText(text).then(() => {
-            btn.textContent = '✅ 已复制';
+            btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
             btn.classList.add('copied');
             setTimeout(() => {
-                btn.textContent = '📋 复制';
+                btn.innerHTML = '<i class="fas fa-copy"></i> 复制';
                 btn.classList.remove('copied');
             }, 2000);
         }).catch(() => {
@@ -733,10 +783,10 @@
             ta.select();
             document.execCommand('copy');
             document.body.removeChild(ta);
-            btn.textContent = '✅ 已复制';
+            btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
             btn.classList.add('copied');
             setTimeout(() => {
-                btn.textContent = '📋 复制';
+                btn.innerHTML = '<i class="fas fa-copy"></i> 复制';
                 btn.classList.remove('copied');
             }, 2000);
         });
@@ -804,7 +854,7 @@
 
     renderArticle();
 
-    // ===== 返回按钮动态跳转（带页码） =====
+    // ===== 返回按钮动态跳转 =====
     const from = getParam('from');
     const page = getParam('page');
     const backBtn = document.getElementById('backButton');

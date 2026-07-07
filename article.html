@@ -44,7 +44,8 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.3s ease, background 0.3s ease, visibility 0.3s ease;
-            cursor: pointer;
+            cursor: default;
+            overflow: hidden;
         }
         .lightbox-overlay.active {
             opacity: 1;
@@ -59,10 +60,25 @@
             opacity: 0;
             transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
             cursor: default;
+            touch-action: none;
+            overflow: hidden;
         }
         .lightbox-overlay.active .lightbox-container {
             transform: scale(1) translateY(0);
             opacity: 1;
+        }
+
+        .lightbox-overlay .lightbox-container .lightbox-img-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            cursor: grab;
+        }
+        .lightbox-overlay .lightbox-container .lightbox-img-wrapper:active {
+            cursor: grabbing;
         }
 
         .lightbox-overlay .lightbox-container img {
@@ -73,6 +89,9 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
             user-select: none;
             -webkit-user-drag: none;
+            touch-action: none;
+            transform-origin: center center;
+            will-change: transform;
         }
 
         .lightbox-overlay .lightbox-close {
@@ -96,7 +115,7 @@
             transform: scale(1.1) rotate(90deg);
         }
 
-        /* ===== 页面其他样式（保持原样） ===== */
+        /* ===== 其余样式保持原样 ===== */
         .bg-glow {
             position: fixed;
             top: 0;
@@ -181,7 +200,7 @@
             font-weight: 500;
             color: #4F4F78;
             text-decoration: none;
-            transition: 0.25s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            transition: 0.25s ease;
             box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
             cursor: pointer;
             font-family: 'Inter', sans-serif;
@@ -217,7 +236,7 @@
             font-size: 1.4rem;
             color: #4F4F78;
             cursor: pointer;
-            transition: 0.3s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            transition: 0.3s ease;
             box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
             user-select: none;
         }
@@ -307,7 +326,6 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
-        /* ===== 其他样式省略（文章详情、代码块等保持原样） ===== */
         .article-detail .detail-content h1,
         .article-detail .detail-content h2,
         .article-detail .detail-content h3,
@@ -518,7 +536,7 @@
     }
 
     // ============================================================
-    // Markdown 渲染
+    // Markdown 渲染（简化版，只保留基本功能）
     // ============================================================
     function renderMarkdown(md) {
         if (!md) return '';
@@ -570,7 +588,6 @@
                     inCodeBlock = true;
                     codeLang = codeBlockStart[1] || 'text';
                 } else {
-                    // 结束代码块
                     if (codeBlockLines.length > 0) {
                         const code = codeBlockLines.join('\n');
                         const escapedCode = escapeHtml(code);
@@ -666,7 +683,7 @@
     }
 
     // ============================================================
-    // Lightbox
+    // Lightbox（支持缩放）
     // ============================================================
     function initLightbox() {
         const images = document.querySelectorAll('.detail-content img');
@@ -680,7 +697,6 @@
     }
 
     function openLightbox(src, alt) {
-        // 如果已经有 Lightbox 了，先移除
         const existing = document.querySelector('.lightbox-overlay');
         if (existing) {
             existing.remove();
@@ -690,19 +706,134 @@
         overlay.className = 'lightbox-overlay';
         overlay.innerHTML = `
             <div class="lightbox-container">
-                <img src="${src}" alt="${escapeHtml(alt)}" />
+                <div class="lightbox-img-wrapper">
+                    <img src="${src}" alt="${escapeHtml(alt)}" />
+                </div>
             </div>
             <button class="lightbox-close">&times;</button>
         `;
         document.body.appendChild(overlay);
         document.body.style.overflow = 'hidden';
 
-        // 触发动画
+        // 触发入场动画
         requestAnimationFrame(() => {
             overlay.classList.add('active');
         });
 
-        // 关闭函数
+        // ===== 缩放逻辑 =====
+        const imgWrapper = overlay.querySelector('.lightbox-img-wrapper');
+        const img = overlay.querySelector('img');
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let lastTranslateX = 0;
+        let lastTranslateY = 0;
+        let lastPinchDist = 0;
+        let lastScale = 1;
+
+        function updateTransform() {
+            img.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+        }
+
+        // ===== 鼠标滚轮缩放 =====
+        img.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            const newScale = Math.min(Math.max(0.5, scale + delta), 5);
+            // 以鼠标位置为中心缩放
+            const rect = img.getBoundingClientRect();
+            const cx = e.clientX - rect.left;
+            const cy = e.clientY - rect.top;
+            const ratioX = cx / rect.width;
+            const ratioY = cy / rect.height;
+            const oldScale = scale;
+            scale = newScale;
+            // 调整平移，使鼠标位置保持不动
+            translateX += (1 - newScale / oldScale) * (rect.width / 2 - rect.width * ratioX);
+            translateY += (1 - newScale / oldScale) * (rect.height / 2 - rect.height * ratioY);
+            updateTransform();
+        }, { passive: false });
+
+        // ===== 双指缩放（触摸） =====
+        let touchStartDist = 0;
+        let touchStartScale = 1;
+
+        imgWrapper.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 2) {
+                const t = e.touches;
+                touchStartDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+                touchStartScale = scale;
+            } else if (e.touches.length === 1 && scale > 1) {
+                isDragging = true;
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                lastTranslateX = translateX;
+                lastTranslateY = translateY;
+                imgWrapper.style.cursor = 'grabbing';
+            }
+        }, { passive: true });
+
+        imgWrapper.addEventListener('touchmove', function(e) {
+            if (e.touches.length === 2) {
+                const t = e.touches;
+                const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+                const delta = dist / touchStartDist;
+                scale = Math.min(Math.max(0.5, touchStartScale * delta), 5);
+                updateTransform();
+            } else if (e.touches.length === 1 && isDragging) {
+                const dx = e.touches[0].clientX - startX;
+                const dy = e.touches[0].clientY - startY;
+                translateX = lastTranslateX + dx;
+                translateY = lastTranslateY + dy;
+                updateTransform();
+            }
+        }, { passive: true });
+
+        imgWrapper.addEventListener('touchend', function(e) {
+            isDragging = false;
+            imgWrapper.style.cursor = 'grab';
+        }, { passive: true });
+
+        // ===== 鼠标拖拽（仅当缩放 > 1 时） =====
+        let mouseDown = false;
+        let mouseStartX = 0;
+        let mouseStartY = 0;
+        let mouseLastX = 0;
+        let mouseLastY = 0;
+
+        imgWrapper.addEventListener('mousedown', function(e) {
+            if (scale > 1) {
+                mouseDown = true;
+                mouseStartX = e.clientX;
+                mouseStartY = e.clientY;
+                mouseLastX = translateX;
+                mouseLastY = translateY;
+                imgWrapper.style.cursor = 'grabbing';
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (mouseDown) {
+                const dx = e.clientX - mouseStartX;
+                const dy = e.clientY - mouseStartY;
+                translateX = mouseLastX + dx;
+                translateY = mouseLastY + dy;
+                updateTransform();
+            }
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (mouseDown) {
+                mouseDown = false;
+                imgWrapper.style.cursor = 'grab';
+            }
+        });
+
+        // ===== 关闭 =====
         function closeLightbox() {
             overlay.classList.remove('active');
             setTimeout(() => {
@@ -720,7 +851,6 @@
             }
         }
 
-        // 事件绑定
         overlay.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
         overlay.addEventListener('click', function(e) {
             if (e.target === this) {
@@ -728,6 +858,12 @@
             }
         });
         document.addEventListener('keydown', escHandler);
+
+        // 重置缩放状态
+        scale = 1;
+        translateX = 0;
+        translateY = 0;
+        updateTransform();
     }
 
     // ============================================================
@@ -782,7 +918,6 @@
                     </div>
                 `;
 
-                // 初始化 Lightbox
                 initLightbox();
             })
             .catch(() => {

@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>父亲节快乐</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 100vw; height: 100vh; overflow: hidden;
+            background: #0b0b2a;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #canvasCanvas {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .main-container {
+            position: relative; z-index: 10;
+            text-align: center; color: #fff;
+            padding: 20px;
+            text-shadow: 0 0 30px rgba(100, 150, 255, 0.6);
+            pointer-events: auto;
+        }
+        .father-title, .father-message {
+            pointer-events: none;
+        }
+        .father-title {
+            font-size: clamp(2.2rem, 9vw, 5.5rem);
+            font-weight: 900;
+            background: linear-gradient(45deg, #4a90d9, #6dd5fa, #48c6ef, #a18cd1);
+            background-size: 300% 300%;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease-in-out infinite alternate;
+            filter: drop-shadow(0 0 20px rgba(100, 180, 255, 0.8));
+            letter-spacing: 4px;
+            position: relative;
+        }
+        .father-title::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 120%; height: 120%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(100, 150, 255, 0.2) 0%, transparent 70%);
+            filter: blur(30px);
+            z-index: -1;
+            animation: breathGlow 2s ease-in-out infinite alternate;
+        }
+        @keyframes breathGlow {
+            0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.9); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+        }
+        .father-message {
+            font-size: clamp(1rem, 3vw, 2rem);
+            font-weight: 300;
+            background: linear-gradient(135deg, #e0f0ff, #b8d8ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(100, 180, 255, 0.4));
+        }
+        .father-message-sub {
+            font-size: clamp(0.8rem, 2vw, 1.5rem);
+            margin-top: 10px;
+            font-weight: 300;
+            background: linear-gradient(135deg, #e0f0ff, #b8d8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(100, 180, 255, 0.4));
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+        #clickLayer {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .footer-note {
+            position: fixed; bottom: 30px; left: 0; width: 100%;
+            text-align: center; z-index: 15;
+            color: rgba(255,255,255,0.4);
+            font-size: 14px;
+            letter-spacing: 2px;
+            font-weight: 100;
+            pointer-events: none;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .detail-btn {
+            display: inline-block;
+            padding: 8px 20px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 400;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 30;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+            -webkit-touch-callout: none;
+            user-select: none;
+            text-decoration: none;
+        }
+        .detail-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
+        }
+        .detail-btn:active {
+            transform: scale(0.95);
+        }
+
+        .top-bar {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+        }
+        .top-bar .left, .top-bar .right {
+            pointer-events: auto;
+        }
+        .top-bar.shared-mode .left,
+        .top-bar.shared-mode .right {
+            display: none !important;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 60px;
+            padding: 0.5rem 1.2rem 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #fff;
+            text-decoration: none;
+            transition: 0.25s ease;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            user-select: none;
+            outline: none;
+        }
+        .back-btn i {
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px) scale(1.02);
+        }
+        .back-btn:focus { outline: none; }
+        .back-btn::-moz-focus-inner { border: 0; }
+
+        .share-btn {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 60px;
+            padding: 0.5rem 1.2rem 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #fff;
+            transition: 0.25s ease;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            user-select: none;
+            outline: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .share-btn i {
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+        .share-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px) scale(1.02);
+        }
+        .share-btn.editing {
+            background: rgba(255, 200, 50, 0.25);
+            border-color: rgba(255, 200, 50, 0.4);
+            color: #ffd866;
+        }
+
+        /* ===== 编辑面板 ===== */
+        .edit-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 60;
+            background: rgba(11, 11, 42, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px 24px 30px;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-radius: 24px 24px 0 0;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .edit-panel.open {
+            transform: translateY(0);
+        }
+        .edit-panel .panel-title {
+            color: #ffd866;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+        .edit-panel .panel-title i {
+            margin-right: 8px;
+        }
+        .edit-panel .form-group {
+            margin-bottom: 14px;
+        }
+        .edit-panel .form-group label {
+            display: block;
+            color: #aaaacc;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+        .edit-panel .form-group label .required {
+            color: #ff6b6b;
+            margin-left: 2px;
+        }
+        .edit-panel .form-group input,
+        .edit-panel .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.06);
+            color: #fff;
+            font-size: 15px;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            transition: border-color 0.3s ease;
+            outline: none;
+        }
+        .edit-panel .form-group input:focus,
+        .edit-panel .form-group textarea:focus {
+            border-color: rgba(255, 200, 50, 0.4);
+        }
+        .edit-panel .form-group input::placeholder,
+        .edit-panel .form-group textarea::placeholder {
+            color: #555577;
+        }
+        .edit-panel .form-group textarea {
+            resize: vertical;
+            min-height: 44px;
+            max-height: 100px;
+        }
+        .edit-panel .form-group .char-count {
+            color: #555577;
+            font-size: 11px;
+            text-align: right;
+            margin-top: 2px;
+        }
+        .edit-panel .panel-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 6px;
+        }
+        .edit-panel .panel-actions button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 60px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s ease;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        .edit-panel .panel-actions .btn-confirm {
+            background: linear-gradient(145deg, #4a90d9, #6dd5fa);
+            color: #fff;
+        }
+        .edit-panel .panel-actions .btn-confirm:hover {
+            transform: scale(1.02);
+        }
+        .edit-panel .panel-actions .btn-cancel {
+            background: rgba(255,255,255,0.08);
+            color: #8888aa;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .edit-panel .panel-actions .btn-cancel:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        .edit-panel .panel-actions .btn-confirm:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .edit-hint {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 40;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            padding: 10px 24px;
+            border-radius: 40px;
+            color: #ffd866;
+            font-size: 13px;
+            letter-spacing: 1px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            border: 1px solid rgba(255, 200, 50, 0.2);
+        }
+        .edit-hint.show {
+            opacity: 1;
+        }
+
+        .share-modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 200;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(6px);
+        }
+        .share-modal-overlay.active {
+            display: flex;
+        }
+        .share-modal-content {
+            background: linear-gradient(145deg, #1a1a3e, #1b2d4e);
+            padding: 30px 25px;
+            border-radius: 24px;
+            max-width: 90%;
+            width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            border: 1px solid rgba(100, 180, 255, 0.2);
+            color: #fff;
+            text-align: center;
+        }
+        .share-modal-content h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: #6dd5fa;
+        }
+        .share-modal-content .share-url-box {
+            background: rgba(0,0,0,0.4);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #88ccff;
+            word-break: break-all;
+            text-align: left;
+            margin: 12px 0;
+            border: 1px solid rgba(100,180,255,0.1);
+            cursor: pointer;
+            user-select: all;
+        }
+        .share-modal-content .share-tip {
+            font-size: 13px;
+            color: #8888aa;
+            margin-bottom: 16px;
+        }
+        .share-modal-content .share-btns {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .share-modal-content .share-btns button {
+            flex: 1;
+            padding: 10px 20px;
+            border-radius: 60px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            min-width: 80px;
+        }
+        .share-modal-content .share-btns .btn-copy {
+            background: linear-gradient(145deg, #4a90d9, #6dd5fa);
+            color: #fff;
+        }
+        .share-modal-content .share-btns .btn-copy:hover {
+            transform: scale(1.03);
+        }
+        .share-modal-content .share-btns .btn-close {
+            background: rgba(255,255,255,0.1);
+            color: #aaa;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .share-modal-content .share-btns .btn-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(6px);
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: linear-gradient(145deg, #1a1a3e, #1b2d4e);
+            padding: 30px 25px;
+            border-radius: 24px;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            border: 1px solid rgba(100, 180, 255, 0.2);
+            color: #fff;
+            text-align: center;
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-content h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #4a90d9, #6dd5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .calendar-wrapper {
+            margin: 10px 0;
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 15px 10px;
+            border: 1px solid rgba(100,180,255,0.15);
+        }
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            padding: 0 5px;
+        }
+        .calendar-header .month-label {
+            font-size: 18px;
+            font-weight: 700;
+            color: #6dd5fa;
+            letter-spacing: 1px;
+            cursor: default;
+        }
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            font-size: 14px;
+        }
+        .calendar .header {
+            font-weight: 700;
+            color: #6dd5fa;
+            padding: 4px 0;
+            font-size: 13px;
+        }
+        .calendar .day {
+            padding: 7px 0;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            cursor: default;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .calendar .day.empty {
+            background: transparent;
+            pointer-events: none;
+        }
+        .calendar .day.fathers-day {
+            background: rgba(74, 144, 217, 0.55);
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 0 18px rgba(74, 144, 217, 0.5);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .calendar-label {
+            font-size: 12px;
+            color: #6dd5fa;
+            margin-top: 8px;
+            min-height: 18px;
+            letter-spacing: 1px;
+        }
+
+        .modal-content .intro {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #ddd;
+            text-align: left;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            border-left: 3px solid #4a90d9;
+        }
+        .modal-content .intro p {
+            margin-bottom: 10px;
+        }
+        .modal-content .intro p:last-child {
+            margin-bottom: 0;
+        }
+
+        .fun-facts {
+            text-align: left;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 12px;
+            border-left: 3px solid #6dd5fa;
+        }
+        .fun-facts h3 {
+            font-size: 16px;
+            color: #6dd5fa;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .fun-facts .fact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #ccc;
+            line-height: 1.6;
+        }
+        .fun-facts .fact-item .emoji {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .tie-meanings {
+            text-align: left;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 12px;
+            border-left: 3px solid #a18cd1;
+        }
+        .tie-meanings h3 {
+            font-size: 16px;
+            color: #6dd5fa;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .tie-meanings .color-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #ccc;
+        }
+        .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .poem-section {
+            text-align: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            border: 1px dashed rgba(100,180,255,0.2);
+        }
+        .poem-section .poem-title {
+            font-size: 14px;
+            color: #6dd5fa;
+            margin-bottom: 8px;
+        }
+        .poem-section .poem-text {
+            font-size: 15px;
+            color: #eee;
+            line-height: 2;
+            font-style: italic;
+            letter-spacing: 1px;
+        }
+
+        .quotes-section {
+            text-align: left;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 12px;
+            border-left: 3px solid #ffd166;
+        }
+        .quotes-section h3 {
+            font-size: 16px;
+            color: #6dd5fa;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .quotes-section .quote-item {
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px dotted rgba(255,255,255,0.1);
+        }
+        .quotes-section .quote-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        .quotes-section .quote-text {
+            font-size: 14px;
+            color: #eee;
+            line-height: 1.7;
+            font-style: italic;
+            margin-bottom: 4px;
+        }
+        .quotes-section .quote-author {
+            font-size: 12px;
+            color: #aaa;
+            text-align: right;
+        }
+
+        .movie-section {
+            text-align: left;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 12px;
+            border-left: 3px solid #48c6ef;
+        }
+        .movie-section h3 {
+            font-size: 16px;
+            color: #6dd5fa;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .movie-section .movie-item {
+            font-size: 13px;
+            color: #ccc;
+            margin-bottom: 6px;
+            line-height: 1.5;
+        }
+
+        .signature-area {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            text-align: right;
+        }
+        .signature-area .signature-text {
+            font-size: 14px;
+            color: #8888aa;
+            font-style: italic;
+            letter-spacing: 1px;
+            display: inline-block;
+            min-width: 40px;
+        }
+        .signature-area .signature-text:empty::before {
+            content: '未署名';
+            color: #444466;
+            font-style: italic;
+        }
+        .signature-area .signature-label {
+            font-size: 11px;
+            color: #555577;
+            letter-spacing: 2px;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .signature-area.hidden {
+            display: none;
+        }
+
+        .modal-close-btn {
+            margin-top: 10px;
+            padding: 8px 30px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+        .modal-close-btn:hover {
+            background: rgba(255,255,255,0.25);
+        }
+
+        .day-dot {
+            display: block;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #4a90d9;
+            margin: 2px auto 0;
+        }
+
+        @media (max-width: 480px) {
+            .top-bar { top: 14px; left: 14px; right: 14px; }
+            .back-btn, .share-btn { padding: 0.4rem 1rem 0.4rem 0.8rem; font-size: 0.75rem; }
+            .share-modal-content { padding: 20px 18px; }
+            .edit-panel { padding: 16px 16px 24px; }
+            .edit-panel .panel-actions button { padding: 10px; font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvasCanvas"></canvas>
+
+    <div class="top-bar" id="topBar">
+        <div class="left">
+            <div class="back-btn" id="backButton">
+                <i class="fas fa-arrow-left"></i> 返回
+            </div>
+        </div>
+        <div class="right">
+            <div class="share-btn" id="shareBtn">
+                <i class="fas fa-share-alt"></i> 分享
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="father-title">❤️ 父亲节快乐 ❤️</div>
+        <div class="father-message" id="msgLine1">这是一行凑数的字</div>
+        <div class="father-message-sub" id="msgLine2">（依旧凑数。。）</div>
+        
+        <div class="btn-group">
+            <div class="detail-btn" id="openModalBtn">查看详情</div>
+        </div>
+    </div>
+
+    <div id="clickLayer"></div>
+    <div class="footer-note">✨ 点击屏幕放烟花 ✨</div>
+
+    <div class="edit-hint" id="editHint">✏️ 点击"分享"打开编辑面板 · 改完生成链接</div>
+
+    <!-- ===== 编辑面板 ===== -->
+    <div class="edit-panel" id="editPanel">
+        <div class="panel-title"><i class="fas fa-pen"></i> 自定义祝福内容</div>
+        
+        <div class="form-group">
+            <label>第一行文字 <span class="required">*</span></label>
+            <input type="text" id="inputLine1" placeholder="输入第一行祝福语..." maxlength="20">
+            <div class="char-count"><span id="count1">0</span>/20</div>
+        </div>
+
+        <div class="form-group">
+            <label>第二行文字 <span class="required">*</span></label>
+            <input type="text" id="inputLine2" placeholder="输入第二行祝福语..." maxlength="20">
+            <div class="char-count"><span id="count2">0</span>/20</div>
+        </div>
+
+        <div class="form-group">
+            <label>署名 <span style="color:#555577; font-weight:400;">（选填）</span></label>
+            <input type="text" id="inputSignature" placeholder="留空则不显示署名..." maxlength="12">
+            <div class="char-count"><span id="count3">0</span>/12</div>
+        </div>
+
+        <div class="panel-actions">
+            <button class="btn-cancel" id="cancelEditBtn">取消</button>
+            <button class="btn-confirm" id="confirmEditBtn">✅ 生成分享链接</button>
+        </div>
+    </div>
+
+    <!-- ===== 详情弹窗 ===== -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-content">
+            <h2>❤️ 父亲节 · 2026</h2>
+            
+            <div class="calendar-wrapper">
+                <div class="calendar-header">
+                    <span class="month-label">2026年6月</span>
+                </div>
+                <div class="calendar" id="calendarGrid"></div>
+                <div class="calendar-label" id="calendarLabel">✨ 6月21日 · 父亲节 ✨</div>
+            </div>
+
+            <div class="intro">
+                <p><strong>🌿 父亲节起源</strong></p>
+                <p>父亲节起源于20世纪初的美国，由索诺拉·玛特·多德倡导设立，旨在感谢父亲的养育之恩。</p>
+                <p>中国官方没有设立正式的父亲节，但民间普遍以<b>每年6月的第三个星期日</b>作为父亲节，人们会以各种方式表达对父亲的爱与感激。</p>
+                <p style="text-align:center; margin-top:12px; color:#6dd5fa;">💙 愿所有的爸爸，都被岁月温柔以待 💙</p>
+            </div>
+
+            <div class="fun-facts">
+                <h3>🌍 世界各地的父亲节</h3>
+                <div class="fact-item"><span class="emoji">🇺🇸</span><span>美国：6月第三个星期日（最普遍）</span></div>
+                <div class="fact-item"><span class="emoji">🇩🇪</span><span>德国：耶稣升天节（5月）</span></div>
+                <div class="fact-item"><span class="emoji">🇰🇷</span><span>韩国：5月8日（父母节）</span></div>
+                <div class="fact-item"><span class="emoji">🇧🇷</span><span>巴西：8月第二个星期日</span></div>
+                <div class="fact-item"><span class="emoji">🇦🇺</span><span>澳大利亚：9月第一个星期日</span></div>
+            </div>
+
+            <div class="tie-meanings">
+                <h3>🎁 父亲节礼物指南</h3>
+                <div class="color-row"><span class="color-dot" style="background:#2c3e50;"></span><span><b>领带：</b>经典之选，象征成熟与稳重</span></div>
+                <div class="color-row"><span class="color-dot" style="background:#c0392b;"></span><span><b>红酒：</b>品味时光，与父亲小酌一杯</span></div>
+                <div class="color-row"><span class="color-dot" style="background:#27ae60;"></span><span><b>茶叶：</b>健康之选，陪父亲慢慢品茶</span></div>
+                <div class="color-row"><span class="color-dot" style="background:#f39c12;"></span><span><b>手表：</b>时间见证，陪伴是最长情的告白</span></div>
+                <div class="color-row"><span class="color-dot" style="background:#8e44ad;"></span><span><b>亲自下厨：</b>再贵的礼物，也比不上你的陪伴</span></div>
+            </div>
+
+            <div class="poem-section">
+                <div class="poem-title">📜 献给父亲的歌</div>
+                <div class="poem-text">
+                    总是向你索取，却不曾说谢谢你。<br>
+                    直到长大以后，才懂得你不容易。<br>
+                    每次离开总是，装作轻松的样子。<br>
+                    微笑着说回去吧，转身泪湿眼底。<br>
+                    <span style="font-size:12px; color:#aaa;">—— 筷子兄弟《父亲》</span>
+                </div>
+            </div>
+
+            <div class="quotes-section">
+                <h3>💬 名人眼中的父亲</h3>
+                <div class="quote-item"><div class="quote-text">"一个父亲胜过一百个老师。"</div><div class="quote-author">— 乔治·赫伯特</div></div>
+                <div class="quote-item"><div class="quote-text">"父亲是孩子的榜样，也是孩子的守护神。"</div><div class="quote-author">— 歌德</div></div>
+                <div class="quote-item"><div class="quote-text">"当我7岁时，我觉得父亲是世界上最伟大的人。当我14岁时，我觉得他什么也不懂。当我21岁时，我惊讶地发现他竟然在7年里学到了那么多。"</div><div class="quote-author">— 马克·吐温</div></div>
+                <div class="quote-item"><div class="quote-text">"父亲的爱，像山一样深沉，像海一样宽广。"</div><div class="quote-author">— 佚名</div></div>
+                <div class="quote-item"><div class="quote-text">"父爱是沉默的，如果你感觉到了那就不是父爱了。"</div><div class="quote-author">— 冰心</div></div>
+            </div>
+
+            <div class="movie-section">
+                <h3>🎬 父亲节观影推荐</h3>
+                <div class="movie-item">🎞️ 《摔跤吧！爸爸》 — 父爱是让你成为更好的自己</div>
+                <div class="movie-item">🎞️ 《当幸福来敲门》 — 最穷的时候，也要给孩子最好的</div>
+                <div class="movie-item">🎞️ 《银河补习班》 — 父亲是孩子最坚强的后盾</div>
+                <div class="movie-item">🎞️ 《美丽人生》 — 用父爱筑造最美丽的谎言</div>
+            </div>
+
+            <div class="signature-area" id="signatureArea">
+                <span class="signature-label">— 祝福来自 —</span>
+                <span class="signature-text" id="signatureText"></span>
+            </div>
+
+            <button class="modal-close-btn" id="closeModalBtn">关闭</button>
+        </div>
+    </div>
+
+    <!-- ===== 分享弹窗 ===== -->
+    <div class="share-modal-overlay" id="shareModal">
+        <div class="share-modal-content">
+            <h3>🔗 分享链接已生成</h3>
+            <p class="share-tip">复制下方链接发送给朋友，TA 打开就能看到你的祝福</p>
+            <div class="share-url-box" id="shareUrlBox">加载中...</div>
+            <div class="share-btns">
+                <button class="btn-copy" id="copyShareBtn"><i class="fas fa-copy"></i> 复制链接</button>
+                <button class="btn-close" id="closeShareBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ============================================================
+            // 编码/解码
+            // ============================================================
+            function encodeShareData(line1, line2, sig) {
+                const data = { l1: line1, l2: line2, s: sig || '' };
+                const jsonStr = JSON.stringify(data);
+                return btoa(unescape(encodeURIComponent(jsonStr)));
+            }
+
+            function decodeShareData(encoded) {
+                try {
+                    const jsonStr = decodeURIComponent(escape(atob(encoded)));
+                    return JSON.parse(jsonStr);
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            // ============================================================
+            // 解析 URL 参数
+            // ============================================================
+            function getParam(name) {
+                const url = new URL(window.location.href);
+                return url.searchParams.get(name);
+            }
+
+            const encodedData = getParam('d');
+            let decoded = null;
+            if (encodedData) {
+                decoded = decodeShareData(encodedData);
+            }
+
+            const isSharedMode = decoded !== null;
+
+            // ============================================================
+            // DOM 引用
+            // ============================================================
+            const topBar = document.getElementById('topBar');
+            const msgLine1 = document.getElementById('msgLine1');
+            const msgLine2 = document.getElementById('msgLine2');
+            const signatureText = document.getElementById('signatureText');
+            const signatureArea = document.getElementById('signatureArea');
+            const openModalBtn = document.getElementById('openModalBtn');
+
+            // 编辑面板
+            const editPanel = document.getElementById('editPanel');
+            const inputLine1 = document.getElementById('inputLine1');
+            const inputLine2 = document.getElementById('inputLine2');
+            const inputSignature = document.getElementById('inputSignature');
+            const confirmBtn = document.getElementById('confirmEditBtn');
+            const cancelBtn = document.getElementById('cancelEditBtn');
+            const count1 = document.getElementById('count1');
+            const count2 = document.getElementById('count2');
+            const count3 = document.getElementById('count3');
+
+            // ============================================================
+            // 如果是分享模式 → 隐藏按钮 + 显示分享内容
+            // ============================================================
+            if (isSharedMode) {
+                topBar.classList.add('shared-mode');
+                if (decoded.l1) msgLine1.textContent = decoded.l1;
+                if (decoded.l2) msgLine2.textContent = decoded.l2;
+                if (decoded.s) {
+                    signatureText.textContent = decoded.s;
+                } else {
+                    signatureArea.classList.add('hidden');
+                }
+                openModalBtn.style.display = 'none';
+            }
+
+            // ============================================================
+            // 日历
+            // ============================================================
+            const calendarGrid = document.getElementById('calendarGrid');
+            const calendarLabel = document.getElementById('calendarLabel');
+            const weekHeaders = ['日', '一', '二', '三', '四', '五', '六'];
+
+            function getFathersDay2026() {
+                const firstDay = new Date(2026, 5, 1);
+                const firstSunday = 1 + ((7 - firstDay.getDay()) % 7);
+                return firstSunday + 14;
+            }
+
+            function renderCalendar() {
+                calendarGrid.innerHTML = '';
+                weekHeaders.forEach(h => {
+                    const div = document.createElement('div');
+                    div.className = 'header';
+                    div.textContent = h;
+                    calendarGrid.appendChild(div);
+                });
+                const firstDay = new Date(2026, 5, 1);
+                const startDay = firstDay.getDay();
+                const daysInMonth = 30;
+                const fd = getFathersDay2026();
+                for (let i = 0; i < startDay; i++) {
+                    const div = document.createElement('div');
+                    div.className = 'day empty';
+                    calendarGrid.appendChild(div);
+                }
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const div = document.createElement('div');
+                    div.className = 'day';
+                    div.textContent = d;
+                    if (d === fd) div.classList.add('fathers-day');
+                    calendarGrid.appendChild(div);
+                }
+                calendarLabel.innerHTML = '✨ 6月21日 · 父亲节 ✨';
+            }
+            renderCalendar();
+
+            // ============================================================
+            // 弹窗控制
+            // ============================================================
+            const modal = document.getElementById('detailModal');
+            const closeBtn = document.getElementById('closeModalBtn');
+
+            openModalBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                modal.classList.add('active');
+            });
+            closeBtn.addEventListener('click', function() {
+                modal.classList.remove('active');
+            });
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) modal.classList.remove('active');
+            });
+
+            // ============================================================
+            // 返回按钮
+            // ============================================================
+            document.getElementById('backButton').addEventListener('click', function() {
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = 'index.html';
+                }
+            });
+
+            // ============================================================
+            // 分享功能（仅非分享模式下可用）
+            // ============================================================
+            if (!isSharedMode) {
+                const shareBtn = document.getElementById('shareBtn');
+                const editHint = document.getElementById('editHint');
+                const shareModal = document.getElementById('shareModal');
+                const shareUrlBox = document.getElementById('shareUrlBox');
+                const copyShareBtn = document.getElementById('copyShareBtn');
+                const closeShareBtn = document.getElementById('closeShareBtn');
+
+                let isEditing = false;
+
+                // 字数统计
+                function updateCounts() {
+                    count1.textContent = inputLine1.value.length;
+                    count2.textContent = inputLine2.value.length;
+                    count3.textContent = inputSignature.value.length;
+                    // 验证必填
+                    const valid = inputLine1.value.trim().length > 0 && inputLine2.value.trim().length > 0;
+                    confirmBtn.disabled = !valid;
+                }
+
+                inputLine1.addEventListener('input', updateCounts);
+                inputLine2.addEventListener('input', updateCounts);
+                inputSignature.addEventListener('input', updateCounts);
+
+                function openEditPanel() {
+                    isEditing = true;
+                    shareBtn.classList.add('editing');
+                    shareBtn.innerHTML = '<i class="fas fa-times"></i> 取消';
+                    editHint.classList.add('show');
+                    
+                    // 填入当前内容
+                    inputLine1.value = msgLine1.textContent.trim();
+                    inputLine2.value = msgLine2.textContent.trim();
+                    inputSignature.value = signatureText.textContent.trim();
+                    updateCounts();
+                    
+                    editPanel.classList.add('open');
+                    setTimeout(() => inputLine1.focus(), 300);
+                }
+
+                function closeEditPanel() {
+                    isEditing = false;
+                    shareBtn.classList.remove('editing');
+                    shareBtn.innerHTML = '<i class="fas fa-share-alt"></i> 分享';
+                    editHint.classList.remove('show');
+                    editPanel.classList.remove('open');
+                }
+
+                function generateShareLink() {
+                    const line1 = inputLine1.value.trim();
+                    const line2 = inputLine2.value.trim();
+                    const sig = inputSignature.value.trim();
+
+                    if (!line1 || !line2) {
+                        alert('请填写第一行和第二行文字（带 * 号为必填）');
+                        return;
+                    }
+
+                    const baseUrl = window.location.href.split('?')[0];
+                    const encoded = encodeShareData(line1, line2, sig);
+                    const shareUrl = baseUrl + '?d=' + encoded;
+                    shareUrlBox.textContent = shareUrl;
+                    shareModal.classList.add('active');
+                    closeEditPanel();
+                }
+
+                shareBtn.addEventListener('click', function() {
+                    if (isEditing) {
+                        closeEditPanel();
+                    } else {
+                        openEditPanel();
+                    }
+                });
+
+                confirmBtn.addEventListener('click', generateShareLink);
+                cancelBtn.addEventListener('click', closeEditPanel);
+
+                document.addEventListener('click', function(e) {
+                    if (isEditing && !e.target.closest('.edit-panel') && !e.target.closest('.share-btn')) {
+                        // 不关闭，避免误触
+                    }
+                });
+
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && isEditing) {
+                        closeEditPanel();
+                    }
+                    if (e.key === 'Enter' && isEditing && !e.target.closest('textarea')) {
+                        if (!confirmBtn.disabled) {
+                            generateShareLink();
+                        }
+                    }
+                });
+
+                copyShareBtn.addEventListener('click', function() {
+                    const url = shareUrlBox.textContent;
+                    if (!url || url === '加载中...') return;
+                    navigator.clipboard.writeText(url).then(() => {
+                        copyShareBtn.innerHTML = '✅ 已复制';
+                        setTimeout(() => {
+                            copyShareBtn.innerHTML = '<i class="fas fa-copy"></i> 复制链接';
+                        }, 2000);
+                    }).catch(() => {
+                        const ta = document.createElement('textarea');
+                        ta.value = url;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        copyShareBtn.innerHTML = '✅ 已复制';
+                        setTimeout(() => {
+                            copyShareBtn.innerHTML = '<i class="fas fa-copy"></i> 复制链接';
+                        }, 2000);
+                    });
+                });
+
+                shareUrlBox.addEventListener('click', function() {
+                    const url = this.textContent;
+                    if (!url || url === '加载中...') return;
+                    navigator.clipboard.writeText(url);
+                });
+
+                closeShareBtn.addEventListener('click', function() {
+                    shareModal.classList.remove('active');
+                });
+                shareModal.addEventListener('click', function(e) {
+                    if (e.target === this) shareModal.classList.remove('active');
+                });
+            }
+
+            // ============================================================
+            // 完整烟花粒子系统
+            // ============================================================
+            const canvas = document.getElementById('canvasCanvas');
+            const ctx = canvas.getContext('2d');
+            let w = window.innerWidth, h = window.innerHeight;
+
+            function resizeCanvas() {
+                w = window.innerWidth;
+                h = window.innerHeight;
+                canvas.width = w;
+                canvas.height = h;
+                resetAllParticles();
+            }
+            window.addEventListener('resize', resizeCanvas);
+
+            const starList = [];
+            const heartList = [];
+            const fireworkList = [];
+            const meteorList = [];
+            const petalList = [];
+            const sparkleParticles = [];
+            const galaxyParticles = [];
+
+            function resetAllParticles() {
+                starList.length = 0;
+                for (let i=0; i<50; i++) {
+                    starList.push({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        size: Math.random() * 2 + 0.5,
+                        opacity: Math.random() * 0.8 + 0.2,
+                        twinkleSpeed: Math.random() * 0.02 + 0.01
+                    });
+                }
+                heartList.length = 0;
+                for (let i=0; i<20; i++) {
+                    heartList.push({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        size: Math.random() * 15 + 8,
+                        speedY: -(Math.random() * 1.5 + 0.5),
+                        speedX: (Math.random() - 0.5) * 0.5,
+                        opacity: Math.random() * 0.6 + 0.3,
+                        rotation: Math.random() * Math.PI * 2,
+                        rotateSpeed: (Math.random() - 0.5) * 0.02,
+                        color: `hsla(${Math.random() * 30 + 330}, 90%, 70%, 1)`
+                    });
+                }
+                petalList.length = 0;
+                for (let i=0; i<15; i++) {
+                    petalList.push({
+                        x: Math.random() * w,
+                        y: Math.random() * h,
+                        size: Math.random() * 10 + 5,
+                        speedY: Math.random() * 0.5 + 0.2,
+                        speedX: (Math.random() - 0.5) * 0.3,
+                        rotation: Math.random() * Math.PI * 2,
+                        rotateSpeed: (Math.random() - 0.5) * 0.02,
+                        opacity: Math.random() * 0.5 + 0.2,
+                        color: `hsla(${Math.random() * 30 + 330}, 80%, 80%, 1)`
+                    });
+                }
+                galaxyParticles.length = 0;
+                for (let i=0; i<25; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const radius = Math.random() * 300 + 50;
+                    galaxyParticles.push({
+                        x: w/2 + Math.cos(angle) * radius,
+                        y: h/2 + Math.sin(angle) * radius,
+                        size: Math.random() * 1.5 + 0.5,
+                        angle: angle,
+                        radius: radius,
+                        speed: (Math.random() - 0.5) * 0.005,
+                        color: `hsla(${200 + Math.random() * 60}, 50%, 60%, 0.5)`
+                    });
+                }
+                sparkleParticles.length = 0;
+                for (let i=0; i<12; i++) {
+                    sparkleParticles.push({
+                        angle: Math.random() * Math.PI * 2,
+                        radius: 100 + Math.random() * 100,
+                        size: Math.random() * 3 + 1,
+                        speed: (Math.random() - 0.5) * 0.02,
+                        opacity: Math.random() * 0.8 + 0.2
+                    });
+                }
+            }
+
+            resizeCanvas();
+
+            function drawHeart(ctx, x, y, size, color, rotation, opacity) {
+                ctx.save();
+                ctx.globalAlpha = opacity;
+                ctx.translate(x, y);
+                ctx.rotate(rotation);
+                ctx.scale(size/20, size/20);
+                ctx.shadowColor = 'rgba(100, 150, 255, 0.5)';
+                ctx.shadowBlur = 20;
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.moveTo(0,5);
+                ctx.bezierCurveTo(-10,-8,-20,-8,-20,-2);
+                ctx.bezierCurveTo(-20,5,-8,12,0,18);
+                ctx.bezierCurveTo(8,12,20,5,20,-2);
+                ctx.bezierCurveTo(20,-8,10,-8,0,5);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+
+            function drawPetal(ctx, x, y, size, color, rotation, opacity) {
+                ctx.save();
+                ctx.globalAlpha = opacity;
+                ctx.translate(x, y);
+                ctx.rotate(rotation);
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, size*0.6, size*0.3, 0, 0, Math.PI*2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            let frameCount = 0;
+            function spawnMeteor() {
+                frameCount++;
+                if (frameCount % 80 === 0) {
+                    const x = -30 - Math.random() * 50;
+                    const y = -30 - Math.random() * 50;
+                    const baseSpeedX = 5 + Math.random() * 4;
+                    const baseSpeedY = 2 + Math.random() * 3;
+                    
+                    const meteor = {
+                        x, y,
+                        baseSpeedX, baseSpeedY,
+                        currentSpeedX: baseSpeedX,
+                        currentSpeedY: baseSpeedY,
+                        life: 0,
+                        maxLife: 2.5,
+                        zoom: 0.3,
+                        maxZoom: 1.8 + Math.random() * 0.8,
+                        color: `hsl(${40 + Math.random() * 20}, 100%, 80%)`,
+                        trail: []
+                    };
+                    for (let i=0; i<10; i++) {
+                        meteor.trail.push({
+                            x: x - Math.random() * 40,
+                            y: y - Math.random() * 40,
+                            size: Math.random() * 1.5 + 0.5,
+                            life: Math.random() * 0.5,
+                            speedX: (Math.random() - 0.5) * 1.5,
+                            speedY: (Math.random() - 0.5) * 1.5
+                        });
+                    }
+                    meteorList.push(meteor);
+                }
+            }
+
+            function finalLoop() {
+                ctx.clearRect(0,0,w,h);
+
+                ctx.save();
+                const time = Date.now() / 10000;
+                for (let g of galaxyParticles) {
+                    g.angle += g.speed;
+                    g.x = w/2 + Math.cos(g.angle + time) * g.radius;
+                    g.y = h/2 + Math.sin(g.angle + time) * g.radius;
+                    ctx.beginPath();
+                    ctx.arc(g.x, g.y, g.size, 0, Math.PI * 2);
+                    ctx.fillStyle = g.color;
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                for (let s of starList) {
+                    s.opacity += Math.sin(s.twinkleSpeed * Math.PI * 2) * 0.01;
+                    if (s.opacity > 1) s.opacity = 1;
+                    if (s.opacity < 0.2) s.opacity = 0.2;
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
+                    ctx.fill();
+                }
+
+                for (let hh of heartList) {
+                    hh.y += hh.speedY; hh.x += hh.speedX;
+                    hh.rotation += hh.rotateSpeed;
+                    if (hh.y < -50) {
+                        hh.y = h + 50;
+                        hh.x = Math.random() * w;
+                        hh.speedY = -(Math.random() * 1.5 + 0.5);
+                    }
+                    drawHeart(ctx, hh.x, hh.y, hh.size, hh.color, hh.rotation, hh.opacity);
+                }
+
+                for (let pl of petalList) {
+                    pl.y += pl.speedY; pl.x += pl.speedX;
+                    pl.rotation += pl.rotateSpeed;
+                    if (pl.y > h+20) {
+                        pl.y = -20;
+                        pl.x = Math.random() * w;
+                        pl.speedY = Math.random() * 0.5 + 0.2;
+                    }
+                    if (pl.x > w+20) pl.x = -20;
+                    if (pl.x < -20) pl.x = w+20;
+                    drawPetal(ctx, pl.x, pl.y, pl.size, pl.color, pl.rotation, pl.opacity);
+                }
+
+                spawnMeteor();
+                for (let i=meteorList.length-1; i>=0; i--) {
+                    let m = meteorList[i];
+                    m.currentSpeedX += (m.baseSpeedX * 2.5 - m.currentSpeedX) * 0.03;
+                    m.currentSpeedY += (m.baseSpeedY * 2.5 - m.currentSpeedY) * 0.03;
+                    m.x += m.currentSpeedX; 
+                    m.y += m.currentSpeedY;
+                    m.life += 0.01;
+                    if (m.life > m.maxLife) m.life = m.maxLife;
+                    
+                    if (m.life < 0.3) {
+                        m.zoom += 0.03;
+                        if (m.zoom > m.maxZoom) m.zoom = m.maxZoom;
+                    } else {
+                        m.zoom -= 0.01;
+                        if (m.zoom < 0.2) m.zoom = 0.2;
+                    }
+                    
+                    let currentSize = 5 * m.zoom;
+                    let currentLength = 50 + 100 * m.zoom;
+                    
+                    ctx.save();
+                    let alpha = Math.min(1, m.life * 2);
+                    if (m.life > 0.8) alpha = 1;
+                    ctx.globalAlpha = alpha;
+                    
+                    const gradientOuter = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, currentLength * 0.6);
+                    gradientOuter.addColorStop(0, 'rgba(255, 255, 255, 0.5)');
+                    gradientOuter.addColorStop(0.2, `rgba(255, 220, 180, 0.3)`);
+                    gradientOuter.addColorStop(1, 'rgba(255, 200, 100, 0)');
+                    ctx.fillStyle = gradientOuter;
+                    ctx.beginPath();
+                    ctx.arc(m.x, m.y, currentLength * 0.6, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    const gradientInner = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, currentLength * 0.2);
+                    gradientInner.addColorStop(0, 'rgba(255, 255, 255, 1)');
+                    gradientInner.addColorStop(0.2, m.color);
+                    gradientInner.addColorStop(1, 'rgba(255, 200, 150, 0)');
+                    ctx.fillStyle = gradientInner;
+                    ctx.beginPath();
+                    ctx.arc(m.x, m.y, currentLength * 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.shadowBlur = 0;
+                    for (let l=0; l<2; l++) {
+                        ctx.strokeStyle = l === 1 ? m.color : 'rgba(255, 255, 255, 0.8)';
+                        ctx.lineWidth = currentSize * (0.6 - l * 0.2);
+                        ctx.beginPath();
+                        ctx.moveTo(m.x, m.y);
+                        ctx.lineTo(m.x - m.currentSpeedX * currentLength/(8 - l * 2), m.y - m.currentSpeedY * currentLength/(8 - l * 2));
+                        ctx.stroke();
+                    }
+                    
+                    ctx.shadowBlur = 50;
+                    ctx.shadowColor = 'rgba(255, 220, 180, 0.8)';
+                    ctx.fillStyle = 'white';
+                    ctx.beginPath();
+                    ctx.arc(m.x, m.y, currentSize, 0, Math.PI*2);
+                    ctx.fill();
+                    
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.lineWidth = 1.5;
+                    for (let a=0; a<4; a++) {
+                        const angle = a * Math.PI / 2;
+                        ctx.beginPath();
+                        ctx.moveTo(m.x + Math.cos(angle) * currentSize * 2, m.y + Math.sin(angle) * currentSize * 2);
+                        ctx.lineTo(m.x - Math.cos(angle) * currentSize * 2, m.y - Math.sin(angle) * currentSize * 2);
+                        ctx.stroke();
+                    }
+                    
+                    ctx.restore();
+                    
+                    for (let t of m.trail) {
+                        t.x += m.currentSpeedX * 0.5 + t.speedX;
+                        t.y += m.currentSpeedY * 0.5 + t.speedY;
+                        t.life += 0.01;
+                        ctx.save();
+                        ctx.globalAlpha = 1 - t.life;
+                        ctx.fillStyle = m.color;
+                        ctx.beginPath();
+                        ctx.arc(t.x, t.y, t.size * (1 - t.life * 0.5), 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                    
+                    if (m.x > w + 300 || m.y > h + 300) {
+                        meteorList.splice(i,1);
+                    }
+                }
+
+                const centerX = w/2;
+                const centerY = h/2 - 50;
+                for (let sp of sparkleParticles) {
+                    sp.angle += sp.speed;
+                    const x = centerX + Math.cos(sp.angle) * sp.radius;
+                    const y = centerY + Math.sin(sp.angle) * sp.radius;
+                    ctx.beginPath();
+                    ctx.arc(x, y, sp.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(100, 200, 255, ${sp.opacity * (0.5 + 0.5 * Math.sin(Date.now() / 500 + sp.angle))})`;
+                    ctx.fill();
+                }
+
+                for (let i=fireworkList.length-1; i>=0; i--) {
+                    let f = fireworkList[i];
+                    f.x += f.speedX; f.y += f.speedY;
+                    f.speedY += 0.05;
+                    f.life -= 0.015;
+                    f.size *= 0.98;
+                    ctx.save();
+                    ctx.globalAlpha = f.life;
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = f.color;
+                    ctx.fillStyle = f.color;
+                    ctx.beginPath();
+                    ctx.arc(f.x, f.y, f.size, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.restore();
+                    if (f.life <= 0 || f.size < 0.1) fireworkList.splice(i,1);
+                }
+
+                requestAnimationFrame(finalLoop);
+            }
+
+            let lastFireTime = 0;
+            const minInterval = 300;
+
+            document.getElementById('clickLayer').addEventListener('click', function(e) {
+                if (e.target.closest('.detail-btn') || e.target.closest('.modal-overlay') || e.target.closest('.share-modal-overlay') || e.target.closest('.edit-panel')) {
+                    return;
+                }
+
+                const now = Date.now();
+                if (now - lastFireTime < minInterval) return;
+                lastFireTime = now;
+
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const colors = ['hsl(210,90%,70%)','hsl(190,90%,70%)','hsl(170,90%,70%)','hsl(320,90%,70%)','hsl(280,90%,70%)','hsl(200,90%,70%)','hsl(150,90%,70%)'];
+                const mainColor = colors[Math.floor(Math.random()*colors.length)];
+                
+                const totalCount = 20 + Math.floor(Math.random() * 10);
+                const firstBatch = Math.floor(totalCount / 2);
+                for (let i=0; i<firstBatch; i++) {
+                    const hue = parseInt(mainColor.match(/\d+/)[0]) + (Math.random()-0.5)*40;
+                    fireworkList.push({
+                        x, y,
+                        size: Math.random()*4+2,
+                        speedX: (Math.random()-0.5)*12,
+                        speedY: (Math.random()-0.5)*12,
+                        color: `hsl(${hue}, 90%, 70%)`,
+                        life: 1
+                    });
+                }
+                setTimeout(() => {
+                    const secondBatch = totalCount - firstBatch;
+                    for (let i=0; i<secondBatch; i++) {
+                        const hue = parseInt(mainColor.match(/\d+/)[0]) + (Math.random()-0.5)*40;
+                        fireworkList.push({
+                            x, y,
+                            size: Math.random()*4+2,
+                            speedX: (Math.random()-0.5)*12,
+                            speedY: (Math.random()-0.5)*12,
+                            color: `hsl(${hue}, 90%, 70%)`,
+                            life: 1
+                        });
+                    }
+                }, 60);
+
+                for (let i=0; i<2; i++) {
+                    setTimeout(()=>{
+                        const cx = x + (Math.random()-0.5)*60;
+                        const cy = y + (Math.random()-0.5)*60;
+                        const c2 = colors[Math.floor(Math.random()*colors.length)];
+                        const subTotal = 12 + Math.floor(Math.random() * 6);
+                        const subFirst = Math.floor(subTotal / 2);
+                        for (let j=0; j<subFirst; j++) {
+                            fireworkList.push({
+                                x: cx, y: cy,
+                                size: Math.random()*4+2,
+                                speedX: (Math.random()-0.5)*10,
+                                speedY: (Math.random()-0.5)*10,
+                                color: `hsl(${parseInt(c2.match(/\d+/)[0])+(Math.random()-0.5)*40}, 90%, 70%)`,
+                                life: 1
+                            });
+                        }
+                        setTimeout(() => {
+                            for (let j=0; j<subTotal - subFirst; j++) {
+                                fireworkList.push({
+                                    x: cx, y: cy,
+                                    size: Math.random()*4+2,
+                                    speedX: (Math.random()-0.5)*10,
+                                    speedY: (Math.random()-0.5)*10,
+                                    color: `hsl(${parseInt(c2.match(/\d+/)[0])+(Math.random()-0.5)*40}, 90%, 70%)`,
+                                    life: 1
+                                });
+                            }
+                        }, 60);
+                    }, i*200);
+                }
+            });
+
+            finalLoop();
+
+        })();
+    </script>
+</body>
+</html>

@@ -914,17 +914,28 @@
     <script>
         (function() {
             // ============================================================
-            // 编码/解码
+            // 编码/解码（修复版：使用更稳定的方式）
             // ============================================================
             function encodeShareData(line1, line2, sig) {
                 const data = { l1: line1, l2: line2, s: sig || '' };
                 const jsonStr = JSON.stringify(data);
-                return btoa(unescape(encodeURIComponent(jsonStr)));
+                // 将 UTF-8 字符串转为 Base64
+                const utf8Bytes = new TextEncoder().encode(jsonStr);
+                let binary = '';
+                for (let i = 0; i < utf8Bytes.length; i++) {
+                    binary += String.fromCharCode(utf8Bytes[i]);
+                }
+                return btoa(binary);
             }
 
             function decodeShareData(encoded) {
                 try {
-                    const jsonStr = decodeURIComponent(escape(atob(encoded)));
+                    const binary = atob(encoded);
+                    const bytes = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) {
+                        bytes[i] = binary.charCodeAt(i);
+                    }
+                    const jsonStr = new TextDecoder('utf-8').decode(bytes);
                     return JSON.parse(jsonStr);
                 } catch (e) {
                     return null;
@@ -943,6 +954,10 @@
             let decoded = null;
             if (encodedData) {
                 decoded = decodeShareData(encodedData);
+                // 调试：如果解码失败，在控制台输出错误
+                if (!decoded) {
+                    console.warn('分享数据解码失败，请检查链接参数');
+                }
             }
 
             const isSharedMode = decoded !== null;
@@ -1092,7 +1107,7 @@
                 inputLine2.addEventListener('input', updateCounts);
                 inputSignature.addEventListener('input', updateCounts);
 
-                // 👇 点击输入框自动全选（第一行和第二行都支持）
+                // 点击输入框自动全选（第一行和第二行都支持）
                 inputLine1.addEventListener('focus', function() {
                     this.select();
                 });
@@ -1139,7 +1154,7 @@
                     const line2 = inputLine2.value.trim();
                     const sig = inputSignature.value.trim();
 
-                    // 👇 检查是否跟默认文字一样
+                    // 检查是否跟默认文字一样
                     const defaultLine1 = msgLine1.textContent.trim();
                     const defaultLine2 = msgLine2.textContent.trim();
 

@@ -1094,6 +1094,14 @@
                 inputLine2.addEventListener('input', updateCounts);
                 inputSignature.addEventListener('input', updateCounts);
 
+                // 👇 点击输入框自动全选（第一行和第二行都支持）
+                inputLine1.addEventListener('focus', function() {
+                    this.select();
+                });
+                inputLine2.addEventListener('focus', function() {
+                    this.select();
+                });
+
                 function openEditPanel() {
                     isEditing = true;
                     shareBtn.classList.add('editing');
@@ -1102,13 +1110,15 @@
                     
                     inputLine1.value = msgLine1.textContent.trim();
                     inputLine2.value = msgLine2.textContent.trim();
-                    // 从主页署名读取（去掉前面的 "—— "）
                     const currentSig = signatureHome.textContent.replace('—— ', '').trim();
                     inputSignature.value = currentSig;
                     updateCounts();
                     
                     editPanel.classList.add('open');
-                    setTimeout(() => inputLine1.focus(), 300);
+                    setTimeout(() => {
+                        inputLine1.focus();
+                        inputLine1.select();
+                    }, 300);
                 }
 
                 function closeEditPanel() {
@@ -1117,12 +1127,28 @@
                     shareBtn.innerHTML = '<i class="fas fa-share-alt"></i> 分享';
                     editHint.classList.remove('show');
                     editPanel.classList.remove('open');
+                    
+                    // 取消时恢复当前页面的文字
+                    inputLine1.value = msgLine1.textContent.trim();
+                    inputLine2.value = msgLine2.textContent.trim();
+                    const currentSig = signatureHome.textContent.replace('—— ', '').trim();
+                    inputSignature.value = currentSig;
+                    updateCounts();
                 }
 
                 function generateShareLink() {
                     const line1 = inputLine1.value.trim();
                     const line2 = inputLine2.value.trim();
                     const sig = inputSignature.value.trim();
+
+                    // 👇 检查是否跟默认文字一样
+                    const defaultLine1 = msgLine1.textContent.trim();
+                    const defaultLine2 = msgLine2.textContent.trim();
+
+                    if (line1 === defaultLine1 && line2 === defaultLine2) {
+                        alert('至少改点什么吧，不然分享个寂寞 🤨');
+                        return;
+                    }
 
                     if (!line1 || !line2) {
                         alert('请填写第一行和第二行文字（带 * 号为必填）');

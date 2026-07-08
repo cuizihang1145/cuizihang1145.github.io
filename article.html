@@ -6,8 +6,8 @@
     <title>文章详情 · ks</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- ===== Highlight.js monokai 主题（辨识度极高） ===== -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
+    <!-- ===== Highlight.js dracula 主题（超级清晰，深/亮色一致） ===== -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/dracula.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         * {
@@ -318,7 +318,6 @@
             color: #88ccff;
         }
 
-        /* ===== 文章图片 ===== */
         .article-detail .detail-content img {
             max-width: 100%;
             height: auto;
@@ -339,11 +338,6 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
-        /* ===== Lightbox 放大预览：无圆角 ===== */
-        .lightbox-overlay .lightbox-container img {
-            border-radius: 0 !important;
-        }
-
         .article-detail .detail-content code {
             font-family: 'JetBrains Mono', 'Courier New', monospace;
             font-size: 0.9em;
@@ -356,6 +350,11 @@
         body.dark .article-detail .detail-content code {
             background: rgba(255, 255, 255, 0.06);
             color: #E8A87C;
+        }
+
+        /* ===== Lightbox 放大预览：无圆角 ===== */
+        .lightbox-overlay .lightbox-container img {
+            border-radius: 0 !important;
         }
 
         /* ===== 代码块：完全固定，不随主题变化 ===== */
@@ -371,7 +370,7 @@
         }
 
         .code-block-wrapper {
-            background: #1E1F22 !important;
+            background: #282A36 !important;
             border-radius: 12px;
             margin: 0.8rem 0;
             overflow: hidden;
@@ -448,7 +447,7 @@
             font-family: 'JetBrains Mono', 'Courier New', monospace;
             font-size: 0.85rem;
             line-height: 1.7;
-            background: #1E1F22 !important;
+            background: #282A36 !important;
         }
 
         .code-block-body .line-numbers {
@@ -477,7 +476,7 @@
             font-size: inherit;
             line-height: inherit;
             white-space: pre;
-            color: #ABB2BF !important;
+            color: #F8F8F2 !important;
             background: transparent !important;
         }
 

@@ -96,7 +96,6 @@
             z-index: 50;
             background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.8);
             border-radius: 60px;
             width: 48px;
@@ -210,6 +209,7 @@
             flex-direction: column;
             gap: 0.8rem;
             align-items: center;
+            position: relative;
         }
 
         .btn-primary {
@@ -228,7 +228,7 @@
             font-family: 'Inter', sans-serif;
             cursor: pointer;
             text-decoration: none;
-            transition: box-shadow 0.3s ease, transform 0.25s ease, border-color 0.3s ease;
+            transition: box-shadow 0.3s ease, transform 0.25s ease, border-color 0.3s ease, opacity 0.3s ease;
             box-shadow: 0 12px 32px rgba(90, 70, 170, 0.25);
             letter-spacing: 0.3px;
             position: relative;
@@ -251,29 +251,78 @@
             box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
         }
 
-        /* ===== 金光特效（一直闪烁，直到移除 class） ===== */
+        /* ===== 金光淡入 ===== */
         .btn-primary.glow-effect {
-            animation: goldenGlow 1.2s ease-in-out infinite;
+            animation: goldenGlowFadeIn 0.6s ease forwards;
             border-color: rgba(255, 215, 0, 0.5);
             box-shadow: 0 0 30px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 215, 0, 0.2), 0 12px 32px rgba(90, 70, 170, 0.25);
         }
-        body.dark .btn-primary.glow-effect {
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 215, 0, 0.2), 0 12px 32px rgba(0, 0, 0, 0.4);
+
+        @keyframes goldenGlowFadeIn {
+            0% { box-shadow: 0 0 0 rgba(255, 215, 0, 0), 0 0 0 rgba(255, 215, 0, 0), 0 12px 32px rgba(90, 70, 170, 0.25);
+                border-color: rgba(255, 215, 0, 0); }
+            100% { box-shadow: 0 0 50px rgba(255, 215, 0, 0.8), 0 0 80px rgba(255, 215, 0, 0.4), 0 12px 32px rgba(90, 70, 170, 0.25);
+                border-color: rgba(255, 215, 0, 0.8); }
         }
 
-        @keyframes goldenGlow {
-            0% {
-                box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), 0 0 40px rgba(255, 215, 0, 0.1);
-                border-color: rgba(255, 215, 0, 0.3);
-            }
-            50% {
-                box-shadow: 0 0 50px rgba(255, 215, 0, 0.8), 0 0 80px rgba(255, 215, 0, 0.4), 0 0 120px rgba(255, 215, 0, 0.2);
-                border-color: rgba(255, 215, 0, 0.8);
-            }
-            100% {
-                box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), 0 0 40px rgba(255, 215, 0, 0.1);
-                border-color: rgba(255, 215, 0, 0.3);
-            }
+        /* ===== 金光淡出 ===== */
+        .btn-primary.glow-fade-out {
+            animation: goldenGlowFadeOut 1.5s ease forwards;
+        }
+
+        @keyframes goldenGlowFadeOut {
+            0% { box-shadow: 0 0 50px rgba(255, 215, 0, 0.8), 0 0 80px rgba(255, 215, 0, 0.4), 0 12px 32px rgba(90, 70, 170, 0.25);
+                border-color: rgba(255, 215, 0, 0.8); }
+            100% { box-shadow: 0 0 0 rgba(255, 215, 0, 0), 0 0 0 rgba(255, 215, 0, 0), 0 12px 32px rgba(90, 70, 170, 0.25);
+                border-color: rgba(255, 215, 0, 0); }
+        }
+
+        /* ===== 气泡 ===== */
+        .speech-bubble {
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%) scale(0.8);
+            background: rgba(28, 26, 44, 0.95);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            color: #EFEAFF;
+            padding: 14px 40px;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 500;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 10;
+            font-family: 'Inter', sans-serif;
+            min-width: 300px;
+            max-width: 600px;
+            text-align: center;
+        }
+        body.dark .speech-bubble {
+            background: rgba(20, 18, 30, 0.95);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+        .speech-bubble.show {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: rgba(28, 26, 44, 0.95);
+        }
+        body.dark .speech-bubble::after {
+            border-top-color: rgba(20, 18, 30, 0.95);
         }
 
         .footer-note {
@@ -350,7 +399,6 @@
             100% { opacity: 0; transform: translateY(-30px) scale(0.9); }
         }
 
-        /* ===== 点击遮罩 ===== */
         #clickBlocker {
             position: fixed;
             top: 0;
@@ -364,6 +412,26 @@
         }
         #clickBlocker.active {
             display: block;
+        }
+
+        @media (min-width: 768px) {
+            .toast-item {
+                font-size: 1.1rem !important;
+                padding: 16px 40px !important;
+                max-width: 500px !important;
+                white-space: normal !important;
+            }
+            .toast-item.countdown {
+                font-size: 2rem !important;
+                padding: 20px 50px !important;
+                min-width: 180px !important;
+            }
+            .speech-bubble {
+                font-size: 1.2rem;
+                padding: 16px 50px;
+                min-width: 400px;
+                max-width: 700px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -400,6 +468,12 @@
                 padding: 12px 28px;
                 min-width: 100px;
             }
+            .speech-bubble {
+                font-size: 0.9rem;
+                padding: 10px 20px;
+                min-width: 200px;
+                max-width: 320px;
+            }
         }
 
         @media (max-width: 380px) {
@@ -424,6 +498,12 @@
                 padding: 10px 20px;
                 min-width: 80px;
             }
+            .speech-bubble {
+                font-size: 0.8rem;
+                padding: 8px 16px;
+                min-width: 160px;
+                max-width: 260px;
+            }
         }
     </style>
 </head>
@@ -433,10 +513,7 @@
     <div class="glow-orb"></div>
     <div class="glow-orb-2"></div>
 
-    <!-- ===== 点击遮罩 ===== -->
     <div id="clickBlocker"></div>
-
-    <!-- ===== Toast 容器 ===== -->
     <div id="toastContainer"></div>
 
     <div class="theme-toggle" id="themeToggle" role="button" aria-label="切换深色/亮色模式">
@@ -453,6 +530,7 @@
         </p>
 
         <div class="error-actions">
+            <div class="speech-bubble" id="speechBubble">别点它了，来点我！</div>
             <a href="index.html" class="btn-primary" id="homeBtn">
                 <i class="fas fa-home"></i> 回到首页
             </a>
@@ -492,6 +570,7 @@
         const clickBlocker = document.getElementById('clickBlocker');
         const homeBtn = document.getElementById('homeBtn');
         const iconEl = document.getElementById('clickableIcon');
+        const speechBubble = document.getElementById('speechBubble');
 
         const toastMessages = [
             '点我干什么？',
@@ -508,6 +587,7 @@
         let countdownTimer = null;
         let redirectTimer = null;
         let isCountdownActive = false;
+        let hasShownBubble = false;
 
         function showToast(text, isCountdown = false, duration = 1500) {
             return new Promise((resolve) => {
@@ -536,11 +616,29 @@
             }
         }
 
+        function showSpeechBubble() {
+            if (hasShownBubble) return;
+            hasShownBubble = true;
+            speechBubble.classList.add('show');
+            setTimeout(() => {
+                speechBubble.classList.remove('show');
+            }, 5000);
+        }
+
         function startCountdownAndRedirect() {
             if (isCountdownActive) return;
             isCountdownActive = true;
             isProcessing = true;
             clickBlocker.classList.add('active');
+
+            // 按钮变灰 + 文字改变
+            homeBtn.style.opacity = '0.5';
+            homeBtn.style.pointerEvents = 'none';
+            homeBtn.innerHTML = '<i class="fas fa-home"></i> 马上出发 🚀';
+
+            // 金光淡出
+            homeBtn.classList.remove('glow-effect');
+            homeBtn.classList.add('glow-fade-out');
 
             let count = 3;
             const el = document.createElement('div');
@@ -572,6 +670,10 @@
             if (isCountdownActive) return;
 
             clickCount++;
+
+            if (clickCount === 4) {
+                showSpeechBubble();
+            }
 
             if (clickCount === 7) {
                 isProcessing = true;
@@ -606,20 +708,37 @@
             handleIconClick();
         });
 
+        // ============================================================
+        // 回到首页按钮：2~6次弹Toast，不拦截跳转
+        // ============================================================
         homeBtn.addEventListener('click', function(e) {
             if (isCountdownActive) {
                 e.preventDefault();
                 return;
             }
-            resetAllState();
+
+            if (clickCount >= 2 && clickCount <= 6) {
+                e.preventDefault();
+                showToast('呦呵↗ 听话听话～', false, 1500);
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 350);
+                return;
+            }
         });
 
         function resetAllState() {
             clickCount = 0;
             isProcessing = false;
             isCountdownActive = false;
+            hasShownBubble = false;
             clickBlocker.classList.remove('active');
             homeBtn.classList.remove('glow-effect');
+            homeBtn.classList.remove('glow-fade-out');
+            homeBtn.style.opacity = '1';
+            homeBtn.style.pointerEvents = 'auto';
+            homeBtn.innerHTML = '<i class="fas fa-home"></i> 回到首页';
+            speechBubble.classList.remove('show');
             clearAllToasts();
             if (countdownTimer) {
                 clearInterval(countdownTimer);

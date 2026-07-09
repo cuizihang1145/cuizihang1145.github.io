@@ -118,9 +118,6 @@
             box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
             cursor: pointer;
             font-family: 'Inter', sans-serif;
-            -webkit-tap-highlight-color: transparent !important;
-            outline: none !important;
-            user-select: none;
         }
         body.dark .back-btn {
             background: rgba(30, 28, 50, 0.7);
@@ -139,7 +136,6 @@
             font-size: 0.9rem;
         }
 
-        /* ===== 主题切换按钮 ===== */
         .theme-toggle {
             position: fixed;
             top: 20px;
@@ -160,8 +156,6 @@
             transition: 0.3s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
             user-select: none;
-            -webkit-tap-highlight-color: transparent !important;
-            outline: none !important;
         }
         .theme-toggle:hover {
             transform: scale(1.05) rotate(8deg);
@@ -179,7 +173,6 @@
         }
         .theme-toggle:active {
             transform: scale(0.92);
-            outline: none !important;
         }
 
         /* ===== 回到顶部按钮 ===== */
@@ -203,15 +196,13 @@
             box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
             opacity: 0;
             pointer-events: none;
-            -webkit-tap-highlight-color: transparent !important;
-            outline: none !important;
             user-select: none;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         .back-to-top-btn:hover {
-            transform: scale(1.05) rotate(-8deg);
+            transform: scale(1.05);
             background: rgba(255, 255, 255, 0.85);
             box-shadow: 0 10px 28px rgba(80, 60, 160, 0.18);
         }
@@ -221,7 +212,6 @@
         }
         .back-to-top-btn:active {
             transform: scale(0.92);
-            outline: none !important;
         }
         .back-to-top-btn.disabled {
             opacity: 0.3 !important;
@@ -632,8 +622,6 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            -webkit-tap-highlight-color: transparent !important;
-            outline: none !important;
         }
         .code-block-header .copy-btn:hover {
             background: rgba(255, 255, 255, 0.15) !important;
@@ -648,7 +636,7 @@
             font-size: 0.7rem;
         }
 
-        /* ===== 收纳按钮 ===== */
+        /* ===== 收纳按钮 - 无灰色圆圈 ===== */
         .code-block-header .collapse-btn {
             width: 28px;
             height: 28px;
@@ -661,23 +649,24 @@
             align-items: center;
             justify-content: center;
             font-size: 12px;
-            transition: background 0.2s ease, color 0.2s ease, transform 0.3s ease;
+            transition: background 0.2s ease, color 0.2s ease;
             font-family: 'Inter', sans-serif;
             padding: 0;
             flex-shrink: 0;
             -webkit-tap-highlight-color: transparent !important;
             outline: none !important;
+            user-select: none;
         }
         .code-block-header .collapse-btn:hover {
             background: rgba(255, 255, 255, 0.1);
             color: #E8E6F0;
         }
         .code-block-header .collapse-btn:active {
-            transform: scale(0.9);
+            background: transparent !important;
             outline: none !important;
         }
 
-        /* ===== 代码块主体（可收起的部分） ===== */
+        /* ===== 代码块主体 ===== */
         .code-block-body-wrapper {
             overflow: hidden;
             transition: max-height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
@@ -692,6 +681,7 @@
 
         .code-block-body {
             display: flex;
+            align-items: stretch;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             font-family: 'JetBrains Mono', 'Courier New', monospace;
@@ -712,7 +702,9 @@
             border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
             min-width: 2.8rem;
             background: transparent !important;
-            align-self: flex-start;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }
         .code-block-body .line-numbers span {
             display: block;
@@ -729,6 +721,9 @@
             white-space: pre;
             color: #E6EDF3 !important;
             background: transparent !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }
 
         .code-block-body .code-content.hljs {
@@ -911,8 +906,6 @@
             line-height: 1;
             padding: 0.5rem;
             z-index: 10000;
-            -webkit-tap-highlight-color: transparent !important;
-            outline: none !important;
         }
         .lightbox-overlay .lightbox-close:hover {
             opacity: 1;
@@ -942,27 +935,6 @@
                 padding: 0.3rem 0.4rem;
             }
         }
-
-        @media (max-width: 380px) {
-            .back-to-top-btn {
-                right: 60px;
-                width: 36px;
-                height: 36px;
-                font-size: 0.85rem;
-            }
-            .theme-toggle {
-                width: 36px;
-                height: 36px;
-                font-size: 1rem;
-            }
-            .back-btn {
-                font-size: 0.65rem;
-                padding: 0.3rem 0.7rem 0.3rem 0.6rem;
-            }
-            .back-btn i {
-                font-size: 0.7rem;
-            }
-        }
     </style>
 </head>
 <body>
@@ -970,17 +942,14 @@
 <div class="glow-soft"></div>
 <div class="glow-soft-2"></div>
 
-<!-- ===== 返回按钮 ===== -->
 <a href="javascript:void(0)" class="back-btn" id="backButton">
     <i class="fas fa-arrow-left"></i> 返回
 </a>
 
-<!-- ===== 回到顶部按钮 ===== -->
 <button class="back-to-top-btn" id="backToTopBtn" aria-label="回到顶部">
     <i class="fas fa-arrow-up"></i>
 </button>
 
-<!-- ===== 主题切换按钮 ===== -->
 <div class="theme-toggle" id="themeToggle" role="button" aria-label="切换深色/亮色模式">
     <i class="fas fa-moon"></i>
 </div>
@@ -1015,12 +984,11 @@
     });
 
     // ============================================================
-    // 回到顶部按钮 - 防连点 + 遮罩
+    // 回到顶部（快速 + 防连点）
     // ============================================================
     const backToTopBtn = document.getElementById('backToTopBtn');
     let isScrollingToTop = false;
 
-    // 滚动监听
     window.addEventListener('scroll', function() {
         const scrollY = window.scrollY || window.pageYOffset;
         if (scrollY > 300 && !isScrollingToTop) {
@@ -1030,26 +998,37 @@
         }
     });
 
-    // 点击回到顶部
-    backToTopBtn.addEventListener('click', function() {
-        if (isScrollingToTop) return;
-        isScrollingToTop = true;
-        backToTopBtn.classList.add('disabled');
+    function fastScrollToTop() {
+        const startY = window.scrollY || window.pageYOffset;
+        if (startY === 0) return;
+        const duration = 300;
+        const startTime = performance.now();
 
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        // 监听滚动结束
-        function checkScrollEnd() {
-            const scrollY = window.scrollY || window.pageYOffset;
-            if (scrollY === 0) {
+        function step(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const ease = 1 - Math.pow(1 - progress, 3);
+            const nextY = startY * (1 - ease);
+            window.scrollTo(0, nextY);
+            if (progress < 1) {
+                requestAnimationFrame(step);
+            } else {
+                window.scrollTo(0, 0);
                 isScrollingToTop = false;
                 backToTopBtn.classList.remove('disabled');
                 backToTopBtn.classList.remove('show');
-                return;
             }
-            requestAnimationFrame(checkScrollEnd);
         }
-        setTimeout(checkScrollEnd, 100);
+        requestAnimationFrame(step);
+    }
+
+    backToTopBtn.addEventListener('click', function() {
+        if (isScrollingToTop) return;
+        const scrollY = window.scrollY || window.pageYOffset;
+        if (scrollY === 0) return;
+        isScrollingToTop = true;
+        backToTopBtn.classList.add('disabled');
+        fastScrollToTop();
     });
 
     // ============================================================
@@ -1089,7 +1068,7 @@
     }
 
     // ============================================================
-    // 完整版 renderMarkdown
+    // renderMarkdown — 完整版
     // ============================================================
     function renderMarkdown(md) {
         if (!md) return '';
@@ -1341,7 +1320,7 @@
                 continue;
             }
 
-            // 列表解析
+            // 列表解析（递归，支持嵌套）
             function parseList(startIdx, parentIndent) {
                 let html = '';
                 let idx = startIdx;
@@ -1502,10 +1481,10 @@
     }
 
     // ============================================================
-    // 复制 + 收纳事件（事件代理）
+    // 复制 + 收纳事件
     // ============================================================
     document.addEventListener('click', function(e) {
-        // ---- 复制 ----
+        // 复制
         const copyBtn = e.target.closest('.copy-btn');
         if (copyBtn) {
             const targetId = copyBtn.dataset.copy;
@@ -1538,7 +1517,7 @@
             return;
         }
 
-        // ---- 收纳 ----
+        // 收纳
         const collapseBtn = e.target.closest('.collapse-btn');
         if (collapseBtn) {
             const targetId = collapseBtn.dataset.target;

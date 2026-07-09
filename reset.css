@@ -1,0 +1,32 @@
+*,
+*::before,
+*::after {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    outline: none !important;
+}
+
+*:focus,
+*:active,
+*:visited {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+
+a:focus,
+a:active,
+button:focus,
+button:active,
+input:focus,
+input:active,
+textarea:focus,
+textarea:active,
+div:focus,
+div:active,
+span:focus,
+span:active,
+img:focus,
+img:active {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+}

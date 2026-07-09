@@ -637,7 +637,7 @@
             font-size: 0.7rem;
         }
 
-        /* ===== 收纳按钮 ===== */
+        /* ===== 收纳按钮 - 无灰色圆圈 ===== */
         .code-block-header .collapse-btn {
             width: 28px;
             height: 28px;
@@ -680,20 +680,22 @@
             padding: 0;
         }
 
+        /* ===== 核心修复 ===== */
         .code-block-body {
-            display: flex;
-            align-items: stretch;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             font-family: 'JetBrains Mono', 'Courier New', monospace;
             font-size: 0.85rem;
             line-height: 1.7;
             background: #0D1117 !important;
+            padding: 0 0 2px 0;
+            display: block;
         }
 
         .code-block-body .line-numbers {
-            flex-shrink: 0;
-            padding: 0.8rem 0.6rem 0.8rem 1.2rem;
+            display: inline-block;
+            vertical-align: top;
+            padding: 0.8rem 0.6rem 0.4rem 1.2rem;
             text-align: right;
             color: #484F58 !important;
             user-select: none;
@@ -703,15 +705,12 @@
             border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
             min-width: 2.8rem;
             background: transparent !important;
-            align-self: flex-start;
-        }
-        .code-block-body .line-numbers span {
-            display: block;
         }
 
         .code-block-body .code-content {
-            flex: 1;
-            padding: 0.8rem 1.2rem;
+            display: inline-block;
+            vertical-align: top;
+            padding: 0.8rem 1.2rem 0.4rem 1.2rem;
             overflow-x: auto;
             min-width: 0;
             font-family: inherit;
@@ -919,8 +918,8 @@
             .code-block-header .copy-btn i { font-size: 0.6rem; }
             .code-block-header .collapse-btn { width: 24px; height: 24px; font-size: 10px; }
             .code-block-body { font-size: 0.75rem; }
-            .code-block-body .line-numbers { padding: 0.6rem 0.4rem 0.6rem 0.8rem; min-width: 2rem; }
-            .code-block-body .code-content { padding: 0.6rem 0.8rem; }
+            .code-block-body .line-numbers { padding: 0.6rem 0.4rem 0.3rem 0.8rem; min-width: 2rem; }
+            .code-block-body .code-content { padding: 0.6rem 0.8rem 0.3rem 0.8rem; }
             .lightbox-overlay .lightbox-container img { max-height: 70vh; }
             .lightbox-overlay .lightbox-close { top: 16px; right: 18px; font-size: 2rem; }
             .article-detail .detail-content table {

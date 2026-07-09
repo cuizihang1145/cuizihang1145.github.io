@@ -6,7 +6,6 @@
     <title>文章详情 · ks</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- ===== Highlight.js github-dark 主题 ===== -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
@@ -119,6 +118,9 @@
             box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
             cursor: pointer;
             font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+            user-select: none;
         }
         body.dark .back-btn {
             background: rgba(30, 28, 50, 0.7);
@@ -137,6 +139,7 @@
             font-size: 0.9rem;
         }
 
+        /* ===== 主题切换按钮 ===== */
         .theme-toggle {
             position: fixed;
             top: 20px;
@@ -157,6 +160,8 @@
             transition: 0.3s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
             user-select: none;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
         }
         .theme-toggle:hover {
             transform: scale(1.05) rotate(8deg);
@@ -171,6 +176,91 @@
         }
         body.dark .theme-toggle:hover {
             background: rgba(50, 45, 80, 0.8);
+        }
+        .theme-toggle:active {
+            transform: scale(0.92);
+            outline: none !important;
+        }
+
+        /* ===== 回到顶部按钮 ===== */
+        .back-to-top-btn {
+            position: fixed;
+            top: 20px;
+            right: 80px;
+            z-index: 49;
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            color: #4F4F78;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: opacity 0.35s ease, transform 0.25s ease, background 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
+            opacity: 0;
+            pointer-events: none;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .back-to-top-btn:hover {
+            transform: scale(1.05) rotate(-8deg);
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 10px 28px rgba(80, 60, 160, 0.18);
+        }
+        .back-to-top-btn.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .back-to-top-btn:active {
+            transform: scale(0.92);
+            outline: none !important;
+        }
+        .back-to-top-btn.disabled {
+            opacity: 0.3 !important;
+            pointer-events: none !important;
+        }
+        body.dark .back-to-top-btn {
+            background: rgba(30, 28, 50, 0.7);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #D0CAF0;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        body.dark .back-to-top-btn:hover {
+            background: rgba(50, 45, 80, 0.8);
+        }
+
+        @media (max-width: 560px) {
+            .back-to-top-btn {
+                top: 14px;
+                right: 66px;
+                width: 42px;
+                height: 42px;
+                font-size: 1rem;
+            }
+            .theme-toggle {
+                top: 14px;
+                right: 16px;
+                width: 42px;
+                height: 42px;
+                font-size: 1.2rem;
+            }
+            .back-btn {
+                top: 14px;
+                left: 14px;
+                padding: 0.4rem 1rem 0.4rem 0.8rem;
+                font-size: 0.75rem;
+            }
+            .back-btn i {
+                font-size: 0.8rem;
+            }
         }
 
         .article-detail {
@@ -337,7 +427,6 @@
             vertical-align: sub;
         }
 
-        /* ===== 表格样式 ===== */
         .article-detail .detail-content table {
             width: 100%;
             border-collapse: collapse;
@@ -371,7 +460,6 @@
             background: rgba(255,255,255,0.02);
         }
 
-        /* ===== 脚注样式 ===== */
         .article-detail .detail-content .footnote-ref {
             font-size: 0.75em;
             vertical-align: super;
@@ -418,7 +506,6 @@
             color: #88ccff;
         }
 
-        /* ===== 任务列表 ===== */
         .article-detail .detail-content ul.task-list {
             list-style: none;
             padding-left: 0.2rem;
@@ -438,7 +525,6 @@
             pointer-events: none;
         }
 
-        /* ===== 文章图片 ===== */
         .article-detail .detail-content img {
             max-width: 100%;
             height: auto;
@@ -473,28 +559,17 @@
             color: #E8A87C;
         }
 
-        /* ===== Lightbox 放大预览：无圆角 ===== */
         .lightbox-overlay .lightbox-container img {
             border-radius: 0 !important;
         }
 
-        /* ===== 代码块：完全固定，不随主题变化 ===== */
-        .code-block-wrapper,
-        .code-block-body,
-        .code-block-header,
-        .code-content,
-        .line-numbers,
-        .code-block-header .lang-label,
-        .code-block-header .code-stats,
-        .code-block-header .copy-btn {
-            transition: none !important;
-        }
-
+        /* ===== 代码块 ===== */
         .code-block-wrapper {
             background: #0D1117 !important;
             border-radius: 12px;
             margin: 0.8rem 0;
             overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         .code-block-header {
@@ -506,8 +581,12 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
             flex-shrink: 0;
             min-height: 40px;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
+            transition: border-color 0.3s ease;
+        }
+        .code-block-wrapper.collapsed .code-block-header {
+            border-bottom: none;
         }
 
         .code-block-header .lang-label {
@@ -531,11 +610,18 @@
             margin: 0 2px;
         }
 
+        .code-block-header .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
         .code-block-header .copy-btn {
             background: rgba(255, 255, 255, 0.08) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-radius: 6px;
-            padding: 2px 12px;
+            padding: 2px 10px;
             font-size: 0.65rem;
             font-weight: 500;
             color: #8B949E !important;
@@ -543,10 +629,11 @@
             transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
             font-family: 'Inter', sans-serif;
             line-height: 1.8;
-            flex-shrink: 0;
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
         }
         .code-block-header .copy-btn:hover {
             background: rgba(255, 255, 255, 0.15) !important;
@@ -559,6 +646,48 @@
         }
         .code-block-header .copy-btn i {
             font-size: 0.7rem;
+        }
+
+        /* ===== 收纳按钮 ===== */
+        .code-block-header .collapse-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: #8B949E;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: background 0.2s ease, color 0.2s ease, transform 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            padding: 0;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+        }
+        .code-block-header .collapse-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #E8E6F0;
+        }
+        .code-block-header .collapse-btn:active {
+            transform: scale(0.9);
+            outline: none !important;
+        }
+
+        /* ===== 代码块主体（可收起的部分） ===== */
+        .code-block-body-wrapper {
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+            max-height: 3000px;
+            opacity: 1;
+        }
+        .code-block-wrapper.collapsed .code-block-body-wrapper {
+            max-height: 0 !important;
+            opacity: 0;
+            padding: 0;
         }
 
         .code-block-body {
@@ -583,6 +712,7 @@
             border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
             min-width: 2.8rem;
             background: transparent !important;
+            align-self: flex-start;
         }
         .code-block-body .line-numbers span {
             display: block;
@@ -601,7 +731,6 @@
             background: transparent !important;
         }
 
-        /* Highlight.js 覆盖 */
         .code-block-body .code-content.hljs {
             background: transparent !important;
             padding: 0 !important;
@@ -646,6 +775,30 @@
             border-top-color: rgba(255, 255, 255, 0.08);
         }
 
+        .article-detail .detail-content dl {
+            margin: 0.6rem 0;
+        }
+        .article-detail .detail-content dl dt {
+            font-weight: 600;
+            color: #3D2D8A;
+            margin-top: 0.4rem;
+            transition: color 0.3s ease;
+        }
+        body.dark .article-detail .detail-content dl dt {
+            color: #C8C0F0;
+        }
+        .article-detail .detail-content dl dd {
+            margin-left: 1.8rem;
+            padding-left: 0.6rem;
+            border-left: 2px solid rgba(107, 90, 207, 0.2);
+            color: #4A4A6E;
+            transition: color 0.3s ease, border-color 0.3s ease;
+        }
+        body.dark .article-detail .detail-content dl dd {
+            color: #A8A4C8;
+            border-left-color: rgba(136, 204, 255, 0.2);
+        }
+
         .not-found {
             text-align: center;
             padding: 4rem 1rem;
@@ -677,7 +830,6 @@
             margin-bottom: 1rem;
         }
 
-        /* ===== Lightbox ===== */
         .lightbox-overlay {
             position: fixed;
             top: 0;
@@ -759,6 +911,8 @@
             line-height: 1;
             padding: 0.5rem;
             z-index: 10000;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
         }
         .lightbox-overlay .lightbox-close:hover {
             opacity: 1;
@@ -767,8 +921,6 @@
 
         @media (max-width: 560px) {
             .container { padding: 2rem 1.2rem 1.5rem; }
-            .back-btn { top: 14px; left: 14px; padding: 0.4rem 1rem 0.4rem 0.8rem; font-size: 0.75rem; }
-            .theme-toggle { top: 14px; right: 16px; width: 42px; height: 42px; font-size: 1.2rem; }
             .article-detail .detail-title { font-size: 1.6rem; }
             .article-detail .detail-content img { border-radius: 8px; }
             .code-block-header { padding: 6px 10px; min-height: 34px; gap: 6px; }
@@ -776,6 +928,7 @@
             .code-block-header .code-stats { font-size: 0.55rem; }
             .code-block-header .copy-btn { font-size: 0.55rem; padding: 1px 8px; }
             .code-block-header .copy-btn i { font-size: 0.6rem; }
+            .code-block-header .collapse-btn { width: 24px; height: 24px; font-size: 10px; }
             .code-block-body { font-size: 0.75rem; }
             .code-block-body .line-numbers { padding: 0.6rem 0.4rem 0.6rem 0.8rem; min-width: 2rem; }
             .code-block-body .code-content { padding: 0.6rem 0.8rem; }
@@ -789,6 +942,27 @@
                 padding: 0.3rem 0.4rem;
             }
         }
+
+        @media (max-width: 380px) {
+            .back-to-top-btn {
+                right: 60px;
+                width: 36px;
+                height: 36px;
+                font-size: 0.85rem;
+            }
+            .theme-toggle {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+            .back-btn {
+                font-size: 0.65rem;
+                padding: 0.3rem 0.7rem 0.3rem 0.6rem;
+            }
+            .back-btn i {
+                font-size: 0.7rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -796,10 +970,17 @@
 <div class="glow-soft"></div>
 <div class="glow-soft-2"></div>
 
+<!-- ===== 返回按钮 ===== -->
 <a href="javascript:void(0)" class="back-btn" id="backButton">
     <i class="fas fa-arrow-left"></i> 返回
 </a>
 
+<!-- ===== 回到顶部按钮 ===== -->
+<button class="back-to-top-btn" id="backToTopBtn" aria-label="回到顶部">
+    <i class="fas fa-arrow-up"></i>
+</button>
+
+<!-- ===== 主题切换按钮 ===== -->
 <div class="theme-toggle" id="themeToggle" role="button" aria-label="切换深色/亮色模式">
     <i class="fas fa-moon"></i>
 </div>
@@ -814,6 +995,9 @@
 </div>
 
 <script>
+    // ============================================================
+    // 主题切换
+    // ============================================================
     const themeToggle = document.getElementById('themeToggle');
     const icon = themeToggle.querySelector('i');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -830,6 +1014,47 @@
         setTheme(currentTheme === 'dark' ? 'light' : 'dark');
     });
 
+    // ============================================================
+    // 回到顶部按钮 - 防连点 + 遮罩
+    // ============================================================
+    const backToTopBtn = document.getElementById('backToTopBtn');
+    let isScrollingToTop = false;
+
+    // 滚动监听
+    window.addEventListener('scroll', function() {
+        const scrollY = window.scrollY || window.pageYOffset;
+        if (scrollY > 300 && !isScrollingToTop) {
+            backToTopBtn.classList.add('show');
+        } else if (!isScrollingToTop) {
+            backToTopBtn.classList.remove('show');
+        }
+    });
+
+    // 点击回到顶部
+    backToTopBtn.addEventListener('click', function() {
+        if (isScrollingToTop) return;
+        isScrollingToTop = true;
+        backToTopBtn.classList.add('disabled');
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // 监听滚动结束
+        function checkScrollEnd() {
+            const scrollY = window.scrollY || window.pageYOffset;
+            if (scrollY === 0) {
+                isScrollingToTop = false;
+                backToTopBtn.classList.remove('disabled');
+                backToTopBtn.classList.remove('show');
+                return;
+            }
+            requestAnimationFrame(checkScrollEnd);
+        }
+        setTimeout(checkScrollEnd, 100);
+    });
+
+    // ============================================================
+    // 工具函数
+    // ============================================================
     function getParam(name) {
         const url = new URL(window.location.href);
         return url.searchParams.get(name);
@@ -842,38 +1067,44 @@
         return div.innerHTML;
     }
 
-    // ===== 计算纯文本字数（去掉 Markdown 符号） =====
     function countWords(markdown) {
         if (!markdown) return 0;
         let text = markdown
-            .replace(/```[\s\S]*?```/g, '')       // 去掉代码块
-            .replace(/`[^`]+`/g, '')               // 去掉行内代码
-            .replace(/\*\*(.*?)\*\*/g, '$1')       // 去掉加粗符号（保留文字）
-            .replace(/\*([^*]+)\*/g, '$1')         // 去掉斜体符号（保留文字）
-            .replace(/~~(.*?)~~/g, '$1')           // 去掉删除线符号（保留文字）
-            .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // 链接只保留文字
-            .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')  // 图片 alt 不算字数
-            .replace(/^#{1,6}\s+/gm, '')           // 去掉标题符号
-            .replace(/^-\s+/gm, '')                // 去掉无序列表符号
-            .replace(/^\d+\.\s+/gm, '')            // 去掉有序列表符号
-            .replace(/^>\s+/gm, '')                // 去掉引用符号
-            .replace(/^---$/gm, '')                // 去掉分割线
-            .replace(/^\s*[-*+]\s+\[[ x]\]\s+/gm, '') // 去掉任务列表符号
-            .replace(/\s+/g, ' ')                  // 多个空格合并
+            .replace(/```[\s\S]*?```/g, '')
+            .replace(/`[^`]+`/g, '')
+            .replace(/\*\*(.*?)\*\*/g, '$1')
+            .replace(/\*([^*]+)\*/g, '$1')
+            .replace(/~~(.*?)~~/g, '$1')
+            .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+            .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')
+            .replace(/^#{1,6}\s+/gm, '')
+            .replace(/^-\s+/gm, '')
+            .replace(/^\d+\.\s+/gm, '')
+            .replace(/^>\s+/gm, '')
+            .replace(/^---$/gm, '')
+            .replace(/^\s*[-*+]\s+\[[ x]\]\s+/gm, '')
+            .replace(/\s+/g, ' ')
             .trim();
         return text.length;
     }
 
+    // ============================================================
+    // 完整版 renderMarkdown
+    // ============================================================
     function renderMarkdown(md) {
         if (!md) return '';
 
+        // 转义字符预处理
+        const escMap = {};
+        let escCounter = 0;
+        md = md.replace(/\\([\\`*_{}\[\]()#+\-.!|])/g, function(match, char) {
+            const key = '\uE000' + (escCounter++) + '\uE001';
+            escMap[key] = char;
+            return key;
+        });
+
         const lines = md.split('\n');
         let result = '';
-        let inList = false;
-        let listType = null;
-        let listIndent = 0;
-        let inBlockquote = false;
-        let blockquoteLines = [];
         let inCodeBlock = false;
         let codeBlockLines = [];
         let codeLang = '';
@@ -883,15 +1114,47 @@
         let tableAligns = [];
         let footnotes = {};
         let footnoteKeys = [];
-        let inFootnoteBlock = false;
 
-        function flushBlockquote() {
-            if (blockquoteLines.length > 0) {
-                const content = blockquoteLines.join('\n');
-                result += '<blockquote>' + renderInline(content) + '</blockquote>';
-                blockquoteLines = [];
-                inBlockquote = false;
+        function restoreEscapes(text) {
+            let r = text;
+            for (const [key, char] of Object.entries(escMap)) {
+                r = r.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), char);
             }
+            return r;
+        }
+
+        function renderInline(text) {
+            let html = escapeHtml(text);
+
+            // 自动链接
+            html = html.replace(/&lt;(https?:\/\/[^\s<>]+)&gt;/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+            html = html.replace(/&lt;([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})&gt;/g, '<a href="mailto:$1">$1</a>');
+            html = html.replace(/(?<!\]\()https?:\/\/[^\s<>]+/g, '<a href="$&" target="_blank" rel="noopener">$&</a>');
+
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+            html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
+
+            // 图片带尺寸
+            html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, alt, src, w, h) {
+                let style = '';
+                if (w && h) style = ` style="width:${w}px; height:${h}px;"`;
+                else if (w) style = ` style="width:${w}px; height:auto;"`;
+                else if (h) style = ` style="height:${h}px; width:auto;"`;
+                return `<img src="${src}" alt="${alt}" loading="lazy"${style} />`;
+            });
+
+            html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+            // 脚注引用
+            html = html.replace(/\[\^([^\]]+)\]/g, function(match, key) {
+                if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
+                return `<sup class="footnote-ref"><a href="#fn-${key}" id="fnref-${key}">${key}</a></sup>`;
+            });
+
+            html = restoreEscapes(html);
+            return html;
         }
 
         function flushTable() {
@@ -904,7 +1167,8 @@
                 for (let j = 0; j < cells.length; j++) {
                     const tag = isHeader ? 'th' : 'td';
                     const align = (i === 1 && tableAligns[j]) ? ` style="text-align:${tableAligns[j]};"` : '';
-                    html += `<${tag}${align}>${renderInline(cells[j])}</${tag}>`;
+                    const cellContent = cells[j].replace(/\\n/g, '\n').replace(/\n/g, '<br>');
+                    html += `<${tag}${align}>${renderInline(cellContent)}</${tag}>`;
                 }
                 html += '</tr>';
             }
@@ -915,64 +1179,73 @@
             inTable = false;
         }
 
-        function flushList() {
-            if (inList) {
-                result += '</' + listType + '>';
-                inList = false;
-                listType = null;
-                listIndent = 0;
+        function flushCodeBlock() {
+            if (codeBlockLines.length === 0) {
+                inCodeBlock = false;
+                codeLang = '';
+                return;
             }
+            const code = codeBlockLines.join('\n');
+            const escapedCode = escapeHtml(code);
+            const langParts = codeLang.split(/\s+/);
+            const lang = langParts[0] || 'text';
+            const copyId = 'code-' + Date.now() + '-' + (codeBlockCounter++);
+
+            const lineCount = codeBlockLines.length;
+            let maxLineLength = 0;
+            let totalChars = 0;
+            for (let j = 0; j < codeBlockLines.length; j++) {
+                const lineLen = codeBlockLines[j].length;
+                if (lineLen > maxLineLength) maxLineLength = lineLen;
+                totalChars += lineLen;
+            }
+            totalChars += lineCount > 0 ? lineCount - 1 : 0;
+
+            let lineNumbersHtml = '';
+            for (let j = 1; j <= lineCount; j++) {
+                lineNumbersHtml += '<span>' + j + '</span>';
+            }
+
+            const statsHtml = `<span>${lineCount} 行</span> · <span>${maxLineLength} 列</span> · <span>${totalChars} 字符</span>`;
+
+            result += `
+                <div class="code-block-wrapper" id="cbw-${copyId}">
+                    <div class="code-block-header">
+                        <span class="lang-label">${escapeHtml(lang)}</span>
+                        <span class="code-stats">${statsHtml}</span>
+                        <span class="header-actions">
+                            <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
+                            <button class="collapse-btn" data-target="cbw-${copyId}" aria-label="收起代码块">
+                                <i class="fas fa-chevron-up"></i>
+                            </button>
+                        </span>
+                    </div>
+                    <div class="code-block-body-wrapper">
+                        <div class="code-block-body">
+                            <div class="line-numbers">${lineNumbersHtml}</div>
+                            <code class="code-content" id="${copyId}">${escapedCode}</code>
+                        </div>
+                    </div>
+                </div>
+            `;
+            codeBlockLines = [];
+            inCodeBlock = false;
+            codeLang = '';
         }
 
-        function renderInline(text) {
-            let html = escapeHtml(text);
-            // 自动链接：裸 URL
-            html = html.replace(/(?<!\]\()https?:\/\/[^\s<>]+/g, '<a href="$&" target="_blank" rel="noopener">$&</a>');
-            // 行内代码
-            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-            // 加粗
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            // 斜体
-            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-            // 删除线
-            html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
-            // 图片
-            html = html.replace(/!\[([^\]]*)\]\(([^)]*)\)/g, '<img src="$2" alt="$1" loading="lazy" />');
-            // 链接
-            html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-            // 脚注引用 [^1]
-            html = html.replace(/\[\^([^\]]+)\]/g, function(match, key) {
-                if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
-                return `<sup class="footnote-ref"><a href="#fn-${key}" id="fnref-${key}">${key}</a></sup>`;
-            });
-            // HTML 标签白名单（保留常用标签）
-            const allowedTags = ['kbd', 'sup', 'sub', 'mark', 'u', 'abbr', 'ins', 'small', 'strong', 'em', 'code', 'del', 'span', 'div', 'br'];
-            // 简单安全处理：允许的标签保留，其他转义
-            // 这里用比较粗暴的方式：允许 <tag> 和 </tag> 通过
-            const tagRegex = new RegExp('<(/?)(' + allowedTags.join('|') + ')(\\s[^>]*)?>', 'gi');
-            // 先转义所有 <，再恢复允许的标签
-            let temp = html.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            // 用正则反查恢复
-            // 简单点：直接替换回去
-            html = html; // 不做复杂处理，保持原样
-            return html;
-        }
-
-        // 主循环
+        // ===== 主循环 =====
         let i = 0;
         while (i < lines.length) {
-            let line = lines[i];
+            const line = lines[i];
             const trimmed = line.trim();
 
-            // 代码块
-            const codeBlockStart = line.match(/^```(\w*)/);
+            // 代码块（支持 ``` 和 ~~~）
+            const codeBlockStart = line.match(/^(```|~~~)(\w*)/);
             if (codeBlockStart) {
                 if (!inCodeBlock) {
-                    flushBlockquote();
-                    flushList();
                     flushTable();
                     inCodeBlock = true;
-                    codeLang = codeBlockStart[1] || 'text';
+                    codeLang = codeBlockStart[2] || 'text';
                     i++;
                     continue;
                 } else {
@@ -987,20 +1260,15 @@
                 continue;
             }
 
-            // 空行
             if (trimmed === '') {
-                flushBlockquote();
-                flushList();
                 flushTable();
                 i++;
                 continue;
             }
 
-            // 脚注定义 [^1]: 内容
+            // 脚注定义
             const fnMatch = line.match(/^\[\^([^\]]+)\]:\s*(.+)/);
             if (fnMatch) {
-                flushBlockquote();
-                flushList();
                 flushTable();
                 const key = fnMatch[1];
                 const content = fnMatch[2];
@@ -1010,30 +1278,15 @@
                 continue;
             }
 
-            // 引用
-            if (line.startsWith('> ')) {
-                flushList();
-                flushTable();
-                const content = line.replace(/^>\s*/, '');
-                blockquoteLines.push(content);
-                inBlockquote = true;
-                i++;
-                continue;
-            }
-            if (inBlockquote) {
-                flushBlockquote();
-            }
-
             // 表格
             if (line.includes('|') && trimmed.startsWith('|') && trimmed.endsWith('|')) {
                 if (!inTable) {
-                    flushList();
+                    flushTable();
                     inTable = true;
                     tableRows = [];
                     tableAligns = [];
                 }
                 const cells = trimmed.slice(1, -1).split('|').map(s => s.trim());
-                // 检查是否是分隔行 (|---|---|)
                 if (cells.every(c => /^:?-+:?$/.test(c))) {
                     tableAligns = cells.map(c => {
                         if (c.startsWith(':') && c.endsWith(':')) return 'center';
@@ -1050,118 +1303,187 @@
             }
             if (inTable) {
                 flushTable();
-                // 继续处理当前行，不 i++
                 continue;
             }
 
             // 标题
             const headingMatch = line.match(/^(#{1,6})\s+(.+)/);
             if (headingMatch) {
-                flushList();
                 flushTable();
                 const level = headingMatch[1].length;
                 const text = headingMatch[2];
-                result += `<h${level}>${renderInline(text)}</h${level}>\n`;
+                result += `<h${level}>${renderInline(text)}</h${level}>`;
                 i++;
                 continue;
             }
 
             // 分割线
             if (/^---$/.test(trimmed) || /^\*\*\*$/.test(trimmed) || /^___$/.test(trimmed)) {
-                flushList();
                 flushTable();
-                result += '<hr />\n';
+                result += '<hr />';
                 i++;
                 continue;
             }
 
-            // 任务列表 - [x] 或 - [ ]
-            const taskMatch = line.match(/^(\s*)[-*+]\s+\[([ x])\]\s+(.+)/);
-            if (taskMatch) {
-                const indent = taskMatch[1].length;
-                const checked = taskMatch[2] === 'x';
-                const content = taskMatch[3];
-                if (!inList || listType !== 'ul' || indent > listIndent) {
-                    if (inList && indent > listIndent) {
-                        // 子列表
-                        result += '<ul class="task-list">\n';
-                    } else {
-                        flushList();
-                        result += '<ul class="task-list">\n';
-                        inList = true;
-                        listType = 'ul';
-                    }
-                } else if (indent < listIndent) {
-                    // 返回上级
-                    result += '</ul>\n';
-                }
-                listIndent = indent;
-                const checkedAttr = checked ? ' checked' : '';
-                result += `<li><input type="checkbox"${checkedAttr} disabled> ${renderInline(content)}</li>\n`;
+            // 定义列表
+            if (i + 1 < lines.length && lines[i + 1].match(/^:\s+/)) {
+                flushTable();
+                const term = renderInline(trimmed);
+                let defs = [];
                 i++;
+                while (i < lines.length && lines[i].match(/^:\s+/)) {
+                    defs.push(renderInline(lines[i].replace(/^:\s+/, '')));
+                    i++;
+                }
+                while (i < lines.length && lines[i].trim() === '') i++;
+                let ddHtml = defs.map(d => `<dd>${d}</dd>`).join('');
+                result += `<dl><dt>${term}</dt>${ddHtml}</dl>`;
                 continue;
             }
 
-            // 无序列表
-            const ulMatch = line.match(/^(\s*)[-*+]\s+(.+)/);
-            if (ulMatch) {
-                const indent = ulMatch[1].length;
-                const content = ulMatch[2];
-                if (!inList || listType !== 'ul' || indent > listIndent) {
-                    if (inList && indent > listIndent) {
-                        result += '<ul>\n';
+            // 列表解析
+            function parseList(startIdx, parentIndent) {
+                let html = '';
+                let idx = startIdx;
+                let currentListType = null;
+                let items = [];
+
+                while (idx < lines.length) {
+                    const l = lines[idx];
+                    const t = l.trim();
+                    if (t === '') break;
+
+                    const ulMatch = l.match(/^(\s*)[-*+]\s+(.+)/);
+                    const olMatch = l.match(/^(\s*)(\d+)\.\s+(.+)/);
+                    const taskMatch = l.match(/^(\s*)[-*+]\s+\[([ x])\]\s+(.+)/);
+
+                    let match = null;
+                    let type = null;
+                    let content = '';
+                    let indent = 0;
+
+                    if (taskMatch) {
+                        indent = taskMatch[1].length;
+                        if (indent < parentIndent) break;
+                        type = 'task';
+                        const checked = taskMatch[2] === 'x';
+                        content = `<input type="checkbox"${checked ? ' checked' : ''} disabled> ${taskMatch[3]}`;
+                    } else if (ulMatch) {
+                        indent = ulMatch[1].length;
+                        if (indent < parentIndent) break;
+                        type = 'ul';
+                        content = ulMatch[2];
+                    } else if (olMatch) {
+                        indent = olMatch[1].length;
+                        if (indent < parentIndent) break;
+                        type = 'ol';
+                        content = olMatch[3];
                     } else {
-                        flushList();
-                        result += '<ul>\n';
-                        inList = true;
-                        listType = 'ul';
+                        break;
                     }
-                } else if (indent < listIndent) {
-                    result += '</ul>\n';
+
+                    let childHtml = '';
+                    let childIdx = idx + 1;
+                    while (childIdx < lines.length && lines[childIdx].trim() === '') childIdx++;
+                    if (childIdx < lines.length) {
+                        const nextLine = lines[childIdx];
+                        const nextUl = nextLine.match(/^(\s*)[-*+]\s+/);
+                        const nextOl = nextLine.match(/^(\s*)(\d+)\.\s+/);
+                        const nextTask = nextLine.match(/^(\s*)[-*+]\s+\[[ x]\]\s+/);
+                        if (nextUl || nextOl || nextTask) {
+                            const nextIndent = parseInt((nextUl || nextOl || nextTask)[1].length);
+                            if (nextIndent > indent) {
+                                const [childHtmlResult, childConsumed] = parseList(childIdx, indent);
+                                childHtml = childHtmlResult;
+                                idx += childConsumed;
+                            }
+                        }
+                    }
+
+                    if (!currentListType) {
+                        currentListType = type === 'ol' ? 'ol' : 'ul';
+                    }
+
+                    const isTask = type === 'task';
+                    const liClass = isTask ? ' class="task-list-item"' : '';
+                    const renderedContent = renderInline(content);
+                    items.push(`<li${liClass}>${renderedContent}${childHtml}</li>`);
+
+                    idx++;
                 }
-                listIndent = indent;
-                result += `<li>${renderInline(content)}</li>\n`;
-                i++;
+
+                if (items.length === 0) {
+                    return ['', 0];
+                }
+
+                const listTag = currentListType === 'ol' ? 'ol' : 'ul';
+                const listClass = currentListType === 'ol' ? '' : ' class="task-list"';
+                html = `<${listTag}${listClass}>\n${items.join('\n')}\n</${listTag}>`;
+                return [html, idx - startIdx];
+            }
+
+            const listCheck = line.match(/^(\s*)[-*+]\s+/);
+            const taskCheck = line.match(/^(\s*)[-*+]\s+\[[ x]\]\s+/);
+            const olCheck = line.match(/^(\s*)(\d+)\.\s+/);
+
+            if (taskCheck || listCheck || olCheck) {
+                flushTable();
+                const [listHtml, consumed] = parseList(i, 0);
+                result += listHtml;
+                i += consumed;
                 continue;
             }
 
-            // 有序列表
-            const olMatch = line.match(/^(\s*)(\d+)\.\s+(.+)/);
-            if (olMatch) {
-                const indent = olMatch[1].length;
-                const content = olMatch[3];
-                if (!inList || listType !== 'ol' || indent > listIndent) {
-                    if (inList && indent > listIndent) {
-                        result += '<ol>\n';
-                    } else {
-                        flushList();
-                        result += '<ol>\n';
-                        inList = true;
-                        listType = 'ol';
-                    }
-                } else if (indent < listIndent) {
-                    result += '</ol>\n';
+            // 引用（支持嵌套）
+            if (line.startsWith('>')) {
+                flushTable();
+                let level = 0;
+                let temp = line;
+                while (temp.startsWith('>')) {
+                    level++;
+                    temp = temp.substring(1);
+                    if (temp.startsWith(' ')) temp = temp.substring(1);
                 }
-                listIndent = indent;
-                result += `<li>${renderInline(content)}</li>\n`;
-                i++;
+                const content = temp.trim();
+                let quoteLines = [content];
+                let j = i + 1;
+                while (j < lines.length) {
+                    const nextLine = lines[j];
+                    if (nextLine.startsWith('>')) {
+                        let lv = 0;
+                        let tmp = nextLine;
+                        while (tmp.startsWith('>')) {
+                            lv++;
+                            tmp = tmp.substring(1);
+                            if (tmp.startsWith(' ')) tmp = tmp.substring(1);
+                        }
+                        quoteLines.push(tmp.trim());
+                        j++;
+                    } else if (nextLine.trim() === '') {
+                        quoteLines.push('');
+                        j++;
+                    } else {
+                        break;
+                    }
+                }
+                let innerHtml = renderInline(quoteLines.join('\n'));
+                for (let lv = 0; lv < level; lv++) {
+                    innerHtml = `<blockquote>${innerHtml}</blockquote>`;
+                }
+                result += innerHtml;
+                i = j;
                 continue;
             }
 
             // 普通段落
-            flushList();
             flushTable();
-            result += `<p>${renderInline(line)}</p>\n`;
+            result += `<p>${renderInline(line)}</p>`;
             i++;
         }
 
-        // 收尾 flush
-        flushBlockquote();
         flushCodeBlock();
-        flushList();
         flushTable();
 
-        // 脚注区域
         if (footnoteKeys.length > 0) {
             result += '<div class="footnotes">\n';
             for (const key of footnoteKeys) {
@@ -1175,93 +1497,67 @@
             result += '</div>\n';
         }
 
+        result = restoreEscapes(result);
         return result;
-
-        // ===== 内部函数 =====
-        function flushCodeBlock() {
-            if (codeBlockLines.length > 0) {
-                const code = codeBlockLines.join('\n');
-                const escapedCode = escapeHtml(code);
-                const lang = codeLang || 'text';
-                const copyId = 'code-' + Date.now() + '-' + (codeBlockCounter++);
-
-                const lineCount = codeBlockLines.length;
-                let maxLineLength = 0;
-                let totalChars = 0;
-                for (let j = 0; j < codeBlockLines.length; j++) {
-                    const lineLen = codeBlockLines[j].length;
-                    if (lineLen > maxLineLength) maxLineLength = lineLen;
-                    totalChars += lineLen;
-                }
-                totalChars += lineCount > 0 ? lineCount - 1 : 0;
-
-                let lineNumbersHtml = '';
-                for (let j = 1; j <= lineCount; j++) {
-                    lineNumbersHtml += '<span>' + j + '</span>';
-                }
-
-                const statsHtml = `<span>${lineCount} 行</span> · <span>${maxLineLength} 列</span> · <span>${totalChars} 字符</span>`;
-
-                result += `
-                    <div class="code-block-wrapper">
-                        <div class="code-block-header">
-                            <span class="lang-label">${escapeHtml(lang)}</span>
-                            <span class="code-stats">${statsHtml}</span>
-                            <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
-                        </div>
-                        <div class="code-block-body">
-                            <div class="line-numbers">${lineNumbersHtml}</div>
-                            <code class="code-content" id="${copyId}">${escapedCode}</code>
-                        </div>
-                    </div>
-                `;
-                codeBlockLines = [];
-                inCodeBlock = false;
-                codeLang = '';
-            }
-        }
     }
 
-    // ===== 代码块复制事件 =====
+    // ============================================================
+    // 复制 + 收纳事件（事件代理）
+    // ============================================================
     document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.copy-btn');
-        if (!btn) return;
+        // ---- 复制 ----
+        const copyBtn = e.target.closest('.copy-btn');
+        if (copyBtn) {
+            const targetId = copyBtn.dataset.copy;
+            if (!targetId) return;
+            const codeEl = document.getElementById(targetId);
+            if (!codeEl) return;
+            const text = codeEl.textContent;
 
-        const targetId = btn.dataset.copy;
-        if (!targetId) return;
+            navigator.clipboard.writeText(text).then(() => {
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            });
+            return;
+        }
 
-        const codeEl = document.getElementById(targetId);
-        if (!codeEl) return;
-
-        const text = codeEl.textContent;
-
-        navigator.clipboard.writeText(text).then(() => {
-            btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
-            btn.classList.add('copied');
-            setTimeout(() => {
-                btn.innerHTML = '<i class="fas fa-copy"></i> 复制';
-                btn.classList.remove('copied');
-            }, 2000);
-        }).catch(() => {
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
-            btn.classList.add('copied');
-            setTimeout(() => {
-                btn.innerHTML = '<i class="fas fa-copy"></i> 复制';
-                btn.classList.remove('copied');
-            }, 2000);
-        });
+        // ---- 收纳 ----
+        const collapseBtn = e.target.closest('.collapse-btn');
+        if (collapseBtn) {
+            const targetId = collapseBtn.dataset.target;
+            if (!targetId) return;
+            const wrapper = document.getElementById(targetId);
+            if (!wrapper) return;
+            const iconEl = collapseBtn.querySelector('i');
+            wrapper.classList.toggle('collapsed');
+            if (wrapper.classList.contains('collapsed')) {
+                iconEl.className = 'fas fa-chevron-down';
+            } else {
+                iconEl.className = 'fas fa-chevron-up';
+            }
+            return;
+        }
     });
 
-    const appContent = document.getElementById('appContent');
-
     // ============================================================
-    // Lightbox（缩放 + 回弹）
+    // Lightbox
     // ============================================================
     function initLightbox() {
         const images = document.querySelectorAll('.detail-content img');
@@ -1276,9 +1572,7 @@
 
     function openLightbox(src, alt) {
         const existing = document.querySelector('.lightbox-overlay');
-        if (existing) {
-            existing.remove();
-        }
+        if (existing) existing.remove();
 
         const overlay = document.createElement('div');
         overlay.className = 'lightbox-overlay';
@@ -1293,9 +1587,7 @@
         document.body.appendChild(overlay);
         document.body.style.overflow = 'hidden';
 
-        requestAnimationFrame(() => {
-            overlay.classList.add('active');
-        });
+        requestAnimationFrame(() => overlay.classList.add('active'));
 
         const imgWrapper = overlay.querySelector('.lightbox-img-wrapper');
         const img = overlay.querySelector('img');
@@ -1439,25 +1731,19 @@
         function closeLightbox() {
             overlay.classList.remove('active');
             setTimeout(() => {
-                if (overlay.parentNode) {
-                    overlay.remove();
-                }
+                if (overlay.parentNode) overlay.remove();
                 document.body.style.overflow = '';
                 document.removeEventListener('keydown', escHandler);
             }, 350);
         }
 
         function escHandler(e) {
-            if (e.key === 'Escape') {
-                closeLightbox();
-            }
+            if (e.key === 'Escape') closeLightbox();
         }
 
         overlay.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
         overlay.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeLightbox();
-            }
+            if (e.target === this) closeLightbox();
         });
         document.addEventListener('keydown', escHandler);
 
@@ -1466,6 +1752,11 @@
         translateY = 0;
         updateTransform(false);
     }
+
+    // ============================================================
+    // 渲染文章
+    // ============================================================
+    const appContent = document.getElementById('appContent');
 
     function renderArticle() {
         const id = getParam('id');
@@ -1534,6 +1825,9 @@
 
     renderArticle();
 
+    // ============================================================
+    // 返回按钮
+    // ============================================================
     const from = getParam('from');
     const page = getParam('page');
     const backBtn = document.getElementById('backButton');

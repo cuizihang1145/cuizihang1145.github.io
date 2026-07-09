@@ -31,37 +31,6 @@
             color: #E8E6F0;
         }
 
-        /* ===== 所有会变色的元素统一加过渡 ===== */
-        .bg-glow,
-        .glow-soft,
-        .glow-soft-2,
-        .back-btn,
-        .theme-toggle,
-        .article-detail,
-        .detail-title,
-        .detail-date,
-        .detail-divider,
-        .detail-content p,
-        .detail-content strong,
-        .detail-content em,
-        .detail-content a,
-        .detail-content h1,
-        .detail-content h2,
-        .detail-content h3,
-        .detail-content h4,
-        .detail-content h5,
-        .detail-content h6,
-        .detail-content blockquote,
-        .detail-content hr,
-        .detail-content ul,
-        .detail-content ol,
-        .detail-content li,
-        .detail-content code,
-        .not-found,
-        .loading {
-            transition: background 0.4s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
         .bg-glow {
             position: fixed;
             top: 0;
@@ -318,6 +287,157 @@
             color: #88ccff;
         }
 
+        .article-detail .detail-content del {
+            color: #8A8AB5;
+            text-decoration: line-through;
+            transition: color 0.3s ease;
+        }
+        body.dark .article-detail .detail-content del {
+            color: #6A6A8A;
+        }
+
+        .article-detail .detail-content u {
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .article-detail .detail-content kbd {
+            display: inline-block;
+            background: rgba(0,0,0,0.06);
+            padding: 0.1rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Inter', monospace;
+            font-size: 0.85em;
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+        body.dark .article-detail .detail-content kbd {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.08);
+        }
+
+        .article-detail .detail-content mark {
+            background: rgba(255, 215, 0, 0.3);
+            padding: 0 0.2rem;
+            border-radius: 2px;
+            transition: background 0.3s ease;
+        }
+        body.dark .article-detail .detail-content mark {
+            background: rgba(255, 215, 0, 0.2);
+        }
+
+        .article-detail .detail-content sup {
+            font-size: 0.7em;
+            vertical-align: super;
+        }
+
+        .article-detail .detail-content sub {
+            font-size: 0.7em;
+            vertical-align: sub;
+        }
+
+        /* ===== 表格样式 ===== */
+        .article-detail .detail-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+        .article-detail .detail-content th,
+        .article-detail .detail-content td {
+            border: 1px solid rgba(0,0,0,0.08);
+            padding: 0.5rem 0.8rem;
+            text-align: left;
+            transition: border-color 0.3s ease, background 0.3s ease;
+        }
+        body.dark .article-detail .detail-content th,
+        body.dark .article-detail .detail-content td {
+            border-color: rgba(255,255,255,0.06);
+        }
+        .article-detail .detail-content th {
+            background: rgba(0,0,0,0.04);
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+        body.dark .article-detail .detail-content th {
+            background: rgba(255,255,255,0.04);
+        }
+        .article-detail .detail-content tr:nth-child(even) td {
+            background: rgba(0,0,0,0.02);
+        }
+        body.dark .article-detail .detail-content tr:nth-child(even) td {
+            background: rgba(255,255,255,0.02);
+        }
+
+        /* ===== 脚注样式 ===== */
+        .article-detail .detail-content .footnote-ref {
+            font-size: 0.75em;
+            vertical-align: super;
+            text-decoration: none;
+            color: #6B5ACF;
+            margin-left: 1px;
+            transition: color 0.3s ease;
+        }
+        body.dark .article-detail .detail-content .footnote-ref {
+            color: #88ccff;
+        }
+        .article-detail .detail-content .footnote-ref::before {
+            content: '[';
+        }
+        .article-detail .detail-content .footnote-ref::after {
+            content: ']';
+        }
+
+        .article-detail .detail-content .footnotes {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            font-size: 0.85rem;
+            color: #6A6A92;
+            transition: border-color 0.3s ease, color 0.3s ease;
+        }
+        body.dark .article-detail .detail-content .footnotes {
+            border-top-color: rgba(255,255,255,0.06);
+            color: #8A8AA8;
+        }
+        .article-detail .detail-content .footnotes .footnote-def {
+            margin-bottom: 0.3rem;
+            padding-left: 1.8rem;
+            position: relative;
+        }
+        .article-detail .detail-content .footnotes .footnote-def .footnote-back {
+            position: absolute;
+            left: 0;
+            text-decoration: none;
+            color: #6B5ACF;
+            font-size: 0.8rem;
+        }
+        body.dark .article-detail .detail-content .footnotes .footnote-def .footnote-back {
+            color: #88ccff;
+        }
+
+        /* ===== 任务列表 ===== */
+        .article-detail .detail-content ul.task-list {
+            list-style: none;
+            padding-left: 0.2rem;
+        }
+        .article-detail .detail-content ul.task-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.3rem;
+        }
+        .article-detail .detail-content ul.task-list li input[type="checkbox"] {
+            margin-top: 0.25rem;
+            width: 1rem;
+            height: 1rem;
+            flex-shrink: 0;
+            accent-color: #6B5ACF;
+            cursor: default;
+            pointer-events: none;
+        }
+
         /* ===== 文章图片 ===== */
         .article-detail .detail-content img {
             max-width: 100%;
@@ -496,6 +616,12 @@
         .article-detail .detail-content ol li {
             margin-bottom: 0.2rem;
         }
+        .article-detail .detail-content ul li ul,
+        .article-detail .detail-content ul li ol,
+        .article-detail .detail-content ol li ul,
+        .article-detail .detail-content ol li ol {
+            margin: 0.2rem 0;
+        }
 
         .article-detail .detail-content blockquote {
             border-left: 4px solid #6B5ACF;
@@ -655,6 +781,13 @@
             .code-block-body .code-content { padding: 0.6rem 0.8rem; }
             .lightbox-overlay .lightbox-container img { max-height: 70vh; }
             .lightbox-overlay .lightbox-close { top: 16px; right: 18px; font-size: 2rem; }
+            .article-detail .detail-content table {
+                font-size: 0.75rem;
+            }
+            .article-detail .detail-content th,
+            .article-detail .detail-content td {
+                padding: 0.3rem 0.4rem;
+            }
         }
     </style>
 </head>
@@ -717,6 +850,7 @@
             .replace(/`[^`]+`/g, '')               // 去掉行内代码
             .replace(/\*\*(.*?)\*\*/g, '$1')       // 去掉加粗符号（保留文字）
             .replace(/\*([^*]+)\*/g, '$1')         // 去掉斜体符号（保留文字）
+            .replace(/~~(.*?)~~/g, '$1')           // 去掉删除线符号（保留文字）
             .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // 链接只保留文字
             .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')  // 图片 alt 不算字数
             .replace(/^#{1,6}\s+/gm, '')           // 去掉标题符号
@@ -724,6 +858,7 @@
             .replace(/^\d+\.\s+/gm, '')            // 去掉有序列表符号
             .replace(/^>\s+/gm, '')                // 去掉引用符号
             .replace(/^---$/gm, '')                // 去掉分割线
+            .replace(/^\s*[-*+]\s+\[[ x]\]\s+/gm, '') // 去掉任务列表符号
             .replace(/\s+/g, ' ')                  // 多个空格合并
             .trim();
         return text.length;
@@ -736,12 +871,19 @@
         let result = '';
         let inList = false;
         let listType = null;
+        let listIndent = 0;
         let inBlockquote = false;
         let blockquoteLines = [];
         let inCodeBlock = false;
         let codeBlockLines = [];
         let codeLang = '';
         let codeBlockCounter = 0;
+        let inTable = false;
+        let tableRows = [];
+        let tableAligns = [];
+        let footnotes = {};
+        let footnoteKeys = [];
+        let inFootnoteBlock = false;
 
         function flushBlockquote() {
             if (blockquoteLines.length > 0) {
@@ -752,6 +894,290 @@
             }
         }
 
+        function flushTable() {
+            if (tableRows.length === 0) return;
+            let html = '<table>';
+            for (let i = 0; i < tableRows.length; i++) {
+                const cells = tableRows[i];
+                const isHeader = i === 0;
+                html += '<tr>';
+                for (let j = 0; j < cells.length; j++) {
+                    const tag = isHeader ? 'th' : 'td';
+                    const align = (i === 1 && tableAligns[j]) ? ` style="text-align:${tableAligns[j]};"` : '';
+                    html += `<${tag}${align}>${renderInline(cells[j])}</${tag}>`;
+                }
+                html += '</tr>';
+            }
+            html += '</table>';
+            result += html;
+            tableRows = [];
+            tableAligns = [];
+            inTable = false;
+        }
+
+        function flushList() {
+            if (inList) {
+                result += '</' + listType + '>';
+                inList = false;
+                listType = null;
+                listIndent = 0;
+            }
+        }
+
+        function renderInline(text) {
+            let html = escapeHtml(text);
+            // 自动链接：裸 URL
+            html = html.replace(/(?<!\]\()https?:\/\/[^\s<>]+/g, '<a href="$&" target="_blank" rel="noopener">$&</a>');
+            // 行内代码
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+            // 加粗
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            // 斜体
+            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+            // 删除线
+            html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
+            // 图片
+            html = html.replace(/!\[([^\]]*)\]\(([^)]*)\)/g, '<img src="$2" alt="$1" loading="lazy" />');
+            // 链接
+            html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+            // 脚注引用 [^1]
+            html = html.replace(/\[\^([^\]]+)\]/g, function(match, key) {
+                if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
+                return `<sup class="footnote-ref"><a href="#fn-${key}" id="fnref-${key}">${key}</a></sup>`;
+            });
+            // HTML 标签白名单（保留常用标签）
+            const allowedTags = ['kbd', 'sup', 'sub', 'mark', 'u', 'abbr', 'ins', 'small', 'strong', 'em', 'code', 'del', 'span', 'div', 'br'];
+            // 简单安全处理：允许的标签保留，其他转义
+            // 这里用比较粗暴的方式：允许 <tag> 和 </tag> 通过
+            const tagRegex = new RegExp('<(/?)(' + allowedTags.join('|') + ')(\\s[^>]*)?>', 'gi');
+            // 先转义所有 <，再恢复允许的标签
+            let temp = html.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            // 用正则反查恢复
+            // 简单点：直接替换回去
+            html = html; // 不做复杂处理，保持原样
+            return html;
+        }
+
+        // 主循环
+        let i = 0;
+        while (i < lines.length) {
+            let line = lines[i];
+            const trimmed = line.trim();
+
+            // 代码块
+            const codeBlockStart = line.match(/^```(\w*)/);
+            if (codeBlockStart) {
+                if (!inCodeBlock) {
+                    flushBlockquote();
+                    flushList();
+                    flushTable();
+                    inCodeBlock = true;
+                    codeLang = codeBlockStart[1] || 'text';
+                    i++;
+                    continue;
+                } else {
+                    flushCodeBlock();
+                    i++;
+                    continue;
+                }
+            }
+            if (inCodeBlock) {
+                codeBlockLines.push(line);
+                i++;
+                continue;
+            }
+
+            // 空行
+            if (trimmed === '') {
+                flushBlockquote();
+                flushList();
+                flushTable();
+                i++;
+                continue;
+            }
+
+            // 脚注定义 [^1]: 内容
+            const fnMatch = line.match(/^\[\^([^\]]+)\]:\s*(.+)/);
+            if (fnMatch) {
+                flushBlockquote();
+                flushList();
+                flushTable();
+                const key = fnMatch[1];
+                const content = fnMatch[2];
+                footnotes[key] = renderInline(content);
+                if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
+                i++;
+                continue;
+            }
+
+            // 引用
+            if (line.startsWith('> ')) {
+                flushList();
+                flushTable();
+                const content = line.replace(/^>\s*/, '');
+                blockquoteLines.push(content);
+                inBlockquote = true;
+                i++;
+                continue;
+            }
+            if (inBlockquote) {
+                flushBlockquote();
+            }
+
+            // 表格
+            if (line.includes('|') && trimmed.startsWith('|') && trimmed.endsWith('|')) {
+                if (!inTable) {
+                    flushList();
+                    inTable = true;
+                    tableRows = [];
+                    tableAligns = [];
+                }
+                const cells = trimmed.slice(1, -1).split('|').map(s => s.trim());
+                // 检查是否是分隔行 (|---|---|)
+                if (cells.every(c => /^:?-+:?$/.test(c))) {
+                    tableAligns = cells.map(c => {
+                        if (c.startsWith(':') && c.endsWith(':')) return 'center';
+                        if (c.endsWith(':')) return 'right';
+                        if (c.startsWith(':')) return 'left';
+                        return '';
+                    });
+                    i++;
+                    continue;
+                }
+                tableRows.push(cells);
+                i++;
+                continue;
+            }
+            if (inTable) {
+                flushTable();
+                // 继续处理当前行，不 i++
+                continue;
+            }
+
+            // 标题
+            const headingMatch = line.match(/^(#{1,6})\s+(.+)/);
+            if (headingMatch) {
+                flushList();
+                flushTable();
+                const level = headingMatch[1].length;
+                const text = headingMatch[2];
+                result += `<h${level}>${renderInline(text)}</h${level}>\n`;
+                i++;
+                continue;
+            }
+
+            // 分割线
+            if (/^---$/.test(trimmed) || /^\*\*\*$/.test(trimmed) || /^___$/.test(trimmed)) {
+                flushList();
+                flushTable();
+                result += '<hr />\n';
+                i++;
+                continue;
+            }
+
+            // 任务列表 - [x] 或 - [ ]
+            const taskMatch = line.match(/^(\s*)[-*+]\s+\[([ x])\]\s+(.+)/);
+            if (taskMatch) {
+                const indent = taskMatch[1].length;
+                const checked = taskMatch[2] === 'x';
+                const content = taskMatch[3];
+                if (!inList || listType !== 'ul' || indent > listIndent) {
+                    if (inList && indent > listIndent) {
+                        // 子列表
+                        result += '<ul class="task-list">\n';
+                    } else {
+                        flushList();
+                        result += '<ul class="task-list">\n';
+                        inList = true;
+                        listType = 'ul';
+                    }
+                } else if (indent < listIndent) {
+                    // 返回上级
+                    result += '</ul>\n';
+                }
+                listIndent = indent;
+                const checkedAttr = checked ? ' checked' : '';
+                result += `<li><input type="checkbox"${checkedAttr} disabled> ${renderInline(content)}</li>\n`;
+                i++;
+                continue;
+            }
+
+            // 无序列表
+            const ulMatch = line.match(/^(\s*)[-*+]\s+(.+)/);
+            if (ulMatch) {
+                const indent = ulMatch[1].length;
+                const content = ulMatch[2];
+                if (!inList || listType !== 'ul' || indent > listIndent) {
+                    if (inList && indent > listIndent) {
+                        result += '<ul>\n';
+                    } else {
+                        flushList();
+                        result += '<ul>\n';
+                        inList = true;
+                        listType = 'ul';
+                    }
+                } else if (indent < listIndent) {
+                    result += '</ul>\n';
+                }
+                listIndent = indent;
+                result += `<li>${renderInline(content)}</li>\n`;
+                i++;
+                continue;
+            }
+
+            // 有序列表
+            const olMatch = line.match(/^(\s*)(\d+)\.\s+(.+)/);
+            if (olMatch) {
+                const indent = olMatch[1].length;
+                const content = olMatch[3];
+                if (!inList || listType !== 'ol' || indent > listIndent) {
+                    if (inList && indent > listIndent) {
+                        result += '<ol>\n';
+                    } else {
+                        flushList();
+                        result += '<ol>\n';
+                        inList = true;
+                        listType = 'ol';
+                    }
+                } else if (indent < listIndent) {
+                    result += '</ol>\n';
+                }
+                listIndent = indent;
+                result += `<li>${renderInline(content)}</li>\n`;
+                i++;
+                continue;
+            }
+
+            // 普通段落
+            flushList();
+            flushTable();
+            result += `<p>${renderInline(line)}</p>\n`;
+            i++;
+        }
+
+        // 收尾 flush
+        flushBlockquote();
+        flushCodeBlock();
+        flushList();
+        flushTable();
+
+        // 脚注区域
+        if (footnoteKeys.length > 0) {
+            result += '<div class="footnotes">\n';
+            for (const key of footnoteKeys) {
+                if (footnotes[key]) {
+                    result += `<div class="footnote-def" id="fn-${key}">`;
+                    result += `<a href="#fnref-${key}" class="footnote-back">↩</a> `;
+                    result += footnotes[key];
+                    result += '</div>\n';
+                }
+            }
+            result += '</div>\n';
+        }
+
+        return result;
+
+        // ===== 内部函数 =====
         function flushCodeBlock() {
             if (codeBlockLines.length > 0) {
                 const code = codeBlockLines.join('\n');
@@ -762,16 +1188,16 @@
                 const lineCount = codeBlockLines.length;
                 let maxLineLength = 0;
                 let totalChars = 0;
-                for (let i = 0; i < codeBlockLines.length; i++) {
-                    const lineLen = codeBlockLines[i].length;
+                for (let j = 0; j < codeBlockLines.length; j++) {
+                    const lineLen = codeBlockLines[j].length;
                     if (lineLen > maxLineLength) maxLineLength = lineLen;
                     totalChars += lineLen;
                 }
                 totalChars += lineCount > 0 ? lineCount - 1 : 0;
 
                 let lineNumbersHtml = '';
-                for (let i = 1; i <= lineCount; i++) {
-                    lineNumbersHtml += '<span>' + i + '</span>';
+                for (let j = 1; j <= lineCount; j++) {
+                    lineNumbersHtml += '<span>' + j + '</span>';
                 }
 
                 const statsHtml = `<span>${lineCount} 行</span> · <span>${maxLineLength} 列</span> · <span>${totalChars} 字符</span>`;
@@ -794,111 +1220,6 @@
                 codeLang = '';
             }
         }
-
-        function flushList() {
-            if (inList) {
-                result += '</' + listType + '>';
-                inList = false;
-                listType = null;
-            }
-        }
-
-        function renderInline(text) {
-            let html = escapeHtml(text);
-            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-            html = html.replace(/!\[([^\]]*)\]\(([^)]*)\)/g, '<img src="$2" alt="$1" loading="lazy" />');
-            html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-            return html;
-        }
-
-        for (let i = 0; i < lines.length; i++) {
-            let line = lines[i];
-
-            const codeBlockStart = line.match(/^```(\w*)/);
-            if (codeBlockStart) {
-                if (!inCodeBlock) {
-                    flushBlockquote();
-                    flushList();
-                    inCodeBlock = true;
-                    codeLang = codeBlockStart[1] || 'text';
-                } else {
-                    flushCodeBlock();
-                }
-                continue;
-            }
-            if (inCodeBlock) {
-                codeBlockLines.push(line);
-                continue;
-            }
-
-            if (line.trim() === '') {
-                flushBlockquote();
-                flushList();
-                result += '\n';
-                continue;
-            }
-
-            if (line.startsWith('> ')) {
-                flushList();
-                const content = line.replace(/^>\s*/, '');
-                blockquoteLines.push(content);
-                inBlockquote = true;
-                continue;
-            }
-            if (inBlockquote) {
-                flushBlockquote();
-            }
-
-            const headingMatch = line.match(/^(#{1,6})\s+(.+)/);
-            if (headingMatch) {
-                flushList();
-                const level = headingMatch[1].length;
-                const text = headingMatch[2];
-                result += `<h${level}>${renderInline(text)}</h${level}>\n`;
-                continue;
-            }
-
-            if (/^---$/.test(line.trim())) {
-                flushList();
-                result += '<hr />\n';
-                continue;
-            }
-
-            const ulMatch = line.match(/^-\s+(.+)/);
-            if (ulMatch) {
-                if (!inList || listType !== 'ul') {
-                    flushList();
-                    result += '<ul>\n';
-                    inList = true;
-                    listType = 'ul';
-                }
-                result += `<li>${renderInline(ulMatch[1])}</li>\n`;
-                continue;
-            }
-
-            const olMatch = line.match(/^(\d+)\.\s+(.+)/);
-            if (olMatch) {
-                if (!inList || listType !== 'ol') {
-                    flushList();
-                    result += '<ol>\n';
-                    inList = true;
-                    listType = 'ol';
-                }
-                result += `<li>${renderInline(olMatch[2])}</li>\n`;
-                continue;
-            }
-
-            flushList();
-            result += `<p>${renderInline(line)}</p>\n`;
-        }
-
-        flushBlockquote();
-        flushCodeBlock();
-        flushList();
-
-        return result;
     }
 
     // ===== 代码块复制事件 =====
@@ -987,7 +1308,6 @@
             img.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
         }
 
-        // 滚轮缩放
         img.addEventListener('wheel', function(e) {
             e.preventDefault();
             const delta = e.deltaY > 0 ? -0.1 : 0.1;
@@ -1002,7 +1322,6 @@
             updateTransform(false);
         }, { passive: false });
 
-        // 触摸
         let touchStartDist = 0;
         let touchStartScale = 1;
         let touchStartX = 0;
@@ -1065,7 +1384,6 @@
             }
         }, { passive: true });
 
-        // 鼠标拖拽
         let mouseDown = false;
         let mouseStartX = 0;
         let mouseStartY = 0;
@@ -1118,7 +1436,6 @@
             }
         });
 
-        // 关闭
         function closeLightbox() {
             overlay.classList.remove('active');
             setTimeout(() => {
@@ -1198,12 +1515,10 @@
                     </div>
                 `;
 
-                // Highlight.js 语法高亮
                 document.querySelectorAll('.code-content').forEach(el => {
                     hljs.highlightElement(el);
                 });
 
-                // Lightbox
                 initLightbox();
             })
             .catch(() => {
@@ -1219,7 +1534,6 @@
 
     renderArticle();
 
-    // ===== 返回按钮动态跳转 =====
     const from = getParam('from');
     const page = getParam('page');
     const backBtn = document.getElementById('backButton');

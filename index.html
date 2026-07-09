@@ -503,6 +503,7 @@
             color: #7A6AA8;
         }
 
+        /* ===== 关于页面两个方块 ===== */
         .about-card {
             background: rgba(255, 255, 255, 0.65);
             backdrop-filter: blur(12px);
@@ -513,7 +514,7 @@
             width: 100%;
             max-width: 480px;
             transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-            text-align: center;
+            text-align: left;
         }
         body.dark .about-card {
             background: rgba(35, 32, 60, 0.6);
@@ -521,7 +522,7 @@
             box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
         }
         .about-card h3 {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             margin-bottom: 1rem;
             font-weight: 600;
             color: #2D2D4A;
@@ -532,7 +533,7 @@
             color: #D0CAF0;
         }
         .about-card p {
-            margin-bottom: 1rem;
+            margin-bottom: 0.6rem;
             color: #4A4A6E;
             line-height: 1.7;
             transition: color 0.3s ease;
@@ -543,12 +544,121 @@
         .about-card .contact-line {
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 0.6rem;
             color: #6A6A95;
+            font-size: 0.9rem;
         }
         body.dark .about-card .contact-line {
             color: #A8A4C8;
+        }
+        .about-card .signature-text {
+            font-size: 0.9rem;
+            color: #7B7BA5;
+            font-style: italic;
+            text-align: center;
+            margin-top: 1rem;
+            transition: color 0.3s ease;
+        }
+        body.dark .about-card .signature-text {
+            color: #9A96B8;
+        }
+
+        /* ===== 统计方块 ===== */
+        .stats-card {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 2rem 2.2rem;
+            border: 1px solid rgba(255,255,255,0.8);
+            box-shadow: 0 12px 28px rgba(80, 60, 160, 0.08);
+            width: 100%;
+            max-width: 480px;
+            transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            text-align: left;
+            margin-top: 1.5rem;
+        }
+        body.dark .stats-card {
+            background: rgba(35, 32, 60, 0.6);
+            border-color: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+        }
+
+        .stats-card .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: #4A4A6E;
+            font-size: 0.95rem;
+            padding: 0.3rem 0;
+            transition: color 0.3s ease;
+        }
+        body.dark .stats-card .stat-item {
+            color: #B8B4D8;
+        }
+        .stats-card .stat-item i {
+            width: 1.4rem;
+            color: #6B5ACF;
+            font-size: 1rem;
+            text-align: center;
+        }
+        body.dark .stats-card .stat-item i {
+            color: #A89FD0;
+        }
+
+        .stats-card .divider {
+            border: none;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            margin: 1rem 0;
+            transition: border-color 0.3s ease;
+        }
+        body.dark .stats-card .divider {
+            border-top-color: rgba(255,255,255,0.06);
+        }
+
+        .stats-card .domain-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .stats-card .domain-row .domain-url {
+            color: #6B5ACF;
+            font-weight: 500;
+            word-break: break-all;
+            font-size: 0.95rem;
+        }
+        body.dark .stats-card .domain-row .domain-url {
+            color: #88ccff;
+        }
+        .stats-card .domain-row .copy-btn {
+            background: rgba(107, 90, 207, 0.1);
+            border: none;
+            border-radius: 8px;
+            padding: 0.2rem 0.8rem;
+            font-size: 0.75rem;
+            color: #6B5ACF;
+            cursor: pointer;
+            transition: 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        .stats-card .domain-row .copy-btn:hover {
+            background: rgba(107, 90, 207, 0.2);
+            transform: scale(1.04);
+        }
+        .stats-card .domain-row .copy-btn.copied {
+            color: #27ae60;
+            background: rgba(39, 174, 96, 0.12);
+        }
+        body.dark .stats-card .domain-row .copy-btn {
+            background: rgba(136, 204, 255, 0.12);
+            color: #88ccff;
+        }
+        body.dark .stats-card .domain-row .copy-btn:hover {
+            background: rgba(136, 204, 255, 0.2);
         }
 
         .archive-container {
@@ -1040,7 +1150,7 @@
             .nav a { font-size: 0.8rem; padding: 0.6rem 0.6rem; min-width: 50px; }
             .nav a i { margin-right: 3px; font-size: 0.7rem; }
             .link-card { padding: 0.9rem 1.4rem; font-size: 0.9rem; }
-            .about-card, .article-placeholder { padding: 1.6rem; }
+            .about-card, .stats-card, .article-placeholder { padding: 1.6rem; }
             .theme-toggle { top: 14px; right: 16px; width: 42px; height: 42px; font-size: 1.2rem; }
             .nav-wrapper { border-radius: 40px; padding: 4px; }
             .nav-slider { border-radius: 40px; top: 4px; left: 4px; height: calc(100% - 8px); }
@@ -1212,7 +1322,6 @@
         const arrow = document.getElementById('softwareArrow');
         if (!toggle || !list || !arrow) return;
 
-        // 移除所有已绑定的监听器（通过克隆替换）
         const newToggle = toggle.cloneNode(true);
         toggle.parentNode.replaceChild(newToggle, toggle);
 
@@ -1220,7 +1329,6 @@
         const newArrow = document.getElementById('softwareArrow');
         const newToggleBtn = document.getElementById('softwareToggle');
 
-        // 恢复状态
         const isOpen = getStoredState();
         if (isOpen) {
             newList.classList.add('open');
@@ -1230,7 +1338,6 @@
             newArrow.classList.remove('open');
         }
 
-        // 绑定点击事件
         newToggleBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             const listEl = document.getElementById('softwareList');
@@ -1255,7 +1362,6 @@
                     <span class="link-label"><i class="fas fa-star" style="color: #6E9FDF;"></i> 父亲节庆祝页面</span>
                     <span class="link-arrow"><i class="fas fa-arrow-right"></i></span>
                 </a>
-                <!-- 软件下载 - 折叠 -->
                 <div style="display:flex; flex-direction:column; gap:0.5rem; width:100%;">
                     <div class="software-toggle-card" id="softwareToggle">
                         <span class="link-label"><i class="fas fa-box" style="color: #8F7BE0;"></i> 下载软件</span>
@@ -1803,31 +1909,162 @@
             });
     }
 
-    const aboutHTML = `
-        <div class="content-placeholder" style="justify-content: center;">
-            <div class="about-card">
-                <h3> 关于 ks</h3>
-                <p>一个普通的人类。</p>
-                <p>一个用 Ai 跑出来的博客（</p>
-                <div style="text-align:center; color:#6A6A95;">
-                    <i class="fas fa-envelope" style="color:#7A6BCF;"></i> 340313894@qq.com
+    // ===== 关于页面 =====
+    function renderAbout() {
+        const container = document.getElementById('appContent');
+
+        // 计算运行时间
+        const startDate = new Date(2026, 6, 5);
+        const now = new Date();
+        const diffMs = now - startDate;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+        // 进位显示（年月日）
+        let years = 0;
+        let months = 0;
+        let days = diffDays;
+        if (days >= 365) {
+            years = Math.floor(days / 365);
+            days = days % 365;
+        }
+        if (days >= 30) {
+            months = Math.floor(days / 30);
+            days = days % 30;
+        }
+        let carryDisplay = '';
+        if (years > 0) carryDisplay += years + ' 年 ';
+        if (months > 0) carryDisplay += months + ' 月 ';
+        carryDisplay += days + ' 天';
+
+        // 读取文章数据统计
+        let articleCount = 0;
+        let totalWordCount = 0;
+
+        fetch('wenzhang.json', { cache: 'no-cache' })
+            .then(response => {
+                if (!response.ok) throw new Error('文件不存在');
+                return response.json();
+            })
+            .then(data => {
+                const articles = data.announcements || [];
+                articleCount = articles.length;
+
+                // 计算总字数（纯文本）
+                articles.forEach(item => {
+                    const content = item.content || '';
+                    const text = content
+                        .replace(/```[\s\S]*?```/g, '')
+                        .replace(/`[^`]+`/g, '')
+                        .replace(/\*\*(.*?)\*\*/g, '$1')
+                        .replace(/\*([^*]+)\*/g, '$1')
+                        .replace(/~~(.*?)~~/g, '$1')
+                        .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+                        .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')
+                        .replace(/^#{1,6}\s+/gm, '')
+                        .replace(/^-\s+/gm, '')
+                        .replace(/^\d+\.\s+/gm, '')
+                        .replace(/^>\s+/gm, '')
+                        .replace(/^---$/gm, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                    totalWordCount += text.length;
+                });
+
+                // 重新渲染带统计数据的页面
+                renderAboutContent(articleCount, totalWordCount, diffDays, carryDisplay);
+            })
+            .catch(() => {
+                // 加载失败也显示页面，统计显示为 0
+                renderAboutContent(0, 0, diffDays, carryDisplay);
+            });
+
+        function renderAboutContent(articleCount, totalWordCount, diffDays, carryDisplay) {
+            container.innerHTML = `
+                <div class="content-placeholder" style="justify-content: center; gap: 1.5rem;">
+                    <!-- 方块一：关于 ks -->
+                    <div class="about-card">
+                        <h3><i class="fas fa-user" style="margin-right: 0.6rem; color: #6B5ACF;"></i>关于 ks</h3>
+                        <p>一个普通的人类。</p>
+                        <p>一个用 Ai 跑出来的博客</p>
+                        <div class="contact-line">
+                            <i class="fas fa-envelope" style="color: #7A6BCF;"></i> 340313894@qq.com
+                        </div>
+                        <div class="signature-text">"保持好奇，保持诚实。"</div>
+                    </div>
+
+                    <!-- 方块二：统计信息 -->
+                    <div class="stats-card">
+                        <div class="stat-item">
+                            <i class="fas fa-clock"></i>
+                            <span>运行时间</span>
+                            <span style="margin-left: auto; color: #6B5ACF; font-weight: 500;">2026.07.05 至今</span>
+                        </div>
+                        <div class="stat-item" style="padding-left: 2rem; font-size: 0.9rem; color: #7A7AA8;">
+                            <span>① ${diffDays} 天</span>
+                        </div>
+                        <div class="stat-item" style="padding-left: 2rem; font-size: 0.9rem; color: #7A7AA8;">
+                            <span>② ${carryDisplay}</span>
+                        </div>
+
+                        <hr class="divider">
+
+                        <div class="domain-row">
+                            <span><i class="fas fa-globe" style="color: #6B5ACF; margin-right: 0.6rem;"></i><span class="domain-url">https://cuizi.top</span></span>
+                            <button class="copy-btn" id="copyDomainBtn"><i class="fas fa-copy"></i> 复制</button>
+                        </div>
+
+                        <hr class="divider">
+
+                        <div class="stat-item">
+                            <i class="fas fa-file-alt"></i>
+                            <span>文章数量</span>
+                            <span style="margin-left: auto; font-weight: 500;">${articleCount} 篇</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-font"></i>
+                            <span>文章字数</span>
+                            <span style="margin-left: auto; font-weight: 500;">${totalWordCount} 字</span>
+                        </div>
+                    </div>
                 </div>
-                <p style="margin-top: 1.2rem; font-size:0.9rem; color:#7B7BA5; font-style: italic; text-align:center;">"保持好奇，保持诚实。"</p>
-            </div>
-        </div>
-    `;
+            `;
+
+            // 域名复制按钮
+            document.getElementById('copyDomainBtn').addEventListener('click', function() {
+                const url = 'https://cuizi.top';
+                navigator.clipboard.writeText(url).then(() => {
+                    this.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                    this.classList.add('copied');
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-copy"></i> 复制';
+                        this.classList.remove('copied');
+                    }, 2000);
+                }).catch(() => {
+                    const ta = document.createElement('textarea');
+                    ta.value = url;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    this.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                    this.classList.add('copied');
+                    setTimeout(() => {
+                        this.innerHTML = '<i class="fas fa-copy"></i> 复制';
+                        this.classList.remove('copied');
+                    }, 2000);
+                });
+            });
+        }
+    }
 
     const appContent = document.getElementById('appContent');
 
     function renderRecommend() {
         appContent.innerHTML = recommendHTML;
-        // 渲染完后重新绑定折叠事件
         setTimeout(function() {
             bindSoftwareToggle();
         }, 50);
     }
-
-    function renderAbout() { appContent.innerHTML = aboutHTML; }
 
     function switchPage(pageId, linkElement) {
         if (pageId === 'recommend') renderRecommend();
@@ -1891,7 +2128,6 @@
     const returnParam = getUrlParam('return');
     const defaultActive = document.querySelector('.nav a.active');
 
-    // 页面加载时恢复折叠状态
     window.addEventListener('pageshow', function() {
         if (document.getElementById('softwareToggle')) {
             applySoftwareState();
@@ -1905,7 +2141,6 @@
         } else {
             switchPage('recommend', defaultActive || navLinks[0]);
         }
-        // 清除 URL 参数，防止刷新后再次跳转
         const cleanUrl = window.location.pathname;
         window.history.replaceState({}, '', cleanUrl);
     } else if (returnParam === 'articles' || getUrlParam('page')) {
@@ -1915,7 +2150,6 @@
         } else {
             switchPage('recommend', defaultActive || navLinks[0]);
         }
-        // 清除 URL 参数，防止刷新后再次跳转
         const cleanUrl = window.location.pathname;
         window.history.replaceState({}, '', cleanUrl);
     } else {

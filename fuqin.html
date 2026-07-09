@@ -90,7 +90,6 @@
             width: 100%; height: 100%;
             z-index: 1;
             cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
         }
         .footer-note {
             position: fixed; bottom: 30px; left: 0; width: 100%;
@@ -127,7 +126,6 @@
             letter-spacing: 2px;
             position: relative;
             z-index: 30;
-            -webkit-tap-highlight-color: transparent;
             outline: none;
             -webkit-touch-callout: none;
             user-select: none;
@@ -177,7 +175,6 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
             cursor: pointer;
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
             user-select: none;
             outline: none;
@@ -210,7 +207,6 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
             cursor: pointer;
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
             user-select: none;
             outline: none;
@@ -701,7 +697,6 @@
             line-height: 1.5;
         }
 
-        /* 详情弹窗里的署名：默认隐藏，分享模式有署名才显示 */
         .signature-area {
             display: none;
             margin-top: 20px;
@@ -738,7 +733,6 @@
             font-size: 14px;
             cursor: pointer;
             transition: all 0.3s;
-            -webkit-tap-highlight-color: transparent;
             outline: none;
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
@@ -796,7 +790,6 @@
 
     <div class="edit-hint" id="editHint">✏️ 点击"分享"打开编辑面板 · 改完生成链接</div>
 
-    <!-- ===== 编辑面板 ===== -->
     <div class="edit-panel" id="editPanel">
         <div class="panel-title"><i class="fas fa-pen"></i> 自定义祝福内容</div>
         
@@ -824,7 +817,6 @@
         </div>
     </div>
 
-    <!-- ===== 详情弹窗 ===== -->
     <div class="modal-overlay" id="detailModal">
         <div class="modal-content">
             <h2>❤️ 父亲节 · 2026</h2>
@@ -890,7 +882,6 @@
                 <div class="movie-item">🎞️ 《美丽人生》 — 用父爱筑造最美丽的谎言</div>
             </div>
 
-            <!-- 详情弹窗署名：默认隐藏，分享模式有署名才显示 -->
             <div class="signature-area" id="signatureArea">
                 <span class="signature-label">— 祝福来自 —</span>
                 <span class="signature-text" id="signatureText"></span>
@@ -900,7 +891,6 @@
         </div>
     </div>
 
-    <!-- ===== 分享弹窗 ===== -->
     <div class="share-modal-overlay" id="shareModal">
         <div class="share-modal-content">
             <h3>🔗 分享链接已生成</h3>
@@ -916,7 +906,7 @@
     <script>
         (function() {
             // ============================================================
-            // 编码/解码（修复版：使用更稳定的方式）
+            // 编码/解码
             // ============================================================
             function encodeShareData(line1, line2, sig) {
                 const data = { l1: line1, l2: line2, s: sig || '' };
@@ -975,7 +965,6 @@
             const backText = document.getElementById('backText');
             const backIcon = document.querySelector('#backButton i');
 
-            // 编辑面板
             const editPanel = document.getElementById('editPanel');
             const inputLine1 = document.getElementById('inputLine1');
             const inputLine2 = document.getElementById('inputLine2');

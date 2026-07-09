@@ -224,11 +224,11 @@
             background: rgba(50, 45, 80, 0.8);
         }
 
-        /* ===== 回到顶部按钮 ===== */
+        /* ===== 回到顶部按钮（与文章详情页完全一致） ===== */
         .back-to-top-btn {
             position: fixed;
-            bottom: 28px;
-            right: 24px;
+            top: 20px;
+            right: 80px;
             z-index: 49;
             width: 48px;
             height: 48px;
@@ -278,8 +278,8 @@
 
         @media (max-width: 560px) {
             .back-to-top-btn {
-                bottom: 20px;
-                right: 16px;
+                top: 14px;
+                right: 66px;
                 width: 42px;
                 height: 42px;
                 font-size: 1rem;
@@ -1405,7 +1405,7 @@
             .link-card { padding: 0.9rem 1.4rem; font-size: 0.9rem; }
             .about-card, .stats-card, .article-placeholder { padding: 1.6rem; }
             .theme-toggle { top: 14px; right: 16px; width: 42px; height: 42px; font-size: 1.2rem; }
-            .back-to-top-btn { bottom: 16px; right: 14px; width: 40px; height: 40px; font-size: 0.9rem; }
+            .back-to-top-btn { top: 14px; right: 66px; width: 42px; height: 42px; font-size: 1rem; }
             .nav-wrapper { border-radius: 40px; padding: 4px; }
             .nav-slider { border-radius: 40px; top: 4px; left: 4px; height: calc(100% - 8px); }
             .nav-scroll { border-radius: 40px; }
@@ -1510,7 +1510,7 @@
     });
 
     // ============================================================
-    // 回到顶部（参考 article.html 的实现）
+    // 回到顶部（与 article.html 完全一致）
     // ============================================================
     const backToTopBtn = document.getElementById('backToTopBtn');
     let isScrollingToTop = false;

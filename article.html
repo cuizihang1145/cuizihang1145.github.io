@@ -97,11 +97,26 @@
             position: relative;
         }
 
-        .back-btn {
+        .top-buttons {
             position: fixed;
             top: 20px;
             left: 20px;
+            right: 20px;
             z-index: 50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+        }
+        .top-buttons .left,
+        .top-buttons .right {
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-btn {
             background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(14px);
             border: 1px solid rgba(255, 255, 255, 0.8);
@@ -114,10 +129,12 @@
             font-weight: 500;
             color: #4F4F78;
             text-decoration: none;
-            transition: 0.25s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            transition: 0.25s ease;
             box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
             cursor: pointer;
             font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
         }
         body.dark .back-btn {
             background: rgba(30, 28, 50, 0.7);
@@ -136,47 +153,49 @@
             font-size: 0.9rem;
         }
 
-        /* ===== 主题切换 ===== */
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 24px;
-            z-index: 50;
+        .share-btn {
             background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(14px);
             border: 1px solid rgba(255, 255, 255, 0.8);
             border-radius: 60px;
-            width: 48px;
-            height: 48px;
+            padding: 0.5rem 1.2rem 0.5rem 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 500;
             color: #4F4F78;
-            cursor: pointer;
-            transition: 0.3s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            transition: 0.25s ease;
             box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
-            user-select: none;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+            border: none;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            width: 44px;
+            height: 44px;
         }
-        .theme-toggle:hover {
-            transform: scale(1.05) rotate(8deg);
-            background: rgba(255, 255, 255, 0.85);
-            box-shadow: 0 10px 28px rgba(80, 60, 160, 0.18);
-        }
-        body.dark .theme-toggle {
+        body.dark .share-btn {
             background: rgba(30, 28, 50, 0.7);
             border-color: rgba(255, 255, 255, 0.08);
             color: #D0CAF0;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
-        body.dark .theme-toggle:hover {
+        .share-btn:hover {
+            background: rgba(255, 255, 255, 0.85);
+            transform: translateY(-2px) scale(1.02);
+        }
+        body.dark .share-btn:hover {
             background: rgba(50, 45, 80, 0.8);
         }
-        .theme-toggle:active {
-            transform: scale(0.92);
+        .share-btn i {
+            font-size: 1.2rem;
         }
 
-        /* ===== 回到顶部按钮 ===== */
         .back-to-top-btn {
             position: fixed;
             top: 20px;
@@ -201,6 +220,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
         }
         .back-to-top-btn:hover {
             transform: scale(1.05);
@@ -228,6 +249,47 @@
             background: rgba(50, 45, 80, 0.8);
         }
 
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 24px;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 60px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: #4F4F78;
+            cursor: pointer;
+            transition: 0.3s ease;
+            box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+        }
+        .theme-toggle:hover {
+            transform: scale(1.05) rotate(8deg);
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 10px 28px rgba(80, 60, 160, 0.18);
+        }
+        body.dark .theme-toggle {
+            background: rgba(30, 28, 50, 0.7);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #D0CAF0;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        body.dark .theme-toggle:hover {
+            background: rgba(50, 45, 80, 0.8);
+        }
+        .theme-toggle:active {
+            transform: scale(0.92);
+        }
+
         @media (max-width: 560px) {
             .back-to-top-btn {
                 top: 14px;
@@ -243,9 +305,20 @@
                 height: 42px;
                 font-size: 1.2rem;
             }
-            .back-btn {
+            .share-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            .share-btn i {
+                font-size: 1rem;
+            }
+            .top-buttons {
                 top: 14px;
                 left: 14px;
+                right: 14px;
+            }
+            .back-btn {
                 padding: 0.4rem 1rem 0.4rem 0.8rem;
                 font-size: 0.75rem;
             }
@@ -637,7 +710,6 @@
             font-size: 0.7rem;
         }
 
-        /* ===== 收纳按钮 - 无灰色圆圈 ===== */
         .code-block-header .collapse-btn {
             width: 28px;
             height: 28px;
@@ -667,7 +739,6 @@
             outline: none !important;
         }
 
-        /* ===== 代码块主体 ===== */
         .code-block-body-wrapper {
             overflow: hidden;
             transition: max-height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
@@ -680,7 +751,6 @@
             padding: 0;
         }
 
-        /* ===== 核心修复 ===== */
         .code-block-body {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -901,10 +971,15 @@
             line-height: 1;
             padding: 0.5rem;
             z-index: 10000;
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
         }
         .lightbox-overlay .lightbox-close:hover {
             opacity: 1;
             transform: scale(1.1) rotate(90deg);
+        }
+        .lightbox-overlay .lightbox-close:focus {
+            outline: none !important;
         }
 
         @media (max-width: 560px) {
@@ -930,6 +1005,214 @@
                 padding: 0.3rem 0.4rem;
             }
         }
+
+        /* ===== 分享菜单弹窗 ===== */
+        .share-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            animation: overlayFadeIn 0.25s ease;
+        }
+        .share-modal-overlay.active {
+            display: flex;
+        }
+
+        .share-modal-overlay .share-modal-box {
+            max-width: 420px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 2rem;
+            padding: 2rem 1.8rem 1.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            animation: modalFadeIn 0.3s ease;
+            transition: background 0.4s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        body.dark .share-modal-overlay .share-modal-box {
+            background: rgba(30, 28, 50, 0.92);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes modalFadeIn {
+            0% { opacity: 0; transform: scale(0.92) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes overlayFadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .share-modal-overlay .share-modal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.3px;
+            transition: color 0.3s ease;
+            text-align: center;
+        }
+        body.dark .share-modal-overlay .share-modal-title {
+            color: #fff;
+        }
+        .share-modal-overlay .share-modal-title i {
+            margin-right: 0.5rem;
+            color: #624ed0;
+        }
+        body.dark .share-modal-overlay .share-modal-title i {
+            color: #88ccff;
+        }
+
+        .share-modal-overlay .share-text-box {
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 12px;
+            padding: 0.8rem 1rem;
+            text-align: left;
+            font-size: 0.82rem;
+            line-height: 1.8;
+            color: #4a4a6e;
+            word-break: break-all;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        body.dark .share-modal-overlay .share-text-box {
+            background: rgba(255, 255, 255, 0.04);
+            color: #b8b4d8;
+            border-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .share-modal-overlay .share-modal-actions {
+            display: flex;
+            gap: 0.8rem;
+        }
+        .share-modal-overlay .share-modal-actions button {
+            flex: 1;
+            padding: 0.7rem 1.2rem;
+            border-radius: 60px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        .share-modal-overlay .share-modal-actions .btn-copy {
+            background: linear-gradient(145deg, #7A6BCF, #624ED0);
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(90, 70, 170, 0.2);
+        }
+        .share-modal-overlay .share-modal-actions .btn-copy:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 32px rgba(90, 70, 170, 0.3);
+        }
+        body.dark .share-modal-overlay .share-modal-actions .btn-copy {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+        body.dark .share-modal-overlay .share-modal-actions .btn-copy:hover {
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+        }
+        .share-modal-overlay .share-modal-actions .btn-cancel {
+            background: rgba(0, 0, 0, 0.06);
+            color: #6a6a92;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        .share-modal-overlay .share-modal-actions .btn-cancel:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        body.dark .share-modal-overlay .share-modal-actions .btn-cancel {
+            background: rgba(255, 255, 255, 0.08);
+            color: #9a96b8;
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+        body.dark .share-modal-overlay .share-modal-actions .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .share-modal-overlay .share-modal-actions .btn-copy i {
+            margin-right: 0.3rem;
+        }
+
+        @media (max-width: 480px) {
+            .share-modal-overlay .share-modal-box {
+                padding: 1.6rem 1.4rem 1.4rem;
+            }
+            .share-modal-overlay .share-text-box {
+                font-size: 0.75rem;
+                padding: 0.6rem 0.8rem;
+                max-height: 150px;
+            }
+            .share-modal-overlay .share-modal-actions button {
+                font-size: 0.8rem;
+                padding: 0.6rem 1rem;
+            }
+        }
+
+        /* ===== Toast ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(28, 26, 44, 0.92);
+            backdrop-filter: blur(16px);
+            padding: 0.8rem 2.5rem;
+            border-radius: 60px;
+            color: #EFEAFF;
+            font-size: 0.9rem;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 1000;
+            pointer-events: none;
+            white-space: nowrap;
+            min-width: 240px;
+            text-align: center;
+        }
+        body.dark .toast {
+            background: rgba(20, 18, 30, 0.95);
+            border-color: rgba(255,255,255,0.05);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast i {
+            margin-right: 0.5rem;
+            font-size: 1rem;
+        }
+        .toast .fa-check-circle { color: #4ade80; }
+        .toast .fa-info-circle { color: #60a5fa; }
+        .toast .fa-exclamation-circle { color: #fbbf24; }
+
+        @media (max-width: 480px) {
+            .toast {
+                font-size: 0.8rem;
+                padding: 0.6rem 1.5rem;
+                min-width: 180px;
+                white-space: normal;
+            }
+        }
     </style>
 </head>
 <body>
@@ -937,16 +1220,24 @@
 <div class="glow-soft"></div>
 <div class="glow-soft-2"></div>
 
-<a href="javascript:void(0)" class="back-btn" id="backButton">
-    <i class="fas fa-arrow-left"></i> 返回
-</a>
-
-<button class="back-to-top-btn" id="backToTopBtn" aria-label="回到顶部">
-    <i class="fas fa-arrow-up"></i>
-</button>
-
-<div class="theme-toggle" id="themeToggle" role="button" aria-label="切换深色/亮色模式">
-    <i class="fas fa-moon"></i>
+<!-- ===== 顶部按钮组 ===== -->
+<div class="top-buttons">
+    <div class="left">
+        <a href="javascript:void(0)" class="back-btn" id="backButton">
+            <i class="fas fa-arrow-left"></i> 返回
+        </a>
+        <button class="share-btn" id="shareButton" aria-label="分享">
+            <i class="fas fa-share-alt"></i>
+        </button>
+    </div>
+    <div class="right">
+        <button class="back-to-top-btn" id="backToTopBtn" aria-label="回到顶部">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+        <button class="theme-toggle" id="themeToggle" aria-label="切换深色/亮色模式">
+            <i class="fas fa-moon" id="themeIcon"></i>
+        </button>
+    </div>
 </div>
 
 <div class="container">
@@ -958,28 +1249,44 @@
     </div>
 </div>
 
+<!-- ===== 分享菜单弹窗 ===== -->
+<div class="share-modal-overlay" id="shareModal">
+    <div class="share-modal-box">
+        <div class="share-modal-title"><i class="fas fa-share-alt"></i> 分享内容</div>
+        <div class="share-text-box" id="shareTextDisplay">加载中...</div>
+        <div class="share-modal-actions">
+            <button class="btn-cancel" id="shareCancelBtn">取消</button>
+            <button class="btn-copy" id="shareCopyBtn"><i class="fas fa-copy"></i> 复制</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Toast ===== -->
+<div class="toast" id="toast"></div>
+
 <script>
     // ============================================================
     // 主题切换
     // ============================================================
     const themeToggle = document.getElementById('themeToggle');
-    const icon = themeToggle.querySelector('i');
+    const themeIcon = document.getElementById('themeIcon');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     let currentTheme = localStorage.getItem('ks-theme') || (prefersDark ? 'dark' : 'light');
 
     function setTheme(theme) {
         document.body.classList.toggle('dark', theme === 'dark');
-        icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        themeIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
         localStorage.setItem('ks-theme', theme);
         currentTheme = theme;
     }
     setTheme(currentTheme);
+
     themeToggle.addEventListener('click', () => {
         setTheme(currentTheme === 'dark' ? 'light' : 'dark');
     });
 
     // ============================================================
-    // 回到顶部（快速 + 防连点）
+    // 回到顶部
     // ============================================================
     const backToTopBtn = document.getElementById('backToTopBtn');
     let isScrollingToTop = false;
@@ -1062,16 +1369,72 @@
         return text.length;
     }
 
+    function calculateReadTime(wordCount) {
+        const minutes = Math.ceil(wordCount / 300);
+        return minutes < 1 ? 1 : minutes;
+    }
+
+    function markdownToPlainText(md) {
+        if (!md) return '';
+        let text = md;
+        text = text.replace(/\\\$/g, '$');
+        text = text.replace(/```[\s\S]*?```/g, '');
+        text = text.replace(/`([^`]+)`/g, '“$1”');
+        text = text.replace(/\*\*(.*?)\*\*/g, '$1');
+        text = text.replace(/\*([^*]+)\*/g, '$1');
+        text = text.replace(/~~(.*?)~~/g, '$1');
+        text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+        text = text.replace(/^#{1,6}\s+/gm, '');
+        text = text.replace(/^-\s+/gm, '');
+        text = text.replace(/^\d+\.\s+/gm, '');
+        text = text.replace(/^>\s+/gm, '');
+        text = text.replace(/^---$/gm, '');
+        text = text.replace(/\n{3,}/g, '\n\n');
+        return text.trim();
+    }
+
+    function getPlainPreview(content, maxLength = 80) {
+        const plain = markdownToPlainText(content);
+        const segments = [...new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(plain)];
+        const text = segments.map(s => s.segment).join('');
+        if (text.length <= maxLength) return text;
+        const truncatedSegments = segments.slice(0, maxLength);
+        let truncated = truncatedSegments.map(s => s.segment).join('');
+        const lastSeg = truncatedSegments[truncatedSegments.length - 1];
+        if (lastSeg) {
+            const lastChar = lastSeg.segment;
+            const emojiRegex = /[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]|[\u{FE0F}]|[\u{1F1E6}-\u{1F1FF}]|[\u{1F600}-\u{1F64F}]|[\u{2700}-\u{27BF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F900}-\u{1F9FF}]/u;
+            if (emojiRegex.test(lastChar) && lastChar.length > 1) {
+                const prevSegments = segments.slice(0, maxLength - 1);
+                if (prevSegments.length > 0) {
+                    truncated = prevSegments.map(s => s.segment).join('');
+                } else {
+                    truncated = '';
+                }
+            }
+        }
+        return truncated + '...';
+    }
+
+    function showToast(message, icon = 'fa-info-circle', duration = 2500) {
+        const toast = document.getElementById('toast');
+        toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+        toast.classList.add('show');
+        clearTimeout(toast._hideTimer);
+        toast._hideTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, duration);
+    }
+
     // ============================================================
-    // renderMarkdown — 完整版
+    // 渲染 Markdown
     // ============================================================
     function renderMarkdown(md) {
         if (!md) return '';
 
-        // 转义字符预处理
         const escMap = {};
         let escCounter = 0;
-        md = md.replace(/\\([\\`*_{}\[\]()#+\-.!|])/g, function(match, char) {
+        md = md.replace(/\\([\\`*_{}\[\]()#+\-.!|$])/g, function(match, char) {
             const key = '\uE000' + (escCounter++) + '\uE001';
             escMap[key] = char;
             return key;
@@ -1099,18 +1462,13 @@
 
         function renderInline(text) {
             let html = escapeHtml(text);
-
-            // 自动链接
             html = html.replace(/&lt;(https?:\/\/[^\s<>]+)&gt;/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
             html = html.replace(/&lt;([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})&gt;/g, '<a href="mailto:$1">$1</a>');
             html = html.replace(/(?<!\]\()https?:\/\/[^\s<>]+/g, '<a href="$&" target="_blank" rel="noopener">$&</a>');
-
             html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
             html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
             html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
-
-            // 图片带尺寸
             html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, alt, src, w, h) {
                 let style = '';
                 if (w && h) style = ` style="width:${w}px; height:${h}px;"`;
@@ -1118,15 +1476,11 @@
                 else if (h) style = ` style="height:${h}px; width:auto;"`;
                 return `<img src="${src}" alt="${alt}" loading="lazy"${style} />`;
             });
-
             html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-
-            // 脚注引用
             html = html.replace(/\[\^([^\]]+)\]/g, function(match, key) {
                 if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
                 return `<sup class="footnote-ref"><a href="#fn-${key}" id="fnref-${key}">${key}</a></sup>`;
             });
-
             html = restoreEscapes(html);
             return html;
         }
@@ -1207,13 +1561,11 @@
             codeLang = '';
         }
 
-        // ===== 主循环 =====
         let i = 0;
         while (i < lines.length) {
             const line = lines[i];
             const trimmed = line.trim();
 
-            // 代码块（支持 ``` 和 ~~~）
             const codeBlockStart = line.match(/^(```|~~~)(\w*)/);
             if (codeBlockStart) {
                 if (!inCodeBlock) {
@@ -1240,7 +1592,6 @@
                 continue;
             }
 
-            // 脚注定义
             const fnMatch = line.match(/^\[\^([^\]]+)\]:\s*(.+)/);
             if (fnMatch) {
                 flushTable();
@@ -1252,7 +1603,6 @@
                 continue;
             }
 
-            // 表格
             if (line.includes('|') && trimmed.startsWith('|') && trimmed.endsWith('|')) {
                 if (!inTable) {
                     flushTable();
@@ -1280,7 +1630,6 @@
                 continue;
             }
 
-            // 标题
             const headingMatch = line.match(/^(#{1,6})\s+(.+)/);
             if (headingMatch) {
                 flushTable();
@@ -1291,7 +1640,6 @@
                 continue;
             }
 
-            // 分割线
             if (/^---$/.test(trimmed) || /^\*\*\*$/.test(trimmed) || /^___$/.test(trimmed)) {
                 flushTable();
                 result += '<hr />';
@@ -1299,7 +1647,6 @@
                 continue;
             }
 
-            // 定义列表
             if (i + 1 < lines.length && lines[i + 1].match(/^:\s+/)) {
                 flushTable();
                 const term = renderInline(trimmed);
@@ -1315,7 +1662,6 @@
                 continue;
             }
 
-            // 列表解析（递归，支持嵌套）
             function parseList(startIdx, parentIndent) {
                 let html = '';
                 let idx = startIdx;
@@ -1408,7 +1754,6 @@
                 continue;
             }
 
-            // 引用（支持嵌套）
             if (line.startsWith('>')) {
                 flushTable();
                 let level = 0;
@@ -1449,7 +1794,6 @@
                 continue;
             }
 
-            // 普通段落
             flushTable();
             result += `<p>${renderInline(line)}</p>`;
             i++;
@@ -1479,7 +1823,6 @@
     // 复制 + 收纳事件
     // ============================================================
     document.addEventListener('click', function(e) {
-        // 复制
         const copyBtn = e.target.closest('.copy-btn');
         if (copyBtn) {
             const targetId = copyBtn.dataset.copy;
@@ -1512,7 +1855,6 @@
             return;
         }
 
-        // 收纳
         const collapseBtn = e.target.closest('.collapse-btn');
         if (collapseBtn) {
             const targetId = collapseBtn.dataset.target;
@@ -1728,9 +2070,55 @@
     }
 
     // ============================================================
+    // 分享菜单
+    // ============================================================
+    const shareModal = document.getElementById('shareModal');
+    const shareTextDisplay = document.getElementById('shareTextDisplay');
+    let currentShareText = '';
+
+    function openShareModal() {
+        if (!currentArticle) {
+            showToast('文章数据未加载', 'fa-exclamation-circle');
+            return;
+        }
+        shareModal.classList.add('active');
+    }
+
+    function closeShareModal() {
+        shareModal.classList.remove('active');
+    }
+
+    document.getElementById('shareButton').addEventListener('click', openShareModal);
+    document.getElementById('shareCancelBtn').addEventListener('click', closeShareModal);
+    shareModal.addEventListener('click', function(e) {
+        if (e.target === this) closeShareModal();
+    });
+
+    document.getElementById('shareCopyBtn').addEventListener('click', function() {
+        if (!currentShareText) {
+            showToast('没有可复制的内容', 'fa-exclamation-circle');
+            return;
+        }
+        navigator.clipboard.writeText(currentShareText).then(() => {
+            showToast('已复制到剪贴板', 'fa-check-circle');
+            closeShareModal();
+        }).catch(() => {
+            const ta = document.createElement('textarea');
+            ta.value = currentShareText;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('已复制到剪贴板', 'fa-check-circle');
+            closeShareModal();
+        });
+    });
+
+    // ============================================================
     // 渲染文章
     // ============================================================
     const appContent = document.getElementById('appContent');
+    let currentArticle = null;
 
     function renderArticle() {
         const id = getParam('id');
@@ -1764,17 +2152,23 @@
                     return;
                 }
 
-                const article = articles[idx];
-                const title = article.title || '无标题';
-                const date = article.date || '';
-                const content = article.content || '（暂无内容）';
+                currentArticle = articles[idx];
+                const title = currentArticle.title || '无标题';
+                const date = currentArticle.date || '';
+                const content = currentArticle.content || '（暂无内容）';
                 const renderedContent = renderMarkdown(content);
                 const wordCount = countWords(content);
+                const readTime = calculateReadTime(wordCount);
+
+                const preview = getPlainPreview(content, 80);
+                const articleUrl = window.location.origin + window.location.pathname + '?id=' + idx;
+                currentShareText = `${title}：${preview}\n查看完整内容？请访问：${articleUrl}`;
+                shareTextDisplay.textContent = currentShareText;
 
                 appContent.innerHTML = `
                     <div class="article-detail">
                         <h1 class="detail-title">${escapeHtml(title)}</h1>
-                        ${date ? `<span class="detail-date">${escapeHtml(date)}  ·  ${wordCount} 字</span>` : `<span class="detail-date">${wordCount} 字</span>`}
+                        <span class="detail-date">${date ? escapeHtml(date) + '  ·  ' : ''}预计阅读 ${readTime} 分钟 · ${wordCount} 字</span>
                         <hr class="detail-divider">
                         <div class="detail-content">${renderedContent}</div>
                     </div>
@@ -1800,17 +2194,20 @@
     renderArticle();
 
     // ============================================================
-    // 返回按钮
+    // 返回按钮（智能识别来源）
     // ============================================================
     const from = getParam('from');
     const page = getParam('page');
+    const folder = getParam('folder');
     const backBtn = document.getElementById('backButton');
 
     let returnUrl = 'index.html?return=articles';
     if (page) {
         returnUrl += '&page=' + page;
     }
-    if (from === 'archive') {
+    if (from === 'archive' && folder === 'articles') {
+        returnUrl = 'index.html?return=archive&folder=articles';
+    } else if (from === 'archive') {
         returnUrl = 'index.html?return=archive';
     }
 

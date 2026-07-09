@@ -680,7 +680,6 @@
             padding: 0;
         }
 
-        /* ===== 行号强制顶部对齐，代码不拆行 ===== */
         .code-block-body {
             display: flex;
             align-items: stretch;
@@ -704,9 +703,7 @@
             border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
             min-width: 2.8rem;
             background: transparent !important;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
+            align-self: flex-start;
         }
         .code-block-body .line-numbers span {
             display: block;

@@ -635,7 +635,7 @@
             // 按钮变灰 + 文字改变
             homeBtn.style.opacity = '0.5';
             homeBtn.style.pointerEvents = 'none';
-            homeBtn.innerHTML = '<i class="fas fa-home"></i> 马上出发 🚀';
+            homeBtn.innerHTML = '<i class="fas fa-home"></i> 马上出发咯';
 
             // 金光淡出
             homeBtn.classList.remove('glow-effect');
@@ -652,7 +652,7 @@
                 if (count > 0) {
                     el.textContent = '⏳ ' + count;
                 } else {
-                    el.textContent = '🚀 走你！';
+                    el.textContent = '走你！';
                     clearInterval(countdownTimer);
                     countdownTimer = null;
                     redirectTimer = setTimeout(() => {

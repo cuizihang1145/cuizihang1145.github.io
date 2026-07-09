@@ -1826,7 +1826,7 @@
         const pageItems = displayArticles.slice(start, end);
 
         if (displayArticles.length === 0) {
-            list.innerHTML = `<div class="no-result">❎没有找到匹配的文章</div>`;
+            list.innerHTML = `<div class="no-result">没有找到匹配的文章</div>`;
             if (countEl) countEl.textContent = '';
             if (paginationEl) paginationEl.innerHTML = '';
             saveArticleState();

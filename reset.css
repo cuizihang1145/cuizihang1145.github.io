@@ -30,24 +30,3 @@ img:active {
     outline: none !important;
     -webkit-tap-highlight-color: transparent !important;
 }
-
-/* ===== 页面离开/回来时标题变化 ===== */
-<script>
-(function() {
-    var originTitle = document.title;
-    var titleTimer = null;
-
-    document.addEventListener('visibilitychange', function() {
-        if (document.hidden) {
-            document.title = '哎呀，先别走嘛，再看看呀～';
-            clearTimeout(titleTimer);
-        } else {
-            document.title = '回来啦？再看看吧～';
-            clearTimeout(titleTimer);
-            titleTimer = setTimeout(function() {
-                document.title = originTitle;
-            }, 2000);
-        }
-    });
-})();
-</script>

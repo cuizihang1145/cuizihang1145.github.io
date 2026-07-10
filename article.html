@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>文章详情 · ks</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
+    </script>
     <style>
         * {
             margin: 0;
@@ -16,7 +18,7 @@
             -webkit-tap-highlight-color: transparent;
         }
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
             background: #FAFAFE;
             color: #1A1A2E;
             line-height: 1.8;
@@ -166,18 +168,19 @@
         .back-btn i {
             font-size: 0.9rem;
         }
+
         .share-btn {
             background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             border: 1px solid rgba(255, 255, 255, 0.8);
             border-radius: 60px;
-            padding: 0.5rem 1.2rem 0.5rem 1rem;
+            width: 48px;
+            height: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
             font-size: 1.2rem;
-            font-weight: 500;
             color: #4F4F78;
             transition: 0.25s ease;
             box-shadow: 0 6px 20px rgba(80, 60, 160, 0.10);
@@ -186,11 +189,6 @@
             -webkit-tap-highlight-color: transparent !important;
             outline: none !important;
             border: none;
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(14px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            width: 44px;
-            height: 44px;
         }
         body.dark .share-btn {
             background: rgba(30, 28, 50, 0.7);
@@ -200,7 +198,7 @@
         }
         .share-btn:hover {
             background: rgba(255, 255, 255, 0.85);
-            transform: translateY(-2px) scale(1.02);
+            transform: scale(1.05);
         }
         body.dark .share-btn:hover {
             background: rgba(50, 45, 80, 0.8);
@@ -208,6 +206,7 @@
         .share-btn i {
             font-size: 1.2rem;
         }
+
         .back-to-top-btn {
             position: fixed;
             top: 20px;
@@ -316,8 +315,8 @@
                 font-size: 1.2rem;
             }
             .share-btn {
-                width: 40px;
-                height: 40px;
+                width: 42px;
+                height: 42px;
                 font-size: 1rem;
             }
             .share-btn i {
@@ -368,12 +367,12 @@
         }
         .article-detail .detail-divider {
             border: none;
-            border-top: 1px solid rgba(0,0,0,0.06);
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
             margin-bottom: 1.5rem;
             transition: border-color 0.3s ease;
         }
         body.dark .article-detail .detail-divider {
-            border-top-color: rgba(255,255,255,0.06);
+            border-top-color: rgba(255, 255, 255, 0.06);
         }
         .article-detail .detail-content {
             font-size: 1rem;
@@ -405,12 +404,25 @@
         body.dark .article-detail .detail-content h6 {
             color: #E8E6F0;
         }
-        .article-detail .detail-content h1 { font-size: 1.8rem; }
-        .article-detail .detail-content h2 { font-size: 1.5rem; }
-        .article-detail .detail-content h3 { font-size: 1.25rem; }
-        .article-detail .detail-content h4 { font-size: 1.1rem; }
-        .article-detail .detail-content h5 { font-size: 1rem; }
-        .article-detail .detail-content h6 { font-size: 0.9rem; opacity: 0.7; }
+        .article-detail .detail-content h1 {
+            font-size: 1.8rem;
+        }
+        .article-detail .detail-content h2 {
+            font-size: 1.5rem;
+        }
+        .article-detail .detail-content h3 {
+            font-size: 1.25rem;
+        }
+        .article-detail .detail-content h4 {
+            font-size: 1.1rem;
+        }
+        .article-detail .detail-content h5 {
+            font-size: 1rem;
+        }
+        .article-detail .detail-content h6 {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
         .article-detail .detail-content p {
             margin-bottom: 0.8rem;
             transition: color 0.3s ease;
@@ -457,18 +469,18 @@
         }
         .article-detail .detail-content kbd {
             display: inline-block;
-            background: rgba(0,0,0,0.06);
+            background: rgba(0, 0, 0, 0.06);
             padding: 0.1rem 0.5rem;
             border-radius: 4px;
             font-family: 'Inter', monospace;
             font-size: 0.85em;
-            border: 1px solid rgba(0,0,0,0.08);
-            box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
             transition: background 0.3s ease, border-color 0.3s ease;
         }
         body.dark .article-detail .detail-content kbd {
-            background: rgba(255,255,255,0.06);
-            border-color: rgba(255,255,255,0.08);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.08);
         }
         .article-detail .detail-content mark {
             background: rgba(255, 215, 0, 0.3);
@@ -496,28 +508,28 @@
         }
         .article-detail .detail-content th,
         .article-detail .detail-content td {
-            border: 1px solid rgba(0,0,0,0.08);
+            border: 1px solid rgba(0, 0, 0, 0.08);
             padding: 0.5rem 0.8rem;
             text-align: left;
             transition: border-color 0.3s ease, background 0.3s ease;
         }
         body.dark .article-detail .detail-content th,
         body.dark .article-detail .detail-content td {
-            border-color: rgba(255,255,255,0.06);
+            border-color: rgba(255, 255, 255, 0.06);
         }
         .article-detail .detail-content th {
-            background: rgba(0,0,0,0.04);
+            background: rgba(0, 0, 0, 0.04);
             font-weight: 600;
             transition: background 0.3s ease;
         }
         body.dark .article-detail .detail-content th {
-            background: rgba(255,255,255,0.04);
+            background: rgba(255, 255, 255, 0.04);
         }
         .article-detail .detail-content tr:nth-child(even) td {
-            background: rgba(0,0,0,0.02);
+            background: rgba(0, 0, 0, 0.02);
         }
         body.dark .article-detail .detail-content tr:nth-child(even) td {
-            background: rgba(255,255,255,0.02);
+            background: rgba(255, 255, 255, 0.02);
         }
         .article-detail .detail-content .footnote-ref {
             font-size: 0.75em;
@@ -539,13 +551,13 @@
         .article-detail .detail-content .footnotes {
             margin-top: 2rem;
             padding-top: 1rem;
-            border-top: 1px solid rgba(0,0,0,0.06);
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
             font-size: 0.85rem;
             color: #6A6A92;
             transition: border-color 0.3s ease, color 0.3s ease;
         }
         body.dark .article-detail .detail-content .footnotes {
-            border-top-color: rgba(255,255,255,0.06);
+            border-top-color: rgba(255, 255, 255, 0.06);
             color: #8A8AA8;
         }
         .article-detail .detail-content .footnotes .footnote-def {
@@ -948,20 +960,56 @@
             outline: none !important;
         }
         @media (max-width: 560px) {
-            .container { padding: 2rem 1.2rem 1.5rem; }
-            .article-detail .detail-title { font-size: 1.6rem; }
-            .article-detail .detail-content img { border-radius: 8px; }
-            .code-block-header { padding: 6px 10px; min-height: 34px; gap: 6px; }
-            .code-block-header .lang-label { font-size: 0.6rem; }
-            .code-block-header .code-stats { font-size: 0.55rem; }
-            .code-block-header .copy-btn { font-size: 0.55rem; padding: 1px 8px; }
-            .code-block-header .copy-btn i { font-size: 0.6rem; }
-            .code-block-header .collapse-btn { width: 24px; height: 24px; font-size: 10px; }
-            .code-block-body { font-size: 0.75rem; }
-            .code-block-body .line-numbers { padding: 0.6rem 0.4rem 0.3rem 0.8rem; min-width: 2rem; }
-            .code-block-body .code-content { padding: 0.6rem 0.8rem 0.3rem 0.8rem; }
-            .lightbox-overlay .lightbox-container img { max-height: 70vh; }
-            .lightbox-overlay .lightbox-close { top: 16px; right: 18px; font-size: 2rem; }
+            .container {
+                padding: 2rem 1.2rem 1.5rem;
+            }
+            .article-detail .detail-title {
+                font-size: 1.6rem;
+            }
+            .article-detail .detail-content img {
+                border-radius: 8px;
+            }
+            .code-block-header {
+                padding: 6px 10px;
+                min-height: 34px;
+                gap: 6px;
+            }
+            .code-block-header .lang-label {
+                font-size: 0.6rem;
+            }
+            .code-block-header .code-stats {
+                font-size: 0.55rem;
+            }
+            .code-block-header .copy-btn {
+                font-size: 0.55rem;
+                padding: 1px 8px;
+            }
+            .code-block-header .copy-btn i {
+                font-size: 0.6rem;
+            }
+            .code-block-header .collapse-btn {
+                width: 24px;
+                height: 24px;
+                font-size: 10px;
+            }
+            .code-block-body {
+                font-size: 0.75rem;
+            }
+            .code-block-body .line-numbers {
+                padding: 0.6rem 0.4rem 0.3rem 0.8rem;
+                min-width: 2rem;
+            }
+            .code-block-body .code-content {
+                padding: 0.6rem 0.8rem 0.3rem 0.8rem;
+            }
+            .lightbox-overlay .lightbox-container img {
+                max-height: 70vh;
+            }
+            .lightbox-overlay .lightbox-close {
+                top: 16px;
+                right: 18px;
+                font-size: 2rem;
+            }
             .article-detail .detail-content table {
                 font-size: 0.75rem;
             }
@@ -970,27 +1018,35 @@
                 padding: 0.3rem 0.4rem;
             }
         }
+        /* ===== 分享弹窗 ===== */
         .share-modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
             z-index: 999;
             display: none;
             justify-content: center;
             align-items: center;
             padding: 1.5rem;
-            animation: overlayFadeIn 0.25s ease;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, background 0.3s ease, backdrop-filter 0.3s ease, visibility 0.3s ease;
         }
         .share-modal-overlay.active {
             display: flex;
+            opacity: 1;
+            visibility: visible;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
         .share-modal-overlay .share-modal-box {
-            max-width: 420px;
+            max-width: 480px;
             width: 100%;
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(24px);
@@ -1002,6 +1058,8 @@
             text-align: center;
             animation: modalFadeIn 0.3s ease;
             transition: background 0.4s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         body.dark .share-modal-overlay .share-modal-box {
             background: rgba(30, 28, 50, 0.92);
@@ -1011,10 +1069,6 @@
         @keyframes modalFadeIn {
             0% { opacity: 0; transform: scale(0.92) translateY(20px); }
             100% { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        @keyframes overlayFadeIn {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
         }
         .share-modal-overlay .share-modal-title {
             font-size: 1.1rem;
@@ -1035,32 +1089,24 @@
         body.dark .share-modal-overlay .share-modal-title i {
             color: #88ccff;
         }
-        .share-modal-overlay .share-text-box {
-            background: rgba(0, 0, 0, 0.04);
-            border-radius: 12px;
-            padding: 0.8rem 1rem;
-            text-align: left;
-            font-size: 0.82rem;
-            line-height: 1.8;
-            color: #4a4a6e;
-            word-break: break-all;
-            margin-bottom: 1rem;
-            border: 1px solid rgba(0, 0, 0, 0.04);
-            transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-            font-family: 'Inter', sans-serif;
-            max-height: 200px;
-            overflow-y: auto;
+        /* 分享图预览 */
+        #sharePreviewWrap {
+            border-radius: 0.8rem;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            margin-bottom: 0.8rem;
         }
-        body.dark .share-modal-overlay .share-text-box {
-            background: rgba(255, 255, 255, 0.04);
-            color: #b8b4d8;
-            border-color: rgba(255, 255, 255, 0.04);
+        #sharePreviewWrap img {
+            width: 100%;
+            display: block;
         }
-        .share-modal-overlay .share-modal-actions {
+        /* 按钮 */
+        .share-modal-actions {
             display: flex;
-            gap: 0.8rem;
+            gap: 0.6rem;
         }
-        .share-modal-overlay .share-modal-actions button {
+        .share-modal-actions button {
             flex: 1;
             padding: 0.7rem 1.2rem;
             border-radius: 60px;
@@ -1070,52 +1116,69 @@
             cursor: pointer;
             transition: 0.2s ease;
             font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
         }
-        .share-modal-overlay .share-modal-actions .btn-copy {
-            background: linear-gradient(145deg, #7A6BCF, #624ED0);
-            color: #fff;
-            box-shadow: 0 8px 24px rgba(90, 70, 170, 0.2);
-        }
-        .share-modal-overlay .share-modal-actions .btn-copy:hover {
-            transform: scale(1.02);
-            box-shadow: 0 12px 32px rgba(90, 70, 170, 0.3);
-        }
-        body.dark .share-modal-overlay .share-modal-actions .btn-copy {
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-        }
-        body.dark .share-modal-overlay .share-modal-actions .btn-copy:hover {
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
-        }
-        .share-modal-overlay .share-modal-actions .btn-cancel {
+        .share-modal-actions .btn-text {
             background: rgba(0, 0, 0, 0.06);
             color: #6a6a92;
             border: 1px solid rgba(0, 0, 0, 0.06);
             transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
-        .share-modal-overlay .share-modal-actions .btn-cancel:hover {
+        .share-modal-actions .btn-text:hover {
             background: rgba(0, 0, 0, 0.1);
         }
-        body.dark .share-modal-overlay .share-modal-actions .btn-cancel {
+        body.dark .share-modal-actions .btn-text {
             background: rgba(255, 255, 255, 0.08);
             color: #9a96b8;
             border-color: rgba(255, 255, 255, 0.06);
         }
-        body.dark .share-modal-overlay .share-modal-actions .btn-cancel:hover {
+        body.dark .share-modal-actions .btn-text:hover {
             background: rgba(255, 255, 255, 0.15);
         }
-        .share-modal-overlay .share-modal-actions .btn-copy i {
-            margin-right: 0.3rem;
+        .share-modal-actions .btn-image {
+            background: linear-gradient(145deg, #7A6BCF, #624ED0);
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(90, 70, 170, 0.2);
+        }
+        .share-modal-actions .btn-image:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 32px rgba(90, 70, 170, 0.3);
+        }
+        body.dark .share-modal-actions .btn-image {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+        body.dark .share-modal-actions .btn-image:hover {
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+        }
+        .share-modal-actions .btn-image i {
+            font-size: 0.9rem;
+        }
+        .share-close-btn {
+            margin-top: 0.6rem;
+            padding: 0.5rem;
+            background: none;
+            border: none;
+            color: #8a8ab5;
+            font-size: 0.85rem;
+            cursor: pointer;
+            width: 100%;
+            font-family: 'Inter', sans-serif;
+            transition: 0.2s ease;
+        }
+        .share-close-btn:hover {
+            color: #4a4a6e;
+        }
+        body.dark .share-close-btn:hover {
+            color: #d0caf0;
         }
         @media (max-width: 480px) {
             .share-modal-overlay .share-modal-box {
                 padding: 1.6rem 1.4rem 1.4rem;
             }
-            .share-modal-overlay .share-text-box {
-                font-size: 0.75rem;
-                padding: 0.6rem 0.8rem;
-                max-height: 150px;
-            }
-            .share-modal-overlay .share-modal-actions button {
+            .share-modal-actions button {
                 font-size: 0.8rem;
                 padding: 0.6rem 1rem;
             }
@@ -1133,8 +1196,8 @@
             font-size: 0.9rem;
             font-weight: 500;
             font-family: 'Inter', sans-serif;
-            border: 1px solid rgba(255,255,255,0.08);
-            box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
             opacity: 0;
             transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             z-index: 1000;
@@ -1145,7 +1208,7 @@
         }
         body.dark .toast {
             background: rgba(20, 18, 30, 0.95);
-            border-color: rgba(255,255,255,0.05);
+            border-color: rgba(255, 255, 255, 0.05);
         }
         .toast.show {
             opacity: 1;
@@ -1155,9 +1218,15 @@
             margin-right: 0.5rem;
             font-size: 1rem;
         }
-        .toast .fa-check-circle { color: #4ade80; }
-        .toast .fa-info-circle { color: #60a5fa; }
-        .toast .fa-exclamation-circle { color: #fbbf24; }
+        .toast .fa-check-circle {
+            color: #4ade80;
+        }
+        .toast .fa-info-circle {
+            color: #60a5fa;
+        }
+        .toast .fa-exclamation-circle {
+            color: #fbbf24;
+        }
         @media (max-width: 480px) {
             .toast {
                 font-size: 0.8rem;
@@ -1165,6 +1234,9 @@
                 min-width: 180px;
                 white-space: normal;
             }
+        }
+        #qrTemp {
+            display: none;
         }
     </style>
 </head>
@@ -1182,15 +1254,15 @@
             <a href="javascript:void(0)" class="back-btn" id="backButton">
                 <i class="fas fa-arrow-left"></i> 返回
             </a>
-            <button class="share-btn" id="shareButton" aria-label="分享">
+            <button class="share-btn" id="shareButton">
                 <i class="fas fa-share-alt"></i>
             </button>
         </div>
         <div class="right">
-            <button class="back-to-top-btn" id="backToTopBtn" aria-label="回到顶部">
+            <button class="back-to-top-btn" id="backToTopBtn">
                 <i class="fas fa-arrow-up"></i>
             </button>
-            <button class="theme-toggle" id="themeToggle" aria-label="切换深色/亮色模式">
+            <button class="theme-toggle" id="themeToggle">
                 <i class="fas fa-moon" id="themeIcon"></i>
             </button>
         </div>
@@ -1205,20 +1277,86 @@
         </div>
     </div>
 
+    <!-- ===== 分享弹窗 ===== -->
     <div class="share-modal-overlay" id="shareModal">
         <div class="share-modal-box">
-            <div class="share-modal-title"><i class="fas fa-share-alt"></i> 分享内容</div>
-            <div class="share-text-box" id="shareTextDisplay">加载中...</div>
+            <div class="share-modal-title"><i class="fas fa-share-alt"></i> 分享</div>
+
+            <div id="sharePreviewWrap">
+                <img id="sharePreviewImg" src="" alt="分享图预览" />
+            </div>
+
             <div class="share-modal-actions">
-                <button class="btn-cancel" id="shareCancelBtn">取消</button>
-                <button class="btn-copy" id="shareCopyBtn"><i class="fas fa-copy"></i> 复制</button>
+                <button class="btn-text" id="shareCopyBtn"><i class="fas fa-copy"></i> 复制文字</button>
+                <button class="btn-image" id="shareSaveBtn"><i class="fas fa-download"></i> 保存图片</button>
+            </div>
+
+            <button class="share-close-btn" id="shareCloseBtn">关闭</button>
+        </div>
+    </div>
+
+    <!-- ===== 复制文字弹窗 ===== -->
+    <div class="share-modal-overlay" id="textModal" style="z-index:1000;">
+        <div class="share-modal-box" style="max-width:420px;">
+            <div class="share-modal-title"><i class="fas fa-copy"></i> 复制内容</div>
+            <div class="share-text-box" id="shareTextDisplay" style="background:rgba(0,0,0,0.04);border-radius:12px;padding:0.8rem 1rem;text-align:left;font-size:0.82rem;line-height:1.8;color:#4a4a6e;word-break:break-all;margin-bottom:1rem;border:1px solid rgba(0,0,0,0.04);max-height:200px;overflow-y:auto;font-family:'Inter',sans-serif;">
+                加载中...
+            </div>
+            <div class="share-modal-actions">
+                <button class="btn-text" id="textModalCancel" style="flex:1;">取消</button>
+                <button class="btn-image" id="textModalCopy" style="flex:1;"><i class="fas fa-copy"></i> 复制</button>
             </div>
         </div>
     </div>
 
     <div class="toast" id="toast"></div>
+    <div id="qrTemp"></div>
 
     <script>
+        // ===== 工具函数 =====
+        function getParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function markdownToPlainText(md) {
+            if (!md) return '';
+            let text = md;
+            text = text.replace(/```[\s\S]*?```/g, '');
+            text = text.replace(/`([^`]+)`/g, '$1');
+            text = text.replace(/\*\*(.*?)\*\*/g, '$1');
+            text = text.replace(/\*([^*]+)\*/g, '$1');
+            text = text.replace(/~~(.*?)~~/g, '$1');
+            text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+            text = text.replace(/!\[([^\]]*)\]\([^)]*\)/g, '');
+            text = text.replace(/^#{1,6}\s+/gm, '');
+            text = text.replace(/^-\s+/gm, '');
+            text = text.replace(/^\d+\.\s+/gm, '');
+            text = text.replace(/^>\s+/gm, '');
+            text = text.replace(/^---$/gm, '');
+            text = text.replace(/\n{3,}/g, '\n\n');
+            return text.trim();
+        }
+
+        function showToast(message, icon) {
+            icon = icon || 'fa-info-circle';
+            const toast = document.getElementById('toast');
+            toast.innerHTML = '<i class="fas ' + icon + '"></i> ' + message;
+            toast.classList.add('show');
+            clearTimeout(toast._hideTimer);
+            toast._hideTimer = setTimeout(function() {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // ===== 进度条 =====
         const progressBar = document.getElementById('progressBar');
 
         function updateReadingProgress() {
@@ -1228,11 +1366,11 @@
             const progress = Math.min((scrollTop / docHeight) * 100, 100);
             progressBar.style.width = progress + '%';
         }
-
         window.addEventListener('scroll', updateReadingProgress);
         window.addEventListener('resize', updateReadingProgress);
         window.addEventListener('load', updateReadingProgress);
 
+        // ===== 主题切换 =====
         const themeToggle = document.getElementById('themeToggle');
         const themeIcon = document.getElementById('themeIcon');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1245,11 +1383,11 @@
             currentTheme = theme;
         }
         setTheme(currentTheme);
-
-        themeToggle.addEventListener('click', () => {
+        themeToggle.addEventListener('click', function() {
             setTheme(currentTheme === 'dark' ? 'light' : 'dark');
         });
 
+        // ===== 回到顶部 =====
         const backToTopBtn = document.getElementById('backToTopBtn');
         let isScrollingToTop = false;
 
@@ -1295,17 +1433,24 @@
             fastScrollToTop();
         });
 
-        function getParam(name) {
-            const url = new URL(window.location.href);
-            return url.searchParams.get(name);
+        // ===== 返回 =====
+        const backBtn = document.getElementById('backButton');
+        const from = getParam('from');
+        const page = getParam('page');
+        const folder = getParam('folder');
+        let returnUrl = 'index.html?return=articles';
+        if (page) returnUrl += '&page=' + page;
+        if (from === 'archive' && folder === 'articles') {
+            returnUrl = 'index.html?return=archive&folder=articles';
+        } else if (from === 'archive') {
+            returnUrl = 'index.html?return=archive';
         }
+        backBtn.href = returnUrl;
 
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+        // ===== 渲染文章 =====
+        const appContent = document.getElementById('appContent');
+        let currentArticle = null;
+        let currentShareText = '';
 
         function countWords(markdown) {
             if (!markdown) return 0;
@@ -1333,59 +1478,13 @@
             return minutes < 1 ? 1 : minutes;
         }
 
-        function markdownToPlainText(md) {
-            if (!md) return '';
-            let text = md;
-            text = text.replace(/\\\$/g, '$');
-            text = text.replace(/```[\s\S]*?```/g, '');
-            text = text.replace(/`([^`]+)`/g, '“$1”');
-            text = text.replace(/\*\*(.*?)\*\*/g, '$1');
-            text = text.replace(/\*([^*]+)\*/g, '$1');
-            text = text.replace(/~~(.*?)~~/g, '$1');
-            text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
-            text = text.replace(/^#{1,6}\s+/gm, '');
-            text = text.replace(/^-\s+/gm, '');
-            text = text.replace(/^\d+\.\s+/gm, '');
-            text = text.replace(/^>\s+/gm, '');
-            text = text.replace(/^---$/gm, '');
-            text = text.replace(/\n{3,}/g, '\n\n');
-            return text.trim();
-        }
-
         function getPlainPreview(content, maxLength) {
             maxLength = maxLength || 80;
             const plain = markdownToPlainText(content);
-            const segments = [...new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(plain)];
-            const text = segments.map(s => s.segment).join('');
-            if (text.length <= maxLength) return text;
-            const truncatedSegments = segments.slice(0, maxLength);
-            let truncated = truncatedSegments.map(s => s.segment).join('');
-            const lastSeg = truncatedSegments[truncatedSegments.length - 1];
-            if (lastSeg) {
-                const lastChar = lastSeg.segment;
-                const emojiRegex = /[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]|[\u{FE0F}]|[\u{1F1E6}-\u{1F1FF}]|[\u{1F600}-\u{1F64F}]|[\u{2700}-\u{27BF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F900}-\u{1F9FF}]/u;
-                if (emojiRegex.test(lastChar) && lastChar.length > 1) {
-                    const prevSegments = segments.slice(0, maxLength - 1);
-                    if (prevSegments.length > 0) {
-                        truncated = prevSegments.map(s => s.segment).join('');
-                    } else {
-                        truncated = '';
-                    }
-                }
-            }
-            return truncated + '...';
-        }
-
-        function showToast(message, icon, duration) {
-            icon = icon || 'fa-info-circle';
-            duration = duration || 2500;
-            const toast = document.getElementById('toast');
-            toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
-            toast.classList.add('show');
-            clearTimeout(toast._hideTimer);
-            toast._hideTimer = setTimeout(() => {
-                toast.classList.remove('show');
-            }, duration);
+            const chars = [...plain];
+            if (chars.length <= maxLength) return plain;
+            const truncated = chars.slice(0, maxLength).join('');
+            return truncated + '…';
         }
 
         function renderMarkdown(md) {
@@ -1430,15 +1529,16 @@
                 html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
                 html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, alt, src, w, h) {
                     let style = '';
-                    if (w && h) style = ` style="width:${w}px; height:${h}px;"`;
-                    else if (w) style = ` style="width:${w}px; height:auto;"`;
-                    else if (h) style = ` style="height:${h}px; width:auto;"`;
-                    return `<img src="${src}" alt="${alt}" loading="lazy"${style} />`;
+                    if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
+                    else if (w) style = ' style="width:' + w + 'px; height:auto;"';
+                    else if (h) style = ' style="height:' + h + 'px; width:auto;"';
+                    return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + ' />';
                 });
                 html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
                 html = html.replace(/\[\^([^\]]+)\]/g, function(match, key) {
                     if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
-                    return `<sup class="footnote-ref"><a href="#fn-${key}" id="fnref-${key}">${key}</a></sup>`;
+                    return '<sup class="footnote-ref"><a href="#fn-' + key + '" id="fnref-' + key + '">' + key +
+                        '</a></sup>';
                 });
                 html = restoreEscapes(html);
                 return html;
@@ -1453,9 +1553,9 @@
                     html += '<tr>';
                     for (let j = 0; j < cells.length; j++) {
                         const tag = isHeader ? 'th' : 'td';
-                        const align = (i === 1 && tableAligns[j]) ? ` style="text-align:${tableAligns[j]};"` : '';
+                        const align = (i === 1 && tableAligns[j]) ? ' style="text-align:' + tableAligns[j] + ';"' : '';
                         const cellContent = cells[j].replace(/\\n/g, '\n').replace(/\n/g, '<br>');
-                        html += `<${tag}${align}>${renderInline(cellContent)}</${tag}>`;
+                        html += '<' + tag + align + '>' + renderInline(cellContent) + '</' + tag + '>';
                     }
                     html += '</tr>';
                 }
@@ -1493,28 +1593,29 @@
                     lineNumbersHtml += '<span>' + j + '</span>';
                 }
 
-                const statsHtml = `<span>${lineCount} 行</span> · <span>${maxLineLength} 列</span> · <span>${totalChars} 字符</span>`;
+                const statsHtml = '<span>' + lineCount + ' 行</span> · <span>' + maxLineLength + ' 列</span> · <span>' +
+                    totalChars + ' 字符</span>';
 
                 result += `
-                    <div class="code-block-wrapper" id="cbw-${copyId}">
-                        <div class="code-block-header">
-                            <span class="lang-label">${escapeHtml(lang)}</span>
-                            <span class="code-stats">${statsHtml}</span>
-                            <span class="header-actions">
-                                <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
-                                <button class="collapse-btn" data-target="cbw-${copyId}" aria-label="收起代码块">
-                                    <i class="fas fa-chevron-up"></i>
-                                </button>
-                            </span>
-                        </div>
-                        <div class="code-block-body-wrapper">
-                            <div class="code-block-body">
-                                <div class="line-numbers">${lineNumbersHtml}</div>
-                                <code class="code-content" id="${copyId}">${escapedCode}</code>
+                        <div class="code-block-wrapper" id="cbw-${copyId}">
+                            <div class="code-block-header">
+                                <span class="lang-label">${escapeHtml(lang)}</span>
+                                <span class="code-stats">${statsHtml}</span>
+                                <span class="header-actions">
+                                    <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
+                                    <button class="collapse-btn" data-target="cbw-${copyId}">
+                                        <i class="fas fa-chevron-up"></i>
+                                    </button>
+                                </span>
+                            </div>
+                            <div class="code-block-body-wrapper">
+                                <div class="code-block-body">
+                                    <div class="line-numbers">${lineNumbersHtml}</div>
+                                    <code class="code-content" id="${copyId}">${escapedCode}</code>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
                 codeBlockLines = [];
                 inCodeBlock = false;
                 codeLang = '';
@@ -1594,7 +1695,7 @@
                     flushTable();
                     const level = headingMatch[1].length;
                     const text = headingMatch[2];
-                    result += `<h${level}>${renderInline(text)}</h${level}>`;
+                    result += '<h' + level + '>' + renderInline(text) + '</h' + level + '>';
                     i++;
                     continue;
                 }
@@ -1616,8 +1717,8 @@
                         i++;
                     }
                     while (i < lines.length && lines[i].trim() === '') i++;
-                    let ddHtml = defs.map(d => `<dd>${d}</dd>`).join('');
-                    result += `<dl><dt>${term}</dt>${ddHtml}</dl>`;
+                    let ddHtml = defs.map(d => '<dd>' + d + '</dd>').join('');
+                    result += '<dl><dt>' + term + '</dt>' + ddHtml + '</dl>';
                     continue;
                 }
 
@@ -1649,7 +1750,8 @@
                             if (indent < parentIndent) break;
                             type = 'task';
                             const checked = taskMatch[2] === 'x';
-                            content = `<input type="checkbox"${checked ? ' checked' : ''} disabled> ${taskMatch[3]}`;
+                            content = '<input type="checkbox"' + (checked ? ' checked' : '') +
+                            ' disabled> ' + taskMatch[3];
                         } else if (ulMatch) {
                             indent = ulMatch[1].length;
                             if (indent < parentIndent) break;
@@ -1695,11 +1797,11 @@
                         const liClass = isTask ? ' class="task-list-item"' : '';
                         const renderedContent = renderInline(content);
 
-                        let liTag = `<li${liClass}`;
+                        let liTag = '<li' + liClass;
                         if (type === 'ol') {
-                            liTag += ` value="${olNumber}"`;
+                            liTag += ' value="' + olNumber + '"';
                         }
-                        liTag += `>${renderedContent}${childHtml}</li>`;
+                        liTag += '>' + renderedContent + childHtml + '</li>';
 
                         items.push({
                             type: type,
@@ -1718,10 +1820,10 @@
                     const listClass = currentListType === 'ol' ? '' : ' class="task-list"';
                     let startAttr = '';
                     if (currentListType === 'ol' && olStartNumber !== null && olStartNumber !== 1) {
-                        startAttr = ` start="${olStartNumber}"`;
+                        startAttr = ' start="' + olStartNumber + '"';
                     }
                     const itemsHtml = items.map(item => item.html).join('\n');
-                    html = `<${listTag}${listClass}${startAttr}>\n${itemsHtml}\n</${listTag}>`;
+                    html = '<' + listTag + listClass + startAttr + '>\n' + itemsHtml + '\n</' + listTag + '>';
                     return [html, idx - startIdx];
                 }
 
@@ -1770,7 +1872,7 @@
                     }
                     let innerHtml = renderInline(quoteLines.join('\n'));
                     for (let lv = 0; lv < level; lv++) {
-                        innerHtml = `<blockquote>${innerHtml}</blockquote>`;
+                        innerHtml = '<blockquote>' + innerHtml + '</blockquote>';
                     }
                     result += innerHtml;
                     i = j;
@@ -1778,7 +1880,7 @@
                 }
 
                 flushTable();
-                result += `<p>${renderInline(line)}</p>`;
+                result += '<p>' + renderInline(line) + '</p>';
                 i++;
             }
 
@@ -1789,8 +1891,8 @@
                 result += '<div class="footnotes">\n';
                 for (const key of footnoteKeys) {
                     if (footnotes[key]) {
-                        result += `<div class="footnote-def" id="fn-${key}">`;
-                        result += `<a href="#fnref-${key}" class="footnote-back">↩</a> `;
+                        result += '<div class="footnote-def" id="fn-' + key + '">';
+                        result += '<a href="#fnref-' + key + '" class="footnote-back">↩</a> ';
                         result += footnotes[key];
                         result += '</div>\n';
                     }
@@ -1802,67 +1904,91 @@
             return result;
         }
 
-        document.addEventListener('click', function(e) {
-            const copyBtn = e.target.closest('.copy-btn');
-            if (copyBtn) {
-                const targetId = copyBtn.dataset.copy;
-                if (!targetId) return;
-                const codeEl = document.getElementById(targetId);
-                if (!codeEl) return;
-                const text = codeEl.textContent;
-
-                navigator.clipboard.writeText(text).then(() => {
-                    copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
-                    copyBtn.classList.add('copied');
-                    setTimeout(() => {
-                        copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
-                        copyBtn.classList.remove('copied');
-                    }, 2000);
-                }).catch(() => {
-                    const ta = document.createElement('textarea');
-                    ta.value = text;
-                    document.body.appendChild(ta);
-                    ta.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(ta);
-                    copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
-                    copyBtn.classList.add('copied');
-                    setTimeout(() => {
-                        copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
-                        copyBtn.classList.remove('copied');
-                    }, 2000);
-                });
+        // ===== 渲染文章内容 =====
+        function renderArticle() {
+            const id = getParam('id');
+            if (id === null) {
+                appContent.innerHTML = `
+                        <div class="not-found">
+                            <i class="far fa-frown"></i>
+                            <p>缺少文章 ID</p>
+                            <p style="font-size:0.85rem; margin-top:0.5rem;">请从文章列表点击进入</p>
+                        </div>
+                    `;
                 return;
             }
 
-            const collapseBtn = e.target.closest('.collapse-btn');
-            if (collapseBtn) {
-                const targetId = collapseBtn.dataset.target;
-                if (!targetId) return;
-                const wrapper = document.getElementById(targetId);
-                if (!wrapper) return;
-                const iconEl = collapseBtn.querySelector('i');
-                wrapper.classList.toggle('collapsed');
-                if (wrapper.classList.contains('collapsed')) {
-                    iconEl.className = 'fas fa-chevron-down';
-                } else {
-                    iconEl.className = 'fas fa-chevron-up';
-                }
-                return;
-            }
-        });
+            fetch('wenzhang.json', { cache: 'no-cache' })
+                .then(response => {
+                    if (!response.ok) throw new Error('文件不存在');
+                    return response.json();
+                })
+                .then(data => {
+                    const articles = data.announcements || [];
+                    const idx = parseInt(id);
+                    if (isNaN(idx) || idx < 0 || idx >= articles.length) {
+                        appContent.innerHTML = `
+                                <div class="not-found">
+                                    <i class="far fa-frown"></i>
+                                    <p>文章不存在</p>
+                                    <p style="font-size:0.85rem; margin-top:0.5rem;">可能已被删除</p>
+                                </div>
+                            `;
+                        return;
+                    }
 
-        function initLightbox() {
-            const images = document.querySelectorAll('.detail-content img');
-            images.forEach(img => {
-                img.style.cursor = 'pointer';
-                img.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    openLightbox(this.src, this.alt || '');
+                    currentArticle = articles[idx];
+                    const title = currentArticle.title || '无标题';
+                    const date = currentArticle.date || '';
+                    const content = currentArticle.content || '（暂无内容）';
+                    const renderedContent = renderMarkdown(content);
+                    const wordCount = countWords(content);
+                    const readTime = calculateReadTime(wordCount);
+
+                    const preview = getPlainPreview(content, 80);
+                    const articleUrl = window.location.origin + window.location.pathname + '?id=' + idx;
+                    currentShareText = title + '：' + preview + '\n查看完整内容？请访问：' + articleUrl;
+
+                    appContent.innerHTML = `
+                            <div class="article-detail">
+                                <h1 class="detail-title">${escapeHtml(title)}</h1>
+                                <span class="detail-date">${date ? escapeHtml(date) + '  ·  ' : ''}预计阅读 ${readTime} 分钟 · ${wordCount} 字</span>
+                                <hr class="detail-divider">
+                                <div class="detail-content">${renderedContent}</div>
+                            </div>
+                        `;
+
+                    document.querySelectorAll('.code-content').forEach(el => {
+                        hljs.highlightElement(el);
+                    });
+
+                    // 文章图片灯箱
+                    const images = document.querySelectorAll('.detail-content img');
+                    images.forEach(img => {
+                        img.style.cursor = 'pointer';
+                        img.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            openLightbox(this.src, this.alt || '');
+                        });
+                    });
+
+                    setTimeout(updateReadingProgress, 100);
+
+                    // 分享图预生成
+                    generateShareImage();
+                })
+                .catch(() => {
+                    appContent.innerHTML = `
+                            <div class="not-found">
+                                <i class="far fa-frown"></i>
+                                <p>加载文章数据失败</p>
+                                <p style="font-size:0.85rem; margin-top:0.5rem;">请确保 wenzhang.json 文件存在</p>
+                            </div>
+                        `;
                 });
-            });
         }
 
+        // ===== 图片灯箱 =====
         function openLightbox(src, alt) {
             const existing = document.querySelector('.lightbox-overlay');
             if (existing) existing.remove();
@@ -1870,13 +1996,13 @@
             const overlay = document.createElement('div');
             overlay.className = 'lightbox-overlay';
             overlay.innerHTML = `
-                <div class="lightbox-container">
-                    <div class="lightbox-img-wrapper">
-                        <img src="${src}" alt="${escapeHtml(alt)}" />
+                    <div class="lightbox-container">
+                        <div class="lightbox-img-wrapper">
+                            <img src="${src}" alt="${escapeHtml(alt)}" />
+                        </div>
                     </div>
-                </div>
-                <button class="lightbox-close">&times;</button>
-            `;
+                    <button class="lightbox-close">&times;</button>
+                `;
             document.body.appendChild(overlay);
             document.body.style.overflow = 'hidden';
 
@@ -1891,7 +2017,7 @@
             function updateTransform(animate) {
                 animate = animate || false;
                 img.style.transition = animate ? 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none';
-                img.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+                img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
             }
 
             img.addEventListener('wheel', function(e) {
@@ -2047,142 +2173,266 @@
             updateTransform(false);
         }
 
+        // ============================================================
+        // 分享图生成
+        // ============================================================
+        const qrTemp = document.getElementById('qrTemp');
         const shareModal = document.getElementById('shareModal');
+        const sharePreviewImg = document.getElementById('sharePreviewImg');
+        const shareCloseBtn = document.getElementById('shareCloseBtn');
+        const shareCopyBtn = document.getElementById('shareCopyBtn');
+        const shareSaveBtn = document.getElementById('shareSaveBtn');
+        const textModal = document.getElementById('textModal');
+        const textModalCancel = document.getElementById('textModalCancel');
+        const textModalCopy = document.getElementById('textModalCopy');
         const shareTextDisplay = document.getElementById('shareTextDisplay');
-        let currentShareText = '';
 
-        function openShareModal() {
+        let currentShareImageDataUrl = '';
+
+        function generateQRCanvas(text, size) {
+            return new Promise((resolve, reject) => {
+                try {
+                    qrTemp.innerHTML = '';
+                    const qr = new QRCode(qrTemp, {
+                        text: text,
+                        width: size,
+                        height: size,
+                        colorDark: '#1a1a2e',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                    const canvas = qrTemp.querySelector('canvas');
+                    if (canvas) {
+                        resolve(canvas);
+                    } else {
+                        const img = qrTemp.querySelector('img');
+                        if (img) {
+                            const c = document.createElement('canvas');
+                            c.width = size;
+                            c.height = size;
+                            const ctx = c.getContext('2d');
+                            ctx.drawImage(img, 0, 0, size, size);
+                            resolve(c);
+                        } else {
+                            reject(new Error('二维码生成失败'));
+                        }
+                    }
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        }
+
+        function wrapText(ctx, text, maxWidth) {
+            const chars = [...text];
+            const lines = [];
+            let current = '';
+            for (const ch of chars) {
+                if (ctx.measureText(current + ch).width > maxWidth) {
+                    lines.push(current);
+                    current = ch;
+                } else {
+                    current += ch;
+                }
+            }
+            if (current) lines.push(current);
+            return lines;
+        }
+
+        function truncateLines(lines, maxLines) {
+            if (lines.length <= maxLines) return lines;
+            const result = lines.slice(0, maxLines);
+            const last = result[result.length - 1];
+            const trimmed = last.slice(0, -1) + '…';
+            result[result.length - 1] = trimmed;
+            return result;
+        }
+
+        async function generateShareImage() {
+            if (!currentArticle) return;
+
+            const title = currentArticle.title || '无标题';
+            const date = currentArticle.date || '';
+            const plainContent = markdownToPlainText(currentArticle.content || '');
+            const desc = plainContent.substring(0, 80) + (plainContent.length > 80 ? '…' : '');
+            const url = window.location.href;
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            const W = 900,
+                H = 540;
+            canvas.width = W;
+            canvas.height = H;
+
+            // 背景
+            const grad = ctx.createLinearGradient(0, 0, W, H);
+            grad.addColorStop(0, '#f8f5ff');
+            grad.addColorStop(1, '#e8e0ff');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+
+            // 装饰
+            ctx.globalAlpha = 0.05;
+            for (let i = 0; i < 6; i++) {
+                ctx.beginPath();
+                ctx.arc(60 + i * 160, 40 + (i % 3) * 30, 80, 0, Math.PI * 2);
+                ctx.fillStyle = '#7a6bcf';
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            // 日期
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'top';
+            ctx.font = '400 14px "Inter", sans-serif';
+            ctx.fillStyle = '#8a8ab5';
+            ctx.fillText(date || '', W - 40, 28);
+
+            // 标题
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.font = '700 52px "Inter", "PingFang SC", sans-serif';
+            ctx.fillStyle = '#1a1a2e';
+            const titleLines = wrapText(ctx, title || '无标题', W - 260);
+            const titleDisplay = truncateLines(titleLines, 2);
+            titleDisplay.forEach((line, i) => {
+                ctx.fillText(line, 40, 70 + i * 60);
+            });
+
+            // 摘要
+            let subY = 70 + Math.min(titleDisplay.length, 2) * 60 + 20;
+            ctx.font = '400 22px "Inter", "PingFang SC", sans-serif';
+            ctx.fillStyle = '#4a4a6e';
+            const descLines = wrapText(ctx, desc || ' ', W - 260);
+            const descDisplay = truncateLines(descLines, 4);
+            descDisplay.forEach((line, i) => {
+                ctx.fillText(line, 40, subY + 10 + i * 34);
+            });
+
+            // 底部作者
+            const bottomY = H - 44;
+            ctx.font = '500 16px "Inter", "PingFang SC", sans-serif';
+            ctx.fillStyle = '#6a6a92';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText('ks', 40, bottomY);
+
+            // 二维码 180px
+            const qrSize = 180;
+            const qrX = W - qrSize - 40;
+            const qrY = H - qrSize - 40;
+
+            try {
+                const qrCanvas = await generateQRCanvas(url, qrSize);
+                ctx.shadowColor = 'rgba(0,0,0,0.06)';
+                ctx.shadowBlur = 16;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 4;
+                ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+            } catch (e) {
+                ctx.fillStyle = '#f0edff';
+                ctx.fillRect(qrX, qrY, qrSize, qrSize);
+                ctx.fillStyle = '#aaa';
+                ctx.font = '16px "Inter", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('二维码失败', qrX + qrSize / 2, qrY + qrSize / 2);
+            }
+
+            // 扫码提示
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.font = '400 13px "Inter", sans-serif';
+            ctx.fillStyle = '#aaaacc';
+            ctx.fillText('扫码观看全文', qrX + qrSize / 2, qrY + qrSize + 10);
+
+            // 水印
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'bottom';
+            ctx.font = '400 13px "Inter", sans-serif';
+            ctx.fillStyle = '#c8c8e0';
+            ctx.fillText('cuizi.top', W - 40, 18);
+
+            currentShareImageDataUrl = canvas.toDataURL('image/png');
+            sharePreviewImg.src = currentShareImageDataUrl;
+        }
+
+        // ===== 分享弹窗控制 =====
+        document.getElementById('shareButton').addEventListener('click', function() {
             if (!currentArticle) {
-                showToast('文章数据未加载', 'fa-exclamation-circle');
+                showToast('文章未加载', 'fa-exclamation-circle');
                 return;
             }
             shareModal.classList.add('active');
-        }
-
-        function closeShareModal() {
-            shareModal.classList.remove('active');
-        }
-
-        document.getElementById('shareButton').addEventListener('click', openShareModal);
-        document.getElementById('shareCancelBtn').addEventListener('click', closeShareModal);
-        shareModal.addEventListener('click', function(e) {
-            if (e.target === this) closeShareModal();
+            document.body.style.overflow = 'hidden';
         });
 
-        document.getElementById('shareCopyBtn').addEventListener('click', function() {
-            if (!currentShareText) {
-                showToast('没有可复制的内容', 'fa-exclamation-circle');
-                return;
+        shareCloseBtn.addEventListener('click', function() {
+            shareModal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+
+        shareModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                shareModal.classList.remove('active');
+                document.body.style.overflow = '';
             }
-            navigator.clipboard.writeText(currentShareText).then(() => {
-                showToast('已复制到剪贴板', 'fa-check-circle');
-                closeShareModal();
+        });
+
+        // ===== 复制文字 =====
+        shareCopyBtn.addEventListener('click', function() {
+            shareTextDisplay.textContent = currentShareText || '暂无内容';
+            textModal.classList.add('active');
+        });
+
+        textModalCancel.addEventListener('click', function() {
+            textModal.classList.remove('active');
+        });
+
+        textModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                textModal.classList.remove('active');
+            }
+        });
+
+        textModalCopy.addEventListener('click', function() {
+            const text = shareTextDisplay.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('已复制', 'fa-check-circle');
+                textModal.classList.remove('active');
             }).catch(() => {
                 const ta = document.createElement('textarea');
-                ta.value = currentShareText;
+                ta.value = text;
                 document.body.appendChild(ta);
                 ta.select();
                 document.execCommand('copy');
                 document.body.removeChild(ta);
-                showToast('已复制到剪贴板', 'fa-check-circle');
-                closeShareModal();
+                showToast('已复制', 'fa-check-circle');
+                textModal.classList.remove('active');
             });
         });
 
-        const appContent = document.getElementById('appContent');
-        let currentArticle = null;
-
-        function renderArticle() {
-            const id = getParam('id');
-            if (id === null) {
-                appContent.innerHTML = `
-                    <div class="not-found">
-                        <i class="far fa-frown"></i>
-                        <p>缺少文章 ID</p>
-                        <p style="font-size:0.85rem; margin-top:0.5rem;">请从文章列表点击进入</p>
-                    </div>
-                `;
+        // ===== 保存图片 =====
+        shareSaveBtn.addEventListener('click', function() {
+            if (!currentShareImageDataUrl) {
+                showToast('图片未生成', 'fa-exclamation-circle');
                 return;
             }
+            const a = document.createElement('a');
+            a.href = currentShareImageDataUrl;
+            const title = (currentArticle && currentArticle.title) || '文章';
+            a.download = '分享图_' + title.substring(0, 10) + '.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('已保存', 'fa-check-circle');
+        });
 
-            fetch('wenzhang.json', { cache: 'no-cache' })
-                .then(response => {
-                    if (!response.ok) throw new Error('文件不存在');
-                    return response.json();
-                })
-                .then(data => {
-                    const articles = data.announcements || [];
-                    const idx = parseInt(id);
-                    if (isNaN(idx) || idx < 0 || idx >= articles.length) {
-                        appContent.innerHTML = `
-                            <div class="not-found">
-                                <i class="far fa-frown"></i>
-                                <p>文章不存在</p>
-                                <p style="font-size:0.85rem; margin-top:0.5rem;">可能已被删除</p>
-                            </div>
-                        `;
-                        return;
-                    }
-
-                    currentArticle = articles[idx];
-                    const title = currentArticle.title || '无标题';
-                    const date = currentArticle.date || '';
-                    const content = currentArticle.content || '（暂无内容）';
-                    const renderedContent = renderMarkdown(content);
-                    const wordCount = countWords(content);
-                    const readTime = calculateReadTime(wordCount);
-
-                    const preview = getPlainPreview(content, 80);
-                    const articleUrl = window.location.origin + window.location.pathname + '?id=' + idx;
-                    currentShareText = `${title}：${preview}\n查看完整内容？请访问：${articleUrl}`;
-                    shareTextDisplay.textContent = currentShareText;
-
-                    appContent.innerHTML = `
-                        <div class="article-detail">
-                            <h1 class="detail-title">${escapeHtml(title)}</h1>
-                            <span class="detail-date">${date ? escapeHtml(date) + '  ·  ' : ''}预计阅读 ${readTime} 分钟 · ${wordCount} 字</span>
-                            <hr class="detail-divider">
-                            <div class="detail-content">${renderedContent}</div>
-                        </div>
-                    `;
-
-                    document.querySelectorAll('.code-content').forEach(el => {
-                        hljs.highlightElement(el);
-                    });
-
-                    initLightbox();
-
-                    setTimeout(updateReadingProgress, 100);
-                })
-                .catch(() => {
-                    appContent.innerHTML = `
-                        <div class="not-found">
-                            <i class="far fa-frown"></i>
-                            <p>加载文章数据失败</p>
-                            <p style="font-size:0.85rem; margin-top:0.5rem;">请确保 wenzhang.json 文件存在</p>
-                        </div>
-                    `;
-                });
-        }
-
+        // ===== 启动 =====
         renderArticle();
-
-        const from = getParam('from');
-        const page = getParam('page');
-        const folder = getParam('folder');
-        const backBtn = document.getElementById('backButton');
-
-        let returnUrl = 'index.html?return=articles';
-        if (page) {
-            returnUrl += '&page=' + page;
-        }
-        if (from === 'archive' && folder === 'articles') {
-            returnUrl = 'index.html?return=archive&folder=articles';
-        } else if (from === 'archive') {
-            returnUrl = 'index.html?return=archive';
-        }
-
-        backBtn.href = returnUrl;
     </script>
 </body>
 </html>

@@ -95,7 +95,6 @@
             position: relative;
         }
 
-        /* ===== 头部：头像左移 + 文字右排 ===== */
         .site-header {
             display: flex;
             align-items: center;
@@ -224,7 +223,6 @@
             background: rgba(50, 45, 80, 0.8);
         }
 
-        /* ===== 回到顶部按钮（与文章详情页完全一致） ===== */
         .back-to-top-btn {
             position: fixed;
             top: 20px;
@@ -584,7 +582,6 @@
             color: #7A6AA8;
         }
 
-        /* ===== 关于页面两个方块 ===== */
         .about-card {
             background: rgba(255, 255, 255, 0.65);
             backdrop-filter: blur(12px);
@@ -644,7 +641,6 @@
             color: #9A96B8;
         }
 
-        /* ===== 统计方块 ===== */
         .stats-card {
             background: rgba(255, 255, 255, 0.65);
             backdrop-filter: blur(12px);
@@ -742,7 +738,6 @@
             background: rgba(136, 204, 255, 0.2);
         }
 
-        /* ===== 归档页面：文件夹列表 ===== */
         .archive-container {
             width: 100%;
             max-width: 520px;
@@ -824,7 +819,6 @@
             color: #88ccff;
         }
 
-        /* ===== 归档文章列表（原内容） ===== */
         .archive-articles-view {
             display: none;
             width: 100%;
@@ -841,7 +835,6 @@
             display: none;
         }
 
-        /* ===== 过渡动画 ===== */
         .archive-folder-view,
         .archive-articles-view {
             transition: opacity 0.3s ease, transform 0.3s ease;
@@ -1441,7 +1434,6 @@
     <i class="fas fa-moon"></i>
 </div>
 
-<!-- ===== 回到顶部按钮 ===== -->
 <button class="back-to-top-btn" id="backToTopBtn" aria-label="回到顶部">
     <i class="fas fa-arrow-up"></i>
 </button>
@@ -1509,9 +1501,6 @@
         setTheme(currentTheme === 'dark' ? 'light' : 'dark');
     });
 
-    // ============================================================
-    // 回到顶部（与 article.html 完全一致）
-    // ============================================================
     const backToTopBtn = document.getElementById('backToTopBtn');
     let isScrollingToTop = false;
 
@@ -1590,9 +1579,6 @@
         }, 100);
     });
 
-    // ============================================================
-    // 折叠菜单状态管理
-    // ============================================================
     const SOFTWARE_STATE_KEY = 'software_folded_state';
 
     function getStoredState() {
@@ -1692,7 +1678,7 @@
         </div>
     `;
 
-    // ===== 文章相关 =====
+    // ========== 文章数据 ==========
     let allArticles = [];
     let currentFilter = 'newest';
     let currentPage = 1;
@@ -1700,6 +1686,28 @@
     const PAGE_SIZE = 10;
     const PRELOAD_PAGES = 4;
     let loadedCount = 0;
+
+    // ========== 字数统计算法（与 article.html 完全一致） ==========
+    function countWords(markdown) {
+        if (!markdown) return 0;
+        let text = markdown
+            .replace(/```[\s\S]*?```/g, '')
+            .replace(/`[^`]+`/g, '')
+            .replace(/\*\*(.*?)\*\*/g, '$1')
+            .replace(/\*([^*]+)\*/g, '$1')
+            .replace(/~~(.*?)~~/g, '$1')
+            .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+            .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')
+            .replace(/^#{1,6}\s+/gm, '')
+            .replace(/^-\s+/gm, '')
+            .replace(/^\d+\.\s+/gm, '')
+            .replace(/^>\s+/gm, '')
+            .replace(/^---$/gm, '')
+            .replace(/^\s*[-*+]\s+\[[ x]\]\s+/gm, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        return text.length;
+    }
 
     function saveArticleState() {
         sessionStorage.setItem('articlePage', currentPage);
@@ -1735,9 +1743,6 @@
         return text.replace(regex, match => `<span class="highlight">${match}</span>`);
     }
 
-    // ============================================================
-    // 修复：增加图片过滤，与 article.html 的 countWords 保持一致
-    // ============================================================
     function markdownToPlainText(md) {
         if (!md) return '';
         let text = md;
@@ -1747,7 +1752,7 @@
         text = text.replace(/\*([^*]+)\*/g, '$1');
         text = text.replace(/~~(.*?)~~/g, '$1');
         text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
-        text = text.replace(/!\[([^\]]*)\]\([^)]*\)/g, '');  // ← 新增：过滤图片 alt 和 URL
+        text = text.replace(/!\[([^\]]*)\]\([^)]*\)/g, '');
         text = text.replace(/^#{1,6}\s+/gm, '');
         text = text.replace(/^-\s+/gm, '');
         text = text.replace(/^\d+\.\s+/gm, '');
@@ -1843,8 +1848,8 @@
             const title = item.title || '无标题';
             const date = item.date || '';
             const content = item.content || '';
-            const plainContent = markdownToPlainText(content);
-            const wordCount = plainContent.length;
+            // 直接使用预计算好的 _wordCount（与 article.html 的 countWords 一致）
+            const wordCount = item._wordCount || 0;
             const readTime = Math.ceil(wordCount / 300);
             const readTimeDisplay = readTime === 1 ? '1分钟' : readTime + '分钟';
             const titleHtml = highlightText(escapeHtml(title), kw);
@@ -2044,6 +2049,12 @@
                     list.innerHTML = `<div class="no-result">还没有文章！</div>`;
                     return;
                 }
+
+                // ★ 关键：每篇文章统一用 countWords 预计算字数，与 article.html 完全一致
+                allArticles.forEach(article => {
+                    article._wordCount = countWords(article.content || '');
+                });
+
                 const kw = currentKeyword || '';
                 let filtered = [...allArticles];
                 if (kw) {
@@ -2123,16 +2134,13 @@
         }
     }
 
-    // ============================================================
-    // 归档页面：文件夹 + 文章列表 + 过渡动画
-    // ============================================================
+    // ========== 归档页面 ==========
     function renderArchive() {
         const container = document.getElementById('appContent');
 
         container.innerHTML = `
             <div class="content-placeholder" style="justify-content: flex-start; padding-top: 0.2rem; width: 100%;">
                 <div class="archive-container">
-                    <!-- 文件夹列表视图 -->
                     <div class="archive-folder-view" id="archiveFolderView">
                         <div class="archive-folder-list">
                             <div class="archive-folder-item" data-target="articles">
@@ -2150,7 +2158,6 @@
                         </div>
                     </div>
 
-                    <!-- 文章列表视图（原归档内容） -->
                     <div class="archive-articles-view" id="archiveArticlesView">
                         <button class="archive-back-btn" id="archiveBackBtn">
                             <i class="fas fa-arrow-left"></i> 返回
@@ -2166,7 +2173,6 @@
             </div>
         `;
 
-        // 获取文章数量并更新徽标
         fetch('wenzhang.json', { cache: 'no-cache' })
             .then(response => {
                 if (!response.ok) throw new Error('文件不存在');
@@ -2176,7 +2182,6 @@
                 const articles = data.announcements || [];
                 const badge = document.getElementById('articleCountBadge');
                 if (badge) badge.textContent = articles.length;
-
                 renderArchiveList(articles);
             })
             .catch(() => {
@@ -2188,7 +2193,6 @@
                 `;
             });
 
-        // 文件夹点击事件（带过渡动画）
         document.querySelectorAll('.archive-folder-item').forEach(item => {
             item.addEventListener('click', function() {
                 const target = this.dataset.target;
@@ -2199,15 +2203,11 @@
                 if (target === 'articles') {
                     const folderView = document.getElementById('archiveFolderView');
                     const articlesView = document.getElementById('archiveArticlesView');
-
-                    // 文件夹淡出
                     folderView.classList.remove('fade-in');
                     folderView.classList.add('fade-out');
                     setTimeout(() => {
                         folderView.classList.add('hidden');
                         folderView.classList.remove('fade-out');
-
-                        // 文章列表淡入
                         articlesView.classList.remove('hidden', 'fade-out');
                         articlesView.classList.add('active', 'fade-in');
                     }, 300);
@@ -2215,19 +2215,14 @@
             });
         });
 
-        // 返回按钮（带过渡动画）
         document.getElementById('archiveBackBtn').addEventListener('click', function() {
             const folderView = document.getElementById('archiveFolderView');
             const articlesView = document.getElementById('archiveArticlesView');
-
-            // 文章列表淡出
             articlesView.classList.remove('fade-in');
             articlesView.classList.add('fade-out');
             setTimeout(() => {
                 articlesView.classList.remove('active', 'fade-out');
                 articlesView.classList.add('hidden');
-
-                // 文件夹淡入
                 folderView.classList.remove('hidden', 'fade-out');
                 folderView.classList.add('fade-in');
             }, 300);
@@ -2307,7 +2302,7 @@
         });
     }
 
-    // ===== 关于页面 =====
+    // ========== 关于页面 ==========
     function renderAbout() {
         const container = document.getElementById('appContent');
 
@@ -2417,6 +2412,12 @@
                             <span>文章字数</span>
                             <span style="margin-left: auto; font-weight: 500;">${totalWordCount} 字</span>
                         </div>
+                        <hr class="divider">
+                        <div class="stat-item">
+                            <i class="fas fa-clock"></i>
+                            <span>网站最后更新</span>
+                            <span style="margin-left: auto; color: #6B5ACF; font-weight: 500;">2026年7月10日</span>
+                        </div>
                     </div>
                 </div>
             `;
@@ -2515,9 +2516,7 @@
         }, 80);
     });
 
-    // ===== 启动逻辑：默认打开「文章」页 =====
     const returnParam = getUrlParam('return');
-    const defaultActive = document.querySelector('.nav a.active');
 
     window.addEventListener('pageshow', function() {
         if (document.getElementById('softwareToggle')) {

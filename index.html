@@ -6,6 +6,7 @@
     <title>ks · 个人博客</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="reset.css">
     <style>
         * {
             margin: 0;
@@ -1423,6 +1424,372 @@
             .nav a { font-size: 0.7rem; padding: 0.5rem 0.4rem; min-width: 44px; }
             .nav a i { display: none; }
         }
+
+        .progress-card {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 2rem 2.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 12px 28px rgba(80, 60, 160, 0.08);
+            width: 100%;
+            max-width: 480px;
+            transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            margin-top: 0.75rem;
+        }
+        body.dark .progress-card {
+            background: rgba(35, 32, 60, 0.6);
+            border-color: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+        }
+
+        .progress-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.2rem 0;
+            flex-wrap: wrap;
+        }
+        .progress-item .progress-label {
+            font-size: 0.82rem;
+            color: #4A4A6E;
+            min-width: 3.8rem;
+            flex-shrink: 0;
+        }
+        body.dark .progress-item .progress-label {
+            color: #B8B4D8;
+        }
+        .progress-item .progress-detail {
+            font-size: 0.75rem;
+            color: #8A8AB5;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+        body.dark .progress-item .progress-detail {
+            color: #7A7AA0;
+        }
+        .progress-item .progress-percent {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #6B5ACF;
+            min-width: 3.2rem;
+            text-align: right;
+            flex-shrink: 0;
+        }
+        body.dark .progress-item .progress-percent {
+            color: #A89FD0;
+        }
+        .progress-track {
+            flex: 1;
+            min-width: 60px;
+            height: 5px;
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        body.dark .progress-track {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #6B5ACF, #8F7BE0);
+            transition: width 0.6s ease;
+        }
+
+        .holiday-box {
+            margin-top: 1rem;
+            padding: 0.8rem 1.2rem;
+            background: #6B5ACF;
+            border-radius: 1rem;
+            text-align: center;
+            color: #fff;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        body.dark .holiday-box {
+            background: #7A6BCF;
+        }
+        .holiday-box span {
+            opacity: 0.85;
+        }
+        .holiday-box .holiday-days {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .weather-card {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 2rem 2.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 12px 28px rgba(80, 60, 160, 0.08);
+            width: 100%;
+            max-width: 480px;
+            transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            margin-top: 0.75rem;
+        }
+        body.dark .weather-card {
+            background: rgba(35, 32, 60, 0.6);
+            border-color: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+        }
+
+        .weather-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .weather-header .weather-location {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2D2D4A;
+        }
+        body.dark .weather-header .weather-location {
+            color: #D0CAF0;
+        }
+        .weather-header .weather-location i {
+            color: #6B5ACF;
+            margin-right: 0.4rem;
+        }
+        body.dark .weather-header .weather-location i {
+            color: #A89FD0;
+        }
+
+        .weather-temp-row {
+            display: flex;
+            align-items: baseline;
+            gap: 0.8rem;
+            margin-bottom: 0.2rem;
+        }
+        .weather-temp-row .temp-current {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #1A1A2E;
+            line-height: 1;
+        }
+        body.dark .weather-temp-row .temp-current {
+            color: #E8E6F0;
+        }
+        .weather-temp-row .temp-current .deg {
+            font-size: 1.6rem;
+            font-weight: 400;
+            color: #8A8AB5;
+        }
+        body.dark .weather-temp-row .temp-current .deg {
+            color: #7A7AA0;
+        }
+        .weather-temp-row .weather-desc {
+            font-size: 1rem;
+            color: #6A6A92;
+        }
+        body.dark .weather-temp-row .weather-desc {
+            color: #A8A4C8;
+        }
+        .weather-temp-row .weather-high-low {
+            font-size: 0.85rem;
+            color: #8A8AB5;
+            margin-left: auto;
+        }
+        body.dark .weather-temp-row .weather-high-low {
+            color: #7A7AA0;
+        }
+        .weather-temp-row .weather-high-low i {
+            margin: 0 0.15rem;
+        }
+
+        .weather-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.3rem 1.5rem;
+            margin-top: 0.8rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+        }
+        body.dark .weather-grid {
+            border-top-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .weather-grid .wg-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.82rem;
+            color: #4A4A6E;
+            padding: 0.15rem 0;
+        }
+        body.dark .weather-grid .wg-item {
+            color: #B8B4D8;
+        }
+        .weather-grid .wg-item i {
+            width: 1.2rem;
+            color: #6B5ACF;
+            font-size: 0.8rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        body.dark .weather-grid .wg-item i {
+            color: #A89FD0;
+        }
+        .weather-grid .wg-item .wg-label {
+            color: #8A8AB5;
+            flex-shrink: 0;
+        }
+        body.dark .weather-grid .wg-item .wg-label {
+            color: #7A7AA0;
+        }
+        .weather-grid .wg-item .wg-value {
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        .pollutants-row {
+            grid-column: 1 / -1 !important;
+            flex-wrap: wrap !important;
+            gap: 0.2rem 0.8rem !important;
+        }
+        .pollutants-row .wg-label {
+            flex-shrink: 0;
+        }
+        .pollutants-row .wg-value {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.1rem 0.6rem;
+        }
+        .pollutants-row .wg-value span {
+            white-space: nowrap;
+        }
+
+        .badge-tag {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.05rem 0.5rem;
+            border-radius: 40px;
+            color: #fff;
+            line-height: 1.5;
+            letter-spacing: 0.3px;
+            margin-left: 0.2rem;
+            vertical-align: middle;
+        }
+        .badge-uv-weak { background: #4CAF50; }
+        .badge-uv-moderate { background: #FFC107; color: #333; }
+        .badge-uv-strong { background: #FF5722; }
+        .badge-uv-extreme { background: #9C27B0; }
+
+        .badge-aqi-good { background: #4CAF50; }
+        .badge-aqi-moderate { background: #2196F3; }
+        .badge-aqi-light { background: #FFC107; color: #333; }
+        .badge-aqi-moderate-pollution { background: #FF9800; }
+        .badge-aqi-heavy { background: #FF5722; }
+        .badge-aqi-severe { background: #8D1B1B; }
+
+        .weather-update-time {
+            margin-top: 0.8rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            font-size: 0.7rem;
+            color: #8A8AB5;
+            text-align: right;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.4rem;
+        }
+        body.dark .weather-update-time {
+            border-top-color: rgba(255, 255, 255, 0.05);
+            color: #6A6A8A;
+        }
+        .weather-update-time i {
+            color: #6B5ACF;
+        }
+        body.dark .weather-update-time i {
+            color: #7A6AA8;
+        }
+
+        .weather-loading {
+            text-align: center;
+            padding: 1.5rem 0;
+            color: #8A8AB5;
+            font-size: 0.9rem;
+        }
+        .weather-loading i {
+            margin-right: 0.4rem;
+            color: #6B5ACF;
+        }
+        body.dark .weather-loading i {
+            color: #7A6AA8;
+        }
+
+        .weather-error {
+            text-align: center;
+            padding: 1rem 0;
+            color: #E57373;
+            font-size: 0.85rem;
+        }
+        .weather-error i {
+            margin-right: 0.4rem;
+        }
+        .weather-error .retry-btn {
+            display: inline-block;
+            margin-left: 0.6rem;
+            padding: 0.15rem 0.8rem;
+            border: 1px solid #E57373;
+            border-radius: 40px;
+            color: #E57373;
+            font-size: 0.75rem;
+            cursor: pointer;
+            background: transparent;
+            transition: 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .weather-error .retry-btn:hover {
+            background: #E57373;
+            color: #fff;
+        }
+
+        .weather-hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 600px) {
+            .progress-card, .weather-card {
+                padding: 1.4rem;
+            }
+            .weather-grid {
+                grid-template-columns: 1fr;
+                gap: 0.15rem 0;
+            }
+            .pollutants-row {
+                grid-column: 1 !important;
+            }
+            .weather-grid .wg-item {
+                font-size: 0.78rem;
+            }
+            .weather-temp-row .temp-current {
+                font-size: 2.2rem;
+            }
+            .progress-item {
+                gap: 0.3rem;
+            }
+            .progress-item .progress-label {
+                font-size: 0.75rem;
+                min-width: 3rem;
+            }
+            .progress-item .progress-detail {
+                font-size: 0.7rem;
+                margin-left: 0;
+                width: 100%;
+                text-align: right;
+            }
+            .holiday-box {
+                font-size: 0.85rem;
+                padding: 0.6rem 1rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1478,17 +1845,17 @@
 <div id="toastMsg" class="toast"></div>
 
 <script>
-    const toast = document.getElementById('toastMsg');
+    var toast = document.getElementById('toastMsg');
     function showMessage(text) {
         toast.style.opacity = '1';
         toast.innerText = text;
-        setTimeout(() => { toast.style.opacity = '0'; }, 1500);
+        setTimeout(function() { toast.style.opacity = '0'; }, 1500);
     }
 
-    const themeToggle = document.getElementById('themeToggle');
-    const icon = themeToggle.querySelector('i');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    let currentTheme = localStorage.getItem('ks-theme') || (prefersDark ? 'dark' : 'light');
+    var themeToggle = document.getElementById('themeToggle');
+    var icon = themeToggle.querySelector('i');
+    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var currentTheme = localStorage.getItem('ks-theme') || (prefersDark ? 'dark' : 'light');
 
     function setTheme(theme) {
         document.body.classList.toggle('dark', theme === 'dark');
@@ -1497,15 +1864,15 @@
         currentTheme = theme;
     }
     setTheme(currentTheme);
-    themeToggle.addEventListener('click', () => {
+    themeToggle.addEventListener('click', function() {
         setTheme(currentTheme === 'dark' ? 'light' : 'dark');
     });
 
-    const backToTopBtn = document.getElementById('backToTopBtn');
-    let isScrollingToTop = false;
+    var backToTopBtn = document.getElementById('backToTopBtn');
+    var isScrollingToTop = false;
 
     window.addEventListener('scroll', function() {
-        const scrollY = window.scrollY || window.pageYOffset;
+        var scrollY = window.scrollY || window.pageYOffset;
         if (scrollY > 300 && !isScrollingToTop) {
             backToTopBtn.classList.add('show');
         } else if (!isScrollingToTop) {
@@ -1514,16 +1881,16 @@
     });
 
     function fastScrollToTop() {
-        const startY = window.scrollY || window.pageYOffset;
+        var startY = window.scrollY || window.pageYOffset;
         if (startY === 0) return;
-        const duration = 300;
-        const startTime = performance.now();
+        var duration = 300;
+        var startTime = performance.now();
 
         function step(currentTime) {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const ease = 1 - Math.pow(1 - progress, 3);
-            const nextY = startY * (1 - ease);
+            var elapsed = currentTime - startTime;
+            var progress = Math.min(elapsed / duration, 1);
+            var ease = 1 - Math.pow(1 - progress, 3);
+            var nextY = startY * (1 - ease);
             window.scrollTo(0, nextY);
             if (progress < 1) {
                 requestAnimationFrame(step);
@@ -1539,52 +1906,52 @@
 
     backToTopBtn.addEventListener('click', function() {
         if (isScrollingToTop) return;
-        const scrollY = window.scrollY || window.pageYOffset;
+        var scrollY = window.scrollY || window.pageYOffset;
         if (scrollY === 0) return;
         isScrollingToTop = true;
         backToTopBtn.classList.add('disabled');
         fastScrollToTop();
     });
 
-    const navLinks = document.querySelectorAll('.nav a');
-    const navSlider = document.getElementById('navSlider');
-    const navWrapper = document.getElementById('navWrapper');
-    const navScroll = document.getElementById('navScroll');
+    var navLinks = document.querySelectorAll('.nav a');
+    var navSlider = document.getElementById('navSlider');
+    var navWrapper = document.getElementById('navWrapper');
+    var navScroll = document.getElementById('navScroll');
 
     function updateSlider(activeLink) {
-        const wrapperRect = navWrapper.getBoundingClientRect();
-        const linkRect = activeLink.getBoundingClientRect();
-        const left = linkRect.left - wrapperRect.left + 6;
-        const width = linkRect.width - 12;
+        var wrapperRect = navWrapper.getBoundingClientRect();
+        var linkRect = activeLink.getBoundingClientRect();
+        var left = linkRect.left - wrapperRect.left + 6;
+        var width = linkRect.width - 12;
         navSlider.style.left = left + 'px';
         navSlider.style.width = width + 'px';
     }
 
-    setTimeout(() => {
-        const active = document.querySelector('.nav a.active');
+    setTimeout(function() {
+        var active = document.querySelector('.nav a.active');
         if (active) {
             updateSlider(active);
-            requestAnimationFrame(() => {
+            requestAnimationFrame(function() {
                 navSlider.classList.remove('no-transition');
             });
         }
     }, 50);
 
-    let resizeTimer;
-    window.addEventListener('resize', () => {
+    var resizeTimer;
+    window.addEventListener('resize', function() {
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => {
-            const active = document.querySelector('.nav a.active');
+        resizeTimer = setTimeout(function() {
+            var active = document.querySelector('.nav a.active');
             if (active) updateSlider(active);
         }, 100);
     });
 
-    const SOFTWARE_STATE_KEY = 'software_folded_state';
+    var SOFTWARE_STATE_KEY = 'software_folded_state';
 
     function getStoredState() {
         try {
             return sessionStorage.getItem(SOFTWARE_STATE_KEY) === 'true';
-        } catch {
+        } catch(e) {
             return false;
         }
     }
@@ -1592,16 +1959,16 @@
     function setStoredState(isOpen) {
         try {
             sessionStorage.setItem(SOFTWARE_STATE_KEY, String(isOpen));
-        } catch {}
+        } catch(e) {}
     }
 
     function applySoftwareState(forceState) {
-        const toggle = document.getElementById('softwareToggle');
-        const list = document.getElementById('softwareList');
-        const arrow = document.getElementById('softwareArrow');
+        var toggle = document.getElementById('softwareToggle');
+        var list = document.getElementById('softwareList');
+        var arrow = document.getElementById('softwareArrow');
         if (!toggle || !list || !arrow) return;
 
-        const shouldOpen = forceState !== undefined ? forceState : getStoredState();
+        var shouldOpen = forceState !== undefined ? forceState : getStoredState();
 
         if (shouldOpen) {
             list.classList.add('open');
@@ -1613,19 +1980,19 @@
     }
 
     function bindSoftwareToggle() {
-        const toggle = document.getElementById('softwareToggle');
-        const list = document.getElementById('softwareList');
-        const arrow = document.getElementById('softwareArrow');
+        var toggle = document.getElementById('softwareToggle');
+        var list = document.getElementById('softwareList');
+        var arrow = document.getElementById('softwareArrow');
         if (!toggle || !list || !arrow) return;
 
-        const newToggle = toggle.cloneNode(true);
+        var newToggle = toggle.cloneNode(true);
         toggle.parentNode.replaceChild(newToggle, toggle);
 
-        const newList = document.getElementById('softwareList');
-        const newArrow = document.getElementById('softwareArrow');
-        const newToggleBtn = document.getElementById('softwareToggle');
+        var newList = document.getElementById('softwareList');
+        var newArrow = document.getElementById('softwareArrow');
+        var newToggleBtn = document.getElementById('softwareToggle');
 
-        const isOpen = getStoredState();
+        var isOpen = getStoredState();
         if (isOpen) {
             newList.classList.add('open');
             newArrow.classList.add('open');
@@ -1636,15 +2003,15 @@
 
         newToggleBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            const listEl = document.getElementById('softwareList');
-            const arrowEl = document.getElementById('softwareArrow');
-            const isCurrentlyOpen = listEl.classList.toggle('open');
+            var listEl = document.getElementById('softwareList');
+            var arrowEl = document.getElementById('softwareArrow');
+            var isCurrentlyOpen = listEl.classList.toggle('open');
             arrowEl.classList.toggle('open');
             setStoredState(isCurrentlyOpen);
         });
     }
 
-    const recommendHTML = `
+    var recommendHTML = `
         <div class="content-placeholder" style="justify-content: flex-start; padding-top: 0.2rem;">
             <div class="link-grid">
                 <a href="muqin.html" class="link-card">
@@ -1678,19 +2045,17 @@
         </div>
     `;
 
-    // ========== 文章数据 ==========
-    let allArticles = [];
-    let currentFilter = 'newest';
-    let currentPage = 1;
-    let currentKeyword = '';
-    const PAGE_SIZE = 10;
-    const PRELOAD_PAGES = 4;
-    let loadedCount = 0;
+    var allArticles = [];
+    var currentFilter = 'newest';
+    var currentPage = 1;
+    var currentKeyword = '';
+    var PAGE_SIZE = 10;
+    var PRELOAD_PAGES = 4;
+    var loadedCount = 0;
 
-    // ========== 字数统计算法（与 article.html 完全一致） ==========
     function countWords(markdown) {
         if (!markdown) return 0;
-        let text = markdown
+        var text = markdown
             .replace(/```[\s\S]*?```/g, '')
             .replace(/`[^`]+`/g, '')
             .replace(/\*\*(.*?)\*\*/g, '$1')
@@ -1716,36 +2081,36 @@
     }
 
     function loadArticleState() {
-        const page = sessionStorage.getItem('articlePage');
-        const filter = sessionStorage.getItem('articleFilter');
-        const keyword = sessionStorage.getItem('articleKeyword');
+        var page = sessionStorage.getItem('articlePage');
+        var filter = sessionStorage.getItem('articleFilter');
+        var keyword = sessionStorage.getItem('articleKeyword');
         if (page) currentPage = parseInt(page);
         if (filter) currentFilter = filter;
         if (keyword !== null) currentKeyword = keyword;
     }
 
     function getUrlParam(name) {
-        const url = new URL(window.location.href);
+        var url = new URL(window.location.href);
         return url.searchParams.get(name);
     }
 
     function escapeHtml(text) {
         if (!text) return '';
-        const div = document.createElement('div');
+        var div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
 
     function highlightText(text, keyword) {
         if (!keyword || !text) return text;
-        const kw = escapeHtml(keyword);
-        const regex = new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-        return text.replace(regex, match => `<span class="highlight">${match}</span>`);
+        var kw = escapeHtml(keyword);
+        var regex = new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        return text.replace(regex, function(match) { return '<span class="highlight">' + match + '</span>'; });
     }
 
     function markdownToPlainText(md) {
         if (!md) return '';
-        let text = md;
+        var text = md;
         text = text.replace(/```[\s\S]*?```/g, '');
         text = text.replace(/`([^`]+)`/g, '$1');
         text = text.replace(/\*\*(.*?)\*\*/g, '$1');
@@ -1762,20 +2127,21 @@
         return text.trim();
     }
 
-    function getPreviewAroundMatch(content, keyword, contextLength = 80) {
-        const plainText = markdownToPlainText(content);
+    function getPreviewAroundMatch(content, keyword, contextLength) {
+        contextLength = contextLength || 80;
+        var plainText = markdownToPlainText(content);
         if (!keyword || !plainText) {
             return plainText.substring(0, 120) + (plainText.length > 120 ? '...' : '');
         }
-        const kw = keyword.trim().toLowerCase();
-        const lowerText = plainText.toLowerCase();
-        const index = lowerText.indexOf(kw);
+        var kw = keyword.trim().toLowerCase();
+        var lowerText = plainText.toLowerCase();
+        var index = lowerText.indexOf(kw);
         if (index === -1) {
             return plainText.substring(0, 120) + (plainText.length > 120 ? '...' : '');
         }
-        let start = Math.max(0, index - contextLength);
-        let end = Math.min(plainText.length, index + kw.length + contextLength);
-        let preview = plainText.substring(start, end);
+        var start = Math.max(0, index - contextLength);
+        var end = Math.min(plainText.length, index + kw.length + contextLength);
+        var preview = plainText.substring(start, end);
         if (start > 0) preview = '...' + preview;
         if (end < plainText.length) preview = preview + '...';
         return preview;
@@ -1783,7 +2149,7 @@
 
     function renderPreviewMarkdown(text) {
         if (!text) return '';
-        let html = escapeHtml(text);
+        var html = escapeHtml(text);
         html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
         html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
@@ -1792,8 +2158,8 @@
     }
 
     function getDisplayArticles(filtered) {
-        const total = filtered.length;
-        const loadLimit = Math.min(total, loadedCount + PAGE_SIZE * PRELOAD_PAGES);
+        var total = filtered.length;
+        var loadLimit = Math.min(total, loadedCount + PAGE_SIZE * PRELOAD_PAGES);
         if (loadedCount < Math.min(total, loadLimit)) {
             loadedCount = Math.min(total, loadLimit);
         }
@@ -1801,10 +2167,10 @@
     }
 
     function checkAndLoadMore(filtered, page) {
-        const total = filtered.length;
-        const loadedPages = Math.ceil(loadedCount / PAGE_SIZE);
+        var total = filtered.length;
+        var loadedPages = Math.ceil(loadedCount / PAGE_SIZE);
         if (page >= loadedPages - 1 && loadedCount < total) {
-            const nextLoad = Math.min(total, loadedCount + PAGE_SIZE * PRELOAD_PAGES);
+            var nextLoad = Math.min(total, loadedCount + PAGE_SIZE * PRELOAD_PAGES);
             loadedCount = nextLoad;
             return true;
         }
@@ -1812,13 +2178,13 @@
     }
 
     function renderArticleList(filtered, kw, page) {
-        const list = document.querySelector('.articles-list');
-        const countEl = document.querySelector('.result-count');
-        const paginationEl = document.querySelector('.pagination');
+        var list = document.querySelector('.articles-list');
+        var countEl = document.querySelector('.result-count');
+        var paginationEl = document.querySelector('.pagination');
         if (!list) return;
 
-        const totalItems = filtered.length;
-        const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+        var totalItems = filtered.length;
+        var totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
         if (page > totalPages) page = totalPages;
         if (page < 1) page = 1;
         currentPage = page;
@@ -1829,33 +2195,32 @@
             return;
         }
 
-        const displayArticles = getDisplayArticles(filtered);
-        const start = (page - 1) * PAGE_SIZE;
-        const end = Math.min(start + PAGE_SIZE, displayArticles.length);
-        const pageItems = displayArticles.slice(start, end);
+        var displayArticles = getDisplayArticles(filtered);
+        var start = (page - 1) * PAGE_SIZE;
+        var end = Math.min(start + PAGE_SIZE, displayArticles.length);
+        var pageItems = displayArticles.slice(start, end);
 
         if (displayArticles.length === 0) {
-            list.innerHTML = `<div class="no-result">没有找到匹配的文章</div>`;
+            list.innerHTML = '<div class="no-result">没有找到匹配的文章</div>';
             if (countEl) countEl.textContent = '';
             if (paginationEl) paginationEl.innerHTML = '';
             saveArticleState();
             return;
         }
 
-        let html = '';
-        pageItems.forEach((item, index) => {
-            const realIndex = allArticles.indexOf(item);
-            const title = item.title || '无标题';
-            const date = item.date || '';
-            const content = item.content || '';
-            // 直接使用预计算好的 _wordCount（与 article.html 的 countWords 一致）
-            const wordCount = item._wordCount || 0;
-            const readTime = Math.ceil(wordCount / 300);
-            const readTimeDisplay = readTime === 1 ? '1分钟' : readTime + '分钟';
-            const titleHtml = highlightText(escapeHtml(title), kw);
-            const previewText = getPreviewAroundMatch(content, kw);
-            const previewHtml = renderPreviewMarkdown(previewText);
-            const previewHighlighted = highlightText(previewHtml, kw);
+        var html = '';
+        pageItems.forEach(function(item, index) {
+            var realIndex = allArticles.indexOf(item);
+            var title = item.title || '无标题';
+            var date = item.date || '';
+            var content = item.content || '';
+            var wordCount = item._wordCount || 0;
+            var readTime = Math.ceil(wordCount / 300);
+            var readTimeDisplay = readTime === 1 ? '1分钟' : readTime + '分钟';
+            var titleHtml = highlightText(escapeHtml(title), kw);
+            var previewText = getPreviewAroundMatch(content, kw);
+            var previewHtml = renderPreviewMarkdown(previewText);
+            var previewHighlighted = highlightText(previewHtml, kw);
 
             html += `
                 <div class="article-item" data-index="${realIndex}">
@@ -1871,16 +2236,16 @@
 
         list.innerHTML = html;
 
-        list.querySelectorAll('.article-item').forEach(el => {
+        list.querySelectorAll('.article-item').forEach(function(el) {
             el.addEventListener('click', function() {
-                const idx = this.dataset.index;
+                var idx = this.dataset.index;
                 saveArticleState();
-                window.location.href = `article.html?id=${idx}&page=${currentPage}`;
+                window.location.href = 'article.html?id=' + idx + '&page=' + currentPage;
             });
         });
 
         if (countEl) {
-            countEl.textContent = totalItems > 0 ? `共 ${totalItems} 篇` : '';
+            countEl.textContent = totalItems > 0 ? '共 ' + totalItems + ' 篇' : '';
         }
 
         if (paginationEl) {
@@ -1889,55 +2254,61 @@
                 saveArticleState();
                 return;
             }
-            let pgHtml = '';
-            pgHtml += `<button class="page-prev" ${page <= 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
-            const startPage = Math.max(1, page - 2);
-            const endPage = Math.min(totalPages, page + 2);
+            var pgHtml = '';
+            pgHtml += '<button class="page-prev" ' + (page <= 1 ? 'disabled' : '') + '><i class="fas fa-chevron-left"></i></button>';
+            var startPage = Math.max(1, page - 2);
+            var endPage = Math.min(totalPages, page + 2);
             if (startPage > 1) {
-                pgHtml += `<button class="page-num" data-page="1">1</button>`;
-                if (startPage > 2) pgHtml += `<span style="color:#8A8AB5;font-size:0.7rem;">…</span>`;
+                pgHtml += '<button class="page-num" data-page="1">1</button>';
+                if (startPage > 2) pgHtml += '<span style="color:#8A8AB5;font-size:0.7rem;">…</span>';
             }
-            for (let i = startPage; i <= endPage; i++) {
-                pgHtml += `<button class="page-num ${i === page ? 'active-page' : ''}" data-page="${i}">${i}</button>`;
+            for (var i = startPage; i <= endPage; i++) {
+                pgHtml += '<button class="page-num ' + (i === page ? 'active-page' : '') + '" data-page="' + i + '">' + i + '</button>';
             }
             if (endPage < totalPages) {
-                if (endPage < totalPages - 1) pgHtml += `<span style="color:#8A8AB5;font-size:0.7rem;">…</span>`;
-                pgHtml += `<button class="page-num" data-page="${totalPages}">${totalPages}</button>`;
+                if (endPage < totalPages - 1) pgHtml += '<span style="color:#8A8AB5;font-size:0.7rem;">…</span>';
+                pgHtml += '<button class="page-num" data-page="' + totalPages + '">' + totalPages + '</button>';
             }
-            pgHtml += `<button class="page-next" ${page >= totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
-            pgHtml += `<span class="page-info">${page} / ${totalPages}</span>`;
+            pgHtml += '<button class="page-next" ' + (page >= totalPages ? 'disabled' : '') + '><i class="fas fa-chevron-right"></i></button>';
+            pgHtml += '<span class="page-info">' + page + ' / ' + totalPages + '</span>';
             paginationEl.innerHTML = pgHtml;
 
-            paginationEl.querySelectorAll('.page-num').forEach(btn => {
+            paginationEl.querySelectorAll('.page-num').forEach(function(btn) {
                 btn.addEventListener('click', function() {
-                    const p = parseInt(this.dataset.page);
+                    var p = parseInt(this.dataset.page);
                     if (p !== currentPage) {
                         renderArticleList(filtered, kw, p);
                         saveArticleState();
                     }
                 });
             });
-            paginationEl.querySelector('.page-prev')?.addEventListener('click', function() {
-                if (currentPage > 1) {
-                    renderArticleList(filtered, kw, currentPage - 1);
-                    saveArticleState();
-                }
-            });
-            paginationEl.querySelector('.page-next')?.addEventListener('click', function() {
-                if (currentPage < totalPages) {
-                    renderArticleList(filtered, kw, currentPage + 1);
-                    saveArticleState();
-                }
-            });
+            var prevBtn = paginationEl.querySelector('.page-prev');
+            if (prevBtn) {
+                prevBtn.addEventListener('click', function() {
+                    if (currentPage > 1) {
+                        renderArticleList(filtered, kw, currentPage - 1);
+                        saveArticleState();
+                    }
+                });
+            }
+            var nextBtn = paginationEl.querySelector('.page-next');
+            if (nextBtn) {
+                nextBtn.addEventListener('click', function() {
+                    if (currentPage < totalPages) {
+                        renderArticleList(filtered, kw, currentPage + 1);
+                        saveArticleState();
+                    }
+                });
+            }
         }
 
         saveArticleState();
 
         if (kw && filtered.length > 0) {
-            const firstItem = list.querySelector('.article-item');
+            var firstItem = list.querySelector('.article-item');
             if (firstItem) {
-                setTimeout(() => {
-                    const container = list.closest('.content-placeholder');
+                setTimeout(function() {
+                    var container = list.closest('.content-placeholder');
                     if (container) {
                         container.scrollIntoView({ block: 'start', behavior: 'smooth' });
                     }
@@ -1945,7 +2316,7 @@
                 }, 150);
             }
         } else {
-            const container = list.closest('.content-placeholder');
+            var container = list.closest('.content-placeholder');
             if (container) {
                 container.scrollIntoView({ block: 'start', behavior: 'smooth' });
             }
@@ -1953,20 +2324,20 @@
     }
 
     function applySearch(keyword) {
-        const kw = keyword.trim().toLowerCase();
-        let filtered = [...allArticles];
+        var kw = keyword.trim().toLowerCase();
+        var filtered = allArticles.slice();
 
         if (kw) {
-            filtered = filtered.filter(item => {
-                const title = (item.title || '').toLowerCase();
-                const plainContent = markdownToPlainText(item.content || '').toLowerCase();
-                return title.includes(kw) || plainContent.includes(kw);
+            filtered = filtered.filter(function(item) {
+                var title = (item.title || '').toLowerCase();
+                var plainContent = markdownToPlainText(item.content || '').toLowerCase();
+                return title.indexOf(kw) !== -1 || plainContent.indexOf(kw) !== -1;
             });
         }
 
-        filtered.sort((a, b) => {
-            const dateA = a.date || '1970-01-01';
-            const dateB = b.date || '1970-01-01';
+        filtered.sort(function(a, b) {
+            var dateA = a.date || '1970-01-01';
+            var dateB = b.date || '1970-01-01';
             if (currentFilter === 'newest') {
                 return dateB.localeCompare(dateA);
             } else {
@@ -1981,7 +2352,7 @@
     }
 
     function renderArticles() {
-        const container = document.getElementById('appContent');
+        var container = document.getElementById('appContent');
         container.innerHTML = `
             <div class="content-placeholder" style="justify-content: flex-start; padding-top: 0.2rem; width: 100%;">
                 <div class="articles-container">
@@ -2007,10 +2378,10 @@
             </div>
         `;
 
-        const searchInput = container.querySelector('.articles-search-input');
-        const searchClearBtn = document.getElementById('searchClearBtn');
-        const filterBtns = container.querySelectorAll('.filter-btn');
-        const list = container.querySelector('.articles-list');
+        var searchInput = container.querySelector('.articles-search-input');
+        var searchClearBtn = document.getElementById('searchClearBtn');
+        var filterBtns = container.querySelectorAll('.filter-btn');
+        var list = container.querySelector('.articles-list');
 
         function updateClearBtn() {
             if (searchInput && searchClearBtn) {
@@ -2022,7 +2393,7 @@
             }
         }
 
-        const urlPage = getUrlParam('page');
+        var urlPage = getUrlParam('page');
         if (urlPage) {
             sessionStorage.setItem('articlePage', urlPage);
         }
@@ -2031,7 +2402,7 @@
         if (searchInput && currentKeyword) {
             searchInput.value = currentKeyword;
         }
-        filterBtns.forEach(btn => {
+        filterBtns.forEach(function(btn) {
             btn.classList.toggle('active', btn.dataset.filter === currentFilter);
         });
 
@@ -2039,34 +2410,33 @@
         loadedCount = 0;
 
         fetch('wenzhang.json', { cache: 'no-cache' })
-            .then(response => {
+            .then(function(response) {
                 if (!response.ok) throw new Error('文件不存在');
                 return response.json();
             })
-            .then(data => {
+            .then(function(data) {
                 allArticles = data.announcements || [];
                 if (allArticles.length === 0) {
-                    list.innerHTML = `<div class="no-result">还没有文章！</div>`;
+                    list.innerHTML = '<div class="no-result">还没有文章！</div>';
                     return;
                 }
 
-                // ★ 关键：每篇文章统一用 countWords 预计算字数，与 article.html 完全一致
-                allArticles.forEach(article => {
+                allArticles.forEach(function(article) {
                     article._wordCount = countWords(article.content || '');
                 });
 
-                const kw = currentKeyword || '';
-                let filtered = [...allArticles];
+                var kw = currentKeyword || '';
+                var filtered = allArticles.slice();
                 if (kw) {
-                    filtered = filtered.filter(item => {
-                        const title = (item.title || '').toLowerCase();
-                        const plainContent = markdownToPlainText(item.content || '').toLowerCase();
-                        return title.includes(kw) || plainContent.includes(kw);
+                    filtered = filtered.filter(function(item) {
+                        var title = (item.title || '').toLowerCase();
+                        var plainContent = markdownToPlainText(item.content || '').toLowerCase();
+                        return title.indexOf(kw) !== -1 || plainContent.indexOf(kw) !== -1;
                     });
                 }
-                filtered.sort((a, b) => {
-                    const dateA = a.date || '1970-01-01';
-                    const dateB = b.date || '1970-01-01';
+                filtered.sort(function(a, b) {
+                    var dateA = a.date || '1970-01-01';
+                    var dateB = b.date || '1970-01-01';
                     if (currentFilter === 'newest') {
                         return dateB.localeCompare(dateA);
                     } else {
@@ -2074,12 +2444,12 @@
                     }
                 });
 
-                const savedPage = parseInt(sessionStorage.getItem('articlePage')) || 1;
-                const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-                const pageToLoad = Math.min(savedPage, totalPages);
+                var savedPage = parseInt(sessionStorage.getItem('articlePage')) || 1;
+                var totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+                var pageToLoad = Math.min(savedPage, totalPages);
                 renderArticleList(filtered, kw, pageToLoad);
             })
-            .catch(() => {
+            ['catch'](function() {
                 list.innerHTML = `
                     <div class="no-result">
                         <i class="far fa-frown"></i> 加载文章数据失败<br>
@@ -2102,9 +2472,9 @@
             }
         });
 
-        filterBtns.forEach(btn => {
+        filterBtns.forEach(function(btn) {
             btn.addEventListener('click', function() {
-                filterBtns.forEach(b => b.classList.remove('active'));
+                filterBtns.forEach(function(b) { b.classList.remove('active'); });
                 this.classList.add('active');
                 currentFilter = this.dataset.filter;
                 applySearch(searchInput.value);
@@ -2134,9 +2504,8 @@
         }
     }
 
-    // ========== 归档页面 ==========
     function renderArchive() {
-        const container = document.getElementById('appContent');
+        var container = document.getElementById('appContent');
 
         container.innerHTML = `
             <div class="content-placeholder" style="justify-content: flex-start; padding-top: 0.2rem; width: 100%;">
@@ -2174,17 +2543,17 @@
         `;
 
         fetch('wenzhang.json', { cache: 'no-cache' })
-            .then(response => {
+            .then(function(response) {
                 if (!response.ok) throw new Error('文件不存在');
                 return response.json();
             })
-            .then(data => {
-                const articles = data.announcements || [];
-                const badge = document.getElementById('articleCountBadge');
+            .then(function(data) {
+                var articles = data.announcements || [];
+                var badge = document.getElementById('articleCountBadge');
                 if (badge) badge.textContent = articles.length;
                 renderArchiveList(articles);
             })
-            .catch(() => {
+            ['catch'](function() {
                 document.getElementById('archiveList').innerHTML = `
                     <div class="archive-empty">
                         <i class="far fa-frown"></i> 加载文章数据失败<br>
@@ -2193,19 +2562,19 @@
                 `;
             });
 
-        document.querySelectorAll('.archive-folder-item').forEach(item => {
+        document.querySelectorAll('.archive-folder-item').forEach(function(item) {
             item.addEventListener('click', function() {
-                const target = this.dataset.target;
+                var target = this.dataset.target;
                 if (target === 'tags') {
-                    showMessage('标签功能开发中，敬请期待 🏷️');
+                    showMessage('标签功能开发中，敬请期待');
                     return;
                 }
                 if (target === 'articles') {
-                    const folderView = document.getElementById('archiveFolderView');
-                    const articlesView = document.getElementById('archiveArticlesView');
+                    var folderView = document.getElementById('archiveFolderView');
+                    var articlesView = document.getElementById('archiveArticlesView');
                     folderView.classList.remove('fade-in');
                     folderView.classList.add('fade-out');
-                    setTimeout(() => {
+                    setTimeout(function() {
                         folderView.classList.add('hidden');
                         folderView.classList.remove('fade-out');
                         articlesView.classList.remove('hidden', 'fade-out');
@@ -2216,11 +2585,11 @@
         });
 
         document.getElementById('archiveBackBtn').addEventListener('click', function() {
-            const folderView = document.getElementById('archiveFolderView');
-            const articlesView = document.getElementById('archiveArticlesView');
+            var folderView = document.getElementById('archiveFolderView');
+            var articlesView = document.getElementById('archiveArticlesView');
             articlesView.classList.remove('fade-in');
             articlesView.classList.add('fade-out');
-            setTimeout(() => {
+            setTimeout(function() {
                 articlesView.classList.remove('active', 'fade-out');
                 articlesView.classList.add('hidden');
                 folderView.classList.remove('hidden', 'fade-out');
@@ -2230,56 +2599,56 @@
     }
 
     function renderArchiveList(articles) {
-        const listEl = document.getElementById('archiveList');
+        var listEl = document.getElementById('archiveList');
         if (!listEl) return;
 
         if (articles.length === 0) {
-            listEl.innerHTML = `<div class="archive-empty">📭 还没有文章</div>`;
+            listEl.innerHTML = '<div class="archive-empty">还没有文章</div>';
             return;
         }
 
-        const yearGroups = {};
-        articles.forEach((item, index) => {
-            const date = item.date || '1970-01-01';
-            const parts = date.split('-');
-            const year = parts[0] || '1970';
-            const month = parts[1] || '01';
+        var yearGroups = {};
+        articles.forEach(function(item, index) {
+            var date = item.date || '1970-01-01';
+            var parts = date.split('-');
+            var year = parts[0] || '1970';
+            var month = parts[1] || '01';
             if (!yearGroups[year]) {
                 yearGroups[year] = {};
             }
             if (!yearGroups[year][month]) {
                 yearGroups[year][month] = [];
             }
-            yearGroups[year][month].push({ ...item, index });
+            yearGroups[year][month].push({ index: index, title: item.title, date: item.date });
         });
 
-        const sortedYears = Object.keys(yearGroups).sort((a, b) => b.localeCompare(a));
+        var sortedYears = Object.keys(yearGroups).sort(function(a, b) { return b.localeCompare(a); });
 
-        let html = '';
-        sortedYears.forEach(year => {
-            const months = yearGroups[year];
-            let yearTotal = 0;
-            const sortedMonths = Object.keys(months).sort((a, b) => b.localeCompare(a));
-            sortedMonths.forEach(month => {
+        var html = '';
+        sortedYears.forEach(function(year) {
+            var months = yearGroups[year];
+            var yearTotal = 0;
+            var sortedMonths = Object.keys(months).sort(function(a, b) { return b.localeCompare(a); });
+            sortedMonths.forEach(function(month) {
                 yearTotal += months[month].length;
             });
 
-            html += `<div class="archive-year-group">`;
-            html += `<div class="archive-year-label">${year} 年 <span class="count">(${yearTotal} 篇)</span></div>`;
+            html += '<div class="archive-year-group">';
+            html += '<div class="archive-year-label">' + year + ' 年 <span class="count">(' + yearTotal + ' 篇)</span></div>';
 
-            sortedMonths.forEach(month => {
-                const items = months[month];
-                const monthName = month + '月';
-                html += `<div class="archive-month-group">`;
-                html += `<div class="archive-month-label">${monthName} <span class="count">${items.length} 篇</span></div>`;
-                items.sort((a, b) => {
-                    const da = a.date || '1970-01-01';
-                    const db = b.date || '1970-01-01';
+            sortedMonths.forEach(function(month) {
+                var items = months[month];
+                var monthName = month + '月';
+                html += '<div class="archive-month-group">';
+                html += '<div class="archive-month-label">' + monthName + ' <span class="count">' + items.length + ' 篇</span></div>';
+                items.sort(function(a, b) {
+                    var da = a.date || '1970-01-01';
+                    var db = b.date || '1970-01-01';
                     return db.localeCompare(da);
                 });
-                items.forEach(item => {
-                    const title = escapeHtml(item.title || '无标题');
-                    const date = item.date || '';
+                items.forEach(function(item) {
+                    var title = escapeHtml(item.title || '无标题');
+                    var date = item.date || '';
                     html += `
                         <div class="archive-item" data-index="${item.index}">
                             <span class="item-title">${title}</span>
@@ -2287,33 +2656,32 @@
                         </div>
                     `;
                 });
-                html += `</div>`;
+                html += '</div>';
             });
-            html += `</div>`;
+            html += '</div>';
         });
 
         listEl.innerHTML = html;
 
-        listEl.querySelectorAll('.archive-item').forEach(el => {
+        listEl.querySelectorAll('.archive-item').forEach(function(el) {
             el.addEventListener('click', function() {
-                const idx = this.dataset.index;
-                window.location.href = `article.html?id=${idx}&from=archive&folder=articles`;
+                var idx = this.dataset.index;
+                window.location.href = 'article.html?id=' + idx + '&from=archive&folder=articles';
             });
         });
     }
 
-    // ========== 关于页面 ==========
     function renderAbout() {
-        const container = document.getElementById('appContent');
+        var container = document.getElementById('appContent');
 
-        const startDate = new Date(2026, 6, 5);
-        const now = new Date();
-        const diffMs = now - startDate;
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        var startDate = new Date(2026, 6, 5);
+        var now = new Date();
+        var diffMs = now - startDate;
+        var diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-        let years = 0;
-        let months = 0;
-        let days = diffDays;
+        var years = 0;
+        var months = 0;
+        var days = diffDays;
         if (days >= 365) {
             years = Math.floor(days / 365);
             days = days % 365;
@@ -2322,25 +2690,25 @@
             months = Math.floor(days / 30);
             days = days % 30;
         }
-        let carryDisplay = '';
+        var carryDisplay = '';
         if (years > 0) carryDisplay += years + ' 年 ';
         if (months > 0) carryDisplay += months + ' 月 ';
         carryDisplay += days + ' 天';
 
-        const sameDisplay = (diffDays + ' 天') === carryDisplay.trim();
+        var sameDisplay = (diffDays + ' 天') === carryDisplay.trim();
 
         fetch('wenzhang.json', { cache: 'no-cache' })
-            .then(response => {
+            .then(function(response) {
                 if (!response.ok) throw new Error('文件不存在');
                 return response.json();
             })
-            .then(data => {
-                const articles = data.announcements || [];
-                const articleCount = articles.length;
-                let totalWordCount = 0;
-                articles.forEach(item => {
-                    const content = item.content || '';
-                    const text = content
+            .then(function(data) {
+                var articles = data.announcements || [];
+                var articleCount = articles.length;
+                var totalWordCount = 0;
+                articles.forEach(function(item) {
+                    var content = item.content || '';
+                    var text = content
                         .replace(/```[\s\S]*?```/g, '')
                         .replace(/`[^`]+`/g, '')
                         .replace(/\*\*(.*?)\*\*/g, '$1')
@@ -2359,12 +2727,12 @@
                 });
                 renderAboutContent(articleCount, totalWordCount, diffDays, carryDisplay, sameDisplay);
             })
-            .catch(() => {
+            ['catch'](function() {
                 renderAboutContent(0, 0, diffDays, carryDisplay, sameDisplay);
             });
 
         function renderAboutContent(articleCount, totalWordCount, diffDays, carryDisplay, sameDisplay) {
-            let timeHtml = `
+            var timeHtml = `
                 <div class="stat-item">
                     <i class="fas fa-clock"></i>
                     <span>运行时间</span>
@@ -2420,20 +2788,50 @@
                             <span style="margin-left: auto; color: #6B5ACF; font-weight: 500;">2026年7月10日</span>
                         </div>
                     </div>
+
+                    <div class="progress-card">
+                        <div id="progressContainer">
+                            <div class="progress-item">
+                                <span class="progress-label">今年进度</span>
+                                <div class="progress-track"><div class="progress-fill" id="yearProgress" style="width:0%"></div></div>
+                                <span class="progress-percent" id="yearPercent">0%</span>
+                                <span class="progress-detail" id="yearDetail">还剩 -- 天</span>
+                            </div>
+                            <div class="progress-item">
+                                <span class="progress-label">本月进度</span>
+                                <div class="progress-track"><div class="progress-fill" id="monthProgress" style="width:0%"></div></div>
+                                <span class="progress-percent" id="monthPercent">0%</span>
+                                <span class="progress-detail" id="monthDetail">还剩 -- 天</span>
+                            </div>
+                            <div class="progress-item">
+                                <span class="progress-label">本周进度</span>
+                                <div class="progress-track"><div class="progress-fill" id="weekProgress" style="width:0%"></div></div>
+                                <span class="progress-percent" id="weekPercent">0%</span>
+                                <span class="progress-detail" id="weekDetail">还剩 -- 天</span>
+                            </div>
+                            <div class="holiday-box" id="holidayBox">加载中...</div>
+                        </div>
+                    </div>
+
+                    <div class="weather-card" id="weatherCard">
+                        <div id="weatherContent">
+                            <div class="weather-loading"><i class="fas fa-spinner fa-spin"></i> 获取天气中...</div>
+                        </div>
+                    </div>
                 </div>
             `;
 
             document.getElementById('copyDomainBtn').addEventListener('click', function() {
-                const url = 'https://cuizi.top/';
-                navigator.clipboard.writeText(url).then(() => {
+                var url = 'https://cuizi.top/';
+                navigator.clipboard.writeText(url).then(function() {
                     this.innerHTML = '<i class="fas fa-check"></i> 已复制';
                     this.classList.add('copied');
-                    setTimeout(() => {
+                    setTimeout(function() {
                         this.innerHTML = '<i class="fas fa-copy"></i> 复制';
                         this.classList.remove('copied');
                     }, 2000);
-                }).catch(() => {
-                    const ta = document.createElement('textarea');
+                })['catch'](function() {
+                    var ta = document.createElement('textarea');
                     ta.value = url;
                     document.body.appendChild(ta);
                     ta.select();
@@ -2441,16 +2839,229 @@
                     document.body.removeChild(ta);
                     this.innerHTML = '<i class="fas fa-check"></i> 已复制';
                     this.classList.add('copied');
-                    setTimeout(() => {
+                    setTimeout(function() {
                         this.innerHTML = '<i class="fas fa-copy"></i> 复制';
                         this.classList.remove('copied');
                     }, 2000);
                 });
             });
+
+            var holidayData = {
+    "2026": {
+        "元旦": "2026-01-01",
+        "清明节": "2026-04-05",
+        "劳动节": "2026-05-01",
+        "端午节": "2026-06-19",
+        "中秋节": "2026-09-25",
+        "国庆节": "2026-10-01"
+    },
+    "2027": {
+        "元旦": "2027-01-01",
+        "清明节": "2027-04-05",
+        "劳动节": "2027-05-01",
+        "端午节": "2027-06-09",
+        "中秋节": "2027-09-15",
+        "国庆节": "2027-10-01"
+    }
+};
+
+            function updateProgress() {
+                var now = new Date();
+                var year = now.getFullYear();
+                var month = now.getMonth();
+                var date = now.getDate();
+                var dayOfWeek = now.getDay() || 7;
+
+                var isLeap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+                var daysInYear = isLeap ? 366 : 365;
+                var startOfYear = new Date(year, 0, 0);
+                var yearPassed = Math.floor((now - startOfYear) / 86400000);
+                var yearPercent = ((yearPassed / daysInYear) * 100).toFixed(1);
+                var yearRemain = daysInYear - yearPassed;
+                document.getElementById('yearProgress').style.width = yearPercent + '%';
+                document.getElementById('yearPercent').textContent = yearPercent + '%';
+                document.getElementById('yearDetail').textContent = '还剩 ' + yearRemain + ' 天';
+
+                var daysInMonth = new Date(year, month + 1, 0).getDate();
+                var monthPercent = ((date / daysInMonth) * 100).toFixed(1);
+                var monthRemain = daysInMonth - date;
+                document.getElementById('monthProgress').style.width = monthPercent + '%';
+                document.getElementById('monthPercent').textContent = monthPercent + '%';
+                document.getElementById('monthDetail').textContent = '还剩 ' + monthRemain + ' 天';
+
+                var weekPercent = ((dayOfWeek / 7) * 100).toFixed(1);
+                var weekRemain = 7 - dayOfWeek;
+                document.getElementById('weekProgress').style.width = weekPercent + '%';
+                document.getElementById('weekPercent').textContent = weekPercent + '%';
+                document.getElementById('weekDetail').textContent = '还剩 ' + weekRemain + ' 天';
+
+                var yearData = holidayData[String(year)];
+                var holidayList = [];
+                if (yearData) {
+                    for (var key in yearData) {
+                        if (yearData.hasOwnProperty(key)) {
+                            var dateParts = yearData[key].split('-');
+                            holidayList.push({ name: key, date: new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2])) });
+                        }
+                    }
+                }
+                var today = new Date(year, month, date);
+                var nextHoliday = null;
+                if (holidayList.length > 0) {
+                    for (var i = 0; i < holidayList.length; i++) {
+                        if (holidayList[i].date >= today) {
+                            nextHoliday = holidayList[i];
+                            break;
+                        }
+                    }
+                }
+                if (!nextHoliday) {
+                    var nextYear = year + 1;
+                    while (true) {
+                        var nextYearData = holidayData[String(nextYear)];
+                        if (nextYearData && nextYearData.元旦) {
+                            var parts = nextYearData.元旦.split('-');
+                            nextHoliday = { name: '元旦', date: new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])) };
+                            break;
+                        }
+                        nextYear++;
+                    }
+                }
+                var diffTime = nextHoliday.date.getTime() - today.getTime();
+                var daysRemain = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                document.getElementById('holidayBox').innerHTML = '距离 <strong>' + nextHoliday.name + '</strong> 还有 <span class="holiday-days">' + daysRemain + '</span> 天';
+            }
+            updateProgress();
+
+            var weatherContent = document.getElementById('weatherContent');
+
+            function getWeather() {
+                fetch('https://uapis.cn/api/v1/misc/weather?extended=true&forecast=true')
+                    .then(function(response) {
+                        if (!response.ok) throw new Error('请求失败');
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        renderWeather(data);
+                    })
+                    ['catch'](function() {
+                        weatherContent.innerHTML = `
+                            <div class="weather-error">
+                                <i class="fas fa-exclamation-circle"></i> 获取天气失败
+                                <button class="retry-btn" onclick="getWeather()">重试</button>
+                            </div>
+                        `;
+                    });
+            }
+
+            function renderWeather(data) {
+                var city = data.city || '未知';
+                var district = data.district || '';
+                var temp = data.temperature || '--';
+                var weather = data.weather || '--';
+                var windDir = data.wind_direction || '--';
+                var windPower = data.wind_power || '--';
+                var humidity = data.humidity || '--';
+                var feelsLike = data.feels_like || '--';
+                var visibility = data.visibility || '--';
+                var pressure = data.pressure || '--';
+                var precipitation = data.precipitation || '--';
+                var cloud = data.cloud || '--';
+                var aqi = data.aqi || '--';
+                var aqiCategory = data.aqi_category || '--';
+                var aqiLevel = data.aqi_level || 0;
+                var aqiPrimary = data.aqi_primary || '';
+
+                var forecast = data.forecast && data.forecast[0] || {};
+                var tempMax = data.temp_max || forecast.temp_max || '--';
+                var tempMin = data.temp_min || forecast.temp_min || '--';
+                var sunrise = forecast.sunrise || '--:--';
+                var sunset = forecast.sunset || '--:--';
+                var pop = forecast.pop || '--';
+                var uvIndex = forecast.uv_index || data.uv || '--';
+
+                var pollutants = data.air_pollutants || {};
+                var pm25 = pollutants.pm25 || '--';
+                var pm10 = pollutants.pm10 || '--';
+                var o3 = pollutants.o3 || '--';
+                var no2 = pollutants.no2 || '--';
+                var so2 = pollutants.so2 || '--';
+                var co = pollutants.co || '--';
+
+                var reportTime = data.report_time || '刚刚更新';
+
+                var windDisplay = windDir + ' ' + windPower;
+
+                var uvLevel = getUvLevel(uvIndex);
+                var uvBadge = uvLevel ? '<span class="badge-tag ' + uvLevel.class + '">' + uvLevel.label + '</span>' : '';
+                var aqiBadge = aqiCategory !== '--' ? '<span class="badge-tag ' + getAqiClass(aqiLevel) + '">' + aqiCategory + '</span>' : '';
+
+                weatherContent.innerHTML = `
+                    <div class="weather-header">
+                        <span class="weather-location"><i class="fas fa-location-dot"></i> ${city}${district ? ' · ' + district : ''}</span>
+                    </div>
+                    <div class="weather-temp-row">
+                        <span class="temp-current">${temp}<span class="deg">°</span></span>
+                        <span class="weather-desc">${weather}</span>
+                        <span class="weather-high-low">
+                            <i class="fas fa-arrow-up" style="color:#E57373;"></i> ${tempMax}° <i class="fas fa-arrow-down" style="color:#64B5F6;"></i> ${tempMin}°
+                        </span>
+                    </div>
+                    <div class="weather-grid">
+                        <div class="wg-item"><i class="fas fa-wind"></i><span class="wg-label">风力</span><span class="wg-value">${windDisplay}</span></div>
+                        <div class="wg-item"><i class="fas fa-droplet"></i><span class="wg-label">湿度</span><span class="wg-value">${humidity}%</span></div>
+                        <div class="wg-item"><i class="fas fa-thermometer-half"></i><span class="wg-label">体感</span><span class="wg-value">${feelsLike}°</span></div>
+                        <div class="wg-item"><i class="fas fa-sun"></i><span class="wg-label">紫外线</span><span class="wg-value">${uvIndex} ${uvBadge}</span></div>
+                        <div class="wg-item"><i class="fas fa-eye"></i><span class="wg-label">能见度</span><span class="wg-value">${visibility}km</span></div>
+                        <div class="wg-item"><i class="fas fa-gauge-high"></i><span class="wg-label">气压</span><span class="wg-value">${pressure}hPa</span></div>
+                        <div class="wg-item"><i class="fas fa-water"></i><span class="wg-label">降水量</span><span class="wg-value">${precipitation}mm</span></div>
+                        <div class="wg-item"><i class="fas fa-cloud"></i><span class="wg-label">云量</span><span class="wg-value">${cloud}%</span></div>
+                        <div class="wg-item"><i class="fas fa-cloud-rain"></i><span class="wg-label">降水概率</span><span class="wg-value">${pop}%</span></div>
+                        <div class="wg-item"><i class="fas fa-sunrise"></i><span class="wg-label">日出</span><span class="wg-value">${sunrise}</span></div>
+                        <div class="wg-item"><i class="fas fa-sunset"></i><span class="wg-label">日落</span><span class="wg-value">${sunset}</span></div>
+                        <div class="wg-item"><i class="fas fa-leaf"></i><span class="wg-label">空气质量</span><span class="wg-value">${aqi} ${aqiBadge}</span></div>
+                        <div class="wg-item pollutants-row">
+                            <i class="fas fa-microscope"></i>
+                            <span class="wg-label">污染物</span>
+                            <span class="wg-value">
+                                <span>PM2.5: ${pm25}</span>
+                                <span>PM10: ${pm10}</span>
+                                <span>O₃: ${o3}</span>
+                                <span>NO₂: ${no2}</span>
+                                <span>SO₂: ${so2}</span>
+                                <span>CO: ${co}</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="weather-update-time"><i class="fas fa-clock"></i> ${reportTime}</div>
+                `;
+            }
+
+            function getUvLevel(uv) {
+                if (uv === '--') return null;
+                var u = parseFloat(uv);
+                if (u <= 2) return { label: '弱', class: 'badge-uv-weak' };
+                if (u <= 5) return { label: '中等', class: 'badge-uv-moderate' };
+                if (u <= 7) return { label: '强', class: 'badge-uv-strong' };
+                return { label: '极强', class: 'badge-uv-extreme' };
+            }
+
+            function getAqiClass(level) {
+                if (level === 1) return 'badge-aqi-good';
+                if (level === 2) return 'badge-aqi-moderate';
+                if (level === 3) return 'badge-aqi-light';
+                if (level === 4) return 'badge-aqi-moderate-pollution';
+                if (level === 5) return 'badge-aqi-heavy';
+                if (level >= 6) return 'badge-aqi-severe';
+                return 'badge-aqi-moderate';
+            }
+
+            window.getWeather = getWeather;
+            getWeather();
         }
     }
 
-    const appContent = document.getElementById('appContent');
+    var appContent = document.getElementById('appContent');
 
     function renderRecommend() {
         appContent.innerHTML = recommendHTML;
@@ -2465,18 +3076,18 @@
         else if (pageId === 'about') renderAbout();
         else if (pageId === 'archive') renderArchive();
 
-        navLinks.forEach(link => link.classList.remove('active'));
+        navLinks.forEach(function(link) { link.classList.remove('active'); });
         if (linkElement) {
             linkElement.classList.add('active');
             updateSlider(linkElement);
-            const container = navScroll;
-            const linkRect = linkElement.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
+            var container = navScroll;
+            var linkRect = linkElement.getBoundingClientRect();
+            var containerRect = container.getBoundingClientRect();
             if (linkRect.left < containerRect.left || linkRect.right > containerRect.right) {
                 linkElement.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }
         } else {
-            const active = document.querySelector(`.nav a[data-page="${pageId}"]`);
+            var active = document.querySelector('.nav a[data-page="' + pageId + '"]');
             if (active) {
                 active.classList.add('active');
                 updateSlider(active);
@@ -2484,40 +3095,40 @@
         }
     }
 
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
+    navLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
             e.preventDefault();
-            const page = link.getAttribute('data-page');
+            var page = link.getAttribute('data-page');
             switchPage(page, link);
         });
     });
 
-    let scrollTimeout;
-    navScroll.addEventListener('scroll', () => {
+    var scrollTimeout;
+    navScroll.addEventListener('scroll', function() {
         clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => {
-            const container = navScroll;
-            const center = container.scrollLeft + container.offsetWidth / 2;
-            let closest = null;
-            let closestDist = Infinity;
-            navLinks.forEach(link => {
-                const rect = link.getBoundingClientRect();
-                const containerRect = container.getBoundingClientRect();
-                const linkCenter = rect.left + rect.width / 2 - containerRect.left;
-                const dist = Math.abs(linkCenter - container.offsetWidth / 2);
+        scrollTimeout = setTimeout(function() {
+            var container = navScroll;
+            var center = container.scrollLeft + container.offsetWidth / 2;
+            var closest = null;
+            var closestDist = Infinity;
+            navLinks.forEach(function(link) {
+                var rect = link.getBoundingClientRect();
+                var containerRect = container.getBoundingClientRect();
+                var linkCenter = rect.left + rect.width / 2 - containerRect.left;
+                var dist = Math.abs(linkCenter - container.offsetWidth / 2);
                 if (dist < closestDist) {
                     closestDist = dist;
                     closest = link;
                 }
             });
             if (closest && !closest.classList.contains('active')) {
-                const page = closest.getAttribute('data-page');
+                var page = closest.getAttribute('data-page');
                 switchPage(page, closest);
             }
         }, 80);
     });
 
-    const returnParam = getUrlParam('return');
+    var returnParam = getUrlParam('return');
 
     window.addEventListener('pageshow', function() {
         if (document.getElementById('softwareToggle')) {
@@ -2526,25 +3137,25 @@
     });
 
     if (returnParam === 'archive') {
-        const archiveLink = document.querySelector('.nav a[data-page="archive"]');
+        var archiveLink = document.querySelector('.nav a[data-page="archive"]');
         if (archiveLink) {
             switchPage('archive', archiveLink);
         } else {
             switchPage('articles', navLinks[0]);
         }
-        const cleanUrl = window.location.pathname;
+        var cleanUrl = window.location.pathname;
         window.history.replaceState({}, '', cleanUrl);
     } else if (returnParam === 'articles' || getUrlParam('page')) {
-        const articleLink = document.querySelector('.nav a[data-page="articles"]');
+        var articleLink = document.querySelector('.nav a[data-page="articles"]');
         if (articleLink) {
             switchPage('articles', articleLink);
         } else {
             switchPage('articles', navLinks[0]);
         }
-        const cleanUrl = window.location.pathname;
+        var cleanUrl = window.location.pathname;
         window.history.replaceState({}, '', cleanUrl);
     } else {
-        const articlesLink = document.querySelector('.nav a[data-page="articles"]');
+        var articlesLink = document.querySelector('.nav a[data-page="articles"]');
         if (articlesLink) {
             switchPage('articles', articlesLink);
         } else {

@@ -1697,7 +1697,7 @@
     let currentFilter = 'newest';
     let currentPage = 1;
     let currentKeyword = '';
-    const PAGE_SIZE = 10;  // ← 改为每页 10 篇
+    const PAGE_SIZE = 10;
     const PRELOAD_PAGES = 4;
     let loadedCount = 0;
 
@@ -1735,6 +1735,9 @@
         return text.replace(regex, match => `<span class="highlight">${match}</span>`);
     }
 
+    // ============================================================
+    // 修复：增加图片过滤，与 article.html 的 countWords 保持一致
+    // ============================================================
     function markdownToPlainText(md) {
         if (!md) return '';
         let text = md;
@@ -1744,6 +1747,7 @@
         text = text.replace(/\*([^*]+)\*/g, '$1');
         text = text.replace(/~~(.*?)~~/g, '$1');
         text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+        text = text.replace(/!\[([^\]]*)\]\([^)]*\)/g, '');  // ← 新增：过滤图片 alt 和 URL
         text = text.replace(/^#{1,6}\s+/gm, '');
         text = text.replace(/^-\s+/gm, '');
         text = text.replace(/^\d+\.\s+/gm, '');

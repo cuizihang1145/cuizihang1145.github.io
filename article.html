@@ -30,7 +30,6 @@
             color: #E8E6F0;
         }
 
-        /* ===== 阅读进度条 ===== */
         .reading-progress {
             position: fixed;
             top: 0;
@@ -656,7 +655,6 @@
             border-radius: 0 !important;
         }
 
-        /* ===== 代码块 ===== */
         .code-block-wrapper {
             background: #0D1117 !important;
             border-radius: 12px;
@@ -1035,7 +1033,6 @@
             }
         }
 
-        /* ===== 分享菜单弹窗 ===== */
         .share-modal-overlay {
             position: fixed;
             top: 0;
@@ -1194,7 +1191,6 @@
             }
         }
 
-        /* ===== Toast ===== */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -1245,833 +1241,802 @@
     </style>
 </head>
 <body>
-<!-- ===== 阅读进度条 ===== -->
-<div class="reading-progress" id="readingProgress">
-    <div class="progress-bar" id="progressBar"></div>
-</div>
-
-<div class="bg-glow"></div>
-<div class="glow-soft"></div>
-<div class="glow-soft-2"></div>
-
-<!-- ===== 顶部按钮组 ===== -->
-<div class="top-buttons">
-    <div class="left">
-        <a href="javascript:void(0)" class="back-btn" id="backButton">
-            <i class="fas fa-arrow-left"></i> 返回
-        </a>
-        <button class="share-btn" id="shareButton" aria-label="分享">
-            <i class="fas fa-share-alt"></i>
-        </button>
+    <div class="reading-progress" id="readingProgress">
+        <div class="progress-bar" id="progressBar"></div>
     </div>
-    <div class="right">
-        <button class="back-to-top-btn" id="backToTopBtn" aria-label="回到顶部">
-            <i class="fas fa-arrow-up"></i>
-        </button>
-        <button class="theme-toggle" id="themeToggle" aria-label="切换深色/亮色模式">
-            <i class="fas fa-moon" id="themeIcon"></i>
-        </button>
-    </div>
-</div>
 
-<div class="container">
-    <div id="appContent">
-        <div class="loading">
-            <i class="fas fa-spinner fa-spin"></i>
-            加载中...
+    <div class="bg-glow"></div>
+    <div class="glow-soft"></div>
+    <div class="glow-soft-2"></div>
+
+    <div class="top-buttons">
+        <div class="left">
+            <a href="javascript:void(0)" class="back-btn" id="backButton">
+                <i class="fas fa-arrow-left"></i> 返回
+            </a>
+            <button class="share-btn" id="shareButton" aria-label="分享">
+                <i class="fas fa-share-alt"></i>
+            </button>
+        </div>
+        <div class="right">
+            <button class="back-to-top-btn" id="backToTopBtn" aria-label="回到顶部">
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            <button class="theme-toggle" id="themeToggle" aria-label="切换深色/亮色模式">
+                <i class="fas fa-moon" id="themeIcon"></i>
+            </button>
         </div>
     </div>
-</div>
 
-<!-- ===== 分享菜单弹窗 ===== -->
-<div class="share-modal-overlay" id="shareModal">
-    <div class="share-modal-box">
-        <div class="share-modal-title"><i class="fas fa-share-alt"></i> 分享内容</div>
-        <div class="share-text-box" id="shareTextDisplay">加载中...</div>
-        <div class="share-modal-actions">
-            <button class="btn-cancel" id="shareCancelBtn">取消</button>
-            <button class="btn-copy" id="shareCopyBtn"><i class="fas fa-copy"></i> 复制</button>
+    <div class="container">
+        <div id="appContent">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                加载中...
+            </div>
         </div>
     </div>
-</div>
 
-<!-- ===== Toast ===== -->
-<div class="toast" id="toast"></div>
+    <div class="share-modal-overlay" id="shareModal">
+        <div class="share-modal-box">
+            <div class="share-modal-title"><i class="fas fa-share-alt"></i> 分享内容</div>
+            <div class="share-text-box" id="shareTextDisplay">加载中...</div>
+            <div class="share-modal-actions">
+                <button class="btn-cancel" id="shareCancelBtn">取消</button>
+                <button class="btn-copy" id="shareCopyBtn"><i class="fas fa-copy"></i> 复制</button>
+            </div>
+        </div>
+    </div>
 
-<script>
-    // ============================================================
-    // 阅读进度条
-    // ============================================================
-    const progressBar = document.getElementById('progressBar');
+    <div class="toast" id="toast"></div>
 
-    function updateReadingProgress() {
-        const scrollTop = window.scrollY || window.pageYOffset;
-        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        if (docHeight <= 0) return;
-        const progress = Math.min((scrollTop / docHeight) * 100, 100);
-        progressBar.style.width = progress + '%';
-    }
+    <script>
+        // ============================================================
+        // 阅读进度条
+        // ============================================================
+        const progressBar = document.getElementById('progressBar');
 
-    window.addEventListener('scroll', updateReadingProgress);
-    window.addEventListener('resize', updateReadingProgress);
-    window.addEventListener('load', updateReadingProgress);
-
-    // ============================================================
-    // 主题切换
-    // ============================================================
-    const themeToggle = document.getElementById('themeToggle');
-    const themeIcon = document.getElementById('themeIcon');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    let currentTheme = localStorage.getItem('ks-theme') || (prefersDark ? 'dark' : 'light');
-
-    function setTheme(theme) {
-        document.body.classList.toggle('dark', theme === 'dark');
-        themeIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-        localStorage.setItem('ks-theme', theme);
-        currentTheme = theme;
-    }
-    setTheme(currentTheme);
-
-    themeToggle.addEventListener('click', () => {
-        setTheme(currentTheme === 'dark' ? 'light' : 'dark');
-    });
-
-    // ============================================================
-    // 回到顶部
-    // ============================================================
-    const backToTopBtn = document.getElementById('backToTopBtn');
-    let isScrollingToTop = false;
-
-    window.addEventListener('scroll', function() {
-        const scrollY = window.scrollY || window.pageYOffset;
-        if (scrollY > 300 && !isScrollingToTop) {
-            backToTopBtn.classList.add('show');
-        } else if (!isScrollingToTop) {
-            backToTopBtn.classList.remove('show');
+        function updateReadingProgress() {
+            const scrollTop = window.scrollY || window.pageYOffset;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            if (docHeight <= 0) return;
+            const progress = Math.min((scrollTop / docHeight) * 100, 100);
+            progressBar.style.width = progress + '%';
         }
-    });
 
-    function fastScrollToTop() {
-        const startY = window.scrollY || window.pageYOffset;
-        if (startY === 0) return;
-        const duration = 300;
-        const startTime = performance.now();
+        window.addEventListener('scroll', updateReadingProgress);
+        window.addEventListener('resize', updateReadingProgress);
+        window.addEventListener('load', updateReadingProgress);
 
-        function step(currentTime) {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const ease = 1 - Math.pow(1 - progress, 3);
-            const nextY = startY * (1 - ease);
-            window.scrollTo(0, nextY);
-            if (progress < 1) {
-                requestAnimationFrame(step);
-            } else {
-                window.scrollTo(0, 0);
-                isScrollingToTop = false;
-                backToTopBtn.classList.remove('disabled');
+        // ============================================================
+        // 主题切换
+        // ============================================================
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        let currentTheme = localStorage.getItem('ks-theme') || (prefersDark ? 'dark' : 'light');
+
+        function setTheme(theme) {
+            document.body.classList.toggle('dark', theme === 'dark');
+            themeIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            localStorage.setItem('ks-theme', theme);
+            currentTheme = theme;
+        }
+        setTheme(currentTheme);
+
+        themeToggle.addEventListener('click', () => {
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
+        // ============================================================
+        // 回到顶部
+        // ============================================================
+        const backToTopBtn = document.getElementById('backToTopBtn');
+        let isScrollingToTop = false;
+
+        window.addEventListener('scroll', function() {
+            const scrollY = window.scrollY || window.pageYOffset;
+            if (scrollY > 300 && !isScrollingToTop) {
+                backToTopBtn.classList.add('show');
+            } else if (!isScrollingToTop) {
                 backToTopBtn.classList.remove('show');
             }
-        }
-        requestAnimationFrame(step);
-    }
-
-    backToTopBtn.addEventListener('click', function() {
-        if (isScrollingToTop) return;
-        const scrollY = window.scrollY || window.pageYOffset;
-        if (scrollY === 0) return;
-        isScrollingToTop = true;
-        backToTopBtn.classList.add('disabled');
-        fastScrollToTop();
-    });
-
-    // ============================================================
-    // 工具函数
-    // ============================================================
-    function getParam(name) {
-        const url = new URL(window.location.href);
-        return url.searchParams.get(name);
-    }
-
-    function escapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    function countWords(markdown) {
-        if (!markdown) return 0;
-        let text = markdown
-            .replace(/```[\s\S]*?```/g, '')
-            .replace(/`[^`]+`/g, '')
-            .replace(/\*\*(.*?)\*\*/g, '$1')
-            .replace(/\*([^*]+)\*/g, '$1')
-            .replace(/~~(.*?)~~/g, '$1')
-            .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-            .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')
-            .replace(/^#{1,6}\s+/gm, '')
-            .replace(/^-\s+/gm, '')
-            .replace(/^\d+\.\s+/gm, '')
-            .replace(/^>\s+/gm, '')
-            .replace(/^---$/gm, '')
-            .replace(/^\s*[-*+]\s+\[[ x]\]\s+/gm, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-        return text.length;
-    }
-
-    function calculateReadTime(wordCount) {
-        const minutes = Math.ceil(wordCount / 300);
-        return minutes < 1 ? 1 : minutes;
-    }
-
-    function markdownToPlainText(md) {
-        if (!md) return '';
-        let text = md;
-        text = text.replace(/\\\$/g, '$');
-        text = text.replace(/```[\s\S]*?```/g, '');
-        text = text.replace(/`([^`]+)`/g, '“$1”');
-        text = text.replace(/\*\*(.*?)\*\*/g, '$1');
-        text = text.replace(/\*([^*]+)\*/g, '$1');
-        text = text.replace(/~~(.*?)~~/g, '$1');
-        text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
-        text = text.replace(/^#{1,6}\s+/gm, '');
-        text = text.replace(/^-\s+/gm, '');
-        text = text.replace(/^\d+\.\s+/gm, '');
-        text = text.replace(/^>\s+/gm, '');
-        text = text.replace(/^---$/gm, '');
-        text = text.replace(/\n{3,}/g, '\n\n');
-        return text.trim();
-    }
-
-    function getPlainPreview(content, maxLength = 80) {
-        const plain = markdownToPlainText(content);
-        const segments = [...new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(plain)];
-        const text = segments.map(s => s.segment).join('');
-        if (text.length <= maxLength) return text;
-        const truncatedSegments = segments.slice(0, maxLength);
-        let truncated = truncatedSegments.map(s => s.segment).join('');
-        const lastSeg = truncatedSegments[truncatedSegments.length - 1];
-        if (lastSeg) {
-            const lastChar = lastSeg.segment;
-            const emojiRegex = /[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]|[\u{FE0F}]|[\u{1F1E6}-\u{1F1FF}]|[\u{1F600}-\u{1F64F}]|[\u{2700}-\u{27BF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F900}-\u{1F9FF}]/u;
-            if (emojiRegex.test(lastChar) && lastChar.length > 1) {
-                const prevSegments = segments.slice(0, maxLength - 1);
-                if (prevSegments.length > 0) {
-                    truncated = prevSegments.map(s => s.segment).join('');
-                } else {
-                    truncated = '';
-                }
-            }
-        }
-        return truncated + '...';
-    }
-
-    function showToast(message, icon = 'fa-info-circle', duration = 2500) {
-        const toast = document.getElementById('toast');
-        toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
-        toast.classList.add('show');
-        clearTimeout(toast._hideTimer);
-        toast._hideTimer = setTimeout(() => {
-            toast.classList.remove('show');
-        }, duration);
-    }
-
-    // ============================================================
-    // 渲染 Markdown
-    // ============================================================
-    function renderMarkdown(md) {
-        if (!md) return '';
-
-        const escMap = {};
-        let escCounter = 0;
-        md = md.replace(/\\([\\`*_{}\[\]()#+\-.!|$])/g, function(match, char) {
-            const key = '\uE000' + (escCounter++) + '\uE001';
-            escMap[key] = char;
-            return key;
         });
 
-        const lines = md.split('\n');
-        let result = '';
-        let inCodeBlock = false;
-        let codeBlockLines = [];
-        let codeLang = '';
-        let codeBlockCounter = 0;
-        let inTable = false;
-        let tableRows = [];
-        let tableAligns = [];
-        let footnotes = {};
-        let footnoteKeys = [];
+        function fastScrollToTop() {
+            const startY = window.scrollY || window.pageYOffset;
+            if (startY === 0) return;
+            const duration = 300;
+            const startTime = performance.now();
 
-        function restoreEscapes(text) {
-            let r = text;
-            for (const [key, char] of Object.entries(escMap)) {
-                r = r.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), char);
-            }
-            return r;
-        }
-
-        function renderInline(text) {
-            let html = escapeHtml(text);
-            html = html.replace(/&lt;(https?:\/\/[^\s<>]+)&gt;/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
-            html = html.replace(/&lt;([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})&gt;/g, '<a href="mailto:$1">$1</a>');
-            html = html.replace(/(?<!\]\()https?:\/\/[^\s<>]+/g, '<a href="$&" target="_blank" rel="noopener">$&</a>');
-            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-            html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
-            html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, alt, src, w, h) {
-                let style = '';
-                if (w && h) style = ` style="width:${w}px; height:${h}px;"`;
-                else if (w) style = ` style="width:${w}px; height:auto;"`;
-                else if (h) style = ` style="height:${h}px; width:auto;"`;
-                return `<img src="${src}" alt="${alt}" loading="lazy"${style} />`;
-            });
-            html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-            html = html.replace(/\[\^([^\]]+)\]/g, function(match, key) {
-                if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
-                return `<sup class="footnote-ref"><a href="#fn-${key}" id="fnref-${key}">${key}</a></sup>`;
-            });
-            html = restoreEscapes(html);
-            return html;
-        }
-
-        function flushTable() {
-            if (tableRows.length === 0) return;
-            let html = '<table>';
-            for (let i = 0; i < tableRows.length; i++) {
-                const cells = tableRows[i];
-                const isHeader = i === 0;
-                html += '<tr>';
-                for (let j = 0; j < cells.length; j++) {
-                    const tag = isHeader ? 'th' : 'td';
-                    const align = (i === 1 && tableAligns[j]) ? ` style="text-align:${tableAligns[j]};"` : '';
-                    const cellContent = cells[j].replace(/\\n/g, '\n').replace(/\n/g, '<br>');
-                    html += `<${tag}${align}>${renderInline(cellContent)}</${tag}>`;
+            function step(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const ease = 1 - Math.pow(1 - progress, 3);
+                const nextY = startY * (1 - ease);
+                window.scrollTo(0, nextY);
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    window.scrollTo(0, 0);
+                    isScrollingToTop = false;
+                    backToTopBtn.classList.remove('disabled');
+                    backToTopBtn.classList.remove('show');
                 }
-                html += '</tr>';
             }
-            html += '</table>';
-            result += html;
-            tableRows = [];
-            tableAligns = [];
-            inTable = false;
+            requestAnimationFrame(step);
         }
 
-        function flushCodeBlock() {
-            if (codeBlockLines.length === 0) {
-                inCodeBlock = false;
-                codeLang = '';
-                return;
+        backToTopBtn.addEventListener('click', function() {
+            if (isScrollingToTop) return;
+            const scrollY = window.scrollY || window.pageYOffset;
+            if (scrollY === 0) return;
+            isScrollingToTop = true;
+            backToTopBtn.classList.add('disabled');
+            fastScrollToTop();
+        });
+
+        // ============================================================
+        // 工具函数
+        // ============================================================
+        function getParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function countWords(markdown) {
+            if (!markdown) return 0;
+            let text = markdown
+                .replace(/```[\s\S]*?```/g, '')
+                .replace(/`[^`]+`/g, '')
+                .replace(/\*\*(.*?)\*\*/g, '$1')
+                .replace(/\*([^*]+)\*/g, '$1')
+                .replace(/~~(.*?)~~/g, '$1')
+                .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+                .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')
+                .replace(/^#{1,6}\s+/gm, '')
+                .replace(/^-\s+/gm, '')
+                .replace(/^\d+\.\s+/gm, '')
+                .replace(/^>\s+/gm, '')
+                .replace(/^---$/gm, '')
+                .replace(/^\s*[-*+]\s+\[[ x]\]\s+/gm, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+            return text.length;
+        }
+
+        function calculateReadTime(wordCount) {
+            const minutes = Math.ceil(wordCount / 300);
+            return minutes < 1 ? 1 : minutes;
+        }
+
+        function markdownToPlainText(md) {
+            if (!md) return '';
+            let text = md;
+            text = text.replace(/\\\$/g, '$');
+            text = text.replace(/```[\s\S]*?```/g, '');
+            text = text.replace(/`([^`]+)`/g, '“$1”');
+            text = text.replace(/\*\*(.*?)\*\*/g, '$1');
+            text = text.replace(/\*([^*]+)\*/g, '$1');
+            text = text.replace(/~~(.*?)~~/g, '$1');
+            text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+            text = text.replace(/^#{1,6}\s+/gm, '');
+            text = text.replace(/^-\s+/gm, '');
+            text = text.replace(/^\d+\.\s+/gm, '');
+            text = text.replace(/^>\s+/gm, '');
+            text = text.replace(/^---$/gm, '');
+            text = text.replace(/\n{3,}/g, '\n\n');
+            return text.trim();
+        }
+
+        function getPlainPreview(content, maxLength = 80) {
+            const plain = markdownToPlainText(content);
+            const segments = [...new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(plain)];
+            const text = segments.map(s => s.segment).join('');
+            if (text.length <= maxLength) return text;
+            const truncatedSegments = segments.slice(0, maxLength);
+            let truncated = truncatedSegments.map(s => s.segment).join('');
+            const lastSeg = truncatedSegments[truncatedSegments.length - 1];
+            if (lastSeg) {
+                const lastChar = lastSeg.segment;
+                const emojiRegex = /[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]|[\u{FE0F}]|[\u{1F1E6}-\u{1F1FF}]|[\u{1F600}-\u{1F64F}]|[\u{2700}-\u{27BF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F900}-\u{1F9FF}]/u;
+                if (emojiRegex.test(lastChar) && lastChar.length > 1) {
+                    const prevSegments = segments.slice(0, maxLength - 1);
+                    if (prevSegments.length > 0) {
+                        truncated = prevSegments.map(s => s.segment).join('');
+                    } else {
+                        truncated = '';
+                    }
+                }
             }
-            const code = codeBlockLines.join('\n');
-            const escapedCode = escapeHtml(code);
-            const langParts = codeLang.split(/\s+/);
-            const lang = langParts[0] || 'text';
-            const copyId = 'code-' + Date.now() + '-' + (codeBlockCounter++);
+            return truncated + '...';
+        }
 
-            const lineCount = codeBlockLines.length;
-            let maxLineLength = 0;
-            let totalChars = 0;
-            for (let j = 0; j < codeBlockLines.length; j++) {
-                const lineLen = codeBlockLines[j].length;
-                if (lineLen > maxLineLength) maxLineLength = lineLen;
-                totalChars += lineLen;
+        function showToast(message, icon = 'fa-info-circle', duration = 2500) {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+            toast.classList.add('show');
+            clearTimeout(toast._hideTimer);
+            toast._hideTimer = setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
+        // ============================================================
+        // 渲染 Markdown（修复有序列表序号 bug）
+        // ============================================================
+        function renderMarkdown(md) {
+            if (!md) return '';
+
+            const escMap = {};
+            let escCounter = 0;
+            md = md.replace(/\\([\\`*_{}\[\]()#+\-.!|$])/g, function(match, char) {
+                const key = '\uE000' + (escCounter++) + '\uE001';
+                escMap[key] = char;
+                return key;
+            });
+
+            const lines = md.split('\n');
+            let result = '';
+            let inCodeBlock = false;
+            let codeBlockLines = [];
+            let codeLang = '';
+            let codeBlockCounter = 0;
+            let inTable = false;
+            let tableRows = [];
+            let tableAligns = [];
+            let footnotes = {};
+            let footnoteKeys = [];
+
+            function restoreEscapes(text) {
+                let r = text;
+                for (const [key, char] of Object.entries(escMap)) {
+                    r = r.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), char);
+                }
+                return r;
             }
-            totalChars += lineCount > 0 ? lineCount - 1 : 0;
 
-            let lineNumbersHtml = '';
-            for (let j = 1; j <= lineCount; j++) {
-                lineNumbersHtml += '<span>' + j + '</span>';
+            function renderInline(text) {
+                let html = escapeHtml(text);
+                html = html.replace(/&lt;(https?:\/\/[^\s<>]+)&gt;/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+                html = html.replace(/&lt;([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})&gt;/g, '<a href="mailto:$1">$1</a>');
+                html = html.replace(/(?<!\]\()https?:\/\/[^\s<>]+/g, '<a href="$&" target="_blank" rel="noopener">$&</a>');
+                html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+                html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+                html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
+                html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, alt, src, w, h) {
+                    let style = '';
+                    if (w && h) style = ` style="width:${w}px; height:${h}px;"`;
+                    else if (w) style = ` style="width:${w}px; height:auto;"`;
+                    else if (h) style = ` style="height:${h}px; width:auto;"`;
+                    return `<img src="${src}" alt="${alt}" loading="lazy"${style} />`;
+                });
+                html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+                html = html.replace(/\[\^([^\]]+)\]/g, function(match, key) {
+                    if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
+                    return `<sup class="footnote-ref"><a href="#fn-${key}" id="fnref-${key}">${key}</a></sup>`;
+                });
+                html = restoreEscapes(html);
+                return html;
             }
 
-            const statsHtml = `<span>${lineCount} 行</span> · <span>${maxLineLength} 列</span> · <span>${totalChars} 字符</span>`;
+            function flushTable() {
+                if (tableRows.length === 0) return;
+                let html = '<table>';
+                for (let i = 0; i < tableRows.length; i++) {
+                    const cells = tableRows[i];
+                    const isHeader = i === 0;
+                    html += '<tr>';
+                    for (let j = 0; j < cells.length; j++) {
+                        const tag = isHeader ? 'th' : 'td';
+                        const align = (i === 1 && tableAligns[j]) ? ` style="text-align:${tableAligns[j]};"` : '';
+                        const cellContent = cells[j].replace(/\\n/g, '\n').replace(/\n/g, '<br>');
+                        html += `<${tag}${align}>${renderInline(cellContent)}</${tag}>`;
+                    }
+                    html += '</tr>';
+                }
+                html += '</table>';
+                result += html;
+                tableRows = [];
+                tableAligns = [];
+                inTable = false;
+            }
 
-            result += `
-                <div class="code-block-wrapper" id="cbw-${copyId}">
-                    <div class="code-block-header">
-                        <span class="lang-label">${escapeHtml(lang)}</span>
-                        <span class="code-stats">${statsHtml}</span>
-                        <span class="header-actions">
-                            <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
-                            <button class="collapse-btn" data-target="cbw-${copyId}" aria-label="收起代码块">
-                                <i class="fas fa-chevron-up"></i>
-                            </button>
-                        </span>
-                    </div>
-                    <div class="code-block-body-wrapper">
-                        <div class="code-block-body">
-                            <div class="line-numbers">${lineNumbersHtml}</div>
-                            <code class="code-content" id="${copyId}">${escapedCode}</code>
+            function flushCodeBlock() {
+                if (codeBlockLines.length === 0) {
+                    inCodeBlock = false;
+                    codeLang = '';
+                    return;
+                }
+                const code = codeBlockLines.join('\n');
+                const escapedCode = escapeHtml(code);
+                const langParts = codeLang.split(/\s+/);
+                const lang = langParts[0] || 'text';
+                const copyId = 'code-' + Date.now() + '-' + (codeBlockCounter++);
+
+                const lineCount = codeBlockLines.length;
+                let maxLineLength = 0;
+                let totalChars = 0;
+                for (let j = 0; j < codeBlockLines.length; j++) {
+                    const lineLen = codeBlockLines[j].length;
+                    if (lineLen > maxLineLength) maxLineLength = lineLen;
+                    totalChars += lineLen;
+                }
+                totalChars += lineCount > 0 ? lineCount - 1 : 0;
+
+                let lineNumbersHtml = '';
+                for (let j = 1; j <= lineCount; j++) {
+                    lineNumbersHtml += '<span>' + j + '</span>';
+                }
+
+                const statsHtml = `<span>${lineCount} 行</span> · <span>${maxLineLength} 列</span> · <span>${totalChars} 字符</span>`;
+
+                result += `
+                    <div class="code-block-wrapper" id="cbw-${copyId}">
+                        <div class="code-block-header">
+                            <span class="lang-label">${escapeHtml(lang)}</span>
+                            <span class="code-stats">${statsHtml}</span>
+                            <span class="header-actions">
+                                <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
+                                <button class="collapse-btn" data-target="cbw-${copyId}" aria-label="收起代码块">
+                                    <i class="fas fa-chevron-up"></i>
+                                </button>
+                            </span>
+                        </div>
+                        <div class="code-block-body-wrapper">
+                            <div class="code-block-body">
+                                <div class="line-numbers">${lineNumbersHtml}</div>
+                                <code class="code-content" id="${copyId}">${escapedCode}</code>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
-            codeBlockLines = [];
-            inCodeBlock = false;
-            codeLang = '';
-        }
-
-        let i = 0;
-        while (i < lines.length) {
-            const line = lines[i];
-            const trimmed = line.trim();
-
-            const codeBlockStart = line.match(/^(```|~~~)(\w*)/);
-            if (codeBlockStart) {
-                if (!inCodeBlock) {
-                    flushTable();
-                    inCodeBlock = true;
-                    codeLang = codeBlockStart[2] || 'text';
-                    i++;
-                    continue;
-                } else {
-                    flushCodeBlock();
-                    i++;
-                    continue;
-                }
-            }
-            if (inCodeBlock) {
-                codeBlockLines.push(line);
-                i++;
-                continue;
+                `;
+                codeBlockLines = [];
+                inCodeBlock = false;
+                codeLang = '';
             }
 
-            if (trimmed === '') {
-                flushTable();
-                i++;
-                continue;
-            }
+            let i = 0;
+            while (i < lines.length) {
+                const line = lines[i];
+                const trimmed = line.trim();
 
-            const fnMatch = line.match(/^\[\^([^\]]+)\]:\s*(.+)/);
-            if (fnMatch) {
-                flushTable();
-                const key = fnMatch[1];
-                const content = fnMatch[2];
-                footnotes[key] = renderInline(content);
-                if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
-                i++;
-                continue;
-            }
-
-            if (line.includes('|') && trimmed.startsWith('|') && trimmed.endsWith('|')) {
-                if (!inTable) {
-                    flushTable();
-                    inTable = true;
-                    tableRows = [];
-                    tableAligns = [];
-                }
-                const cells = trimmed.slice(1, -1).split('|').map(s => s.trim());
-                if (cells.every(c => /^:?-+:?$/.test(c))) {
-                    tableAligns = cells.map(c => {
-                        if (c.startsWith(':') && c.endsWith(':')) return 'center';
-                        if (c.endsWith(':')) return 'right';
-                        if (c.startsWith(':')) return 'left';
-                        return '';
-                    });
-                    i++;
-                    continue;
-                }
-                tableRows.push(cells);
-                i++;
-                continue;
-            }
-            if (inTable) {
-                flushTable();
-                continue;
-            }
-
-            const headingMatch = line.match(/^(#{1,6})\s+(.+)/);
-            if (headingMatch) {
-                flushTable();
-                const level = headingMatch[1].length;
-                const text = headingMatch[2];
-                result += `<h${level}>${renderInline(text)}</h${level}>`;
-                i++;
-                continue;
-            }
-
-            if (/^---$/.test(trimmed) || /^\*\*\*$/.test(trimmed) || /^___$/.test(trimmed)) {
-                flushTable();
-                result += '<hr />';
-                i++;
-                continue;
-            }
-
-            if (i + 1 < lines.length && lines[i + 1].match(/^:\s+/)) {
-                flushTable();
-                const term = renderInline(trimmed);
-                let defs = [];
-                i++;
-                while (i < lines.length && lines[i].match(/^:\s+/)) {
-                    defs.push(renderInline(lines[i].replace(/^:\s+/, '')));
-                    i++;
-                }
-                while (i < lines.length && lines[i].trim() === '') i++;
-                let ddHtml = defs.map(d => `<dd>${d}</dd>`).join('');
-                result += `<dl><dt>${term}</dt>${ddHtml}</dl>`;
-                continue;
-            }
-
-            function parseList(startIdx, parentIndent) {
-                let html = '';
-                let idx = startIdx;
-                let currentListType = null;
-                let items = [];
-
-                while (idx < lines.length) {
-                    const l = lines[idx];
-                    const t = l.trim();
-                    if (t === '') break;
-
-                    const ulMatch = l.match(/^(\s*)[-*+]\s+(.+)/);
-                    const olMatch = l.match(/^(\s*)(\d+)\.\s+(.+)/);
-                    const taskMatch = l.match(/^(\s*)[-*+]\s+\[([ x])\]\s+(.+)/);
-
-                    let match = null;
-                    let type = null;
-                    let content = '';
-                    let indent = 0;
-
-                    if (taskMatch) {
-                        indent = taskMatch[1].length;
-                        if (indent < parentIndent) break;
-                        type = 'task';
-                        const checked = taskMatch[2] === 'x';
-                        content = `<input type="checkbox"${checked ? ' checked' : ''} disabled> ${taskMatch[3]}`;
-                    } else if (ulMatch) {
-                        indent = ulMatch[1].length;
-                        if (indent < parentIndent) break;
-                        type = 'ul';
-                        content = ulMatch[2];
-                    } else if (olMatch) {
-                        indent = olMatch[1].length;
-                        if (indent < parentIndent) break;
-                        type = 'ol';
-                        content = olMatch[3];
+                const codeBlockStart = line.match(/^(```|~~~)(\w*)/);
+                if (codeBlockStart) {
+                    if (!inCodeBlock) {
+                        flushTable();
+                        inCodeBlock = true;
+                        codeLang = codeBlockStart[2] || 'text';
+                        i++;
+                        continue;
                     } else {
-                        break;
+                        flushCodeBlock();
+                        i++;
+                        continue;
                     }
+                }
+                if (inCodeBlock) {
+                    codeBlockLines.push(line);
+                    i++;
+                    continue;
+                }
 
-                    let childHtml = '';
-                    let childIdx = idx + 1;
-                    while (childIdx < lines.length && lines[childIdx].trim() === '') childIdx++;
-                    if (childIdx < lines.length) {
-                        const nextLine = lines[childIdx];
-                        const nextUl = nextLine.match(/^(\s*)[-*+]\s+/);
-                        const nextOl = nextLine.match(/^(\s*)(\d+)\.\s+/);
-                        const nextTask = nextLine.match(/^(\s*)[-*+]\s+\[[ x]\]\s+/);
-                        if (nextUl || nextOl || nextTask) {
-                            const nextIndent = parseInt((nextUl || nextOl || nextTask)[1].length);
-                            if (nextIndent > indent) {
-                                const [childHtmlResult, childConsumed] = parseList(childIdx, indent);
-                                childHtml = childHtmlResult;
-                                idx += childConsumed;
+                if (trimmed === '') {
+                    flushTable();
+                    i++;
+                    continue;
+                }
+
+                const fnMatch = line.match(/^\[\^([^\]]+)\]:\s*(.+)/);
+                if (fnMatch) {
+                    flushTable();
+                    const key = fnMatch[1];
+                    const content = fnMatch[2];
+                    footnotes[key] = renderInline(content);
+                    if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
+                    i++;
+                    continue;
+                }
+
+                if (line.includes('|') && trimmed.startsWith('|') && trimmed.endsWith('|')) {
+                    if (!inTable) {
+                        flushTable();
+                        inTable = true;
+                        tableRows = [];
+                        tableAligns = [];
+                    }
+                    const cells = trimmed.slice(1, -1).split('|').map(s => s.trim());
+                    if (cells.every(c => /^:?-+:?$/.test(c))) {
+                        tableAligns = cells.map(c => {
+                            if (c.startsWith(':') && c.endsWith(':')) return 'center';
+                            if (c.endsWith(':')) return 'right';
+                            if (c.startsWith(':')) return 'left';
+                            return '';
+                        });
+                        i++;
+                        continue;
+                    }
+                    tableRows.push(cells);
+                    i++;
+                    continue;
+                }
+                if (inTable) {
+                    flushTable();
+                    continue;
+                }
+
+                const headingMatch = line.match(/^(#{1,6})\s+(.+)/);
+                if (headingMatch) {
+                    flushTable();
+                    const level = headingMatch[1].length;
+                    const text = headingMatch[2];
+                    result += `<h${level}>${renderInline(text)}</h${level}>`;
+                    i++;
+                    continue;
+                }
+
+                if (/^---$/.test(trimmed) || /^\*\*\*$/.test(trimmed) || /^___$/.test(trimmed)) {
+                    flushTable();
+                    result += '<hr />';
+                    i++;
+                    continue;
+                }
+
+                if (i + 1 < lines.length && lines[i + 1].match(/^:\s+/)) {
+                    flushTable();
+                    const term = renderInline(trimmed);
+                    let defs = [];
+                    i++;
+                    while (i < lines.length && lines[i].match(/^:\s+/)) {
+                        defs.push(renderInline(lines[i].replace(/^:\s+/, '')));
+                        i++;
+                    }
+                    while (i < lines.length && lines[i].trim() === '') i++;
+                    let ddHtml = defs.map(d => `<dd>${d}</dd>`).join('');
+                    result += `<dl><dt>${term}</dt>${ddHtml}</dl>`;
+                    continue;
+                }
+
+                // ===== 修复：parseList 内联实现，保留原始序号 =====
+                function parseList(startIdx, parentIndent) {
+                    let html = '';
+                    let idx = startIdx;
+                    let currentListType = null;
+                    let items = [];
+                    // 记录每个列表项的原始序号
+                    let olCounter = 0;
+                    let lastOlNumber = 0;
+
+                    while (idx < lines.length) {
+                        const l = lines[idx];
+                        const t = l.trim();
+                        if (t === '') break;
+
+                        const ulMatch = l.match(/^(\s*)[-*+]\s+(.+)/);
+                        const olMatch = l.match(/^(\s*)(\d+)\.\s+(.+)/);
+                        const taskMatch = l.match(/^(\s*)[-*+]\s+\[([ x])\]\s+(.+)/);
+
+                        let match = null;
+                        let type = null;
+                        let content = '';
+                        let indent = 0;
+                        let olNumber = 0;
+
+                        if (taskMatch) {
+                            indent = taskMatch[1].length;
+                            if (indent < parentIndent) break;
+                            type = 'task';
+                            const checked = taskMatch[2] === 'x';
+                            content = `<input type="checkbox"${checked ? ' checked' : ''} disabled> ${taskMatch[3]}`;
+                        } else if (ulMatch) {
+                            indent = ulMatch[1].length;
+                            if (indent < parentIndent) break;
+                            type = 'ul';
+                            content = ulMatch[2];
+                        } else if (olMatch) {
+                            indent = olMatch[1].length;
+                            if (indent < parentIndent) break;
+                            type = 'ol';
+                            olNumber = parseInt(olMatch[2]);
+                            content = olMatch[3];
+                            if (olCounter === 0) {
+                                olCounter = olNumber;
+                            }
+                            if (olNumber !== olCounter) {
+                                // 如果序号不连续，用 value 属性
+                            }
+                        } else {
+                            break;
+                        }
+
+                        let childHtml = '';
+                        let childIdx = idx + 1;
+                        while (childIdx < lines.length && lines[childIdx].trim() === '') childIdx++;
+                        if (childIdx < lines.length) {
+                            const nextLine = lines[childIdx];
+                            const nextUl = nextLine.match(/^(\s*)[-*+]\s+/);
+                            const nextOl = nextLine.match(/^(\s*)(\d+)\.\s+/);
+                            const nextTask = nextLine.match(/^(\s*)[-*+]\s+\[[ x]\]\s+/);
+                            if (nextUl || nextOl || nextTask) {
+                                const nextIndent = parseInt((nextUl || nextOl || nextTask)[1].length);
+                                if (nextIndent > indent) {
+                                    const [childHtmlResult, childConsumed] = parseList(childIdx, indent);
+                                    childHtml = childHtmlResult;
+                                    idx += childConsumed;
+                                }
                             }
                         }
-                    }
 
-                    if (!currentListType) {
-                        currentListType = type === 'ol' ? 'ol' : 'ul';
-                    }
-
-                    const isTask = type === 'task';
-                    const liClass = isTask ? ' class="task-list-item"' : '';
-                    const renderedContent = renderInline(content);
-                    items.push(`<li${liClass}>${renderedContent}${childHtml}</li>`);
-
-                    idx++;
-                }
-
-                if (items.length === 0) {
-                    return ['', 0];
-                }
-
-                const listTag = currentListType === 'ol' ? 'ol' : 'ul';
-                const listClass = currentListType === 'ol' ? '' : ' class="task-list"';
-                html = `<${listTag}${listClass}>\n${items.join('\n')}\n</${listTag}>`;
-                return [html, idx - startIdx];
-            }
-
-            const listCheck = line.match(/^(\s*)[-*+]\s+/);
-            const taskCheck = line.match(/^(\s*)[-*+]\s+\[[ x]\]\s+/);
-            const olCheck = line.match(/^(\s*)(\d+)\.\s+/);
-
-            if (taskCheck || listCheck || olCheck) {
-                flushTable();
-                const [listHtml, consumed] = parseList(i, 0);
-                result += listHtml;
-                i += consumed;
-                continue;
-            }
-
-            if (line.startsWith('>')) {
-                flushTable();
-                let level = 0;
-                let temp = line;
-                while (temp.startsWith('>')) {
-                    level++;
-                    temp = temp.substring(1);
-                    if (temp.startsWith(' ')) temp = temp.substring(1);
-                }
-                const content = temp.trim();
-                let quoteLines = [content];
-                let j = i + 1;
-                while (j < lines.length) {
-                    const nextLine = lines[j];
-                    if (nextLine.startsWith('>')) {
-                        let lv = 0;
-                        let tmp = nextLine;
-                        while (tmp.startsWith('>')) {
-                            lv++;
-                            tmp = tmp.substring(1);
-                            if (tmp.startsWith(' ')) tmp = tmp.substring(1);
+                        if (!currentListType) {
+                            currentListType = type === 'ol' ? 'ol' : 'ul';
                         }
-                        quoteLines.push(tmp.trim());
-                        j++;
-                    } else if (nextLine.trim() === '') {
-                        quoteLines.push('');
-                        j++;
-                    } else {
-                        break;
+
+                        const isTask = type === 'task';
+                        const liClass = isTask ? ' class="task-list-item"' : '';
+                        let renderedContent = renderInline(content);
+
+                        // 有序列表：在内容前加上序号
+                        let displayContent = renderedContent;
+                        if (type === 'ol') {
+                            displayContent = `${olNumber}. ${renderedContent}`;
+                        }
+
+                        items.push({
+                            type: type,
+                            olNumber: olNumber,
+                            html: `<li${liClass}>${displayContent}${childHtml}</li>`
+                        });
+
+                        idx++;
+                    }
+
+                    if (items.length === 0) {
+                        return ['', 0];
+                    }
+
+                    const listTag = currentListType === 'ol' ? 'ol' : 'ul';
+                    const listClass = currentListType === 'ol' ? '' : ' class="task-list"';
+                    const itemsHtml = items.map(item => item.html).join('\n');
+                    html = `<${listTag}${listClass}>\n${itemsHtml}\n</${listTag}>`;
+                    return [html, idx - startIdx];
+                }
+
+                const listCheck = line.match(/^(\s*)[-*+]\s+/);
+                const taskCheck = line.match(/^(\s*)[-*+]\s+\[[ x]\]\s+/);
+                const olCheck = line.match(/^(\s*)(\d+)\.\s+/);
+
+                if (taskCheck || listCheck || olCheck) {
+                    flushTable();
+                    const [listHtml, consumed] = parseList(i, 0);
+                    result += listHtml;
+                    i += consumed;
+                    continue;
+                }
+
+                if (line.startsWith('>')) {
+                    flushTable();
+                    let level = 0;
+                    let temp = line;
+                    while (temp.startsWith('>')) {
+                        level++;
+                        temp = temp.substring(1);
+                        if (temp.startsWith(' ')) temp = temp.substring(1);
+                    }
+                    const content = temp.trim();
+                    let quoteLines = [content];
+                    let j = i + 1;
+                    while (j < lines.length) {
+                        const nextLine = lines[j];
+                        if (nextLine.startsWith('>')) {
+                            let lv = 0;
+                            let tmp = nextLine;
+                            while (tmp.startsWith('>')) {
+                                lv++;
+                                tmp = tmp.substring(1);
+                                if (tmp.startsWith(' ')) tmp = tmp.substring(1);
+                            }
+                            quoteLines.push(tmp.trim());
+                            j++;
+                        } else if (nextLine.trim() === '') {
+                            quoteLines.push('');
+                            j++;
+                        } else {
+                            break;
+                        }
+                    }
+                    let innerHtml = renderInline(quoteLines.join('\n'));
+                    for (let lv = 0; lv < level; lv++) {
+                        innerHtml = `<blockquote>${innerHtml}</blockquote>`;
+                    }
+                    result += innerHtml;
+                    i = j;
+                    continue;
+                }
+
+                flushTable();
+                result += `<p>${renderInline(line)}</p>`;
+                i++;
+            }
+
+            flushCodeBlock();
+            flushTable();
+
+            if (footnoteKeys.length > 0) {
+                result += '<div class="footnotes">\n';
+                for (const key of footnoteKeys) {
+                    if (footnotes[key]) {
+                        result += `<div class="footnote-def" id="fn-${key}">`;
+                        result += `<a href="#fnref-${key}" class="footnote-back">↩</a> `;
+                        result += footnotes[key];
+                        result += '</div>\n';
                     }
                 }
-                let innerHtml = renderInline(quoteLines.join('\n'));
-                for (let lv = 0; lv < level; lv++) {
-                    innerHtml = `<blockquote>${innerHtml}</blockquote>`;
+                result += '</div>\n';
+            }
+
+            result = restoreEscapes(result);
+            return result;
+        }
+
+        // ============================================================
+        // 复制 + 收纳事件
+        // ============================================================
+        document.addEventListener('click', function(e) {
+            const copyBtn = e.target.closest('.copy-btn');
+            if (copyBtn) {
+                const targetId = copyBtn.dataset.copy;
+                if (!targetId) return;
+                const codeEl = document.getElementById(targetId);
+                if (!codeEl) return;
+                const text = codeEl.textContent;
+
+                navigator.clipboard.writeText(text).then(() => {
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                    copyBtn.classList.add('copied');
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
+                        copyBtn.classList.remove('copied');
+                    }, 2000);
+                }).catch(() => {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                    copyBtn.classList.add('copied');
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
+                        copyBtn.classList.remove('copied');
+                    }, 2000);
+                });
+                return;
+            }
+
+            const collapseBtn = e.target.closest('.collapse-btn');
+            if (collapseBtn) {
+                const targetId = collapseBtn.dataset.target;
+                if (!targetId) return;
+                const wrapper = document.getElementById(targetId);
+                if (!wrapper) return;
+                const iconEl = collapseBtn.querySelector('i');
+                wrapper.classList.toggle('collapsed');
+                if (wrapper.classList.contains('collapsed')) {
+                    iconEl.className = 'fas fa-chevron-down';
+                } else {
+                    iconEl.className = 'fas fa-chevron-up';
                 }
-                result += innerHtml;
-                i = j;
-                continue;
+                return;
             }
-
-            flushTable();
-            result += `<p>${renderInline(line)}</p>`;
-            i++;
-        }
-
-        flushCodeBlock();
-        flushTable();
-
-        if (footnoteKeys.length > 0) {
-            result += '<div class="footnotes">\n';
-            for (const key of footnoteKeys) {
-                if (footnotes[key]) {
-                    result += `<div class="footnote-def" id="fn-${key}">`;
-                    result += `<a href="#fnref-${key}" class="footnote-back">↩</a> `;
-                    result += footnotes[key];
-                    result += '</div>\n';
-                }
-            }
-            result += '</div>\n';
-        }
-
-        result = restoreEscapes(result);
-        return result;
-    }
-
-    // ============================================================
-    // 复制 + 收纳事件
-    // ============================================================
-    document.addEventListener('click', function(e) {
-        const copyBtn = e.target.closest('.copy-btn');
-        if (copyBtn) {
-            const targetId = copyBtn.dataset.copy;
-            if (!targetId) return;
-            const codeEl = document.getElementById(targetId);
-            if (!codeEl) return;
-            const text = codeEl.textContent;
-
-            navigator.clipboard.writeText(text).then(() => {
-                copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
-                copyBtn.classList.add('copied');
-                setTimeout(() => {
-                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
-                    copyBtn.classList.remove('copied');
-                }, 2000);
-            }).catch(() => {
-                const ta = document.createElement('textarea');
-                ta.value = text;
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand('copy');
-                document.body.removeChild(ta);
-                copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
-                copyBtn.classList.add('copied');
-                setTimeout(() => {
-                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
-                    copyBtn.classList.remove('copied');
-                }, 2000);
-            });
-            return;
-        }
-
-        const collapseBtn = e.target.closest('.collapse-btn');
-        if (collapseBtn) {
-            const targetId = collapseBtn.dataset.target;
-            if (!targetId) return;
-            const wrapper = document.getElementById(targetId);
-            if (!wrapper) return;
-            const iconEl = collapseBtn.querySelector('i');
-            wrapper.classList.toggle('collapsed');
-            if (wrapper.classList.contains('collapsed')) {
-                iconEl.className = 'fas fa-chevron-down';
-            } else {
-                iconEl.className = 'fas fa-chevron-up';
-            }
-            return;
-        }
-    });
-
-    // ============================================================
-    // Lightbox
-    // ============================================================
-    function initLightbox() {
-        const images = document.querySelectorAll('.detail-content img');
-        images.forEach(img => {
-            img.style.cursor = 'pointer';
-            img.addEventListener('click', function(e) {
-                e.stopPropagation();
-                openLightbox(this.src, this.alt || '');
-            });
         });
-    }
 
-    function openLightbox(src, alt) {
-        const existing = document.querySelector('.lightbox-overlay');
-        if (existing) existing.remove();
+        // ============================================================
+        // Lightbox
+        // ============================================================
+        function initLightbox() {
+            const images = document.querySelectorAll('.detail-content img');
+            images.forEach(img => {
+                img.style.cursor = 'pointer';
+                img.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    openLightbox(this.src, this.alt || '');
+                });
+            });
+        }
 
-        const overlay = document.createElement('div');
-        overlay.className = 'lightbox-overlay';
-        overlay.innerHTML = `
-            <div class="lightbox-container">
-                <div class="lightbox-img-wrapper">
-                    <img src="${src}" alt="${escapeHtml(alt)}" />
+        function openLightbox(src, alt) {
+            const existing = document.querySelector('.lightbox-overlay');
+            if (existing) existing.remove();
+
+            const overlay = document.createElement('div');
+            overlay.className = 'lightbox-overlay';
+            overlay.innerHTML = `
+                <div class="lightbox-container">
+                    <div class="lightbox-img-wrapper">
+                        <img src="${src}" alt="${escapeHtml(alt)}" />
+                    </div>
                 </div>
-            </div>
-            <button class="lightbox-close">&times;</button>
-        `;
-        document.body.appendChild(overlay);
-        document.body.style.overflow = 'hidden';
+                <button class="lightbox-close">&times;</button>
+            `;
+            document.body.appendChild(overlay);
+            document.body.style.overflow = 'hidden';
 
-        requestAnimationFrame(() => overlay.classList.add('active'));
+            requestAnimationFrame(() => overlay.classList.add('active'));
 
-        const imgWrapper = overlay.querySelector('.lightbox-img-wrapper');
-        const img = overlay.querySelector('img');
-        let scale = 1;
-        let translateX = 0;
-        let translateY = 0;
+            const imgWrapper = overlay.querySelector('.lightbox-img-wrapper');
+            const img = overlay.querySelector('img');
+            let scale = 1;
+            let translateX = 0;
+            let translateY = 0;
 
-        function updateTransform(animate = false) {
-            img.style.transition = animate ? 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none';
-            img.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
-        }
-
-        img.addEventListener('wheel', function(e) {
-            e.preventDefault();
-            const delta = e.deltaY > 0 ? -0.1 : 0.1;
-            const newScale = Math.min(Math.max(0.5, scale + delta), 5);
-            const rect = img.getBoundingClientRect();
-            const ratioX = (e.clientX - rect.left) / rect.width;
-            const ratioY = (e.clientY - rect.top) / rect.height;
-            const oldScale = scale;
-            scale = newScale;
-            translateX += (1 - newScale / oldScale) * (rect.width / 2 - rect.width * ratioX);
-            translateY += (1 - newScale / oldScale) * (rect.height / 2 - rect.height * ratioY);
-            updateTransform(false);
-        }, { passive: false });
-
-        let touchStartDist = 0;
-        let touchStartScale = 1;
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchLastX = 0;
-        let touchLastY = 0;
-        let isDragging = false;
-
-        imgWrapper.addEventListener('touchstart', function(e) {
-            if (e.touches.length === 2) {
-                const t = e.touches;
-                touchStartDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
-                touchStartScale = scale;
-            } else if (e.touches.length === 1) {
-                isDragging = true;
-                touchStartX = e.touches[0].clientX;
-                touchStartY = e.touches[0].clientY;
-                touchLastX = translateX;
-                touchLastY = translateY;
-                imgWrapper.style.cursor = 'grabbing';
+            function updateTransform(animate = false) {
+                img.style.transition = animate ? 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none';
+                img.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
             }
-        }, { passive: true });
 
-        imgWrapper.addEventListener('touchmove', function(e) {
-            if (e.touches.length === 2) {
-                const t = e.touches;
-                const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
-                scale = Math.min(Math.max(0.5, touchStartScale * (dist / touchStartDist)), 5);
+            img.addEventListener('wheel', function(e) {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                const newScale = Math.min(Math.max(0.5, scale + delta), 5);
+                const rect = img.getBoundingClientRect();
+                const ratioX = (e.clientX - rect.left) / rect.width;
+                const ratioY = (e.clientY - rect.top) / rect.height;
+                const oldScale = scale;
+                scale = newScale;
+                translateX += (1 - newScale / oldScale) * (rect.width / 2 - rect.width * ratioX);
+                translateY += (1 - newScale / oldScale) * (rect.height / 2 - rect.height * ratioY);
                 updateTransform(false);
-            } else if (e.touches.length === 1 && isDragging) {
-                const dx = e.touches[0].clientX - touchStartX;
-                const dy = e.touches[0].clientY - touchStartY;
-                translateX = touchLastX + dx;
-                translateY = touchLastY + dy;
-                updateTransform(false);
-            }
-        }, { passive: true });
+            }, { passive: false });
 
-        imgWrapper.addEventListener('touchend', function(e) {
-            isDragging = false;
-            imgWrapper.style.cursor = 'grab';
-            if (scale < 0.6) {
-                scale = 0.6;
-                translateX = 0;
-                translateY = 0;
-                updateTransform(true);
-            } else if (scale < 1) {
-                scale = 1;
-                translateX = 0;
-                translateY = 0;
-                updateTransform(true);
-            } else if (scale > 3) {
-                scale = 3;
-                updateTransform(true);
-            }
-            if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) {
-                translateX = 0;
-                translateY = 0;
-                updateTransform(true);
-            }
-        }, { passive: true });
+            let touchStartDist = 0;
+            let touchStartScale = 1;
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchLastX = 0;
+            let touchLastY = 0;
+            let isDragging = false;
 
-        let mouseDown = false;
-        let mouseStartX = 0;
-        let mouseStartY = 0;
-        let mouseLastX = 0;
-        let mouseLastY = 0;
+            imgWrapper.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 2) {
+                    const t = e.touches;
+                    touchStartDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+                    touchStartScale = scale;
+                } else if (e.touches.length === 1) {
+                    isDragging = true;
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    touchLastX = translateX;
+                    touchLastY = translateY;
+                    imgWrapper.style.cursor = 'grabbing';
+                }
+            }, { passive: true });
 
-        imgWrapper.addEventListener('mousedown', function(e) {
-            mouseDown = true;
-            mouseStartX = e.clientX;
-            mouseStartY = e.clientY;
-            mouseLastX = translateX;
-            mouseLastY = translateY;
-            imgWrapper.style.cursor = 'grabbing';
-            e.preventDefault();
-        });
+            imgWrapper.addEventListener('touchmove', function(e) {
+                if (e.touches.length === 2) {
+                    const t = e.touches;
+                    const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+                    scale = Math.min(Math.max(0.5, touchStartScale * (dist / touchStartDist)), 5);
+                    updateTransform(false);
+                } else if (e.touches.length === 1 && isDragging) {
+                    const dx = e.touches[0].clientX - touchStartX;
+                    const dy = e.touches[0].clientY - touchStartY;
+                    translateX = touchLastX + dx;
+                    translateY = touchLastY + dy;
+                    updateTransform(false);
+                }
+            }, { passive: true });
 
-        document.addEventListener('mousemove', function(e) {
-            if (mouseDown) {
-                const dx = e.clientX - mouseStartX;
-                const dy = e.clientY - mouseStartY;
-                translateX = mouseLastX + dx;
-                translateY = mouseLastY + dy;
-                updateTransform(false);
-            }
-        });
-
-        document.addEventListener('mouseup', function() {
-            if (mouseDown) {
-                mouseDown = false;
+            imgWrapper.addEventListener('touchend', function(e) {
+                isDragging = false;
                 imgWrapper.style.cursor = 'grab';
                 if (scale < 0.6) {
                     scale = 0.6;
@@ -2092,180 +2057,230 @@
                     translateY = 0;
                     updateTransform(true);
                 }
-            }
-        });
+            }, { passive: true });
 
-        function closeLightbox() {
-            overlay.classList.remove('active');
-            setTimeout(() => {
-                if (overlay.parentNode) overlay.remove();
-                document.body.style.overflow = '';
-                document.removeEventListener('keydown', escHandler);
-            }, 350);
-        }
+            let mouseDown = false;
+            let mouseStartX = 0;
+            let mouseStartY = 0;
+            let mouseLastX = 0;
+            let mouseLastY = 0;
 
-        function escHandler(e) {
-            if (e.key === 'Escape') closeLightbox();
-        }
+            imgWrapper.addEventListener('mousedown', function(e) {
+                mouseDown = true;
+                mouseStartX = e.clientX;
+                mouseStartY = e.clientY;
+                mouseLastX = translateX;
+                mouseLastY = translateY;
+                imgWrapper.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
 
-        overlay.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
-        overlay.addEventListener('click', function(e) {
-            if (e.target === this) closeLightbox();
-        });
-        document.addEventListener('keydown', escHandler);
-
-        scale = 1;
-        translateX = 0;
-        translateY = 0;
-        updateTransform(false);
-    }
-
-    // ============================================================
-    // 分享菜单
-    // ============================================================
-    const shareModal = document.getElementById('shareModal');
-    const shareTextDisplay = document.getElementById('shareTextDisplay');
-    let currentShareText = '';
-
-    function openShareModal() {
-        if (!currentArticle) {
-            showToast('文章数据未加载', 'fa-exclamation-circle');
-            return;
-        }
-        shareModal.classList.add('active');
-    }
-
-    function closeShareModal() {
-        shareModal.classList.remove('active');
-    }
-
-    document.getElementById('shareButton').addEventListener('click', openShareModal);
-    document.getElementById('shareCancelBtn').addEventListener('click', closeShareModal);
-    shareModal.addEventListener('click', function(e) {
-        if (e.target === this) closeShareModal();
-    });
-
-    document.getElementById('shareCopyBtn').addEventListener('click', function() {
-        if (!currentShareText) {
-            showToast('没有可复制的内容', 'fa-exclamation-circle');
-            return;
-        }
-        navigator.clipboard.writeText(currentShareText).then(() => {
-            showToast('已复制到剪贴板', 'fa-check-circle');
-            closeShareModal();
-        }).catch(() => {
-            const ta = document.createElement('textarea');
-            ta.value = currentShareText;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            showToast('已复制到剪贴板', 'fa-check-circle');
-            closeShareModal();
-        });
-    });
-
-    // ============================================================
-    // 渲染文章
-    // ============================================================
-    const appContent = document.getElementById('appContent');
-    let currentArticle = null;
-
-    function renderArticle() {
-        const id = getParam('id');
-        if (id === null) {
-            appContent.innerHTML = `
-                <div class="not-found">
-                    <i class="far fa-frown"></i>
-                    <p>缺少文章 ID</p>
-                    <p style="font-size:0.85rem; margin-top:0.5rem;">请从文章列表点击进入</p>
-                </div>
-            `;
-            return;
-        }
-
-        fetch('wenzhang.json', { cache: 'no-cache' })
-            .then(response => {
-                if (!response.ok) throw new Error('文件不存在');
-                return response.json();
-            })
-            .then(data => {
-                const articles = data.announcements || [];
-                const idx = parseInt(id);
-                if (isNaN(idx) || idx < 0 || idx >= articles.length) {
-                    appContent.innerHTML = `
-                        <div class="not-found">
-                            <i class="far fa-frown"></i>
-                            <p>文章不存在</p>
-                            <p style="font-size:0.85rem; margin-top:0.5rem;">可能已被删除</p>
-                        </div>
-                    `;
-                    return;
+            document.addEventListener('mousemove', function(e) {
+                if (mouseDown) {
+                    const dx = e.clientX - mouseStartX;
+                    const dy = e.clientY - mouseStartY;
+                    translateX = mouseLastX + dx;
+                    translateY = mouseLastY + dy;
+                    updateTransform(false);
                 }
+            });
 
-                currentArticle = articles[idx];
-                const title = currentArticle.title || '无标题';
-                const date = currentArticle.date || '';
-                const content = currentArticle.content || '（暂无内容）';
-                const renderedContent = renderMarkdown(content);
-                const wordCount = countWords(content);
-                const readTime = calculateReadTime(wordCount);
+            document.addEventListener('mouseup', function() {
+                if (mouseDown) {
+                    mouseDown = false;
+                    imgWrapper.style.cursor = 'grab';
+                    if (scale < 0.6) {
+                        scale = 0.6;
+                        translateX = 0;
+                        translateY = 0;
+                        updateTransform(true);
+                    } else if (scale < 1) {
+                        scale = 1;
+                        translateX = 0;
+                        translateY = 0;
+                        updateTransform(true);
+                    } else if (scale > 3) {
+                        scale = 3;
+                        updateTransform(true);
+                    }
+                    if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) {
+                        translateX = 0;
+                        translateY = 0;
+                        updateTransform(true);
+                    }
+                }
+            });
 
-                const preview = getPlainPreview(content, 80);
-                const articleUrl = window.location.origin + window.location.pathname + '?id=' + idx;
-                currentShareText = `${title}：${preview}\n查看完整内容？请访问：${articleUrl}`;
-                shareTextDisplay.textContent = currentShareText;
+            function closeLightbox() {
+                overlay.classList.remove('active');
+                setTimeout(() => {
+                    if (overlay.parentNode) overlay.remove();
+                    document.body.style.overflow = '';
+                    document.removeEventListener('keydown', escHandler);
+                }, 350);
+            }
 
-                appContent.innerHTML = `
-                    <div class="article-detail">
-                        <h1 class="detail-title">${escapeHtml(title)}</h1>
-                        <span class="detail-date">${date ? escapeHtml(date) + '  ·  ' : ''}预计阅读 ${readTime} 分钟 · ${wordCount} 字</span>
-                        <hr class="detail-divider">
-                        <div class="detail-content">${renderedContent}</div>
-                    </div>
-                `;
+            function escHandler(e) {
+                if (e.key === 'Escape') closeLightbox();
+            }
 
-                document.querySelectorAll('.code-content').forEach(el => {
-                    hljs.highlightElement(el);
-                });
+            overlay.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) closeLightbox();
+            });
+            document.addEventListener('keydown', escHandler);
 
-                initLightbox();
+            scale = 1;
+            translateX = 0;
+            translateY = 0;
+            updateTransform(false);
+        }
 
-                // 文章加载完成后更新进度条
-                setTimeout(updateReadingProgress, 100);
-            })
-            .catch(() => {
+        // ============================================================
+        // 分享菜单
+        // ============================================================
+        const shareModal = document.getElementById('shareModal');
+        const shareTextDisplay = document.getElementById('shareTextDisplay');
+        let currentShareText = '';
+
+        function openShareModal() {
+            if (!currentArticle) {
+                showToast('文章数据未加载', 'fa-exclamation-circle');
+                return;
+            }
+            shareModal.classList.add('active');
+        }
+
+        function closeShareModal() {
+            shareModal.classList.remove('active');
+        }
+
+        document.getElementById('shareButton').addEventListener('click', openShareModal);
+        document.getElementById('shareCancelBtn').addEventListener('click', closeShareModal);
+        shareModal.addEventListener('click', function(e) {
+            if (e.target === this) closeShareModal();
+        });
+
+        document.getElementById('shareCopyBtn').addEventListener('click', function() {
+            if (!currentShareText) {
+                showToast('没有可复制的内容', 'fa-exclamation-circle');
+                return;
+            }
+            navigator.clipboard.writeText(currentShareText).then(() => {
+                showToast('已复制到剪贴板', 'fa-check-circle');
+                closeShareModal();
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = currentShareText;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast('已复制到剪贴板', 'fa-check-circle');
+                closeShareModal();
+            });
+        });
+
+        // ============================================================
+        // 渲染文章
+        // ============================================================
+        const appContent = document.getElementById('appContent');
+        let currentArticle = null;
+
+        function renderArticle() {
+            const id = getParam('id');
+            if (id === null) {
                 appContent.innerHTML = `
                     <div class="not-found">
                         <i class="far fa-frown"></i>
-                        <p>加载文章数据失败</p>
-                        <p style="font-size:0.85rem; margin-top:0.5rem;">请确保 wenzhang.json 文件存在</p>
+                        <p>缺少文章 ID</p>
+                        <p style="font-size:0.85rem; margin-top:0.5rem;">请从文章列表点击进入</p>
                     </div>
                 `;
-            });
-    }
+                return;
+            }
 
-    renderArticle();
+            fetch('wenzhang.json', { cache: 'no-cache' })
+                .then(response => {
+                    if (!response.ok) throw new Error('文件不存在');
+                    return response.json();
+                })
+                .then(data => {
+                    const articles = data.announcements || [];
+                    const idx = parseInt(id);
+                    if (isNaN(idx) || idx < 0 || idx >= articles.length) {
+                        appContent.innerHTML = `
+                            <div class="not-found">
+                                <i class="far fa-frown"></i>
+                                <p>文章不存在</p>
+                                <p style="font-size:0.85rem; margin-top:0.5rem;">可能已被删除</p>
+                            </div>
+                        `;
+                        return;
+                    }
 
-    // ============================================================
-    // 返回按钮（智能识别来源）
-    // ============================================================
-    const from = getParam('from');
-    const page = getParam('page');
-    const folder = getParam('folder');
-    const backBtn = document.getElementById('backButton');
+                    currentArticle = articles[idx];
+                    const title = currentArticle.title || '无标题';
+                    const date = currentArticle.date || '';
+                    const content = currentArticle.content || '（暂无内容）';
+                    const renderedContent = renderMarkdown(content);
+                    const wordCount = countWords(content);
+                    const readTime = calculateReadTime(wordCount);
 
-    let returnUrl = 'index.html?return=articles';
-    if (page) {
-        returnUrl += '&page=' + page;
-    }
-    if (from === 'archive' && folder === 'articles') {
-        returnUrl = 'index.html?return=archive&folder=articles';
-    } else if (from === 'archive') {
-        returnUrl = 'index.html?return=archive';
-    }
+                    const preview = getPlainPreview(content, 80);
+                    const articleUrl = window.location.origin + window.location.pathname + '?id=' + idx;
+                    currentShareText = `${title}：${preview}\n查看完整内容？请访问：${articleUrl}`;
+                    shareTextDisplay.textContent = currentShareText;
 
-    backBtn.href = returnUrl;
-</script>
+                    appContent.innerHTML = `
+                        <div class="article-detail">
+                            <h1 class="detail-title">${escapeHtml(title)}</h1>
+                            <span class="detail-date">${date ? escapeHtml(date) + '  ·  ' : ''}预计阅读 ${readTime} 分钟 · ${wordCount} 字</span>
+                            <hr class="detail-divider">
+                            <div class="detail-content">${renderedContent}</div>
+                        </div>
+                    `;
+
+                    document.querySelectorAll('.code-content').forEach(el => {
+                        hljs.highlightElement(el);
+                    });
+
+                    initLightbox();
+
+                    setTimeout(updateReadingProgress, 100);
+                })
+                .catch(() => {
+                    appContent.innerHTML = `
+                        <div class="not-found">
+                            <i class="far fa-frown"></i>
+                            <p>加载文章数据失败</p>
+                            <p style="font-size:0.85rem; margin-top:0.5rem;">请确保 wenzhang.json 文件存在</p>
+                        </div>
+                    `;
+                });
+        }
+
+        renderArticle();
+
+        // ============================================================
+        // 返回按钮（智能识别来源）
+        // ============================================================
+        const from = getParam('from');
+        const page = getParam('page');
+        const folder = getParam('folder');
+        const backBtn = document.getElementById('backButton');
+
+        let returnUrl = 'index.html?return=articles';
+        if (page) {
+            returnUrl += '&page=' + page;
+        }
+        if (from === 'archive' && folder === 'articles') {
+            returnUrl = 'index.html?return=archive&folder=articles';
+        } else if (from === 'archive') {
+            returnUrl = 'index.html?return=archive';
+        }
+
+        backBtn.href = returnUrl;
+    </script>
 </body>
 </html>

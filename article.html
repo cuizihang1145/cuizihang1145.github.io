@@ -2491,6 +2491,7 @@
         function initWaline() {
             const commentEl = document.getElementById('waline-comments');
             if (!commentEl) return;
+            const articleId = getParam('id') || 'unknown';
             import('https://unpkg.com/@waline/client@v3/dist/waline.js')
                 .then((module) => {
                     const { init } = module;
@@ -2498,6 +2499,7 @@
                         el: '#waline-comments',
                         serverURL: 'https://comment.cuizi.top',
                         lang: 'zh-CN',
+                        path: '/article/' + articleId,
                     });
                 })
                 .catch((err) => {

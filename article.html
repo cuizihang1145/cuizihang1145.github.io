@@ -168,7 +168,6 @@
         .back-btn i {
             font-size: 0.9rem;
         }
-
         .share-btn {
             background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(14px);
@@ -206,7 +205,6 @@
         .share-btn i {
             font-size: 1.2rem;
         }
-
         .back-to-top-btn {
             position: fixed;
             top: 20px;
@@ -2254,14 +2252,20 @@
             const title = currentArticle.title || '无标题';
             const date = currentArticle.date || '';
             const plainContent = markdownToPlainText(currentArticle.content || '');
-            const desc = plainContent.substring(0, 80) + (plainContent.length > 80 ? '…' : '');
+            let desc = plainContent.substring(0, 80);
+            if (plainContent.length > 80) {
+                desc = desc + '…';
+            }
+            desc = desc.replace(/[,，、。.；;：:！!？?…~～]+$/, '');
+            if (plainContent.length > 80 && !desc.endsWith('…')) {
+                desc = desc + '…';
+            }
             const url = window.location.href;
 
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
 
-            const W = 900,
-                H = 540;
+            const W = 900, H = 540;
             canvas.width = W;
             canvas.height = H;
 
@@ -2360,7 +2364,62 @@
             sharePreviewImg.src = currentShareImageDataUrl;
         }
 
-        // ===== 分享弹窗控制 =====
+        // ============================================================
+        // 代码块复制 + 折叠（恢复）
+        // ============================================================
+        document.addEventListener('click', function(e) {
+            const copyBtn = e.target.closest('.copy-btn');
+            if (copyBtn) {
+                const targetId = copyBtn.dataset.copy;
+                if (!targetId) return;
+                const codeEl = document.getElementById(targetId);
+                if (!codeEl) return;
+                const text = codeEl.textContent;
+
+                navigator.clipboard.writeText(text).then(() => {
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                    copyBtn.classList.add('copied');
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
+                        copyBtn.classList.remove('copied');
+                    }, 2000);
+                }).catch(() => {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                    copyBtn.classList.add('copied');
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
+                        copyBtn.classList.remove('copied');
+                    }, 2000);
+                });
+                return;
+            }
+
+            const collapseBtn = e.target.closest('.collapse-btn');
+            if (collapseBtn) {
+                const targetId = collapseBtn.dataset.target;
+                if (!targetId) return;
+                const wrapper = document.getElementById(targetId);
+                if (!wrapper) return;
+                const iconEl = collapseBtn.querySelector('i');
+                wrapper.classList.toggle('collapsed');
+                if (wrapper.classList.contains('collapsed')) {
+                    iconEl.className = 'fas fa-chevron-down';
+                } else {
+                    iconEl.className = 'fas fa-chevron-up';
+                }
+                return;
+            }
+        });
+
+        // ============================================================
+        // 分享弹窗控制
+        // ============================================================
         document.getElementById('shareButton').addEventListener('click', function() {
             if (!currentArticle) {
                 showToast('文章未加载', 'fa-exclamation-circle');
@@ -2398,11 +2457,14 @@
             }
         });
 
+        // ===== 复制完成后关闭两个弹窗 =====
         textModalCopy.addEventListener('click', function() {
             const text = shareTextDisplay.textContent;
             navigator.clipboard.writeText(text).then(() => {
                 showToast('已复制', 'fa-check-circle');
                 textModal.classList.remove('active');
+                shareModal.classList.remove('active');
+                document.body.style.overflow = '';
             }).catch(() => {
                 const ta = document.createElement('textarea');
                 ta.value = text;
@@ -2412,6 +2474,8 @@
                 document.body.removeChild(ta);
                 showToast('已复制', 'fa-check-circle');
                 textModal.classList.remove('active');
+                shareModal.classList.remove('active');
+                document.body.style.overflow = '';
             });
         });
 
@@ -2423,8 +2487,13 @@
             }
             const a = document.createElement('a');
             a.href = currentShareImageDataUrl;
-            const title = (currentArticle && currentArticle.title) || '文章';
-            a.download = '分享图_' + title.substring(0, 10) + '.png';
+            const now = new Date();
+            const ts = now.getFullYear().toString().slice(2) + 
+                       String(now.getMonth() + 1).padStart(2, '0') + 
+                       String(now.getDate()).padStart(2, '0') + 
+                       String(now.getHours()).padStart(2, '0') + 
+                       String(now.getMinutes()).padStart(2, '0');
+            a.download = '分享图_' + ts + '.png';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);

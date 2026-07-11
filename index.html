@@ -2822,26 +2822,27 @@
             `;
 
             document.getElementById('copyDomainBtn').addEventListener('click', function() {
+                var btn = this;
                 var url = 'https://cuizi.top/';
                 navigator.clipboard.writeText(url).then(function() {
-                    this.innerHTML = '<i class="fas fa-check"></i> 已复制';
-                    this.classList.add('copied');
+                    btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                    btn.classList.add('copied');
                     setTimeout(function() {
-                        this.innerHTML = '<i class="fas fa-copy"></i> 复制';
-                        this.classList.remove('copied');
+                        btn.innerHTML = '<i class="fas fa-copy"></i> 复制';
+                        btn.classList.remove('copied');
                     }, 2000);
-                })['catch'](function() {
+                }).catch(function() {
                     var ta = document.createElement('textarea');
                     ta.value = url;
                     document.body.appendChild(ta);
                     ta.select();
                     document.execCommand('copy');
                     document.body.removeChild(ta);
-                    this.innerHTML = '<i class="fas fa-check"></i> 已复制';
-                    this.classList.add('copied');
+                    btn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                    btn.classList.add('copied');
                     setTimeout(function() {
-                        this.innerHTML = '<i class="fas fa-copy"></i> 复制';
-                        this.classList.remove('copied');
+                        btn.innerHTML = '<i class="fas fa-copy"></i> 复制';
+                        btn.classList.remove('copied');
                     }, 2000);
                 });
             });

@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
     </script>
@@ -1015,7 +1016,6 @@
                 padding: 0.3rem 0.4rem;
             }
         }
-        /* ===== 分享弹窗 ===== */
         .share-modal-overlay {
             position: fixed;
             top: 0;
@@ -1086,7 +1086,6 @@
         body.dark .share-modal-overlay .share-modal-title i {
             color: #88ccff;
         }
-        /* 分享图预览 */
         #sharePreviewWrap {
             border-radius: 0.8rem;
             overflow: hidden;
@@ -1098,7 +1097,6 @@
             width: 100%;
             display: block;
         }
-        /* 按钮 */
         .share-modal-actions {
             display: flex;
             gap: 0.6rem;
@@ -1235,6 +1233,19 @@
         #qrTemp {
             display: none;
         }
+
+        #waline-comments {
+            max-width: 640px;
+            margin: 3rem auto 0;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+        }
+        body.dark #waline-comments {
+            border-top-color: rgba(255, 255, 255, 0.06);
+        }
+        #waline-comments * {
+            font-family: 'Inter', -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif !important;
+        }
     </style>
 </head>
 <body>
@@ -1272,27 +1283,23 @@
                 加载中...
             </div>
         </div>
+        <div id="waline-comments"></div>
     </div>
 
-    <!-- ===== 分享弹窗 ===== -->
     <div class="share-modal-overlay" id="shareModal">
         <div class="share-modal-box">
             <div class="share-modal-title"><i class="fas fa-share-alt"></i> 分享</div>
-
             <div id="sharePreviewWrap">
                 <img id="sharePreviewImg" src="" alt="分享图预览" />
             </div>
-
             <div class="share-modal-actions">
                 <button class="btn-text" id="shareCopyBtn"><i class="fas fa-copy"></i> 复制文字</button>
                 <button class="btn-image" id="shareSaveBtn"><i class="fas fa-download"></i> 保存图片</button>
             </div>
-
             <button class="share-close-btn" id="shareCloseBtn">关闭</button>
         </div>
     </div>
 
-    <!-- ===== 复制文字弹窗 ===== -->
     <div class="share-modal-overlay" id="textModal" style="z-index:1000;">
         <div class="share-modal-box" style="max-width:420px;">
             <div class="share-modal-title"><i class="fas fa-copy"></i> 复制内容</div>
@@ -1310,7 +1317,6 @@
     <div id="qrTemp"></div>
 
     <script>
-        // ===== 工具函数 =====
         function getParam(name) {
             const url = new URL(window.location.href);
             return url.searchParams.get(name);
@@ -1353,21 +1359,32 @@
             }, 2000);
         }
 
-        // ===== 进度条 =====
         const progressBar = document.getElementById('progressBar');
 
         function updateReadingProgress() {
-            const scrollTop = window.scrollY || window.pageYOffset;
-            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-            if (docHeight <= 0) return;
-            const progress = Math.min((scrollTop / docHeight) * 100, 100);
+            const articleDetail = document.querySelector('.article-detail');
+            if (!articleDetail) {
+                progressBar.style.width = '0%';
+                return;
+            }
+            const rect = articleDetail.getBoundingClientRect();
+            const articleHeight = rect.height;
+            const articleTop = rect.top + window.scrollY;
+            const windowHeight = window.innerHeight;
+            const maxScroll = articleHeight - windowHeight;
+            if (maxScroll <= 0) {
+                progressBar.style.width = '100%';
+                return;
+            }
+            const currentScroll = window.scrollY - articleTop;
+            const progress = Math.min(Math.max((currentScroll / maxScroll) * 100, 0), 100);
             progressBar.style.width = progress + '%';
         }
+
         window.addEventListener('scroll', updateReadingProgress);
         window.addEventListener('resize', updateReadingProgress);
         window.addEventListener('load', updateReadingProgress);
 
-        // ===== 主题切换 =====
         const themeToggle = document.getElementById('themeToggle');
         const themeIcon = document.getElementById('themeIcon');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1384,7 +1401,6 @@
             setTheme(currentTheme === 'dark' ? 'light' : 'dark');
         });
 
-        // ===== 回到顶部 =====
         const backToTopBtn = document.getElementById('backToTopBtn');
         let isScrollingToTop = false;
 
@@ -1430,7 +1446,6 @@
             fastScrollToTop();
         });
 
-        // ===== 返回 =====
         const backBtn = document.getElementById('backButton');
         const from = getParam('from');
         const page = getParam('page');
@@ -1444,7 +1459,6 @@
         }
         backBtn.href = returnUrl;
 
-        // ===== 渲染文章 =====
         const appContent = document.getElementById('appContent');
         let currentArticle = null;
         let currentShareText = '';
@@ -1901,7 +1915,6 @@
             return result;
         }
 
-        // ===== 渲染文章内容 =====
         function renderArticle() {
             const id = getParam('id');
             if (id === null) {
@@ -1959,7 +1972,6 @@
                         hljs.highlightElement(el);
                     });
 
-                    // 文章图片灯箱
                     const images = document.querySelectorAll('.detail-content img');
                     images.forEach(img => {
                         img.style.cursor = 'pointer';
@@ -1970,8 +1982,6 @@
                     });
 
                     setTimeout(updateReadingProgress, 100);
-
-                    // 分享图预生成
                     generateShareImage();
                 })
                 .catch(() => {
@@ -1985,7 +1995,6 @@
                 });
         }
 
-        // ===== 图片灯箱 =====
         function openLightbox(src, alt) {
             const existing = document.querySelector('.lightbox-overlay');
             if (existing) existing.remove();
@@ -2170,9 +2179,6 @@
             updateTransform(false);
         }
 
-        // ============================================================
-        // 分享图生成
-        // ============================================================
         const qrTemp = document.getElementById('qrTemp');
         const shareModal = document.getElementById('shareModal');
         const sharePreviewImg = document.getElementById('sharePreviewImg');
@@ -2264,18 +2270,17 @@
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
 
-            const W = 900, H = 540;
+            const W = 900,
+                H = 540;
             canvas.width = W;
             canvas.height = H;
 
-            // 背景
             const grad = ctx.createLinearGradient(0, 0, W, H);
             grad.addColorStop(0, '#f8f5ff');
             grad.addColorStop(1, '#e8e0ff');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, W, H);
 
-            // 装饰
             ctx.globalAlpha = 0.05;
             for (let i = 0; i < 6; i++) {
                 ctx.beginPath();
@@ -2285,14 +2290,12 @@
             }
             ctx.globalAlpha = 1;
 
-            // 日期
             ctx.textAlign = 'right';
             ctx.textBaseline = 'top';
             ctx.font = '400 14px "Inter", sans-serif';
             ctx.fillStyle = '#8a8ab5';
             ctx.fillText(date || '', W - 40, 28);
 
-            // 标题
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
             ctx.font = '700 52px "Inter", "PingFang SC", sans-serif';
@@ -2303,7 +2306,6 @@
                 ctx.fillText(line, 40, 70 + i * 60);
             });
 
-            // 摘要
             let subY = 70 + Math.min(titleDisplay.length, 2) * 60 + 20;
             ctx.font = '400 22px "Inter", "PingFang SC", sans-serif';
             ctx.fillStyle = '#4a4a6e';
@@ -2313,7 +2315,6 @@
                 ctx.fillText(line, 40, subY + 10 + i * 34);
             });
 
-            // 底部作者
             const bottomY = H - 44;
             ctx.font = '500 16px "Inter", "PingFang SC", sans-serif';
             ctx.fillStyle = '#6a6a92';
@@ -2321,7 +2322,6 @@
             ctx.textBaseline = 'bottom';
             ctx.fillText('ks', 40, bottomY);
 
-            // 二维码 180px
             const qrSize = 180;
             const qrX = W - qrSize - 40;
             const qrY = H - qrSize - 40;
@@ -2345,14 +2345,12 @@
                 ctx.fillText('二维码失败', qrX + qrSize / 2, qrY + qrSize / 2);
             }
 
-            // 扫码提示
             ctx.textAlign = 'center';
             ctx.textBaseline = 'top';
             ctx.font = '400 13px "Inter", sans-serif';
             ctx.fillStyle = '#aaaacc';
             ctx.fillText('扫码观看全文', qrX + qrSize / 2, qrY + qrSize + 10);
 
-            // 水印
             ctx.textAlign = 'right';
             ctx.textBaseline = 'bottom';
             ctx.font = '400 13px "Inter", sans-serif';
@@ -2363,9 +2361,6 @@
             sharePreviewImg.src = currentShareImageDataUrl;
         }
 
-        // ============================================================
-        // 代码块复制 + 折叠（恢复）
-        // ============================================================
         document.addEventListener('click', function(e) {
             const copyBtn = e.target.closest('.copy-btn');
             if (copyBtn) {
@@ -2416,9 +2411,6 @@
             }
         });
 
-        // ============================================================
-        // 分享弹窗控制
-        // ============================================================
         document.getElementById('shareButton').addEventListener('click', function() {
             if (!currentArticle) {
                 showToast('文章未加载', 'fa-exclamation-circle');
@@ -2440,7 +2432,6 @@
             }
         });
 
-        // ===== 复制文字 =====
         shareCopyBtn.addEventListener('click', function() {
             shareTextDisplay.textContent = currentShareText || '暂无内容';
             textModal.classList.add('active');
@@ -2456,7 +2447,6 @@
             }
         });
 
-        // ===== 复制完成后关闭两个弹窗 =====
         textModalCopy.addEventListener('click', function() {
             const text = shareTextDisplay.textContent;
             navigator.clipboard.writeText(text).then(() => {
@@ -2478,7 +2468,6 @@
             });
         });
 
-        // ===== 保存图片 =====
         shareSaveBtn.addEventListener('click', function() {
             if (!currentShareImageDataUrl) {
                 showToast('图片未生成', 'fa-exclamation-circle');
@@ -2487,11 +2476,11 @@
             const a = document.createElement('a');
             a.href = currentShareImageDataUrl;
             const now = new Date();
-            const ts = now.getFullYear().toString().slice(2) + 
-                       String(now.getMonth() + 1).padStart(2, '0') + 
-                       String(now.getDate()).padStart(2, '0') + 
-                       String(now.getHours()).padStart(2, '0') + 
-                       String(now.getMinutes()).padStart(2, '0');
+            const ts = now.getFullYear().toString().slice(2) +
+                String(now.getMonth() + 1).padStart(2, '0') +
+                String(now.getDate()).padStart(2, '0') +
+                String(now.getHours()).padStart(2, '0') +
+                String(now.getMinutes()).padStart(2, '0');
             a.download = '分享图_' + ts + '.png';
             document.body.appendChild(a);
             a.click();
@@ -2499,8 +2488,25 @@
             showToast('已保存', 'fa-check-circle');
         });
 
-        // ===== 启动 =====
+        function initWaline() {
+            const commentEl = document.getElementById('waline-comments');
+            if (!commentEl) return;
+            import('https://unpkg.com/@waline/client@v3/dist/waline.js')
+                .then((module) => {
+                    const { init } = module;
+                    init({
+                        el: '#waline-comments',
+                        serverURL: 'https://comment.cuizi.top',
+                        lang: 'zh-CN',
+                    });
+                })
+                .catch((err) => {
+                    console.error('Waline 加载失败:', err);
+                });
+        }
+
         renderArticle();
+        setTimeout(initWaline, 500);
     </script>
 </body>
 </html>

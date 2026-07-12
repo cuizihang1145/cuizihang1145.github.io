@@ -39,6 +39,8 @@
             background: rgba(0, 0, 0, 0.08);
             z-index: 9999;
             pointer-events: none;
+            opacity: 1;
+            transition: opacity 0.3s ease;
         }
         body.dark .reading-progress {
             background: rgba(255, 255, 255, 0.1);
@@ -1359,7 +1361,10 @@
             }, 2000);
         }
 
+        const progressWrap = document.getElementById('readingProgress');
         const progressBar = document.getElementById('progressBar');
+        let lastProgress = 0;
+        let hideTimer = null;
 
         function updateReadingProgress() {
             const articleDetail = document.querySelector('.article-detail');
@@ -1372,13 +1377,42 @@
             const articleTop = rect.top + window.scrollY;
             const windowHeight = window.innerHeight;
             const maxScroll = articleHeight - windowHeight;
+
+            let progress = 0;
             if (maxScroll <= 0) {
-                progressBar.style.width = '100%';
-                return;
+                progress = 100;
+            } else {
+                const currentScroll = window.scrollY - articleTop;
+                progress = Math.min(Math.max((currentScroll / maxScroll) * 100, 0), 100);
             }
-            const currentScroll = window.scrollY - articleTop;
-            const progress = Math.min(Math.max((currentScroll / maxScroll) * 100, 0), 100);
+
             progressBar.style.width = progress + '%';
+
+            if (progress >= 100 && lastProgress < 100) {
+                if (hideTimer) {
+                    clearTimeout(hideTimer);
+                    hideTimer = null;
+                }
+                hideTimer = setTimeout(() => {
+                    progressWrap.style.transition = 'opacity 0.8s ease';
+                    progressWrap.style.opacity = '0';
+                    setTimeout(() => {
+                        progressWrap.style.display = 'none';
+                    }, 800);
+                }, 600);
+            }
+
+            if (progress < 100) {
+                if (hideTimer) {
+                    clearTimeout(hideTimer);
+                    hideTimer = null;
+                }
+                progressWrap.style.display = 'block';
+                progressWrap.style.opacity = '1';
+                progressWrap.style.transition = 'opacity 0.3s ease';
+            }
+
+            lastProgress = progress;
         }
 
         window.addEventListener('scroll', updateReadingProgress);

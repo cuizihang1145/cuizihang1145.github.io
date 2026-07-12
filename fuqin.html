@@ -787,9 +787,9 @@
     </div>
 
     <div id="clickLayer"></div>
-    <div class="footer-note">✨ 点击屏幕放烟花 ✨</div>
+    <div class="footer-note">点击屏幕放烟花</div>
 
-    <div class="edit-hint" id="editHint">✏️ 点击"分享"打开编辑面板 · 改完生成链接</div>
+    <div class="edit-hint" id="editHint">点击"分享"打开编辑面板 · 改完生成链接</div>
 
     <div class="edit-panel" id="editPanel">
         <div class="panel-title"><i class="fas fa-pen"></i> 自定义祝福内容</div>
@@ -814,7 +814,7 @@
 
         <div class="panel-actions">
             <button class="btn-cancel" id="cancelEditBtn">取消</button>
-            <button class="btn-confirm" id="confirmEditBtn">✅ 生成分享链接</button>
+            <button class="btn-confirm" id="confirmEditBtn">生成分享链接</button>
         </div>
     </div>
 
@@ -1142,7 +1142,7 @@
                     const defaultLine2 = msgLine2.textContent.trim();
 
                     if (line1 === defaultLine1 && line2 === defaultLine2) {
-                        alert('至少改点什么吧，不然分享个寂寞 🤨');
+                        alert('至少改点什么吧，不然分享个寂寞');
                         return;
                     }
 
@@ -1185,7 +1185,7 @@
                     const url = shareUrlBox.textContent;
                     if (!url || url === '加载中...') return;
                     navigator.clipboard.writeText(url).then(() => {
-                        copyShareBtn.innerHTML = '✅ 已复制';
+                        copyShareBtn.innerHTML = '已复制';
                         setTimeout(() => {
                             copyShareBtn.innerHTML = '<i class="fas fa-copy"></i> 复制链接';
                         }, 2000);
@@ -1196,7 +1196,7 @@
                         ta.select();
                         document.execCommand('copy');
                         document.body.removeChild(ta);
-                        copyShareBtn.innerHTML = '✅ 已复制';
+                        copyShareBtn.innerHTML = '已复制';
                         setTimeout(() => {
                             copyShareBtn.innerHTML = '<i class="fas fa-copy"></i> 复制链接';
                         }, 2000);

@@ -744,51 +744,46 @@
             padding: 0;
         }
         .code-block-body {
-            display: flex;
+            display: block;
             overflow: auto;
             max-height: 500px;
             background: #0D1117 !important;
             border-radius: 0 0 12px 12px;
-            position: relative;
+            padding: 0.4rem 0;
+            font-size: 0;
+            line-height: 0;
         }
-        .code-block-body .line-numbers {
+        .code-block-body .code-line {
+            display: flex;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            color: #E6EDF3;
+            white-space: pre;
+            min-height: 1.7em;
+            padding: 0 1.2rem;
+        }
+        .code-block-body .code-line .line-number {
             flex-shrink: 0;
-            padding: 0.4rem 0.8rem 0.4rem 1.2rem;
+            width: 3.2rem;
             text-align: right;
             color: #484F58 !important;
             user-select: none;
-            font-size: 0.85rem;
-            line-height: 1.7;
-            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            padding-right: 0.8rem;
             border-right: 1px solid rgba(255, 255, 255, 0.06);
-            min-width: 3.2rem;
-            background: #0D1117 !important;
-            position: sticky;
-            left: 0;
-            z-index: 2;
-        }
-        .code-block-body .line-numbers span {
-            display: block;
-            height: 1.7em;
-            line-height: 1.7;
-            font-size: 0.85rem;
-            font-family: 'JetBrains Mono', 'Courier New', monospace;
-        }
-        .code-block-body .code-content {
-            flex: 1;
-            padding: 0.4rem 1.2rem;
-            white-space: pre;
-            color: #E6EDF3 !important;
-            background: transparent !important;
             font-size: 0.85rem;
             line-height: 1.7;
             font-family: 'JetBrains Mono', 'Courier New', monospace;
-            overflow: visible;
-            min-width: 0;
+            margin-right: 1.2rem;
         }
-        .code-block-body .code-content.hljs {
+        .code-block-body .code-line .hljs {
             background: transparent !important;
             padding: 0 !important;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            flex: 1;
+            white-space: pre;
         }
         .article-detail .detail-content ul,
         .article-detail .detail-content ol {
@@ -999,22 +994,23 @@
                 font-size: 10px;
             }
             .code-block-body {
-                font-size: 0.75rem;
                 max-height: 350px;
+                padding: 0.3rem 0;
             }
-            .code-block-body .line-numbers {
-                padding: 0.3rem 0.4rem 0.3rem 0.8rem;
-                min-width: 2.4rem;
+            .code-block-body .code-line {
                 font-size: 0.75rem;
                 line-height: 1.6;
+                min-height: 1.6em;
+                padding: 0 0.8rem;
             }
-            .code-block-body .line-numbers span {
+            .code-block-body .code-line .line-number {
                 font-size: 0.75rem;
                 line-height: 1.6;
-                height: 1.6em;
+                width: 2.4rem;
+                padding-right: 0.6rem;
+                margin-right: 0.8rem;
             }
-            .code-block-body .code-content {
-                padding: 0.3rem 0.8rem;
+            .code-block-body .code-line .hljs {
                 font-size: 0.75rem;
                 line-height: 1.6;
             }
@@ -1640,10 +1636,10 @@
                 const lang = langParts[0] || 'text';
                 const copyId = 'code-' + Date.now() + '-' + (codeBlockCounter++);
 
-                const lineCount = code.split('\n').length;
+                const lines = code.split('\n');
+                const lineCount = lines.length;
                 let maxLineLength = 0;
                 let totalChars = 0;
-                const lines = code.split('\n');
                 for (let j = 0; j < lines.length; j++) {
                     const lineLen = lines[j].length;
                     if (lineLen > maxLineLength) maxLineLength = lineLen;
@@ -1651,13 +1647,15 @@
                 }
                 totalChars += lineCount > 0 ? lineCount - 1 : 0;
 
-                let lineNumbersHtml = '';
-                for (let j = 1; j <= lineCount; j++) {
-                    lineNumbersHtml += '<span style="display:block;height:1.7em;line-height:1.7;font-size:0.85rem;font-family:\'JetBrains Mono\',\'Courier New\',monospace;text-align:right;">' + j + '</span>';
-                }
-
                 const statsHtml = '<span>' + lineCount + ' 行</span> · <span>' + maxLineLength + ' 列</span> · <span>' +
                     totalChars + ' 字符</span>';
+
+                let codeHtml = '';
+                for (let j = 0; j < lines.length; j++) {
+                    const lineNum = j + 1;
+                    const escapedLine = escapeHtml(lines[j]);
+                    codeHtml += `<span class="code-line"><span class="line-number">${lineNum}</span><span class="hljs">${escapedLine}</span></span>`;
+                }
 
                 result += `
                         <div class="code-block-wrapper" id="cbw-${copyId}">
@@ -1672,9 +1670,8 @@
                                 </span>
                             </div>
                             <div class="code-block-body-wrapper">
-                                <div class="code-block-body">
-                                    <div class="line-numbers">${lineNumbersHtml}</div>
-                                    <code class="code-content hljs" id="${copyId}">${code}</code>
+                                <div class="code-block-body" id="code-body-${copyId}">
+                                    ${codeHtml}
                                 </div>
                             </div>
                         </div>
@@ -2020,16 +2017,8 @@
                             </div>
                         `;
 
-                    document.querySelectorAll('.code-content').forEach(el => {
+                    document.querySelectorAll('.code-line .hljs').forEach(el => {
                         try {
-                            const wrapper = el.closest('.code-block-wrapper');
-                            const langLabel = wrapper ? wrapper.querySelector('.lang-label') : null;
-                            if (langLabel) {
-                                const lang = langLabel.textContent.trim();
-                                if (lang && lang !== 'text') {
-                                    el.classList.add('language-' + lang);
-                                }
-                            }
                             hljs.highlightElement(el);
                         } catch (e) {
                             console.warn('高亮失败:', e);
@@ -2433,31 +2422,47 @@
             if (copyBtn) {
                 const targetId = copyBtn.dataset.copy;
                 if (!targetId) return;
-                const codeEl = document.getElementById(targetId);
-                if (!codeEl) return;
-                const text = codeEl.textContent;
-
-                navigator.clipboard.writeText(text).then(() => {
-                    copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
-                    copyBtn.classList.add('copied');
-                    setTimeout(() => {
-                        copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
-                        copyBtn.classList.remove('copied');
-                    }, 2000);
-                }).catch(() => {
-                    const ta = document.createElement('textarea');
-                    ta.value = text;
-                    document.body.appendChild(ta);
-                    ta.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(ta);
-                    copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
-                    copyBtn.classList.add('copied');
-                    setTimeout(() => {
-                        copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
-                        copyBtn.classList.remove('copied');
-                    }, 2000);
+                const wrapper = document.getElementById('cbw-' + targetId);
+                if (!wrapper) return;
+                
+                const codeLines = wrapper.querySelectorAll('.code-line');
+                let text = '';
+                codeLines.forEach(line => {
+                    const clone = line.cloneNode(true);
+                    const lineNum = clone.querySelector('.line-number');
+                    if (lineNum) lineNum.remove();
+                    text += clone.textContent + '\n';
                 });
+                text = text.replace(/\n$/, '');
+
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                ta.style.top = '0';
+                ta.style.width = '1px';
+                ta.style.height = '1px';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+
+                try {
+                    const success = document.execCommand('copy');
+                    if (success) {
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                        copyBtn.classList.add('copied');
+                        setTimeout(() => {
+                            copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
+                            copyBtn.classList.remove('copied');
+                        }, 2000);
+                    } else {
+                        showToast('复制失败', 'fa-exclamation-circle');
+                    }
+                } catch (err) {
+                    showToast('复制失败', 'fa-exclamation-circle');
+                }
+                document.body.removeChild(ta);
                 return;
             }
 

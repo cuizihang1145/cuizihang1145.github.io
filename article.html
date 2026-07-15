@@ -744,54 +744,44 @@
             padding: 0;
         }
         .code-block-body {
-            overflow-x: auto;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            overflow: auto;
+            max-height: 500px;
+            background: #0D1117 !important;
+            border-radius: 0 0 12px 12px;
+        }
+        .code-block-body .code-wrapper {
+            display: table;
+            min-width: 100%;
             font-family: 'JetBrains Mono', 'Courier New', monospace;
             font-size: 0.85rem;
             line-height: 1.7;
-            background: #0D1117 !important;
-            padding: 0;
-            display: flex;
-            align-items: stretch;
-            min-height: 3.4rem;
-            max-height: 500px;
         }
-        .code-block-body .line-numbers {
+        .code-block-body .code-wrapper .line-numbers {
+            display: table-cell;
             padding: 0.4rem 0.6rem 0.4rem 1.2rem;
             text-align: right;
             color: #484F58 !important;
             user-select: none;
-            font-family: inherit;
-            font-size: inherit;
-            border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            white-space: pre;
+            vertical-align: top;
             min-width: 2.8rem;
             background: transparent !important;
-            line-height: 1.7;
-            flex-shrink: 0;
-            align-self: stretch;
-            overflow-y: visible;
         }
-        .code-block-body .line-numbers span {
+        .code-block-body .code-wrapper .line-numbers span {
             display: block;
-            line-height: 1.7;
             height: 1.7em;
+            line-height: 1.7;
         }
-        .code-block-body .code-content {
-            padding: 0.4rem 1.2rem 0.4rem 1.2rem;
-            overflow-x: auto;
-            min-width: 0;
-            font-family: inherit;
-            font-size: inherit;
+        .code-block-body .code-wrapper .code-content {
+            display: table-cell;
+            padding: 0.4rem 1.2rem;
             white-space: pre;
             color: #E6EDF3 !important;
             background: transparent !important;
-            line-height: 1.7;
-            flex: 1;
-            align-self: stretch;
-            overflow-y: visible;
+            vertical-align: top;
         }
-        .code-block-body .code-content.hljs {
+        .code-block-body .code-wrapper .code-content.hljs {
             background: transparent !important;
             padding: 0 !important;
         }
@@ -1005,14 +995,13 @@
             }
             .code-block-body {
                 font-size: 0.75rem;
-                min-height: 2.8rem;
                 max-height: 350px;
             }
-            .code-block-body .line-numbers {
+            .code-block-body .code-wrapper .line-numbers {
                 padding: 0.3rem 0.4rem 0.3rem 0.8rem;
                 min-width: 2rem;
             }
-            .code-block-body .code-content {
+            .code-block-body .code-wrapper .code-content {
                 padding: 0.3rem 0.8rem 0.3rem 0.8rem;
             }
             .lightbox-overlay .lightbox-container img {
@@ -1670,8 +1659,10 @@
                             </div>
                             <div class="code-block-body-wrapper">
                                 <div class="code-block-body">
-                                    <div class="line-numbers">${lineNumbersHtml}</div>
-                                    <code class="code-content hljs" id="${copyId}">${code}</code>
+                                    <div class="code-wrapper">
+                                        <div class="line-numbers">${lineNumbersHtml}</div>
+                                        <code class="code-content hljs" id="${copyId}">${code}</code>
+                                    </div>
                                 </div>
                             </div>
                         </div>

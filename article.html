@@ -745,6 +745,7 @@
         }
         .code-block-body {
             overflow-x: auto;
+            overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             font-family: 'JetBrains Mono', 'Courier New', monospace;
             font-size: 0.85rem;
@@ -752,8 +753,9 @@
             background: #0D1117 !important;
             padding: 0;
             display: flex;
-            align-items: center;
+            align-items: stretch;
             min-height: 3.4rem;
+            max-height: 500px;
         }
         .code-block-body .line-numbers {
             padding: 0.4rem 0.6rem 0.4rem 1.2rem;
@@ -767,7 +769,8 @@
             background: transparent !important;
             line-height: 1.7;
             flex-shrink: 0;
-            align-self: center;
+            align-self: stretch;
+            overflow-y: visible;
         }
         .code-block-body .line-numbers span {
             display: block;
@@ -785,7 +788,8 @@
             background: transparent !important;
             line-height: 1.7;
             flex: 1;
-            align-self: center;
+            align-self: stretch;
+            overflow-y: visible;
         }
         .code-block-body .code-content.hljs {
             background: transparent !important;
@@ -1002,6 +1006,7 @@
             .code-block-body {
                 font-size: 0.75rem;
                 min-height: 2.8rem;
+                max-height: 350px;
             }
             .code-block-body .line-numbers {
                 padding: 0.3rem 0.4rem 0.3rem 0.8rem;
@@ -1625,17 +1630,19 @@
                     codeLang = '';
                     return;
                 }
-                const code = codeBlockLines.join('\n');
-                const escapedCode = escapeHtml(code);
+                let code = codeBlockLines.join('\n');
+                code = code.replace(/^\s*\n/, '').replace(/\n\s*$/, '');
+
                 const langParts = codeLang.split(/\s+/);
                 const lang = langParts[0] || 'text';
                 const copyId = 'code-' + Date.now() + '-' + (codeBlockCounter++);
 
-                const lineCount = codeBlockLines.length;
+                const lineCount = code.split('\n').length;
                 let maxLineLength = 0;
                 let totalChars = 0;
-                for (let j = 0; j < codeBlockLines.length; j++) {
-                    const lineLen = codeBlockLines[j].length;
+                const lines = code.split('\n');
+                for (let j = 0; j < lines.length; j++) {
+                    const lineLen = lines[j].length;
                     if (lineLen > maxLineLength) maxLineLength = lineLen;
                     totalChars += lineLen;
                 }
@@ -1664,7 +1671,7 @@
                             <div class="code-block-body-wrapper">
                                 <div class="code-block-body">
                                     <div class="line-numbers">${lineNumbersHtml}</div>
-                                    <code class="code-content" id="${copyId}">${escapedCode}</code>
+                                    <code class="code-content hljs" id="${copyId}">${code}</code>
                                 </div>
                             </div>
                         </div>
@@ -2011,7 +2018,19 @@
                         `;
 
                     document.querySelectorAll('.code-content').forEach(el => {
-                        hljs.highlightElement(el);
+                        try {
+                            const wrapper = el.closest('.code-block-wrapper');
+                            const langLabel = wrapper ? wrapper.querySelector('.lang-label') : null;
+                            if (langLabel) {
+                                const lang = langLabel.textContent.trim();
+                                if (lang && lang !== 'text') {
+                                    el.classList.add('language-' + lang);
+                                }
+                            }
+                            hljs.highlightElement(el);
+                        } catch (e) {
+                            console.warn('高亮失败:', e);
+                        }
                     });
 
                     const images = document.querySelectorAll('.detail-content img');
@@ -2197,6 +2216,9 @@
             });
 
             function closeLightbox() {
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
                 overlay.classList.remove('active');
                 setTimeout(() => {
                     if (overlay.parentNode) overlay.remove();

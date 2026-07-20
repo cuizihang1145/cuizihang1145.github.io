@@ -593,11 +593,74 @@
             cursor: default;
             pointer-events: none;
         }
+
+        /* ===== 图片占位样式 ===== */
+        .img-placeholder {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0.8rem 0;
+        }
+        body.dark .img-placeholder {
+            background: rgba(40, 38, 65, 0.3);
+        }
+        .img-placeholder img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 12px;
+            position: relative;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .img-placeholder img.loaded {
+            opacity: 1;
+        }
+        .img-placeholder .img-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            color: #8A8AB5;
+            font-size: 1.8rem;
+            pointer-events: none;
+        }
+        body.dark .img-placeholder .img-loading {
+            color: #6A6A8A;
+        }
+        .img-placeholder .img-loading i {
+            display: block;
+        }
+
+        /* ===== 图片 Alt 文字（文章内） ===== */
+        .img-alt-text {
+            font-size: 0.8rem;
+            color: #8A8AB5;
+            text-align: center;
+            margin-top: -0.2rem;
+            margin-bottom: 0.8rem;
+            font-style: italic;
+            transition: color 0.3s ease;
+            display: block;
+        }
+        body.dark .img-alt-text {
+            color: #7A7AA0;
+        }
+
         .article-detail .detail-content img {
             max-width: 100%;
             height: auto;
             border-radius: 12px;
-            margin: 0.8rem 0;
+            margin: 0.8rem 0 0 0;
             display: block;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
             transition: box-shadow 0.3s ease;
@@ -612,6 +675,12 @@
         body.dark .article-detail .detail-content img:hover {
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
+
+        .article-detail .detail-content .img-wrapper {
+            margin: 0.8rem 0;
+            display: block;
+        }
+
         .article-detail .detail-content code {
             font-family: 'JetBrains Mono', 'Courier New', monospace;
             font-size: 0.9em;
@@ -625,254 +694,12 @@
             background: rgba(255, 255, 255, 0.06);
             color: #E8A87C;
         }
+
+        /* ===== Lightbox ===== */
         .lightbox-overlay .lightbox-container img {
             border-radius: 0 !important;
         }
-        .code-block-wrapper {
-            background: #0D1117 !important;
-            border-radius: 12px;
-            margin: 0.8rem 0;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-        .code-block-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 14px;
-            background: rgba(255, 255, 255, 0.04) !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-            flex-shrink: 0;
-            min-height: 40px;
-            gap: 10px;
-            flex-wrap: wrap;
-            transition: border-color 0.3s ease;
-        }
-        .code-block-wrapper.collapsed .code-block-header {
-            border-bottom: none;
-        }
-        .code-block-header .lang-label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #8B949E !important;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            font-family: 'Inter', sans-serif;
-        }
-        .code-block-header .code-stats {
-            font-size: 0.65rem;
-            color: #484F58 !important;
-            font-family: 'Inter', sans-serif;
-            letter-spacing: 0.3px;
-            flex: 1;
-            text-align: center;
-        }
-        .code-block-header .code-stats span {
-            margin: 0 2px;
-        }
-        .code-block-header .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex-shrink: 0;
-        }
-        .code-block-header .copy-btn {
-            background: rgba(255, 255, 255, 0.08) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 6px;
-            padding: 2px 10px;
-            font-size: 0.65rem;
-            font-weight: 500;
-            color: #8B949E !important;
-            cursor: pointer;
-            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-            font-family: 'Inter', sans-serif;
-            line-height: 1.8;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .code-block-header .copy-btn:hover {
-            background: rgba(255, 255, 255, 0.15) !important;
-            color: #E8E6F0 !important;
-        }
-        .code-block-header .copy-btn.copied {
-            background: rgba(46, 204, 113, 0.2) !important;
-            color: #2ecc71 !important;
-            border-color: rgba(46, 204, 113, 0.2) !important;
-        }
-        .code-block-header .copy-btn i {
-            font-size: 0.7rem;
-        }
-        .code-block-header .collapse-btn {
-            width: 28px;
-            height: 28px;
-            border: none;
-            border-radius: 50%;
-            background: transparent;
-            color: #8B949E;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            transition: background 0.2s ease, color 0.2s ease;
-            font-family: 'Inter', sans-serif;
-            padding: 0;
-            flex-shrink: 0;
-            -webkit-tap-highlight-color: transparent !important;
-            outline: none !important;
-            user-select: none;
-        }
-        .code-block-header .collapse-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #E8E6F0;
-        }
-        .code-block-header .collapse-btn:active {
-            background: transparent !important;
-            outline: none !important;
-        }
-        .code-block-body-wrapper {
-            overflow: hidden;
-            transition: max-height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
-            max-height: 3000px;
-            opacity: 1;
-        }
-        .code-block-wrapper.collapsed .code-block-body-wrapper {
-            max-height: 0 !important;
-            opacity: 0;
-            padding: 0;
-        }
-        .code-block-body {
-            display: block;
-            overflow: auto;
-            max-height: 500px;
-            background: #0D1117 !important;
-            border-radius: 0 0 12px 12px;
-            padding: 0.4rem 0;
-            font-size: 0;
-            line-height: 0;
-        }
-        .code-block-body .code-line {
-            display: flex;
-            font-size: 0.85rem;
-            line-height: 1.7;
-            font-family: 'JetBrains Mono', 'Courier New', monospace;
-            color: #E6EDF3;
-            white-space: pre;
-            min-height: 1.7em;
-            padding: 0 1.2rem;
-        }
-        .code-block-body .code-line .line-number {
-            flex-shrink: 0;
-            width: 3.2rem;
-            text-align: right;
-            color: #484F58 !important;
-            user-select: none;
-            padding-right: 0.8rem;
-            border-right: 1px solid rgba(255, 255, 255, 0.06);
-            font-size: 0.85rem;
-            line-height: 1.7;
-            font-family: 'JetBrains Mono', 'Courier New', monospace;
-            margin-right: 1.2rem;
-        }
-        .code-block-body .code-line .hljs {
-            background: transparent !important;
-            padding: 0 !important;
-            font-size: 0.85rem;
-            line-height: 1.7;
-            font-family: 'JetBrains Mono', 'Courier New', monospace;
-            flex: 1;
-            white-space: pre;
-        }
-        .article-detail .detail-content ul,
-        .article-detail .detail-content ol {
-            padding-left: 1.8rem;
-            margin: 0.6rem 0;
-        }
-        .article-detail .detail-content ul li,
-        .article-detail .detail-content ol li {
-            margin-bottom: 0.2rem;
-        }
-        .article-detail .detail-content ul li ul,
-        .article-detail .detail-content ul li ol,
-        .article-detail .detail-content ol li ul,
-        .article-detail .detail-content ol li ol {
-            margin: 0.2rem 0;
-        }
-        .article-detail .detail-content blockquote {
-            border-left: 4px solid #6B5ACF;
-            padding-left: 1.2rem;
-            margin: 0.8rem 0;
-            color: #6A6A92;
-            font-style: italic;
-            transition: border-color 0.3s ease, color 0.3s ease;
-        }
-        body.dark .article-detail .detail-content blockquote {
-            border-left-color: #88ccff;
-            color: #A8A4C8;
-        }
-        .article-detail .detail-content hr {
-            border: none;
-            border-top: 2px solid rgba(0, 0, 0, 0.08);
-            margin: 1.5rem 0;
-            transition: border-color 0.3s ease;
-        }
-        body.dark .article-detail .detail-content hr {
-            border-top-color: rgba(255, 255, 255, 0.08);
-        }
-        .article-detail .detail-content dl {
-            margin: 0.6rem 0;
-        }
-        .article-detail .detail-content dl dt {
-            font-weight: 600;
-            color: #3D2D8A;
-            margin-top: 0.4rem;
-            transition: color 0.3s ease;
-        }
-        body.dark .article-detail .detail-content dl dt {
-            color: #C8C0F0;
-        }
-        .article-detail .detail-content dl dd {
-            margin-left: 1.8rem;
-            padding-left: 0.6rem;
-            border-left: 2px solid rgba(107, 90, 207, 0.2);
-            color: #4A4A6E;
-            transition: color 0.3s ease, border-color 0.3s ease;
-        }
-        body.dark .article-detail .detail-content dl dd {
-            color: #A8A4C8;
-            border-left-color: rgba(136, 204, 255, 0.2);
-        }
-        .not-found {
-            text-align: center;
-            padding: 4rem 1rem;
-            color: #8A8AB5;
-            transition: color 0.3s ease;
-        }
-        body.dark .not-found {
-            color: #8A8AB5;
-        }
-        .not-found i {
-            font-size: 3rem;
-            display: block;
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-        .loading {
-            text-align: center;
-            padding: 4rem 1rem;
-            color: #8A8AB5;
-            transition: color 0.3s ease;
-        }
-        body.dark .loading {
-            color: #8A8AB5;
-        }
-        .loading i {
-            font-size: 2rem;
-            display: block;
-            margin-bottom: 1rem;
-        }
+
         .lightbox-overlay {
             position: fixed;
             top: 0;
@@ -905,6 +732,10 @@
             cursor: default;
             touch-action: none;
             overflow: visible;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         .lightbox-overlay.active .lightbox-container {
             transform: scale(1) translateY(0);
@@ -919,13 +750,28 @@
             touch-action: none;
             cursor: grab;
             overflow: visible;
+            position: relative;
+            min-height: 100px;
         }
         .lightbox-overlay .lightbox-container .lightbox-img-wrapper:active {
             cursor: grabbing;
         }
-        .lightbox-overlay .lightbox-container img {
+        .lightbox-overlay .lightbox-container .lightbox-img-wrapper .lb-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 2.4rem;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .lightbox-overlay .lightbox-container .lightbox-img-wrapper .lb-loading i {
+            display: block;
+        }
+        .lightbox-overlay .lightbox-container .lightbox-img-wrapper img {
             max-width: 100%;
-            max-height: 80vh;
+            max-height: 75vh;
             border-radius: 0 !important;
             display: block;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
@@ -934,7 +780,15 @@
             touch-action: none;
             transform-origin: center center;
             will-change: transform;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            position: relative;
+            z-index: 2;
         }
+        .lightbox-overlay .lightbox-container .lightbox-img-wrapper img.loaded {
+            opacity: 1;
+        }
+
         .lightbox-overlay .lightbox-close {
             position: fixed;
             top: 20px;
@@ -960,6 +814,108 @@
         .lightbox-overlay .lightbox-close:focus {
             outline: none !important;
         }
+
+        /* ===== 灯箱导航按钮（纯图标，无毛玻璃） ===== */
+        .lightbox-overlay .lightbox-nav {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 3rem;
+            cursor: pointer;
+            transition: 0.2s ease;
+            z-index: 10001;
+            background: none;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            padding: 0.5rem 1rem;
+            line-height: 1;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            border-radius: 0;
+        }
+        .lightbox-overlay .lightbox-nav:hover:not(:disabled) {
+            opacity: 1;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .lightbox-overlay .lightbox-nav:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+        }
+        .lightbox-overlay .lightbox-nav.prev {
+            left: 8px;
+        }
+        .lightbox-overlay .lightbox-nav.next {
+            right: 8px;
+        }
+
+        /* ===== 播放按钮（左上角，纯图标，无毛玻璃） ===== */
+        .lightbox-overlay .lightbox-play {
+            position: fixed;
+            top: 24px;
+            left: 28px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: 0.2s ease;
+            z-index: 10001;
+            background: none;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            padding: 0.3rem;
+            line-height: 1;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .lightbox-overlay .lightbox-play:hover:not(:disabled) {
+            opacity: 1;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .lightbox-overlay .lightbox-play:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+        }
+
+        /* ===== 灯箱底部信息 ===== */
+        .lightbox-overlay .lightbox-footer {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10001;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            pointer-events: none;
+        }
+        .lightbox-overlay .lightbox-counter {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.3rem 1.2rem;
+            border-radius: 40px;
+            backdrop-filter: blur(4px);
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            font-family: 'Inter', sans-serif;
+        }
+        .lightbox-overlay .lightbox-alt {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.75rem;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+            font-family: 'Inter', sans-serif;
+            text-align: center;
+            max-width: 80vw;
+            padding: 0.2rem 0.8rem;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+        .lightbox-overlay .lightbox-alt.visible {
+            display: block;
+        }
+
         @media (max-width: 560px) {
             .container {
                 padding: 2rem 1.2rem 1.5rem;
@@ -1022,6 +978,21 @@
                 right: 18px;
                 font-size: 2rem;
             }
+            .lightbox-overlay .lightbox-nav {
+                font-size: 2.2rem;
+                padding: 0.3rem 0.6rem;
+            }
+            .lightbox-overlay .lightbox-nav.prev {
+                left: 4px;
+            }
+            .lightbox-overlay .lightbox-nav.next {
+                right: 4px;
+            }
+            .lightbox-overlay .lightbox-play {
+                top: 18px;
+                left: 20px;
+                font-size: 1.4rem;
+            }
             .article-detail .detail-content table {
                 font-size: 0.75rem;
             }
@@ -1029,7 +1000,18 @@
             .article-detail .detail-content td {
                 padding: 0.3rem 0.4rem;
             }
+            .img-placeholder {
+                min-height: 60px;
+                border-radius: 8px;
+            }
+            .img-placeholder .img-loading {
+                font-size: 1.4rem;
+            }
+            .img-placeholder img {
+                border-radius: 8px;
+            }
         }
+
         .share-modal-overlay {
             position: fixed;
             top: 0;
@@ -1331,6 +1313,9 @@
     <div id="qrTemp"></div>
 
     <script>
+        // ============================================================
+        // 工具函数
+        // ============================================================
         function getParam(name) {
             const url = new URL(window.location.href);
             return url.searchParams.get(name);
@@ -1373,12 +1358,17 @@
             }, 2000);
         }
 
+        // ============================================================
+        // 阅读进度
+        // ============================================================
         const progressWrap = document.getElementById('readingProgress');
         const progressBar = document.getElementById('progressBar');
         let lastProgress = 0;
         let hideTimer = null;
+        let isProgressLocked = false; // 灯箱打开时锁定进度条
 
         function updateReadingProgress() {
+            if (isProgressLocked) return;
             const articleDetail = document.querySelector('.article-detail');
             if (!articleDetail) {
                 progressBar.style.width = '0%';
@@ -1431,6 +1421,9 @@
         window.addEventListener('resize', updateReadingProgress);
         window.addEventListener('load', updateReadingProgress);
 
+        // ============================================================
+        // 主题切换
+        // ============================================================
         const themeToggle = document.getElementById('themeToggle');
         const themeIcon = document.getElementById('themeIcon');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1447,6 +1440,9 @@
             setTheme(currentTheme === 'dark' ? 'light' : 'dark');
         });
 
+        // ============================================================
+        // 回到顶部
+        // ============================================================
         const backToTopBtn = document.getElementById('backToTopBtn');
         let isScrollingToTop = false;
 
@@ -1492,6 +1488,9 @@
             fastScrollToTop();
         });
 
+        // ============================================================
+        // 返回按钮
+        // ============================================================
         const backBtn = document.getElementById('backButton');
         const from = getParam('from');
         const page = getParam('page');
@@ -1505,6 +1504,9 @@
         }
         backBtn.href = returnUrl;
 
+        // ============================================================
+        // 文章渲染
+        // ============================================================
         const appContent = document.getElementById('appContent');
         let currentArticle = null;
         let currentShareText = '';
@@ -1544,6 +1546,9 @@
             return truncated + '…';
         }
 
+        // ============================================================
+        // Markdown 渲染（含图片占位 + alt 文字）
+        // ============================================================
         function renderMarkdown(md) {
             if (!md) return '';
 
@@ -1584,13 +1589,26 @@
                 html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                 html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
                 html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
+
+                // 图片渲染（带占位 + alt 文字）
                 html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, alt, src, w, h) {
                     let style = '';
                     if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
                     else if (w) style = ' style="width:' + w + 'px; height:auto;"';
                     else if (h) style = ' style="height:' + h + 'px; width:auto;"';
-                    return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + ' />';
+
+                    const altText = alt ? escapeHtml(alt) : '';
+                    const altHtml = altText ? '<span class="img-alt-text">' + altText + '</span>' : '';
+
+                    return '<span class="img-wrapper">' +
+                        '<div class="img-placeholder" style="' + style + '">' +
+                        '<img src="' + src + '" alt="' + altText + '" loading="lazy" data-alt="' + altText + '" />' +
+                        '<span class="img-loading"><i class="fas fa-spinner fa-spin"></i></span>' +
+                        '</div>' +
+                        altHtml +
+                        '</span>';
                 });
+
                 html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
                 html = html.replace(/\[\^([^\]]+)\]/g, function(match, key) {
                     if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
@@ -1964,134 +1982,409 @@
             return result;
         }
 
-        function renderArticle() {
-            const id = getParam('id');
-            if (id === null) {
-                appContent.innerHTML = `
-                        <div class="not-found">
-                            <i class="far fa-frown"></i>
-                            <p>缺少文章 ID</p>
-                            <p style="font-size:0.85rem; margin-top:0.5rem;">请从文章列表点击进入</p>
-                        </div>
-                    `;
+        // ============================================================
+        // 图片懒加载（文章内）
+        // ============================================================
+        function initImageLazyLoad() {
+            const placeholders = document.querySelectorAll('.img-placeholder');
+            placeholders.forEach(function(placeholder) {
+                const img = placeholder.querySelector('img');
+                if (!img) return;
+
+                if (img.complete && img.naturalWidth !== 0) {
+                    img.classList.add('loaded');
+                    placeholder.querySelector('.img-loading')?.remove();
+                    return;
+                }
+
+                img.addEventListener('load', function() {
+                    img.classList.add('loaded');
+                    const loading = placeholder.querySelector('.img-loading');
+                    if (loading) loading.style.opacity = '0';
+                    setTimeout(function() {
+                        if (loading) loading.remove();
+                    }, 400);
+                });
+
+                img.addEventListener('error', function() {
+                    const loading = placeholder.querySelector('.img-loading');
+                    if (loading) loading.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+                });
+            });
+        }
+
+        // ============================================================
+        // Lightbox
+        // ============================================================
+        let lightboxImages = [];
+        let currentLbIndex = 0;
+        let lbScale = 1;
+        let lbTranslateX = 0;
+        let lbTranslateY = 0;
+        let isPlaying = false;
+        let playTimer = null;
+        let lbProgressInterval = null;
+
+        function openLightbox(index) {
+            const images = document.querySelectorAll('.detail-content img');
+            if (images.length === 0) return;
+
+            // 收集图片信息
+            lightboxImages = [];
+            images.forEach(function(img) {
+                const alt = img.getAttribute('alt') || '';
+                lightboxImages.push({
+                    src: img.src,
+                    alt: alt
+                });
+            });
+
+            currentLbIndex = Math.min(Math.max(index, 0), lightboxImages.length - 1);
+
+            const existing = document.querySelector('.lightbox-overlay');
+            if (existing) {
+                closeLightbox();
+                setTimeout(function() { openLightbox(index); }, 350);
                 return;
             }
 
-            fetch('wenzhang.json', { cache: 'no-cache' })
-                .then(response => {
-                    if (!response.ok) throw new Error('文件不存在');
-                    return response.json();
-                })
-                .then(data => {
-                    const articles = data.announcements || [];
-                    const idx = parseInt(id);
-                    if (isNaN(idx) || idx < 0 || idx >= articles.length) {
-                        appContent.innerHTML = `
-                                <div class="not-found">
-                                    <i class="far fa-frown"></i>
-                                    <p>文章不存在</p>
-                                    <p style="font-size:0.85rem; margin-top:0.5rem;">可能已被删除</p>
-                                </div>
-                            `;
-                        return;
-                    }
-
-                    currentArticle = articles[idx];
-                    const title = currentArticle.title || '无标题';
-                    const date = currentArticle.date || '';
-                    const content = currentArticle.content || '（暂无内容）';
-                    const renderedContent = renderMarkdown(content);
-                    const wordCount = countWords(content);
-                    const readTime = calculateReadTime(wordCount);
-
-                    const preview = getPlainPreview(content, 80);
-                    const articleUrl = window.location.origin + window.location.pathname + '?id=' + idx;
-                    currentShareText = title + '：' + preview + '\n查看完整内容？请访问：' + articleUrl;
-
-                    appContent.innerHTML = `
-                            <div class="article-detail">
-                                <h1 class="detail-title">${escapeHtml(title)}</h1>
-                                <span class="detail-date">${date ? escapeHtml(date) + '  ·  ' : ''}预计阅读 ${readTime} 分钟 · ${wordCount} 字</span>
-                                <hr class="detail-divider">
-                                <div class="detail-content">${renderedContent}</div>
-                            </div>
-                        `;
-
-                    document.querySelectorAll('.code-line .hljs').forEach(el => {
-                        try {
-                            hljs.highlightElement(el);
-                        } catch (e) {
-                            console.warn('高亮失败:', e);
-                        }
-                    });
-
-                    const images = document.querySelectorAll('.detail-content img');
-                    images.forEach(img => {
-                        img.style.cursor = 'pointer';
-                        img.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            openLightbox(this.src, this.alt || '');
-                        });
-                    });
-
-                    setTimeout(updateReadingProgress, 100);
-                    generateShareImage();
-                })
-                .catch(() => {
-                    appContent.innerHTML = `
-                            <div class="not-found">
-                                <i class="far fa-frown"></i>
-                                <p>加载文章数据失败</p>
-                                <p style="font-size:0.85rem; margin-top:0.5rem;">请稍后再试或刷新网页。</p>
-                            </div>
-                        `;
-                });
-        }
-
-        function openLightbox(src, alt) {
-            const existing = document.querySelector('.lightbox-overlay');
-            if (existing) existing.remove();
-
             const overlay = document.createElement('div');
             overlay.className = 'lightbox-overlay';
+            overlay.id = 'lbOverlay';
             overlay.innerHTML = `
+                    <button class="lightbox-close" id="lbClose">&times;</button>
+                    <button class="lightbox-play" id="lbPlay"><i class="fas fa-play"></i></button>
+                    <button class="lightbox-nav prev" id="lbPrev"><i class="fas fa-chevron-left"></i></button>
+                    <button class="lightbox-nav next" id="lbNext"><i class="fas fa-chevron-right"></i></button>
                     <div class="lightbox-container">
-                        <div class="lightbox-img-wrapper">
-                            <img src="${src}" alt="${escapeHtml(alt)}" />
+                        <div class="lightbox-img-wrapper" id="lbWrapper">
+                            <div class="lb-loading"><i class="fas fa-spinner fa-spin"></i></div>
+                            <img id="lbImg" src="" alt="" />
                         </div>
                     </div>
-                    <button class="lightbox-close">&times;</button>
+                    <div class="lightbox-footer">
+                        <div class="lightbox-counter" id="lbCounter">1 / 1</div>
+                        <div class="lightbox-alt" id="lbAlt"></div>
+                    </div>
                 `;
             document.body.appendChild(overlay);
             document.body.style.overflow = 'hidden';
 
-            requestAnimationFrame(() => overlay.classList.add('active'));
+            // 锁定阅读进度条（切换为轮播进度）
+            isProgressLocked = true;
+            progressWrap.style.display = 'block';
+            progressWrap.style.opacity = '1';
 
-            const imgWrapper = overlay.querySelector('.lightbox-img-wrapper');
-            const img = overlay.querySelector('img');
-            let scale = 1;
-            let translateX = 0;
-            let translateY = 0;
+            requestAnimationFrame(function() {
+                overlay.classList.add('active');
+            });
 
-            function updateTransform(animate) {
-                animate = animate || false;
-                img.style.transition = animate ? 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none';
-                img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
+            // 绑定事件
+            document.getElementById('lbClose').addEventListener('click', closeLightbox);
+            document.getElementById('lbPrev').addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (this.disabled) return;
+                navigateLightbox(-1);
+            });
+            document.getElementById('lbNext').addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (this.disabled) return;
+                navigateLightbox(1);
+            });
+            document.getElementById('lbPlay').addEventListener('click', function(e) {
+                e.stopPropagation();
+                togglePlay();
+            });
+
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) closeLightbox();
+            });
+
+            document.addEventListener('keydown', lbKeyHandler);
+
+            // 触摸/鼠标拖拽缩放（复用之前的逻辑）
+            setupLbDrag();
+
+            // 加载第一张图
+            loadLbImage(currentLbIndex);
+            updateLbUI();
+
+            // 如果只有一张图，禁用播放按钮
+            if (lightboxImages.length <= 1) {
+                document.getElementById('lbPlay').disabled = true;
             }
 
-            img.addEventListener('wheel', function(e) {
+            // 点击左右箭头区域也可以触发切换（针对小屏幕）
+        }
+
+        function loadLbImage(index) {
+            const img = document.getElementById('lbImg');
+            const wrapper = document.getElementById('lbWrapper');
+            const loading = wrapper.querySelector('.lb-loading');
+            if (!img) return;
+
+            const data = lightboxImages[index];
+            if (!data) return;
+
+            // 重置缩放
+            lbScale = 1;
+            lbTranslateX = 0;
+            lbTranslateY = 0;
+            updateLbTransform(false);
+
+            // 显示加载状态
+            img.style.opacity = '0';
+            if (loading) loading.style.display = 'block';
+
+            // 加载图片
+            const tempImg = new Image();
+            tempImg.onload = function() {
+                img.src = data.src;
+                img.alt = data.alt || '';
+                img.onload = function() {
+                    img.classList.add('loaded');
+                    img.style.opacity = '1';
+                    if (loading) loading.style.display = 'none';
+                };
+                // 如果已经加载完成
+                if (img.complete) {
+                    img.classList.add('loaded');
+                    img.style.opacity = '1';
+                    if (loading) loading.style.display = 'none';
+                }
+            };
+            tempImg.onerror = function() {
+                if (loading) {
+                    loading.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+                    loading.style.display = 'block';
+                }
+            };
+            tempImg.src = data.src;
+
+            // 更新 alt 文字
+            const altEl = document.getElementById('lbAlt');
+            if (altEl) {
+                if (data.alt && data.alt.trim()) {
+                    altEl.textContent = data.alt;
+                    altEl.classList.add('visible');
+                } else {
+                    altEl.textContent = '';
+                    altEl.classList.remove('visible');
+                }
+            }
+
+            // 更新计数器
+            updateLbCounter();
+
+            // 更新按钮状态
+            updateLbButtons();
+        }
+
+        function updateLbCounter() {
+            const counter = document.getElementById('lbCounter');
+            if (counter) {
+                counter.textContent = (currentLbIndex + 1) + ' / ' + lightboxImages.length;
+            }
+        }
+
+        function updateLbButtons() {
+            const prevBtn = document.getElementById('lbPrev');
+            const nextBtn = document.getElementById('lbNext');
+            const playBtn = document.getElementById('lbPlay');
+
+            if (lightboxImages.length <= 1) {
+                if (prevBtn) prevBtn.disabled = true;
+                if (nextBtn) nextBtn.disabled = true;
+                if (playBtn) playBtn.disabled = true;
+                return;
+            }
+
+            // 播放时禁用左右按钮
+            if (isPlaying) {
+                if (prevBtn) prevBtn.disabled = true;
+                if (nextBtn) nextBtn.disabled = true;
+            } else {
+                if (prevBtn) prevBtn.disabled = false;
+                if (nextBtn) nextBtn.disabled = false;
+                // 最后一张时禁用 next，第一张时禁用 prev
+                if (currentLbIndex === 0) prevBtn.disabled = true;
+                if (currentLbIndex === lightboxImages.length - 1) nextBtn.disabled = true;
+            }
+
+            // 播放按钮：只有一张图或播放到最后一张停止后灰色
+            if (lightboxImages.length <= 1 || (isPlaying && currentLbIndex === lightboxImages.length - 1)) {
+                if (playBtn) playBtn.disabled = true;
+            } else {
+                if (playBtn) playBtn.disabled = false;
+            }
+        }
+
+        function updateLbUI() {
+            updateLbCounter();
+            updateLbButtons();
+        }
+
+        function navigateLightbox(direction) {
+            if (isPlaying) return;
+            const newIndex = currentLbIndex + direction;
+            if (newIndex < 0 || newIndex >= lightboxImages.length) return;
+            currentLbIndex = newIndex;
+            loadLbImage(currentLbIndex);
+            updateLbUI();
+            // 停止播放进度
+            stopPlayProgress();
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                pausePlay();
+            } else {
+                startPlay();
+            }
+        }
+
+        function startPlay() {
+            if (lightboxImages.length <= 1) return;
+            if (currentLbIndex === lightboxImages.length - 1) return;
+            isPlaying = true;
+            const playBtn = document.getElementById('lbPlay');
+            if (playBtn) playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            updateLbButtons();
+            startPlayProgress();
+        }
+
+        function pausePlay() {
+            isPlaying = false;
+            const playBtn = document.getElementById('lbPlay');
+            if (playBtn) playBtn.innerHTML = '<i class="fas fa-play"></i>';
+            stopPlayProgress();
+            updateLbButtons();
+        }
+
+        function startPlayProgress() {
+            stopPlayProgress();
+            let progress = 0;
+            const duration = 2000; // 2秒
+            const startTime = Date.now();
+
+            // 重置进度条到0
+            progressBar.style.width = '0%';
+            progressBar.style.transition = 'none';
+            progressWrap.style.display = 'block';
+            progressWrap.style.opacity = '1';
+
+            // 先重置再开始
+            requestAnimationFrame(function() {
+                progressBar.style.transition = 'width 0.05s linear';
+            });
+
+            lbProgressInterval = setInterval(function() {
+                if (!isPlaying) {
+                    stopPlayProgress();
+                    return;
+                }
+                const elapsed = Date.now() - startTime;
+                progress = Math.min((elapsed / duration) * 100, 100);
+                progressBar.style.width = progress + '%';
+
+                if (progress >= 100) {
+                    // 切换到下一张
+                    const nextIdx = currentLbIndex + 1;
+                    if (nextIdx < lightboxImages.length) {
+                        currentLbIndex = nextIdx;
+                        loadLbImage(currentLbIndex);
+                        updateLbUI();
+                        // 重置计时器
+                        stopPlayProgress();
+                        // 检查是否到了最后一张
+                        if (currentLbIndex === lightboxImages.length - 1) {
+                            pausePlay();
+                            // 播放到最后一张，按钮变灰
+                            const playBtn = document.getElementById('lbPlay');
+                            if (playBtn) {
+                                playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                                playBtn.disabled = true;
+                            }
+                            isPlaying = false;
+                            updateLbButtons();
+                            // 进度条显示100%
+                            progressBar.style.width = '100%';
+                        } else {
+                            startPlayProgress();
+                        }
+                    } else {
+                        pausePlay();
+                        const playBtn = document.getElementById('lbPlay');
+                        if (playBtn) {
+                            playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                            playBtn.disabled = true;
+                        }
+                        isPlaying = false;
+                        updateLbButtons();
+                        progressBar.style.width = '100%';
+                    }
+                }
+            }, 50);
+        }
+
+        function stopPlayProgress() {
+            if (lbProgressInterval) {
+                clearInterval(lbProgressInterval);
+                lbProgressInterval = null;
+            }
+            // 如果灯箱关闭了，恢复阅读进度
+            if (!document.getElementById('lbOverlay')) {
+                isProgressLocked = false;
+                updateReadingProgress();
+            }
+        }
+
+        function closeLightbox() {
+            const overlay = document.getElementById('lbOverlay');
+            if (!overlay) return;
+
+            // 停止播放
+            if (isPlaying) {
+                pausePlay();
+            }
+            stopPlayProgress();
+            isPlaying = false;
+
+            // 恢复进度条
+            isProgressLocked = false;
+            overlay.classList.remove('active');
+            document.removeEventListener('keydown', lbKeyHandler);
+
+            setTimeout(function() {
+                if (overlay.parentNode) overlay.remove();
+                document.body.style.overflow = '';
+                updateReadingProgress();
+            }, 350);
+        }
+
+        function lbKeyHandler(e) {
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') {
                 e.preventDefault();
-                const delta = e.deltaY > 0 ? -0.1 : 0.1;
-                const newScale = Math.min(Math.max(0.5, scale + delta), 5);
-                const rect = img.getBoundingClientRect();
-                const ratioX = (e.clientX - rect.left) / rect.width;
-                const ratioY = (e.clientY - rect.top) / rect.height;
-                const oldScale = scale;
-                scale = newScale;
-                translateX += (1 - newScale / oldScale) * (rect.width / 2 - rect.width * ratioX);
-                translateY += (1 - newScale / oldScale) * (rect.height / 2 - rect.height * ratioY);
-                updateTransform(false);
-            }, { passive: false });
+                if (!isPlaying) navigateLightbox(-1);
+            }
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                if (!isPlaying) navigateLightbox(1);
+            }
+            if (e.key === ' ') {
+                e.preventDefault();
+                togglePlay();
+            }
+        }
+
+        // ============================================================
+        // Lightbox 拖拽缩放
+        // ============================================================
+        function setupLbDrag() {
+            const wrapper = document.getElementById('lbWrapper');
+            const img = document.getElementById('lbImg');
+            if (!wrapper || !img) return;
 
             let touchStartDist = 0;
             let touchStartScale = 1;
@@ -2100,74 +2393,74 @@
             let touchLastX = 0;
             let touchLastY = 0;
             let isDragging = false;
-
-            imgWrapper.addEventListener('touchstart', function(e) {
-                if (e.touches.length === 2) {
-                    const t = e.touches;
-                    touchStartDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
-                    touchStartScale = scale;
-                } else if (e.touches.length === 1) {
-                    isDragging = true;
-                    touchStartX = e.touches[0].clientX;
-                    touchStartY = e.touches[0].clientY;
-                    touchLastX = translateX;
-                    touchLastY = translateY;
-                    imgWrapper.style.cursor = 'grabbing';
-                }
-            }, { passive: true });
-
-            imgWrapper.addEventListener('touchmove', function(e) {
-                if (e.touches.length === 2) {
-                    const t = e.touches;
-                    const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
-                    scale = Math.min(Math.max(0.5, touchStartScale * (dist / touchStartDist)), 5);
-                    updateTransform(false);
-                } else if (e.touches.length === 1 && isDragging) {
-                    const dx = e.touches[0].clientX - touchStartX;
-                    const dy = e.touches[0].clientY - touchStartY;
-                    translateX = touchLastX + dx;
-                    translateY = touchLastY + dy;
-                    updateTransform(false);
-                }
-            }, { passive: true });
-
-            imgWrapper.addEventListener('touchend', function(e) {
-                isDragging = false;
-                imgWrapper.style.cursor = 'grab';
-                if (scale < 0.6) {
-                    scale = 0.6;
-                    translateX = 0;
-                    translateY = 0;
-                    updateTransform(true);
-                } else if (scale < 1) {
-                    scale = 1;
-                    translateX = 0;
-                    translateY = 0;
-                    updateTransform(true);
-                } else if (scale > 3) {
-                    scale = 3;
-                    updateTransform(true);
-                }
-                if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) {
-                    translateX = 0;
-                    translateY = 0;
-                    updateTransform(true);
-                }
-            }, { passive: true });
-
             let mouseDown = false;
             let mouseStartX = 0;
             let mouseStartY = 0;
             let mouseLastX = 0;
             let mouseLastY = 0;
 
-            imgWrapper.addEventListener('mousedown', function(e) {
+            function updateTransform(animate) {
+                img.style.transition = animate ? 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none';
+                img.style.transform = 'scale(' + lbScale + ') translate(' + lbTranslateX + 'px, ' + lbTranslateY + 'px)';
+            }
+
+            img.addEventListener('wheel', function(e) {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                const newScale = Math.min(Math.max(0.5, lbScale + delta), 5);
+                const rect = img.getBoundingClientRect();
+                const ratioX = (e.clientX - rect.left) / rect.width;
+                const ratioY = (e.clientY - rect.top) / rect.height;
+                const oldScale = lbScale;
+                lbScale = newScale;
+                lbTranslateX += (1 - newScale / oldScale) * (rect.width / 2 - rect.width * ratioX);
+                lbTranslateY += (1 - newScale / oldScale) * (rect.height / 2 - rect.height * ratioY);
+                updateTransform(false);
+            }, { passive: false });
+
+            wrapper.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 2) {
+                    const t = e.touches;
+                    touchStartDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+                    touchStartScale = lbScale;
+                } else if (e.touches.length === 1) {
+                    isDragging = true;
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    touchLastX = lbTranslateX;
+                    touchLastY = lbTranslateY;
+                    wrapper.style.cursor = 'grabbing';
+                }
+            }, { passive: true });
+
+            wrapper.addEventListener('touchmove', function(e) {
+                if (e.touches.length === 2) {
+                    const t = e.touches;
+                    const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+                    lbScale = Math.min(Math.max(0.5, touchStartScale * (dist / touchStartDist)), 5);
+                    updateTransform(false);
+                } else if (e.touches.length === 1 && isDragging) {
+                    const dx = e.touches[0].clientX - touchStartX;
+                    const dy = e.touches[0].clientY - touchStartY;
+                    lbTranslateX = touchLastX + dx;
+                    lbTranslateY = touchLastY + dy;
+                    updateTransform(false);
+                }
+            }, { passive: true });
+
+            wrapper.addEventListener('touchend', function() {
+                isDragging = false;
+                wrapper.style.cursor = 'grab';
+                snapTransform();
+            }, { passive: true });
+
+            wrapper.addEventListener('mousedown', function(e) {
                 mouseDown = true;
                 mouseStartX = e.clientX;
                 mouseStartY = e.clientY;
-                mouseLastX = translateX;
-                mouseLastY = translateY;
-                imgWrapper.style.cursor = 'grabbing';
+                mouseLastX = lbTranslateX;
+                mouseLastY = lbTranslateY;
+                wrapper.style.cursor = 'grabbing';
                 e.preventDefault();
             });
 
@@ -2175,8 +2468,8 @@
                 if (mouseDown) {
                     const dx = e.clientX - mouseStartX;
                     const dy = e.clientY - mouseStartY;
-                    translateX = mouseLastX + dx;
-                    translateY = mouseLastY + dy;
+                    lbTranslateX = mouseLastX + dx;
+                    lbTranslateY = mouseLastY + dy;
                     updateTransform(false);
                 }
             });
@@ -2184,57 +2477,37 @@
             document.addEventListener('mouseup', function() {
                 if (mouseDown) {
                     mouseDown = false;
-                    imgWrapper.style.cursor = 'grab';
-                    if (scale < 0.6) {
-                        scale = 0.6;
-                        translateX = 0;
-                        translateY = 0;
-                        updateTransform(true);
-                    } else if (scale < 1) {
-                        scale = 1;
-                        translateX = 0;
-                        translateY = 0;
-                        updateTransform(true);
-                    } else if (scale > 3) {
-                        scale = 3;
-                        updateTransform(true);
-                    }
-                    if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) {
-                        translateX = 0;
-                        translateY = 0;
-                        updateTransform(true);
-                    }
+                    wrapper.style.cursor = 'grab';
+                    snapTransform();
                 }
             });
 
-            function closeLightbox() {
-                scale = 1;
-                translateX = 0;
-                translateY = 0;
-                overlay.classList.remove('active');
-                setTimeout(() => {
-                    if (overlay.parentNode) overlay.remove();
-                    document.body.style.overflow = '';
-                    document.removeEventListener('keydown', escHandler);
-                }, 350);
+            function snapTransform() {
+                if (lbScale < 0.6) {
+                    lbScale = 0.6;
+                    lbTranslateX = 0;
+                    lbTranslateY = 0;
+                    updateTransform(true);
+                } else if (lbScale < 1) {
+                    lbScale = 1;
+                    lbTranslateX = 0;
+                    lbTranslateY = 0;
+                    updateTransform(true);
+                } else if (lbScale > 3) {
+                    lbScale = 3;
+                    updateTransform(true);
+                }
+                if (Math.abs(lbTranslateX) > 300 || Math.abs(lbTranslateY) > 300) {
+                    lbTranslateX = 0;
+                    lbTranslateY = 0;
+                    updateTransform(true);
+                }
             }
-
-            function escHandler(e) {
-                if (e.key === 'Escape') closeLightbox();
-            }
-
-            overlay.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
-            overlay.addEventListener('click', function(e) {
-                if (e.target === this) closeLightbox();
-            });
-            document.addEventListener('keydown', escHandler);
-
-            scale = 1;
-            translateX = 0;
-            translateY = 0;
-            updateTransform(false);
         }
 
+        // ============================================================
+        // 分享功能
+        // ============================================================
         const qrTemp = document.getElementById('qrTemp');
         const shareModal = document.getElementById('shareModal');
         const sharePreviewImg = document.getElementById('sharePreviewImg');
@@ -2417,6 +2690,9 @@
             sharePreviewImg.src = currentShareImageDataUrl;
         }
 
+        // ============================================================
+        // 事件绑定
+        // ============================================================
         document.addEventListener('click', function(e) {
             const copyBtn = e.target.closest('.copy-btn');
             if (copyBtn) {
@@ -2424,7 +2700,7 @@
                 if (!targetId) return;
                 const wrapper = document.getElementById('cbw-' + targetId);
                 if (!wrapper) return;
-                
+
                 const codeLines = wrapper.querySelectorAll('.code-line');
                 let text = '';
                 codeLines.forEach(line => {
@@ -2560,6 +2836,9 @@
             showToast('已保存', 'fa-check-circle');
         });
 
+        // ============================================================
+        // Waline 评论
+        // ============================================================
         function initWaline() {
             const commentEl = document.getElementById('waline-comments');
             if (!commentEl) return;
@@ -2577,6 +2856,99 @@
                 })
                 .catch((err) => {
                     console.error('Waline 加载失败:', err);
+                });
+        }
+
+        // ============================================================
+        // 文章渲染入口
+        // ============================================================
+        function renderArticle() {
+            const id = getParam('id');
+            if (id === null) {
+                appContent.innerHTML = `
+                        <div class="not-found">
+                            <i class="far fa-frown"></i>
+                            <p>缺少文章 ID</p>
+                            <p style="font-size:0.85rem; margin-top:0.5rem;">请从文章列表点击进入</p>
+                        </div>
+                    `;
+                return;
+            }
+
+            fetch('wenzhang.json', { cache: 'no-cache' })
+                .then(response => {
+                    if (!response.ok) throw new Error('文件不存在');
+                    return response.json();
+                })
+                .then(data => {
+                    const articles = data.announcements || [];
+                    const idx = parseInt(id);
+                    if (isNaN(idx) || idx < 0 || idx >= articles.length) {
+                        appContent.innerHTML = `
+                                <div class="not-found">
+                                    <i class="far fa-frown"></i>
+                                    <p>文章不存在</p>
+                                    <p style="font-size:0.85rem; margin-top:0.5rem;">可能已被删除</p>
+                                </div>
+                            `;
+                        return;
+                    }
+
+                    currentArticle = articles[idx];
+                    document.title = (currentArticle.title || '文章详情') + ' · ks';
+
+                    const title = currentArticle.title || '无标题';
+                    const date = currentArticle.date || '';
+                    const content = currentArticle.content || '（暂无内容）';
+                    const renderedContent = renderMarkdown(content);
+                    const wordCount = countWords(content);
+                    const readTime = calculateReadTime(wordCount);
+
+                    const preview = getPlainPreview(content, 80);
+                    const articleUrl = window.location.origin + window.location.pathname + '?id=' + idx;
+                    currentShareText = title + '：' + preview + '\n查看完整内容？请访问：' + articleUrl;
+
+                    appContent.innerHTML = `
+                            <div class="article-detail">
+                                <h1 class="detail-title">${escapeHtml(title)}</h1>
+                                <span class="detail-date">${date ? escapeHtml(date) + '  ·  ' : ''}预计阅读 ${readTime} 分钟 · ${wordCount} 字</span>
+                                <hr class="detail-divider">
+                                <div class="detail-content">${renderedContent}</div>
+                            </div>
+                        `;
+
+                    document.querySelectorAll('.code-line .hljs').forEach(el => {
+                        try {
+                            hljs.highlightElement(el);
+                        } catch (e) {
+                            console.warn('高亮失败:', e);
+                        }
+                    });
+
+                    // 初始化图片懒加载
+                    initImageLazyLoad();
+
+                    // 绑定图片点击打开灯箱
+                    const images = document.querySelectorAll('.detail-content img');
+                    images.forEach((img, index) => {
+                        img.style.cursor = 'pointer';
+                        img.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            openLightbox(index);
+                        });
+                    });
+
+                    setTimeout(updateReadingProgress, 100);
+                    generateShareImage();
+                })
+                .catch(() => {
+                    appContent.innerHTML = `
+                            <div class="not-found">
+                                <i class="far fa-frown"></i>
+                                <p>加载文章数据失败</p>
+                                <p style="font-size:0.85rem; margin-top:0.5rem;">请稍后再试或刷新网页。</p>
+                            </div>
+                        `;
                 });
         }
 

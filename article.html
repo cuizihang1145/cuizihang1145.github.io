@@ -599,25 +599,26 @@
             border-radius: 12px;
             overflow: hidden;
             margin: 0.8rem 0;
-            min-height: 80px;
+            min-height: 300px;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: transparent;
         }
         .img-placeholder .img-loading {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 2rem;
-            color: rgba(100, 90, 160, 0.4);
+            font-size: 2.4rem;
+            color: rgba(100, 90, 160, 0.35);
             z-index: 2;
             animation: spin 1s linear infinite;
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
         body.dark .img-placeholder .img-loading {
-            color: rgba(180, 170, 220, 0.4);
+            color: rgba(180, 170, 220, 0.35);
         }
         .img-placeholder.loaded .img-loading {
             opacity: 0;
@@ -635,6 +636,8 @@
             border-radius: 0;
             margin: 0;
             box-shadow: none !important;
+            min-height: 300px;
+            object-fit: contain;
         }
         .img-placeholder img.loaded {
             opacity: 1;
@@ -645,13 +648,15 @@
             font-style: italic;
             font-size: 0.85rem;
             color: #8A8AB5;
-            padding: 0.4rem 0.6rem 0.3rem 0.6rem;
+            padding: 0.5rem 0.6rem 0.4rem 0.6rem;
             border-radius: 0 0 12px 12px;
             background: rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
             transition: color 0.3s ease, background 0.3s ease;
             width: 100%;
+            position: relative;
+            z-index: 3;
         }
         body.dark .img-placeholder .img-alt-text {
             color: #8A8AB5;
@@ -1211,15 +1216,18 @@
             }
             .img-placeholder {
                 border-radius: 8px;
-                min-height: 60px;
+                min-height: 200px;
+            }
+            .img-placeholder img {
+                min-height: 200px;
             }
             .img-placeholder .img-alt-text {
                 font-size: 0.7rem;
-                padding: 0.2rem 0.4rem 0.2rem 0.4rem;
+                padding: 0.3rem 0.4rem 0.2rem 0.4rem;
                 border-radius: 0 0 8px 8px;
             }
             .img-placeholder .img-loading {
-                font-size: 1.4rem;
+                font-size: 1.6rem;
             }
         }
         .share-modal-overlay {

@@ -227,7 +227,6 @@
             color: #ffd866;
         }
 
-        /* ===== 编辑面板 ===== */
         .edit-panel {
             position: fixed;
             bottom: 0;
@@ -585,10 +584,6 @@
             color: #ccc;
             line-height: 1.6;
         }
-        .fun-facts .fact-item .emoji {
-            font-size: 16px;
-            flex-shrink: 0;
-        }
 
         .carnation-meanings {
             text-align: left;
@@ -787,9 +782,9 @@
     </div>
 
     <div id="clickLayer"></div>
-    <div class="footer-note"> 点击屏幕放烟花 </div>
+    <div class="footer-note">点击屏幕放烟花</div>
 
-    <div class="edit-hint" id="editHint"> 点击"分享"打开编辑面板 · 改完生成链接</div>
+    <div class="edit-hint" id="editHint">点击"分享"打开编辑面板 · 改完生成链接</div>
 
     <div class="edit-panel" id="editPanel">
         <div class="panel-title"><i class="fas fa-pen"></i> 自定义祝福内容</div>
@@ -814,48 +809,48 @@
 
         <div class="panel-actions">
             <button class="btn-cancel" id="cancelEditBtn">取消</button>
-            <button class="btn-confirm" id="confirmEditBtn"> 生成分享链接</button>
+            <button class="btn-confirm" id="confirmEditBtn">生成分享链接</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="detailModal">
         <div class="modal-content">
-            <h2>❤️ 母亲节 · 2026</h2>
+            <h2><i class="fas fa-heart" style="color:#ff9a9e;"></i> 母亲节 · 2026</h2>
             
             <div class="calendar-wrapper">
                 <div class="calendar-header">
                     <span class="month-label">2026年5月</span>
                 </div>
                 <div class="calendar" id="calendarGrid"></div>
-                <div class="calendar-label" id="calendarLabel">✨ 5月10日 · 母亲节 ✨</div>
+                <div class="calendar-label" id="calendarLabel"><i class="fas fa-star"></i> 5月10日 · 母亲节 <i class="fas fa-star"></i></div>
             </div>
 
             <div class="intro">
-                <p><strong>🌿 母亲节起源</strong></p>
+                <p><strong><i class="fas fa-leaf"></i> 母亲节起源</strong></p>
                 <p>母亲节最早起源于古希腊，现代母亲节则由安娜·贾维斯于20世纪初在美国倡导设立，旨在感谢母亲的伟大与无私。</p>
-                <p>中国自20世纪80年代开始推广母亲节，每年<b>5月的第二个星期日</b>，人们会以康乃馨、礼物和陪伴，表达对母亲的爱与感激。</p>
-                <p style="text-align:center; margin-top:12px; color:#ffb3c6;">💐 愿所有的妈妈，都被岁月温柔以待 💐</p>
+                <p>中国自20世纪80年代开始推广母亲节，每年<b>5月的第二个星期日</b>作为母亲节，人们会以康乃馨、礼物和陪伴，表达对母亲的爱与感激。</p>
+                <p style="text-align:center; margin-top:12px; color:#ffb3c6;"><i class="fas fa-heart" style="color:#ffb3c6;"></i> 愿所有的妈妈，都被岁月温柔以待 <i class="fas fa-heart" style="color:#ffb3c6;"></i></p>
             </div>
 
             <div class="fun-facts">
-                <h3>🌍 世界各地的母亲节</h3>
-                <div class="fact-item"><span class="emoji">🇳🇴</span><span>挪威：2月第二个星期日</span></div>
-                <div class="fact-item"><span class="emoji">🇬🇧</span><span>英国：四旬斋第四个星期日（"母亲星期日"）</span></div>
-                <div class="fact-item"><span class="emoji">🇫🇷</span><span>法国：5月最后一个星期日（如与圣灵降临节重合则延后）</span></div>
-                <div class="fact-item"><span class="emoji">🇯🇵</span><span>日本：5月第二个星期日（同中国）</span></div>
-                <div class="fact-item"><span class="emoji">🇹🇭</span><span>泰国：8月12日（王后诗丽吉生日）</span></div>
+                <h3><i class="fas fa-globe-americas"></i> 世界各地的母亲节</h3>
+                <div class="fact-item"><span><i class="fas fa-flag" style="color:#e74c3c;"></i></span><span>挪威：2月第二个星期日</span></div>
+                <div class="fact-item"><span><i class="fas fa-flag" style="color:#2c3e50;"></i></span><span>英国：四旬斋第四个星期日（"母亲星期日"）</span></div>
+                <div class="fact-item"><span><i class="fas fa-flag" style="color:#2c3e50;"></i></span><span>法国：5月最后一个星期日</span></div>
+                <div class="fact-item"><span><i class="fas fa-flag" style="color:#e74c3c;"></i></span><span>日本：5月第二个星期日（同中国）</span></div>
+                <div class="fact-item"><span><i class="fas fa-flag" style="color:#8e44ad;"></i></span><span>泰国：8月12日（王后诗丽吉生日）</span></div>
             </div>
 
             <div class="carnation-meanings">
-                <h3>💐 康乃馨的颜色密码</h3>
+                <h3><i class="fas fa-seedling"></i> 康乃馨的颜色密码</h3>
                 <div class="color-row"><span class="color-dot" style="background:#e63946;"></span><span><b>红色：</b>崇敬、热爱、祝母亲健康长寿</span></div>
                 <div class="color-row"><span class="color-dot" style="background:#ffb3c6;"></span><span><b>粉色：</b>感恩、温柔、愿母亲永远年轻美丽</span></div>
-                <div class="color-row"><span class="color-dot" style="background:#fff;"></span><span><b>白色：</b>纯洁的爱、对已故母亲的怀念</span></div>
+                <div class="color-row"><span class="color-dot" style="background:#ffffff;"></span><span><b>白色：</b>纯洁的爱、对已故母亲的怀念</span></div>
                 <div class="color-row"><span class="color-dot" style="background:#ffd166;"></span><span><b>黄色：</b>感谢陪伴、象征温暖的母爱</span></div>
             </div>
 
             <div class="poem-section">
-                <div class="poem-title">📜 献给母亲的诗</div>
+                <div class="poem-title"><i class="fas fa-feather-alt"></i> 献给母亲的诗</div>
                 <div class="poem-text">
                     慈母手中线，游子身上衣。<br>
                     临行密密缝，意恐迟迟归。<br>
@@ -865,7 +860,7 @@
             </div>
 
             <div class="quotes-section">
-                <h3>💬 名人眼中的母亲</h3>
+                <h3><i class="fas fa-quote-left"></i> 名人眼中的母亲</h3>
                 <div class="quote-item"><div class="quote-text">"上帝不能无处不在，因此他创造了母亲。"</div><div class="quote-author">— 犹太谚语</div></div>
                 <div class="quote-item"><div class="quote-text">"母爱是世间最伟大的力量，没有无私的、自我牺牲的母爱的帮助，孩子的心灵将是一片荒漠。"</div><div class="quote-author">— 高尔基</div></div>
                 <div class="quote-item"><div class="quote-text">"我的一切成就，都归功于天使般的母亲。"</div><div class="quote-author">— 林肯</div></div>
@@ -874,11 +869,11 @@
             </div>
 
             <div class="movie-section">
-                <h3>🎬 母亲节观影推荐</h3>
-                <div class="movie-item">🎞️ 《你好，李焕英》 — 「下辈子，还是我当你妈」</div>
-                <div class="movie-item">🎞️ 《关于我妈的一切》 — 平凡母亲的伟大一生</div>
-                <div class="movie-item">🎞️ 《房间》(Room) — 母爱是孩子最坚固的城堡</div>
-                <div class="movie-item">🎞️ 《母亲》(2020) — 长泽雅美演绎的另类母爱</div>
+                <h3><i class="fas fa-film"></i> 母亲节观影推荐</h3>
+                <div class="movie-item"><i class="fas fa-play-circle" style="color:#ff9a9e;"></i> 《你好，李焕英》 — 「下辈子，还是我当你妈」</div>
+                <div class="movie-item"><i class="fas fa-play-circle" style="color:#ff9a9e;"></i> 《关于我妈的一切》 — 平凡母亲的伟大一生</div>
+                <div class="movie-item"><i class="fas fa-play-circle" style="color:#ff9a9e;"></i> 《房间》(Room) — 母爱是孩子最坚固的城堡</div>
+                <div class="movie-item"><i class="fas fa-play-circle" style="color:#ff9a9e;"></i> 《母亲》(2020) — 长泽雅美演绎的另类母爱</div>
             </div>
 
             <div class="signature-area" id="signatureArea">
@@ -892,7 +887,7 @@
 
     <div class="share-modal-overlay" id="shareModal">
         <div class="share-modal-content">
-            <h3>🔗 分享链接已生成</h3>
+            <h3><i class="fas fa-link"></i> 分享链接已生成</h3>
             <p class="share-tip">复制下方链接发送给朋友，TA 打开就能看到你的祝福</p>
             <div class="share-url-box" id="shareUrlBox">加载中...</div>
             <div class="share-btns">
@@ -1032,7 +1027,7 @@
                     if (d === md) div.classList.add('mothers-day');
                     calendarGrid.appendChild(div);
                 }
-                calendarLabel.innerHTML = '✨ 5月10日 · 母亲节 ✨';
+                calendarLabel.innerHTML = '<i class="fas fa-star"></i> 5月10日 · 母亲节 <i class="fas fa-star"></i>';
             }
             renderCalendar();
 

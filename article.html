@@ -653,7 +653,7 @@
             opacity: 1;
         }
         .img-placeholder .img-alt-text {
-            display: block;
+            display: none;
             text-align: center;
             font-style: italic;
             font-size: 0.85rem;
@@ -671,7 +671,7 @@
             background: rgba(0, 0, 0, 0.2);
         }
         .img-placeholder.loaded .img-alt-text {
-            border-radius: 0 0 12px 12px;
+            display: block;
         }
         .article-detail .detail-content img {
             max-width: 100%;
@@ -1755,7 +1755,6 @@
         let lbImageData = [];
         let currentLbIndex = 0;
         let isPlaying = false;
-        let playTimer = null;
         let lbIsOpen = false;
 
         function renderMarkdown(md) {
@@ -2389,10 +2388,11 @@
                     clearInterval(progressInterval);
                     progressInterval = null;
                 }
-                const startTime = Date.now();
+                let startTime = Date.now();
                 const duration = 2000;
+                let elapsed = 0;
                 progressInterval = setInterval(function() {
-                    const elapsed = Date.now() - startTime;
+                    elapsed = Date.now() - startTime;
                     const progress = Math.min(elapsed / duration, 1);
                     lbProgress = progress * 100;
                     progressBar.style.width = lbProgress + '%';
@@ -2403,13 +2403,30 @@
                             currentLbIndex++;
                             updateLightbox();
                             resetProgress();
+                            startTime = Date.now();
                             if (currentLbIndex === lbImageData.length - 1) {
-                                stopPlayback();
-                            } else {
-                                startPlayback();
+                                isPlaying = false;
+                                playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                                const pBtn = overlay.querySelector('.lightbox-nav.prev');
+                                const nBtn = overlay.querySelector('.lightbox-nav.next');
+                                if (lbImageData.length > 1) {
+                                    pBtn.disabled = false;
+                                    nBtn.disabled = false;
+                                }
+                                playBtn.disabled = true;
+                                return;
                             }
+                            progressInterval = setInterval(arguments.callee, 50);
                         } else {
-                            stopPlayback();
+                            isPlaying = false;
+                            playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                            const pBtn = overlay.querySelector('.lightbox-nav.prev');
+                            const nBtn = overlay.querySelector('.lightbox-nav.next');
+                            if (lbImageData.length > 1) {
+                                pBtn.disabled = false;
+                                nBtn.disabled = false;
+                            }
+                            playBtn.disabled = true;
                         }
                     }
                 }, 50);

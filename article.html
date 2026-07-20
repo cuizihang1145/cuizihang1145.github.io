@@ -51,7 +51,7 @@
             width: 0%;
             background: #4A90D9;
             border-radius: 0 4px 4px 0;
-            transition: width 0.1s ease-out;
+            transition: width 0.05s linear;
         }
         body.dark .reading-progress .progress-bar {
             background: #60A5FA;
@@ -599,38 +599,25 @@
             border-radius: 12px;
             overflow: hidden;
             margin: 0.8rem 0;
-            background: rgba(200, 190, 230, 0.2);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
             min-height: 80px;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: background 0.3s ease;
-        }
-        body.dark .img-placeholder {
-            background: rgba(60, 50, 100, 0.25);
-        }
-        .img-placeholder.loaded {
-            background: transparent;
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
         }
         .img-placeholder .img-loading {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 1.8rem;
-            color: rgba(100, 90, 160, 0.5);
+            font-size: 2rem;
+            color: rgba(100, 90, 160, 0.4);
             z-index: 2;
             animation: spin 1s linear infinite;
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
         body.dark .img-placeholder .img-loading {
-            color: rgba(180, 170, 220, 0.5);
+            color: rgba(180, 170, 220, 0.4);
         }
         .img-placeholder.loaded .img-loading {
             opacity: 0;
@@ -644,7 +631,7 @@
             height: auto;
             display: block;
             opacity: 0;
-            transition: opacity 0.4s ease;
+            transition: opacity 0.5s ease;
             border-radius: 0;
             margin: 0;
             box-shadow: none !important;
@@ -1232,7 +1219,7 @@
                 border-radius: 0 0 8px 8px;
             }
             .img-placeholder .img-loading {
-                font-size: 1.2rem;
+                font-size: 1.4rem;
             }
         }
         .share-modal-overlay {
@@ -1582,7 +1569,7 @@
         let lastProgress = 0;
         let hideTimer = null;
         let isProgressLocked = false;
-        let progressInterval = null;
+        let progressRAF = null;
         let lbProgress = 0;
 
         function updateReadingProgress() {
@@ -2384,26 +2371,32 @@
                 prevBtn.disabled = true;
                 nextBtn.disabled = true;
                 resetProgress();
-                if (progressInterval) {
-                    clearInterval(progressInterval);
-                    progressInterval = null;
+                if (progressRAF) {
+                    cancelAnimationFrame(progressRAF);
+                    progressRAF = null;
                 }
-                let startTime = Date.now();
+                const startTime = performance.now();
                 const duration = 2000;
-                let elapsed = 0;
-                progressInterval = setInterval(function() {
-                    elapsed = Date.now() - startTime;
+
+                function tick(time) {
+                    if (!isPlaying) {
+                        progressRAF = null;
+                        return;
+                    }
+                    const elapsed = time - startTime;
                     const progress = Math.min(elapsed / duration, 1);
                     lbProgress = progress * 100;
                     progressBar.style.width = lbProgress + '%';
-                    if (progress >= 1) {
-                        clearInterval(progressInterval);
-                        progressInterval = null;
+
+                    if (progress < 1) {
+                        progressRAF = requestAnimationFrame(tick);
+                    } else {
+                        progressRAF = null;
+                        progressBar.style.width = '100%';
                         if (currentLbIndex < lbImageData.length - 1) {
                             currentLbIndex++;
                             updateLightbox();
                             resetProgress();
-                            startTime = Date.now();
                             if (currentLbIndex === lbImageData.length - 1) {
                                 isPlaying = false;
                                 playBtn.innerHTML = '<i class="fas fa-play"></i>';
@@ -2414,9 +2407,10 @@
                                     nBtn.disabled = false;
                                 }
                                 playBtn.disabled = true;
+                                updatePlayButtonState();
                                 return;
                             }
-                            progressInterval = setInterval(arguments.callee, 50);
+                            startPlayback();
                         } else {
                             isPlaying = false;
                             playBtn.innerHTML = '<i class="fas fa-play"></i>';
@@ -2427,17 +2421,19 @@
                                 nBtn.disabled = false;
                             }
                             playBtn.disabled = true;
+                            updatePlayButtonState();
                         }
                     }
-                }, 50);
+                }
+                progressRAF = requestAnimationFrame(tick);
                 updatePlayButtonState();
             }
 
             function stopPlayback() {
                 isPlaying = false;
-                if (progressInterval) {
-                    clearInterval(progressInterval);
-                    progressInterval = null;
+                if (progressRAF) {
+                    cancelAnimationFrame(progressRAF);
+                    progressRAF = null;
                 }
                 const playBtn = overlay.querySelector('.lightbox-play');
                 playBtn.innerHTML = '<i class="fas fa-play"></i>';
@@ -2638,9 +2634,9 @@
                     stopPlayback();
                 }
                 isProgressLocked = false;
-                if (progressInterval) {
-                    clearInterval(progressInterval);
-                    progressInterval = null;
+                if (progressRAF) {
+                    cancelAnimationFrame(progressRAF);
+                    progressRAF = null;
                 }
                 progressWrap.style.transition = 'opacity 0.3s ease';
                 overlay.classList.remove('active');
@@ -2723,9 +2719,9 @@
             progressWrap.style.opacity = '1';
             lbProgress = 0;
             progressBar.style.width = '0%';
-            if (progressInterval) {
-                clearInterval(progressInterval);
-                progressInterval = null;
+            if (progressRAF) {
+                cancelAnimationFrame(progressRAF);
+                progressRAF = null;
             }
 
             updateLightbox();

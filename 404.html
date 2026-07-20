@@ -251,7 +251,6 @@
             box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
         }
 
-        /* ===== 金光淡入 ===== */
         .btn-primary.glow-effect {
             animation: goldenGlowFadeIn 0.6s ease forwards;
             border-color: rgba(255, 215, 0, 0.5);
@@ -265,7 +264,6 @@
                 border-color: rgba(255, 215, 0, 0.8); }
         }
 
-        /* ===== 金光淡出 ===== */
         .btn-primary.glow-fade-out {
             animation: goldenGlowFadeOut 1.5s ease forwards;
         }
@@ -277,7 +275,6 @@
                 border-color: rgba(255, 215, 0, 0); }
         }
 
-        /* ===== 气泡 ===== */
         .speech-bubble {
             position: absolute;
             bottom: 110%;
@@ -336,7 +333,6 @@
             color: #6A6A8A;
         }
 
-        /* ===== Toast ===== */
         #toastContainer {
             position: fixed;
             top: 24px;
@@ -521,7 +517,6 @@
     </div>
 
     <div class="error-card">
-        <!-- 将 emoji 替换为 Font Awesome 的搜索图标 -->
         <i class="fas fa-search error-icon" id="clickableIcon"></i>
         <div class="error-code">404</div>
         <h1 class="error-title">页面走丢了</h1>
@@ -543,9 +538,6 @@
     </div>
 
     <script>
-        // ============================================================
-        // 主题切换
-        // ============================================================
         const themeToggle = document.getElementById('themeToggle');
         const icon = themeToggle.querySelector('i');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -564,9 +556,6 @@
             setTheme(currentTheme === 'dark' ? 'light' : 'dark');
         });
 
-        // ============================================================
-        // 放大镜点击序列
-        // ============================================================
         const toastContainer = document.getElementById('toastContainer');
         const clickBlocker = document.getElementById('clickBlocker');
         const homeBtn = document.getElementById('homeBtn');
@@ -632,25 +621,23 @@
             isProcessing = true;
             clickBlocker.classList.add('active');
 
-            // 按钮变灰 + 文字改变
             homeBtn.style.opacity = '0.5';
             homeBtn.style.pointerEvents = 'none';
             homeBtn.innerHTML = '<i class="fas fa-home"></i> 马上出发咯';
 
-            // 金光淡出
             homeBtn.classList.remove('glow-effect');
             homeBtn.classList.add('glow-fade-out');
 
             let count = 3;
             const el = document.createElement('div');
             el.className = 'toast-item countdown';
-            el.textContent = '⏳ ' + count;
+            el.innerHTML = '<i class="fas fa-hourglass-half"></i> ' + count;
             toastContainer.appendChild(el);
 
             countdownTimer = setInterval(() => {
                 count--;
                 if (count > 0) {
-                    el.textContent = '⏳ ' + count;
+                    el.innerHTML = '<i class="fas fa-hourglass-half"></i> ' + count;
                 } else {
                     el.textContent = '走你！';
                     clearInterval(countdownTimer);
@@ -709,9 +696,6 @@
             handleIconClick();
         });
 
-        // ============================================================
-        // 回到首页按钮：2~6次弹Toast，不拦截跳转
-        // ============================================================
         homeBtn.addEventListener('click', function(e) {
             if (isCountdownActive) {
                 e.preventDefault();

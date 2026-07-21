@@ -3,13 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>404 · 页面走丢了</title>
-    <script>
-        const pathMatch = window.location.pathname.match(/^\/article\/(\d+)/);
-        if (pathMatch) {
-            window.location.replace('/article.html?id=' + pathMatch[1]);
-        }
-    </script>
+    <title>页面走丢了 · ks</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <style>
@@ -131,8 +125,52 @@
             background: rgba(50, 45, 80, 0.8);
         }
 
-        .error-card {
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #FAFAFE;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+        body.dark #loader {
+            background: #14131F;
+        }
+        #loader.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .loader-spinner {
+            width: 44px;
+            height: 44px;
+            border: 4px solid rgba(107, 90, 207, 0.15);
+            border-top: 4px solid #6B5ACF;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        body.dark .loader-spinner {
+            border-color: rgba(136, 204, 255, 0.15);
+            border-top-color: #88ccff;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #app {
+            display: none;
+            width: 100%;
             max-width: 480px;
+        }
+        #app.show {
+            display: block;
+        }
+
+        .error-card {
             width: 100%;
             background: rgba(255, 255, 255, 0.55);
             backdrop-filter: blur(20px);
@@ -522,28 +560,43 @@
         <i class="fas fa-moon"></i>
     </div>
 
-    <div class="error-card">
-        <i class="fas fa-search error-icon" id="clickableIcon"></i>
-        <div class="error-code">404</div>
-        <h1 class="error-title">页面走丢了</h1>
-        <p class="error-desc">
-            好像迷路了……<br />
-            要不，先回首页看看？
-        </p>
+    <div id="loader">
+        <div class="loader-spinner"></div>
+    </div>
 
-        <div class="error-actions">
-            <div class="speech-bubble" id="speechBubble">别点它了，来点我！</div>
-            <a href="index.html" class="btn-primary" id="homeBtn">
-                <i class="fas fa-home"></i> 回到首页
-            </a>
+    <div id="app">
+        <div class="error-card">
+            <i class="fas fa-search error-icon" id="clickableIcon"></i>
+            <div class="error-code">404</div>
+            <h1 class="error-title">页面走丢了</h1>
+            <p class="error-desc">
+                好像迷路了……<br />
+                要不，先回首页看看？
+            </p>
+
+            <div class="error-actions">
+                <div class="speech-bubble" id="speechBubble">别点它了，来点我！</div>
+                <a href="index.html" class="btn-primary" id="homeBtn">
+                    <i class="fas fa-home"></i> 回到首页
+                </a>
+            </div>
+
+            <p class="footer-note">
+                <i class="far fa-smile"></i> ks · 404
+            </p>
         </div>
-
-        <p class="footer-note">
-            <i class="far fa-smile"></i> ks · 404
-        </p>
     </div>
 
     <script>
+        const pathMatch = window.location.pathname.match(/^\/article\/(\d+)/);
+
+        if (pathMatch) {
+            window.location.replace('/article.html?id=' + pathMatch[1]);
+        } else {
+            document.getElementById('loader').classList.add('hide');
+            document.getElementById('app').classList.add('show');
+        }
+
         const themeToggle = document.getElementById('themeToggle');
         const icon = themeToggle.querySelector('i');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;

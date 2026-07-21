@@ -538,6 +538,12 @@
     </div>
 
     <script>
+        // ============================================================
+        const match = window.location.pathname.match(/^\/article\/(\d+)/);
+        if (match) {
+            window.location.href = 'article.html?id=' + match[1];
+        }
+        // ============================================================
         const themeToggle = document.getElementById('themeToggle');
         const icon = themeToggle.querySelector('i');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;

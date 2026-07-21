@@ -2484,6 +2484,11 @@
                     cancelAnimationFrame(progressAnimId);
                     progressAnimId = null;
                 }
+                // 恢复左右按钮
+                if (lbImageData.length > 1) {
+                    prevBtn.disabled = false;
+                    nextBtn.disabled = false;
+                }
                 showLbProgress(false);
                 resetLbProgress();
                 updatePlayButtonState();
@@ -2524,9 +2529,22 @@
                     return;
                 }
 
-                stopPlayback();
+                // 先停止所有
+                if (playIntervalId) {
+                    clearInterval(playIntervalId);
+                    playIntervalId = null;
+                }
+                if (progressAnimId) {
+                    cancelAnimationFrame(progressAnimId);
+                    progressAnimId = null;
+                }
 
                 isPlaying = true;
+                // 播放时禁用左右按钮
+                if (lbImageData.length > 1) {
+                    prevBtn.disabled = true;
+                    nextBtn.disabled = true;
+                }
                 showLbProgress(true);
                 resetLbProgress();
                 updatePlayButtonState();
@@ -2543,6 +2561,7 @@
                         startProgressAnimation();
                         updatePlayButtonState();
                     } else {
+                        // 播放到最后一张，停止
                         stopPlayback();
                     }
                 }, PLAY_DELAY);
@@ -2564,7 +2583,17 @@
             function closeLightbox() {
                 if (!lbIsOpen) return;
                 lbIsOpen = false;
-                stopPlayback();
+                isPlaying = false;
+                if (playIntervalId) {
+                    clearInterval(playIntervalId);
+                    playIntervalId = null;
+                }
+                if (progressAnimId) {
+                    cancelAnimationFrame(progressAnimId);
+                    progressAnimId = null;
+                }
+                showLbProgress(false);
+                resetLbProgress();
                 isProgressLocked = false;
                 progressWrap.style.transition = 'opacity 0.3s ease';
                 overlay.classList.remove('active');

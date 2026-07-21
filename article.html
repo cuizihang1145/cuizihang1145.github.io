@@ -1124,7 +1124,6 @@
             cursor: not-allowed;
             pointer-events: none;
         }
-        /* 灯箱内的进度条 */
         .lightbox-progress {
             position: fixed;
             bottom: 68px;
@@ -2337,7 +2336,6 @@
                 });
         }
 
-        // 灯箱进度条元素
         let lbProgressEl = null;
         let lbProgressBarEl = null;
 
@@ -2399,24 +2397,17 @@
             document.body.appendChild(overlay);
             document.body.style.overflow = 'hidden';
 
-            // --- 内部变量 ---
             let scale = 1;
             let translateX = 0;
             let translateY = 0;
             let isDragging = false;
             let mouseDown = false;
-            let mouseStartX = 0,
-                mouseStartY = 0;
-            let mouseLastX = 0,
-                mouseLastY = 0;
-            let touchStartDist = 0,
-                touchStartScale = 1;
-            let touchStartX = 0,
-                touchStartY = 0;
-            let touchLastX = 0,
-                touchLastY = 0;
+            let mouseStartX = 0, mouseStartY = 0;
+            let mouseLastX = 0, mouseLastY = 0;
+            let touchStartDist = 0, touchStartScale = 1;
+            let touchStartX = 0, touchStartY = 0;
+            let touchLastX = 0, touchLastY = 0;
 
-            // --- 获取元素 ---
             const imgWrapper = overlay.querySelector('.lightbox-img-wrapper');
             const img = overlay.querySelector('img');
             const altEl = overlay.querySelector('.lightbox-alt');
@@ -2426,7 +2417,6 @@
             const playBtn = overlay.querySelector('.lightbox-play');
             const closeBtn = overlay.querySelector('.lightbox-close');
 
-            // --- 更新灯箱内容 ---
             function updateLightbox() {
                 const data = lbImageData[currentLbIndex];
                 if (!data) return;
@@ -2453,7 +2443,6 @@
                 updatePlayButtonState();
             }
 
-            // --- 变换控制 ---
             function updateTransform(animate) {
                 animate = animate || false;
                 img.style.transition = animate ? 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none';
@@ -2467,6 +2456,7 @@
                     playBtn.innerHTML = '<i class="fas fa-play"></i>';
                     return;
                 }
+                // 如果在最后一张且未播放，禁用播放按钮
                 if (currentLbIndex === lbImageData.length - 1 && !isPlaying) {
                     playBtn.disabled = true;
                     playBtn.innerHTML = '<i class="fas fa-play"></i>';
@@ -2512,14 +2502,12 @@
                     updatePlayButtonState();
                     return;
                 }
-                // 如果当前在最后一张，跳转到第一张
+                // 如果在最后一张，不允许播放
                 if (currentLbIndex === lbImageData.length - 1) {
-                    currentLbIndex = 0;
-                    updateLightbox();
-                    resetLbProgress();
+                    updatePlayButtonState();
+                    return;
                 }
 
-                // 清理之前的播放状态
                 stopPlaybackInternal(false);
 
                 isPlaying = true;
@@ -2554,26 +2542,28 @@
                             lbProgressBarEl.style.width = '100%';
                         }
 
-                        // 切换到下一张
                         if (currentLbIndex < lbImageData.length - 1) {
                             currentLbIndex++;
                             updateLightbox();
                             resetLbProgress();
-                            // 用 setTimeout 确保状态更新后再继续
+                            if (lbPlayTimer) {
+                                clearTimeout(lbPlayTimer);
+                                lbPlayTimer = null;
+                            }
                             lbPlayTimer = setTimeout(function() {
                                 if (isPlaying) {
                                     startPlayback();
                                 }
                             }, 50);
                         } else {
-                            // 播放到最后一张，自动停止，按钮变灰
+                            // 到达最后一张，直接停止
                             isPlaying = false;
                             playBtn.innerHTML = '<i class="fas fa-play"></i>';
                             if (lbImageData.length > 1) {
                                 prevBtn.disabled = false;
                                 nextBtn.disabled = false;
                             }
-                            playBtn.disabled = true; // 按钮变灰，不可点击
+                            playBtn.disabled = true;
                             showLbProgress(false);
                             updatePlayButtonState();
                         }
@@ -2586,13 +2576,9 @@
 
             function togglePlay() {
                 if (lbImageData.length <= 1) return;
-                // 如果当前在最后一张且未播放，点击播放从头开始
-                if (currentLbIndex === lbImageData.length - 1 && !isPlaying) {
-                    currentLbIndex = 0;
-                    updateLightbox();
-                    resetLbProgress();
+                // 如果在最后一张，不允许播放
+                if (currentLbIndex === lbImageData.length - 1) {
                     updatePlayButtonState();
-                    startPlayback();
                     return;
                 }
                 if (isPlaying) {

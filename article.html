@@ -1784,6 +1784,7 @@
         let lbIsOpen = false;
         let lbProgressRAF = null;
         let lbPlayTimer = null;
+        let lbIntervalId = null;
 
         function renderMarkdown(md) {
             if (!md) return '';
@@ -2417,6 +2418,11 @@
             const playBtn = overlay.querySelector('.lightbox-play');
             const closeBtn = overlay.querySelector('.lightbox-close');
 
+            // 播放相关变量
+            let playIntervalId = null;
+            let progressAnimId = null;
+            const PLAY_DELAY = 3000;
+
             function updateLightbox() {
                 const data = lbImageData[currentLbIndex];
                 if (!data) return;
@@ -2449,14 +2455,12 @@
                 img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
             }
 
-            // --- 播放控制 ---
             function updatePlayButtonState() {
                 if (lbImageData.length <= 1) {
                     playBtn.disabled = true;
                     playBtn.innerHTML = '<i class="fas fa-play"></i>';
                     return;
                 }
-                // 如果在最后一张且未播放，禁用播放按钮
                 if (currentLbIndex === lbImageData.length - 1 && !isPlaying) {
                     playBtn.disabled = true;
                     playBtn.innerHTML = '<i class="fas fa-play"></i>';
@@ -2470,114 +2474,83 @@
                 }
             }
 
-            function stopPlaybackInternal(updateUI) {
-                if (updateUI === undefined) updateUI = true;
+            function stopPlayback() {
                 isPlaying = false;
-                if (lbProgressRAF) {
-                    cancelAnimationFrame(lbProgressRAF);
-                    lbProgressRAF = null;
+                if (playIntervalId) {
+                    clearInterval(playIntervalId);
+                    playIntervalId = null;
                 }
-                if (lbPlayTimer) {
-                    clearTimeout(lbPlayTimer);
-                    lbPlayTimer = null;
+                if (progressAnimId) {
+                    cancelAnimationFrame(progressAnimId);
+                    progressAnimId = null;
                 }
-                if (updateUI) {
-                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
-                    if (lbImageData.length > 1) {
-                        prevBtn.disabled = false;
-                        nextBtn.disabled = false;
-                    }
-                    showLbProgress(false);
-                    updatePlayButtonState();
-                }
+                showLbProgress(false);
+                resetLbProgress();
+                updatePlayButtonState();
             }
 
-            function stopPlayback() {
-                stopPlaybackInternal(true);
+            function startProgressAnimation() {
+                if (progressAnimId) {
+                    cancelAnimationFrame(progressAnimId);
+                    progressAnimId = null;
+                }
+                resetLbProgress();
+                const startTime = performance.now();
+
+                function updateProgress(currentTime) {
+                    if (!isPlaying) {
+                        progressAnimId = null;
+                        return;
+                    }
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min((elapsed / PLAY_DELAY) * 100, 100);
+                    if (lbProgressBarEl) {
+                        lbProgressBarEl.style.width = progress + '%';
+                    }
+                    if (progress < 100) {
+                        progressAnimId = requestAnimationFrame(updateProgress);
+                    } else {
+                        progressAnimId = null;
+                    }
+                }
+                progressAnimId = requestAnimationFrame(updateProgress);
             }
 
             function startPlayback() {
                 if (isPlaying) return;
-                if (lbImageData.length <= 1) {
-                    updatePlayButtonState();
-                    return;
-                }
-                // 如果在最后一张，不允许播放
+                if (lbImageData.length <= 1) return;
                 if (currentLbIndex === lbImageData.length - 1) {
                     updatePlayButtonState();
                     return;
                 }
 
-                stopPlaybackInternal(false);
+                stopPlayback();
 
                 isPlaying = true;
-                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                prevBtn.disabled = true;
-                nextBtn.disabled = true;
-                playBtn.disabled = false;
-
-                resetLbProgress();
                 showLbProgress(true);
-
-                const duration = 2000;
-                const startTime = performance.now();
-
-                function tick(time) {
-                    if (!isPlaying) {
-                        lbProgressRAF = null;
-                        return;
-                    }
-                    const elapsed = time - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
-                    lbProgress = progress * 100;
-                    if (lbProgressBarEl) {
-                        lbProgressBarEl.style.width = lbProgress + '%';
-                    }
-
-                    if (progress < 1) {
-                        lbProgressRAF = requestAnimationFrame(tick);
-                    } else {
-                        lbProgressRAF = null;
-                        if (lbProgressBarEl) {
-                            lbProgressBarEl.style.width = '100%';
-                        }
-
-                        if (currentLbIndex < lbImageData.length - 1) {
-                            currentLbIndex++;
-                            updateLightbox();
-                            resetLbProgress();
-                            if (lbPlayTimer) {
-                                clearTimeout(lbPlayTimer);
-                                lbPlayTimer = null;
-                            }
-                            lbPlayTimer = setTimeout(function() {
-                                if (isPlaying) {
-                                    startPlayback();
-                                }
-                            }, 50);
-                        } else {
-                            // 到达最后一张，直接停止
-                            isPlaying = false;
-                            playBtn.innerHTML = '<i class="fas fa-play"></i>';
-                            if (lbImageData.length > 1) {
-                                prevBtn.disabled = false;
-                                nextBtn.disabled = false;
-                            }
-                            playBtn.disabled = true;
-                            showLbProgress(false);
-                            updatePlayButtonState();
-                        }
-                    }
-                }
-
-                lbProgressRAF = requestAnimationFrame(tick);
+                resetLbProgress();
                 updatePlayButtonState();
+
+                startProgressAnimation();
+
+                playIntervalId = setInterval(function() {
+                    if (!isPlaying) return;
+
+                    if (currentLbIndex < lbImageData.length - 1) {
+                        currentLbIndex++;
+                        updateLightbox();
+                        resetLbProgress();
+                        startProgressAnimation();
+                        updatePlayButtonState();
+                    } else {
+                        stopPlayback();
+                    }
+                }, PLAY_DELAY);
             }
 
             function togglePlay() {
                 if (lbImageData.length <= 1) return;
-                // 如果在最后一张，不允许播放
-                if (currentLbIndex === lbImageData.length - 1) {
+                if (currentLbIndex === lbImageData.length - 1 && !isPlaying) {
                     updatePlayButtonState();
                     return;
                 }
@@ -2588,11 +2561,10 @@
                 }
             }
 
-            // --- 关闭灯箱 ---
             function closeLightbox() {
                 if (!lbIsOpen) return;
                 lbIsOpen = false;
-                stopPlaybackInternal(true);
+                stopPlayback();
                 isProgressLocked = false;
                 progressWrap.style.transition = 'opacity 0.3s ease';
                 overlay.classList.remove('active');
@@ -2609,7 +2581,6 @@
                 }, 350);
             }
 
-            // --- 键盘事件 ---
             function escHandler(e) {
                 if (e.key === 'Escape') closeLightbox();
                 if (e.key === 'ArrowLeft' && !isPlaying) {
@@ -2617,9 +2588,7 @@
                     if (lbImageData.length > 1) {
                         currentLbIndex = (currentLbIndex - 1 + lbImageData.length) % lbImageData.length;
                         updateLightbox();
-                        resetLbProgress();
                         updatePlayButtonState();
-                        showLbProgress(false);
                     }
                 }
                 if (e.key === 'ArrowRight' && !isPlaying) {
@@ -2627,14 +2596,12 @@
                     if (lbImageData.length > 1) {
                         currentLbIndex = (currentLbIndex + 1) % lbImageData.length;
                         updateLightbox();
-                        resetLbProgress();
                         updatePlayButtonState();
-                        showLbProgress(false);
                     }
                 }
             }
 
-            // --- 事件绑定 ---
+            // 事件绑定
             img.addEventListener('wheel', function(e) {
                 e.preventDefault();
                 const delta = e.deltaY > 0 ? -0.1 : 0.1;
@@ -2756,25 +2723,25 @@
 
             prevBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                if (isPlaying) return;
+                if (isPlaying) {
+                    stopPlayback();
+                }
                 if (lbImageData.length > 1) {
                     currentLbIndex = (currentLbIndex - 1 + lbImageData.length) % lbImageData.length;
                     updateLightbox();
-                    resetLbProgress();
                     updatePlayButtonState();
-                    showLbProgress(false);
                 }
             });
 
             nextBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
-                if (isPlaying) return;
+                if (isPlaying) {
+                    stopPlayback();
+                }
                 if (lbImageData.length > 1) {
                     currentLbIndex = (currentLbIndex + 1) % lbImageData.length;
                     updateLightbox();
-                    resetLbProgress();
                     updatePlayButtonState();
-                    showLbProgress(false);
                 }
             });
 
@@ -2785,7 +2752,7 @@
 
             document.addEventListener('keydown', escHandler);
 
-            // --- 初始化 ---
+            // 初始化
             isProgressLocked = true;
             progressWrap.style.display = 'block';
             progressWrap.style.opacity = '1';

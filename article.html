@@ -1742,6 +1742,7 @@
         const appContent = document.getElementById('appContent');
         let currentArticle = null;
         let currentShareText = '';
+        let walineInitialized = false;
 
         function countWords(markdown) {
             if (!markdown) return 0;
@@ -2232,6 +2233,30 @@
             });
         }
 
+        function initWaline(articleId) {
+            if (walineInitialized) return;
+            const commentEl = document.getElementById('waline-comments');
+            if (!commentEl) return;
+            walineInitialized = true;
+            import('https://unpkg.com/@waline/client@v3/dist/waline.js')
+                .then((module) => {
+                    const { init } = module;
+                    init({
+                        el: '#waline-comments',
+                        serverURL: 'https://comment.cuizi.top',
+                        lang: 'zh-CN',
+                        path: '/article/' + articleId,
+                        dark: 'body.dark',
+                        imageUploader: false,
+                        requiredMeta: ['nick', 'mail']
+                    });
+                })
+                .catch((err) => {
+                    console.error('Waline 加载失败:', err);
+                    walineInitialized = false;
+                });
+        }
+
         function renderArticle() {
             const id = getParam('id');
             if (id === null) {
@@ -2325,6 +2350,8 @@
 
                     setTimeout(updateReadingProgress, 100);
                     generateShareImage();
+
+                    initWaline(id);
                 })
                 .catch(() => {
                     appContent.innerHTML = `
@@ -2418,7 +2445,6 @@
             const playBtn = overlay.querySelector('.lightbox-play');
             const closeBtn = overlay.querySelector('.lightbox-close');
 
-            // 播放相关变量
             let playIntervalId = null;
             let progressAnimId = null;
             const PLAY_DELAY = 3000;
@@ -2484,7 +2510,6 @@
                     cancelAnimationFrame(progressAnimId);
                     progressAnimId = null;
                 }
-                // 恢复左右按钮
                 if (lbImageData.length > 1) {
                     prevBtn.disabled = false;
                     nextBtn.disabled = false;
@@ -2529,7 +2554,6 @@
                     return;
                 }
 
-                // 先停止所有
                 if (playIntervalId) {
                     clearInterval(playIntervalId);
                     playIntervalId = null;
@@ -2540,7 +2564,6 @@
                 }
 
                 isPlaying = true;
-                // 播放时禁用左右按钮
                 if (lbImageData.length > 1) {
                     prevBtn.disabled = true;
                     nextBtn.disabled = true;
@@ -2561,7 +2584,6 @@
                         startProgressAnimation();
                         updatePlayButtonState();
                     } else {
-                        // 播放到最后一张，停止
                         stopPlayback();
                     }
                 }, PLAY_DELAY);
@@ -2630,7 +2652,6 @@
                 }
             }
 
-            // 事件绑定
             img.addEventListener('wheel', function(e) {
                 e.preventDefault();
                 const delta = e.deltaY > 0 ? -0.1 : 0.1;
@@ -2781,7 +2802,6 @@
 
             document.addEventListener('keydown', escHandler);
 
-            // 初始化
             isProgressLocked = true;
             progressWrap.style.display = 'block';
             progressWrap.style.opacity = '1';
@@ -3130,30 +3150,7 @@
             showToast('已保存', 'fa-check-circle');
         });
 
-        function initWaline() {
-            const commentEl = document.getElementById('waline-comments');
-            if (!commentEl) return;
-            const articleId = getParam('id') || 'unknown';
-            import('https://unpkg.com/@waline/client@v3/dist/waline.js')
-                .then((module) => {
-                    const { init } = module;
-                    init({
-                        el: '#waline-comments',
-                        serverURL: 'https://comment.cuizi.top',
-                        lang: 'zh-CN',
-                        path: '/article/' + articleId,
-                        dark: 'body.dark',
-                        imageUploader: false,
-                        requiredMeta: ['nick', 'mail']
-                    });
-                })
-                .catch((err) => {
-                    console.error('Waline 加载失败:', err);
-                });
-        }
-
         renderArticle();
-        setTimeout(initWaline, 500);
     </script>
 </body>
 </html>

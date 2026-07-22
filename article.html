@@ -10,8 +10,6 @@
     <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js">
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
-    </script>
     <style>
         * {
             margin: 0;
@@ -1588,7 +1586,8 @@
             text = text.replace(/^\d+\.\s+/gm, '');
             text = text.replace(/^>\s+/gm, '');
             text = text.replace(/^---$/gm, '');
-            text = text.replace(/\n{3,}/g, '\n\n');
+            text = text.replace(/\n/g, ' ');
+            text = text.replace(/\s{2,}/g, ' ');
             return text.trim();
         }
 
@@ -2257,6 +2256,25 @@
                 });
         }
 
+        function generateQRCanvas(text, size) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, size, size);
+                    resolve(canvas);
+                };
+                img.onerror = function() {
+                    reject(new Error('二维码图片加载失败'));
+                };
+                img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&data=' + encodeURIComponent(text);
+            });
+        }
+
         function renderArticle() {
             const id = getParam('id');
             if (id === null) {
@@ -2300,7 +2318,7 @@
                     renderedContent = renderedContent.replace(/<img\s+src="([^"]*)"\s+alt="([^"]*)"([^>]*)>/g, function(
                         match, src, alt, rest) {
                         const altText = alt || '';
-                        const altHtml = altText ? '<span class="img-alt-text">' + escapeHtml(altText) + '</span>' : '';
+                        const altHtml = altText ? '<span class="img-alt-text">' + altText + '</span>' : '';
                         return '<div class="img-placeholder"><span class="img-loading"><i class="fas fa-spinner fa-spin"></i></span><img src="' +
                             src + '" alt="' + alt + '"' + rest + '>' + altHtml + '</div>';
                     });
@@ -2902,7 +2920,7 @@
             const qrY = H - qrSize - 40;
 
             try {
-                const qrCanvas = generateQRCanvas(url, qrSize);
+                const qrCanvas = await generateQRCanvas(url, qrSize);
                 ctx.shadowColor = 'rgba(0,0,0,0.06)';
                 ctx.shadowBlur = 16;
                 ctx.shadowOffsetX = 0;
@@ -2934,40 +2952,6 @@
 
             currentShareImageDataUrl = canvas.toDataURL('image/png');
             sharePreviewImg.src = currentShareImageDataUrl;
-        }
-
-        function generateQRCanvas(text, size) {
-            return new Promise((resolve, reject) => {
-                try {
-                    qrTemp.innerHTML = '';
-                    const qr = new QRCode(qrTemp, {
-                        text: text,
-                        width: size,
-                        height: size,
-                        colorDark: '#1a1a2e',
-                        colorLight: '#ffffff',
-                        correctLevel: QRCode.CorrectLevel.H
-                    });
-                    const canvas = qrTemp.querySelector('canvas');
-                    if (canvas) {
-                        resolve(canvas);
-                    } else {
-                        const img = qrTemp.querySelector('img');
-                        if (img) {
-                            const c = document.createElement('canvas');
-                            c.width = size;
-                            c.height = size;
-                            const ctx = c.getContext('2d');
-                            ctx.drawImage(img, 0, 0, size, size);
-                            resolve(c);
-                        } else {
-                            reject(new Error('二维码生成失败'));
-                        }
-                    }
-                } catch (e) {
-                    reject(e);
-                }
-            });
         }
 
         function wrapText(ctx, text, maxWidth) {

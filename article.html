@@ -2406,15 +2406,7 @@
                         } catch (e) {}
                     });
 
-                    document.querySelectorAll('.detail-tags .tag').forEach(function(el) {
-                        el.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            const tag = this.dataset.tag;
-                            sessionStorage.setItem('articleKeyword', '#' + tag);
-                            window.location.href = 'index.html?return=articles';
-                        });
-                    });
-
+                    
                     initImageLazyLoad();
 
                     const images = document.querySelectorAll('.detail-content .img-placeholder img');

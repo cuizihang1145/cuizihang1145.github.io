@@ -588,17 +588,23 @@
     </div>
 
     <script>
-        const pathMatch = window.location.pathname.match(/^\/article\/(\d+)/);
+        // ============================================================
+        // 🎯 路由判断：只有精确匹配 /article/数字 才跳转
+        // ============================================================
+        const parts = window.location.pathname.split('/').filter(Boolean);
 
-        if (pathMatch) {
+        if (parts.length === 2 && parts[0] === 'article' && /^\d+$/.test(parts[1])) {
             document.title = '加载中 · ks';
-            window.location.replace('/article.html?id=' + pathMatch[1]);
+            window.location.replace('/article.html?id=' + parts[1]);
         } else {
             document.title = '404 · 页面走丢了';
             document.getElementById('loader').classList.add('hide');
             document.getElementById('app').classList.add('show');
         }
 
+        // ============================================================
+        // 🌗 主题切换
+        // ============================================================
         const themeToggle = document.getElementById('themeToggle');
         const icon = themeToggle.querySelector('i');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -617,6 +623,9 @@
             setTheme(currentTheme === 'dark' ? 'light' : 'dark');
         });
 
+        // ============================================================
+        // 🎉 彩蛋系统
+        // ============================================================
         const toastContainer = document.getElementById('toastContainer');
         const clickBlocker = document.getElementById('clickBlocker');
         const homeBtn = document.getElementById('homeBtn');

@@ -2289,7 +2289,7 @@
     reader.readAsDataURL(file);
   });
 
-  const resp = await fetch('https://comment.cuizi.top/upload', {
+  const resp = await fetch('https://comment.cuizi.top/api/upload', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ image: base64, filename: file.name })

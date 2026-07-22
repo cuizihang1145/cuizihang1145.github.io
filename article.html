@@ -357,12 +357,48 @@
         .article-detail .detail-date {
             font-size: 0.85rem;
             color: #8A8AB5;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.6rem;
             display: block;
             transition: color 0.3s ease;
         }
         body.dark .article-detail .detail-date {
             color: #7A7AA0;
+        }
+        .article-detail .detail-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem 0.6rem;
+            margin-bottom: 1rem;
+        }
+        .article-detail .detail-tags .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #6B5ACF;
+            background: rgba(107, 90, 207, 0.10);
+            padding: 0.1rem 0.7rem 0.1rem 0.5rem;
+            border-radius: 40px;
+            transition: 0.2s ease;
+            cursor: pointer;
+            user-select: none;
+            text-decoration: none;
+        }
+        body.dark .article-detail .detail-tags .tag {
+            color: #88ccff;
+            background: rgba(136, 204, 255, 0.10);
+        }
+        .article-detail .detail-tags .tag:hover {
+            background: rgba(107, 90, 207, 0.20);
+            transform: scale(1.04);
+        }
+        body.dark .article-detail .detail-tags .tag:hover {
+            background: rgba(136, 204, 255, 0.20);
+        }
+        .article-detail .detail-tags .tag i {
+            font-size: 0.6rem;
+            opacity: 0.7;
         }
         .article-detail .detail-divider {
             border: none;
@@ -2308,12 +2344,25 @@
                         return;
                     }
 
-                    currentArticle = articles[idx];
+                    const article = articles[idx];
+                    if (article.delete === true) {
+                        appContent.innerHTML = `
+                                <div class="not-found">
+                                    <i class="far fa-frown"></i>
+                                    <p>文章不存在</p>
+                                    <p style="font-size:0.85rem; margin-top:0.5rem;">可能已被删除</p>
+                                </div>
+                            `;
+                        return;
+                    }
+
+                    currentArticle = article;
                     document.title = (currentArticle.title || '文章详情') + ' · ks';
 
                     const title = currentArticle.title || '无标题';
                     const date = currentArticle.date || '';
                     const content = currentArticle.content || '（暂无内容）';
+                    const tags = currentArticle.tags || [];
                     let renderedContent = renderMarkdown(content);
 
                     renderedContent = renderedContent.replace(/<img\s+src="([^"]*)"\s+alt="([^"]*)"([^>]*)>/g, function(
@@ -2331,10 +2380,21 @@
                     const articleUrl = window.location.origin + window.location.pathname + '?id=' + idx;
                     currentShareText = title + '：' + preview + '\n查看完整内容？请访问：' + articleUrl;
 
+                    let tagsHtml = '';
+                    if (tags.length > 0) {
+                        tagsHtml = '<div class="detail-tags">';
+                        tags.forEach(function(tag) {
+                            const tagName = escapeHtml(tag);
+                            tagsHtml += '<span class="tag" data-tag="' + tagName + '"><i class="fas fa-tag"></i> ' + tagName + '</span>';
+                        });
+                        tagsHtml += '</div>';
+                    }
+
                     appContent.innerHTML = `
                             <div class="article-detail">
                                 <h1 class="detail-title">${escapeHtml(title)}</h1>
                                 <span class="detail-date">${date ? escapeHtml(date) + '  ·  ' : ''}预计阅读 ${readTime} 分钟 · ${wordCount} 字</span>
+                                ${tagsHtml}
                                 <hr class="detail-divider">
                                 <div class="detail-content">${renderedContent}</div>
                             </div>
@@ -2344,6 +2404,15 @@
                         try {
                             hljs.highlightElement(el);
                         } catch (e) {}
+                    });
+
+                    document.querySelectorAll('.detail-tags .tag').forEach(function(el) {
+                        el.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const tag = this.dataset.tag;
+                            sessionStorage.setItem('articleKeyword', '#' + tag);
+                            window.location.href = 'index.html?return=articles';
+                        });
                     });
 
                     initImageLazyLoad();

@@ -2652,6 +2652,7 @@
         }
     }
 
+    // ===== ARCHIVE =====
     function renderArchive() {
         var container = document.getElementById('appContent');
 
@@ -2689,6 +2690,8 @@
                 </div>
             </div>
         `;
+
+        window._archiveViewState = 'folder';
 
         fetch('wenzhang.json', { cache: 'no-cache' })
             .then(function(response) {
@@ -2730,8 +2733,10 @@
                 var target = this.dataset.target;
                 var folderView = document.getElementById('archiveFolderView');
                 var articlesView = document.getElementById('archiveArticlesView');
+                var titleEl = document.getElementById('archiveTitle');
 
                 if (target === 'tags') {
+                    window._archiveViewState = 'tag-list';
                     folderView.classList.remove('fade-in');
                     folderView.classList.add('fade-out');
                     setTimeout(function() {
@@ -2739,11 +2744,14 @@
                         folderView.classList.remove('fade-out');
                         articlesView.classList.remove('hidden', 'fade-out');
                         articlesView.classList.add('active', 'fade-in');
+                        if (titleEl) titleEl.innerHTML = '<i class="fas fa-tags"></i> 标签';
                         renderTagList();
                     }, 300);
                     return;
                 }
+
                 if (target === 'articles') {
+                    window._archiveViewState = 'articles';
                     folderView.classList.remove('fade-in');
                     folderView.classList.add('fade-out');
                     setTimeout(function() {
@@ -2751,7 +2759,6 @@
                         folderView.classList.remove('fade-out');
                         articlesView.classList.remove('hidden', 'fade-out');
                         articlesView.classList.add('active', 'fade-in');
-                        var titleEl = document.getElementById('archiveTitle');
                         if (titleEl) titleEl.innerHTML = '<i class="fas fa-folder-open"></i> 全部文章';
                         renderArchiveList(window._archiveArticles || []);
                     }, 300);
@@ -2760,8 +2767,32 @@
         });
 
         document.getElementById('archiveBackBtn').addEventListener('click', function() {
+            var state = window._archiveViewState || 'folder';
             var folderView = document.getElementById('archiveFolderView');
             var articlesView = document.getElementById('archiveArticlesView');
+            var titleEl = document.getElementById('archiveTitle');
+
+            if (state === 'tag-detail') {
+                window._archiveViewState = 'tag-list';
+                if (titleEl) titleEl.innerHTML = '<i class="fas fa-tags"></i> 标签';
+                renderTagList();
+                return;
+            }
+
+            if (state === 'tag-list' || state === 'articles') {
+                window._archiveViewState = 'folder';
+                articlesView.classList.remove('fade-in');
+                articlesView.classList.add('fade-out');
+                setTimeout(function() {
+                    articlesView.classList.remove('active', 'fade-out');
+                    articlesView.classList.add('hidden');
+                    folderView.classList.remove('hidden', 'fade-out');
+                    folderView.classList.add('fade-in');
+                    if (titleEl) titleEl.innerHTML = '<i class="fas fa-folder-open"></i> 全部文章';
+                }, 300);
+                return;
+            }
+
             articlesView.classList.remove('fade-in');
             articlesView.classList.add('fade-out');
             setTimeout(function() {
@@ -2769,6 +2800,7 @@
                 articlesView.classList.add('hidden');
                 folderView.classList.remove('hidden', 'fade-out');
                 folderView.classList.add('fade-in');
+                if (titleEl) titleEl.innerHTML = '<i class="fas fa-folder-open"></i> 全部文章';
             }, 300);
         });
     }
@@ -2796,6 +2828,7 @@
             el.addEventListener('click', function() {
                 var tag = this.dataset.tag;
                 var titleEl = document.getElementById('archiveTitle');
+                window._archiveViewState = 'tag-detail';
                 if (titleEl) titleEl.innerHTML = '<i class="fas fa-tag"></i> 标签：' + escapeHtml(tag);
                 var articles = window._archiveArticles || [];
                 var filtered = articles.filter(function(a) {
@@ -2897,6 +2930,7 @@
                 e.stopPropagation();
                 var tag = this.dataset.tag;
                 var titleEl = document.getElementById('archiveTitle');
+                window._archiveViewState = 'tag-detail';
                 if (titleEl) titleEl.innerHTML = '<i class="fas fa-tag"></i> 标签：' + escapeHtml(tag);
                 var articlesData = window._archiveArticles || [];
                 var filtered = articlesData.filter(function(a) {
@@ -2907,6 +2941,7 @@
         });
     }
 
+    // ===== ABOUT =====
     function renderAbout() {
         var container = document.getElementById('appContent');
 

@@ -9,10 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js">
-    <script src="https://cdn.jsdelivr.net/npm/vconsole"></script>
-    <script>
-        var vConsole = new VConsole();
-    </script>
     </script>
     <style>
         * {
@@ -2272,6 +2268,33 @@
             });
         }
 
+        function compressImage(file, maxSize, quality) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        if (w > h) {
+                            if (w > maxSize) { h = h * maxSize / w; w = maxSize; }
+                        } else {
+                            if (h > maxSize) { w = w * maxSize / h; h = maxSize; }
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        canvas.toBlob(function(blob) {
+                            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                        }, 'image/jpeg', quality);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
         function initWaline(articleId) {
             if (walineInitialized) return;
             const commentEl = document.getElementById('waline-comments');
@@ -2287,10 +2310,15 @@
                         path: '/article/' + articleId,
                         dark: 'body.dark',
                         imageUploader: async (file) => {
+                            let uploadFile = file;
+                            const shouldCompress = !['image/gif', 'image/svg+xml'].includes(file.type);
+                            if (shouldCompress) {
+                                uploadFile = await compressImage(file, 720, 0.8);
+                            }
                             const reader = new FileReader();
                             const base64 = await new Promise((resolve) => {
                                 reader.onload = () => resolve(reader.result.split(',')[1]);
-                                reader.readAsDataURL(file);
+                                reader.readAsDataURL(uploadFile);
                             });
 
                             const resp = await fetch('https://comment.cuizi.top/api/upload', {
@@ -2411,7 +2439,7 @@
                     appContent.innerHTML = `
                             <div class="article-detail">
                                 <h1 class="detail-title">${escapeHtml(title)}</h1>
-                                <span class="detail-date">${date ? escapeHtml(date) + '  ·  ' : ''}预计阅读 ${readTime} 分钟 · ${wordCount} 字</span>
+                                <span class="detail-date">${date ? escapeHtml(date) + '  ·  ' : ''}大约 ${readTime} 分钟 · ${wordCount} 字</span>
                                 ${tagsHtml}
                                 <hr class="detail-divider">
                                 <div class="detail-content">${renderedContent}</div>

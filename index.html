@@ -2383,15 +2383,6 @@
             });
         });
 
-        list.querySelectorAll('.item-tags .tag').forEach(function(el) {
-            el.addEventListener('click', function(e) {
-                e.stopPropagation();
-                var tag = this.dataset.tag;
-                sessionStorage.setItem('articleKeyword', '#' + tag);
-                window.location.href = 'index.html?return=articles';
-            });
-        });
-
         if (countEl) {
             countEl.textContent = totalItems > 0 ? '共 ' + totalItems + ' 篇' : '';
         }

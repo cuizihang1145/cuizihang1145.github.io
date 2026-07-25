@@ -63,7 +63,7 @@
       "tags": [
         "1"
       ],
-      "delete": false,
+      "delete": true,
       "content": "1"
     }
   ]

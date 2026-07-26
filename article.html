@@ -628,6 +628,24 @@
             cursor: default;
             pointer-events: none;
         }
+        .article-detail .detail-content ul,
+        .article-detail .detail-content ol {
+            padding-left: 1.8rem;
+            margin: 0.6rem 0;
+            word-break: break-word;
+        }
+        .article-detail .detail-content li {
+            word-break: break-word;
+            white-space: normal;
+            max-width: 100%;
+            display: list-item;
+            line-height: 1.8;
+            margin-bottom: 0.2rem;
+        }
+        .article-detail .detail-content li * {
+            display: inline;
+            word-break: break-word;
+        }
         .img-placeholder {
             position: relative;
             border-radius: 12px;

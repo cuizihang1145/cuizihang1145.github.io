@@ -2106,13 +2106,14 @@
                             if (indent < parentIndent) break;
                             type = 'task';
                             const checked = taskMatch[2] === 'x';
-                            content = '<input type="checkbox"' + (checked ? ' checked' : '') +
-                            ' disabled> ' + taskMatch[3];
+                            content = '<input type="checkbox"' + (checked ? ' checked' : '') + ' disabled> ' + taskMatch[3];
+                            if (!currentListType) currentListType = 'ul';
                         } else if (ulMatch) {
                             indent = ulMatch[1].length;
                             if (indent < parentIndent) break;
                             type = 'ul';
                             content = ulMatch[2];
+                            if (!currentListType) currentListType = 'ul';
                         } else if (olMatch) {
                             indent = olMatch[1].length;
                             if (indent < parentIndent) break;
@@ -2123,6 +2124,7 @@
                                 olStartNumber = olNumber;
                             }
                             olValues.push(olNumber);
+                            if (!currentListType) currentListType = 'ol';
                         } else {
                             break;
                         }
@@ -2173,7 +2175,11 @@
                     }
 
                     const listTag = currentListType === 'ol' ? 'ol' : 'ul';
-                    const listClass = currentListType === 'ol' ? '' : ' class="task-list"';
+                    let listClass = '';
+                    if (listTag === 'ul') {
+                        const hasTask = items.some(item => item.type === 'task');
+                        listClass = hasTask ? ' class="task-list"' : '';
+                    }
                     let startAttr = '';
                     if (currentListType === 'ol' && olStartNumber !== null && olStartNumber !== 1) {
                         startAttr = ' start="' + olStartNumber + '"';
@@ -2293,11 +2299,14 @@
                     const img = new Image();
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        let w = img.width, h = img.height;
+                        let w = img.width,
+                            h = img.height;
                         if (w > h) {
-                            if (w > maxSize) { h = h * maxSize / w; w = maxSize; }
+                            if (w > maxSize) { h = h * maxSize / w;
+                                w = maxSize; }
                         } else {
-                            if (h > maxSize) { w = w * maxSize / h; h = maxSize; }
+                            if (h > maxSize) { w = w * maxSize / h;
+                                h = maxSize; }
                         }
                         canvas.width = w;
                         canvas.height = h;
@@ -2347,7 +2356,7 @@
                             const data = await resp.json();
                             return data.url;
                         },
-                        emoji:['https://unpkg.com/@waline/emojis@1.4.0/alus','https://unpkg.com/@waline/emojis@1.4.0/bilibili','https://unpkg.com/@waline/emojis@1.4.0/bmoji','https://unpkg.com/@waline/emojis@1.4.0/qq','https://unpkg.com/@waline/emojis@1.4.0/tieba'],
+                        emoji: ['https://unpkg.com/@waline/emojis@1.4.0/alus', 'https://unpkg.com/@waline/emojis@1.4.0/bilibili', 'https://unpkg.com/@waline/emojis@1.4.0/bmoji', 'https://unpkg.com/@waline/emojis@1.4.0/qq', 'https://unpkg.com/@waline/emojis@1.4.0/tieba'],
                         requiredMeta: ['nick', 'mail']
                     });
                 })
@@ -2470,7 +2479,6 @@
                         } catch (e) {}
                     });
 
-                    
                     initImageLazyLoad();
 
                     const images = document.querySelectorAll('.detail-content .img-placeholder img');
@@ -2574,11 +2582,16 @@
             let translateY = 0;
             let isDragging = false;
             let mouseDown = false;
-            let mouseStartX = 0, mouseStartY = 0;
-            let mouseLastX = 0, mouseLastY = 0;
-            let touchStartDist = 0, touchStartScale = 1;
-            let touchStartX = 0, touchStartY = 0;
-            let touchLastX = 0, touchLastY = 0;
+            let mouseStartX = 0,
+                mouseStartY = 0;
+            let mouseLastX = 0,
+                mouseLastY = 0;
+            let touchStartDist = 0,
+                touchStartScale = 1;
+            let touchStartX = 0,
+                touchStartY = 0;
+            let touchLastX = 0,
+                touchLastY = 0;
 
             const imgWrapper = overlay.querySelector('.lightbox-img-wrapper');
             const img = overlay.querySelector('img');

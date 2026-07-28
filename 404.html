@@ -588,9 +588,6 @@
     </div>
 
     <script>
-        // ============================================================
-        // 🎯 路由判断：只有精确匹配 /article/数字 才跳转
-        // ============================================================
         const parts = window.location.pathname.split('/').filter(Boolean);
 
         if (parts.length === 2 && parts[0] === 'article' && /^\d+$/.test(parts[1])) {
@@ -602,9 +599,6 @@
             document.getElementById('app').classList.add('show');
         }
 
-        // ============================================================
-        // 🌗 主题切换
-        // ============================================================
         const themeToggle = document.getElementById('themeToggle');
         const icon = themeToggle.querySelector('i');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -623,9 +617,6 @@
             setTheme(currentTheme === 'dark' ? 'light' : 'dark');
         });
 
-        // ============================================================
-        // 🎉 彩蛋系统
-        // ============================================================
         const toastContainer = document.getElementById('toastContainer');
         const clickBlocker = document.getElementById('clickBlocker');
         const homeBtn = document.getElementById('homeBtn');

@@ -899,9 +899,7 @@
 
     <script>
         (function() {
-            // ============================================================
-            // 编码/解码
-            // ============================================================
+        
             function encodeShareData(line1, line2, sig) {
                 const data = { l1: line1, l2: line2, s: sig || '' };
                 const jsonStr = JSON.stringify(data);
@@ -927,9 +925,6 @@
                 }
             }
 
-            // ============================================================
-            // 解析 URL 参数
-            // ============================================================
             function getParam(name) {
                 const url = new URL(window.location.href);
                 return url.searchParams.get(name);
@@ -946,9 +941,6 @@
 
             const isSharedMode = decoded !== null;
 
-            // ============================================================
-            // DOM 引用
-            // ============================================================
             const topBar = document.getElementById('topBar');
             const msgLine1 = document.getElementById('msgLine1');
             const msgLine2 = document.getElementById('msgLine2');
@@ -969,9 +961,6 @@
             const count2 = document.getElementById('count2');
             const count3 = document.getElementById('count3');
 
-            // ============================================================
-            // 如果是分享模式 → 隐藏分享按钮 + 显示分享内容
-            // ============================================================
             if (isSharedMode) {
                 topBar.classList.add('shared-mode');
                 if (decoded.l1) msgLine1.textContent = decoded.l1;
@@ -990,9 +979,6 @@
                 backIcon.className = 'fas fa-home';
             }
 
-            // ============================================================
-            // 日历
-            // ============================================================
             const calendarGrid = document.getElementById('calendarGrid');
             const calendarLabel = document.getElementById('calendarLabel');
             const weekHeaders = ['日', '一', '二', '三', '四', '五', '六'];
@@ -1031,9 +1017,6 @@
             }
             renderCalendar();
 
-            // ============================================================
-            // 弹窗控制
-            // ============================================================
             const modal = document.getElementById('detailModal');
             const closeBtn = document.getElementById('closeModalBtn');
 
@@ -1048,9 +1031,6 @@
                 if (e.target === modal) modal.classList.remove('active');
             });
 
-            // ============================================================
-            // 返回按钮
-            // ============================================================
             document.getElementById('backButton').addEventListener('click', function() {
                 if (isSharedMode) {
                     window.location.href = 'index.html';
@@ -1061,9 +1041,6 @@
                 }
             });
 
-            // ============================================================
-            // 分享功能（仅非分享模式下可用）
-            // ============================================================
             if (!isSharedMode) {
                 const shareBtn = document.getElementById('shareBtn');
                 const editHint = document.getElementById('editHint');
@@ -1210,9 +1187,6 @@
                 });
             }
 
-            // ============================================================
-            // 完整烟花粒子系统（粉色系）
-            // ============================================================
             const canvas = document.getElementById('canvasCanvas');
             const ctx = canvas.getContext('2d');
             let w = window.innerWidth, h = window.innerHeight;

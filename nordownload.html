@@ -505,7 +505,6 @@
             }
         }
 
-        /* ===== Lightbox ===== */
         .lightbox-overlay {
             position: fixed;
             top: 0;
@@ -710,7 +709,6 @@
             color: #6a6a8a;
         }
 
-        /* ===== 选择下载方式弹窗 ===== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -871,7 +869,6 @@
             background: rgba(255, 255, 255, 0.15);
         }
 
-        /* ===== 外部跳转二次确认弹窗 ===== */
         .external-modal-overlay {
             position: fixed;
             top: 0;
@@ -1188,12 +1185,10 @@
         <h1 class="app-title">nor叔</h1>
         <p class="app-sub">软件 · 工具</p>
 
-        <!-- ===== 下载按钮 ===== -->
         <button class="btn-download" id="mainDownloadBtn">
             <i class="fas fa-download"></i> 下载软件
         </button>
 
-        <!-- ===== 软件简介 ===== -->
         <div class="app-description">
             这是一个 <span class="highlight">nor叔粉丝开发</span> 的非官方软件。
             软件中可以查看 nor叔自 <span class="highlight">2024年5月21日</span> 起已经停更了多久。
@@ -1202,7 +1197,6 @@
             目前软件已停止更新，<span class="recovery">我希望这个软件可以早日用不上，nor叔早日康复。</span>
         </div>
 
-        <!-- ===== 更新日志（折叠） ===== -->
         <div class="fold-wrapper">
             <div class="fold-toggle" id="changelogToggle">
                 <i class="fas fa-history"></i> 更新日志
@@ -1306,7 +1300,6 @@
             </div>
         </div>
 
-        <!-- ===== 截图区域 ===== -->
         <div class="screenshots-section">
             <div class="section-label"><i class="fas fa-image"></i> 软件截图</div>
             <div class="screenshots-scroll">
@@ -1335,7 +1328,6 @@
             </div>
         </div>
 
-        <!-- ===== 文件信息 ===== -->
         <div class="file-info">
             <i class="fas fa-file-archive"></i>
             <span>nor叔_1.3snap5.apk</span>
@@ -1351,7 +1343,6 @@
         </p>
     </div>
 
-    <!-- ===== Lightbox ===== -->
     <div class="lightbox-overlay" id="lightbox">
         <button class="lightbox-close" id="lightboxClose">&times;</button>
         <button class="lightbox-nav prev" id="lightboxPrev">‹</button>
@@ -1363,7 +1354,6 @@
         <div class="lightbox-counter" id="lightboxCounter">1 / 5</div>
     </div>
 
-    <!-- ===== 选择下载方式弹窗 ===== -->
     <div class="modal-overlay" id="downloadModal">
         <div class="modal-box">
             <div class="modal-title"><i class="fas fa-download"></i> 选择下载方式</div>
@@ -1405,7 +1395,6 @@
         </div>
     </div>
 
-    <!-- ===== 外部跳转二次确认弹窗 ===== -->
     <div class="external-modal-overlay" id="externalModal">
         <div class="external-modal-box">
             <span class="modal-icon"><i class="fas fa-exclamation-triangle"></i></span>
@@ -1435,9 +1424,6 @@
     </div>
 
     <script>
-        // ============================================================
-        // 主题切换
-        // ============================================================
         const themeToggle = document.getElementById('themeToggle');
         const icon = themeToggle.querySelector('i');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1457,9 +1443,6 @@
             setTheme(next);
         });
 
-        // ============================================================
-        // 折叠功能
-        // ============================================================
         function setupFold(toggleId, contentId) {
             const toggle = document.getElementById(toggleId);
             const content = document.getElementById(contentId);
@@ -1471,9 +1454,6 @@
         }
         setupFold('changelogToggle', 'changelogContent');
 
-        // ============================================================
-        // Lightbox
-        // ============================================================
         const lightbox = document.getElementById('lightbox');
         const lightboxImg = document.getElementById('lightboxImg');
         const lightboxLabel = document.getElementById('lightboxLabel');
@@ -1528,7 +1508,6 @@
             e.stopPropagation();
             if (imageData.length === 0) return;
             currentIndex = (currentIndex - 1 + imageData.length) % imageData.length;
-            // 切换时重新触发动画
             const container = lightbox.querySelector('.lightbox-container');
             container.style.transition = 'none';
             container.style.opacity = '0';
@@ -1575,9 +1554,6 @@
             if (e.key === 'ArrowRight') nextImage(e);
         });
 
-        // ============================================================
-        // 下载逻辑
-        // ============================================================
         const downloadModal = document.getElementById('downloadModal');
         const externalModal = document.getElementById('externalModal');
         const externalLinkUrl = document.getElementById('externalLinkUrl');

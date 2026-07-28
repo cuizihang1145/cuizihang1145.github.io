@@ -277,7 +277,6 @@
             font-size: 1.1rem;
         }
 
-        /* ===== 修复组合符号字体显示 ===== */
         .app-description {
             font-size: 0.82rem;
             color: #4a4a6e;
@@ -291,13 +290,20 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
             margin-bottom: 1rem;
             transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-            /* 中文字体放在前面，组合符号就不会回退到宋体了 */
             font-family: 'PingFang SC', 'Microsoft YaHei', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         body.dark .app-description {
             color: #b8b4d8;
             background: rgba(40, 38, 65, 0.3);
             border-color: rgba(255, 255, 255, 0.05);
+        }
+        .app-description .highlight {
+            color: #624ed0;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        body.dark .app-description .highlight {
+            color: #88ccff;
         }
 
         .fold-wrapper {
@@ -492,7 +498,6 @@
             }
         }
 
-        /* ===== Lightbox ===== */
         .lightbox-overlay {
             position: fixed;
             top: 0;
@@ -1178,7 +1183,7 @@
         </button>
 
         <div class="app-description">
-            在输入的文字上面套上一层神秘符号，比⃝如⃝这⃝样⃝，或⃞者⃞这⃞样⃞，又⃤或⃤者⃤是⃤这⃤样⃤，这⃟样⃟，这⃨样⃨，这⃖样⃖，这⃠样⃠，这⃛样⃛，这⃩样⃩。
+            在输入的文字上面套上一层神秘符号，<span class="highlight">比⃝如⃝这⃝样⃝</span>，<span class="highlight">或⃞者⃞这⃞样⃞</span>，<span class="highlight">又⃤或⃤者⃤是⃤这⃤样⃤</span>，<span class="highlight">这⃟样⃟</span>，<span class="highlight">这⃨样⃨</span>，<span class="highlight">这⃖样⃖</span>，<span class="highlight">这⃠样⃠</span>，<span class="highlight">这⃛样⃛</span>，<span class="highlight">这⃩样⃩</span>。
         </div>
 
         <div class="fold-wrapper">
@@ -1233,7 +1238,6 @@
         </p>
     </div>
 
-    <!-- Lightbox -->
     <div class="lightbox-overlay" id="lightbox">
         <button class="lightbox-close" id="lightboxClose">&times;</button>
         <button class="lightbox-nav prev" id="lightboxPrev">‹</button>
@@ -1245,7 +1249,6 @@
         <div class="lightbox-counter" id="lightboxCounter">1 / 2</div>
     </div>
 
-    <!-- ===== 选择下载方式弹窗 ===== -->
     <div class="modal-overlay" id="downloadModal">
         <div class="modal-box">
             <div class="modal-title"><i class="fas fa-download"></i> 选择下载方式</div>
@@ -1287,7 +1290,6 @@
         </div>
     </div>
 
-    <!-- ===== 外部跳转二次确认弹窗 ===== -->
     <div class="external-modal-overlay" id="externalModal">
         <div class="external-modal-box">
             <span class="modal-icon"><i class="fas fa-exclamation-triangle"></i></span>
@@ -1347,9 +1349,6 @@
         }
         setupFold('changelogToggle', 'changelogContent');
 
-        // ============================================================
-        // Lightbox
-        // ============================================================
         const lightbox = document.getElementById('lightbox');
         const lightboxImg = document.getElementById('lightboxImg');
         const lightboxLabel = document.getElementById('lightboxLabel');
@@ -1450,9 +1449,6 @@
             if (e.key === 'ArrowRight') nextImage(e);
         });
 
-        // ============================================================
-        // 下载逻辑
-        // ============================================================
         const downloadModal = document.getElementById('downloadModal');
         const externalModal = document.getElementById('externalModal');
         const externalLinkUrl = document.getElementById('externalLinkUrl');

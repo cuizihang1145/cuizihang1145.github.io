@@ -2548,7 +2548,7 @@
         setTimeout(updateClearBtn, 50);
         loadedCount = 0;
 
-        fetch('wenzhang.json', { cache: 'no-cache' })
+        fetch('/wenzhang.json', { cache: 'no-cache' })
             .then(function(response) {
                 if (!response.ok) throw new Error('文件不存在');
                 return response.json();
@@ -2684,7 +2684,7 @@
 
         window._archiveViewState = 'folder';
 
-        fetch('wenzhang.json', { cache: 'no-cache' })
+        fetch('/wenzhang.json', { cache: 'no-cache' })
             .then(function(response) {
                 if (!response.ok) throw new Error('文件不存在');
                 return response.json();
@@ -2959,7 +2959,7 @@
 
         var sameDisplay = (diffDays + ' 天') === carryDisplay.trim();
 
-        fetch('wenzhang.json', { cache: 'no-cache' })
+        fetch('/wenzhang.json', { cache: 'no-cache' })
             .then(function(response) {
                 if (!response.ok) throw new Error('文件不存在');
                 return response.json();

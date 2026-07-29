@@ -1974,7 +1974,7 @@
                     else if (h) style = ' style="height:' + h + 'px; width:auto;"';
                     let titleAttr = '';
                     if (title) titleAttr = ' title="' + title + '"';
-                    return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + titleAttr + ' />';
+                    return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + titleAttr + '>';
                 });
                 html = html.replace(/!video\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, desc, src, w, h) {
                     let style = '';
@@ -2016,7 +2016,7 @@
                     else if (h) style = ' style="height:' + h + 'px; width:auto;"';
                     let titleAttr = '';
                     if (title) titleAttr = ' title="' + title + '"';
-                    return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + titleAttr + ' />';
+                    return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + titleAttr + '>';
                 });
                 html = html.replace(/!video\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, desc, src, w, h) {
                     let style = '';
@@ -2641,13 +2641,37 @@
                     const tags = currentArticle.tags || [];
                     let renderedContent = renderMarkdown(content);
 
-                    renderedContent = renderedContent.replace(/<img\s+src="([^"]*)"\s+alt="([^"]*)"([^>]*)>/g, function(
-                        match, src, alt, rest) {
-                        const altText = alt || '';
-                        const altHtml = altText ? '<span class="img-alt-text">' + altText + '</span>' : '';
-                        return '<div class="img-placeholder"><span class="img-loading"><i class="fas fa-spinner fa-spin"></i></span><img src="' +
-                            src + '" alt="' + alt + '"' + rest + '>' + altHtml + '</div>';
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = renderedContent;
+                    const imgs = tempDiv.querySelectorAll('img');
+                    imgs.forEach(img => {
+                        const src = img.getAttribute('src');
+                        const alt = img.getAttribute('alt') || '';
+                        const restAttrs = '';
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'img-placeholder';
+                        const loading = document.createElement('span');
+                        loading.className = 'img-loading';
+                        loading.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                        placeholder.appendChild(loading);
+                        const newImg = document.createElement('img');
+                        newImg.src = src;
+                        newImg.alt = alt;
+                        for (const attr of img.attributes) {
+                            if (attr.name !== 'src' && attr.name !== 'alt') {
+                                newImg.setAttribute(attr.name, attr.value);
+                            }
+                        }
+                        placeholder.appendChild(newImg);
+                        if (alt) {
+                            const altSpan = document.createElement('span');
+                            altSpan.className = 'img-alt-text';
+                            altSpan.textContent = alt;
+                            placeholder.appendChild(altSpan);
+                        }
+                        img.parentNode.replaceChild(placeholder, img);
                     });
+                    renderedContent = tempDiv.innerHTML;
 
                     const wordCount = countWords(content);
                     const readTime = calculateReadTime(wordCount);

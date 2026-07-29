@@ -1945,6 +1945,7 @@
             let tableAligns = [];
             let footnotes = {};
             let footnoteKeys = [];
+            let consecutiveEmptyLines = 0;
 
             function restoreEscapes(text) {
                 let r = text;
@@ -1956,19 +1957,22 @@
 
             function renderInline(text) {
                 let html = escapeHtml(text);
-                html = html.replace(/&lt;(https?:\/\/[^\s<>]+)&gt;/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
                 html = html.replace(/&lt;([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})&gt;/g, '<a href="mailto:$1">$1</a>');
+                html = html.replace(/&lt;(https?:\/\/[^\s<>]+)&gt;/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
                 html = html.replace(/(?<!\]\()https?:\/\/[^\s<>]+/g, '<a href="$&" target="_blank" rel="noopener">$&</a>');
                 html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
                 html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                 html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
                 html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
-                html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, alt, src, w, h) {
+                html = html.replace(/__([^_]+)__/g, '<u>$1</u>');
+                html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?(?:\s+"([^"]*)")?\)/g, function(match, alt, src, w, h, title) {
                     let style = '';
                     if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
                     else if (w) style = ' style="width:' + w + 'px; height:auto;"';
                     else if (h) style = ' style="height:' + h + 'px; width:auto;"';
-                    return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + ' />';
+                    let titleAttr = '';
+                    if (title) titleAttr = ' title="' + title + '"';
+                    return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + titleAttr + ' />';
                 });
                 html = html.replace(/!video\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, desc, src, w, h) {
                     let style = '';
@@ -2076,10 +2080,144 @@
                 codeLang = '';
             }
 
+            function parseList(startIdx, parentIndent) {
+                let html = '';
+                let idx = startIdx;
+                let currentListType = null;
+                let items = [];
+                let olStartNumber = null;
+                let olValues = [];
+
+                while (idx < lines.length) {
+                    const l = lines[idx];
+                    const t = l.trim();
+                    if (t === '') break;
+
+                    const ulMatch = l.match(/^(\s*)[-*+]\s+(.+)/);
+                    const olMatch = l.match(/^(\s*)(\d+)\.\s+(.+)/);
+                    const taskMatch = l.match(/^(\s*)[-*+]\s+\[([ x])\]\s+(.+)/);
+
+                    let type = null;
+                    let content = '';
+                    let indent = 0;
+                    let olNumber = 0;
+
+                    if (taskMatch) {
+                        indent = taskMatch[1].length;
+                        if (indent < parentIndent) break;
+                        type = 'task';
+                        const checked = taskMatch[2] === 'x';
+                        const checkboxHtml = '<input type="checkbox"' + (checked ? ' checked' : '') + ' disabled> ';
+                        const textContent = taskMatch[3];
+                        content = {
+                            checkbox: checkboxHtml,
+                            text: textContent
+                        };
+                        if (!currentListType) currentListType = 'ul';
+                    } else if (ulMatch) {
+                        indent = ulMatch[1].length;
+                        if (indent < parentIndent) break;
+                        type = 'ul';
+                        content = ulMatch[2];
+                        if (!currentListType) currentListType = 'ul';
+                    } else if (olMatch) {
+                        indent = olMatch[1].length;
+                        if (indent < parentIndent) break;
+                        type = 'ol';
+                        olNumber = parseInt(olMatch[2]);
+                        content = olMatch[3];
+                        if (olStartNumber === null) {
+                            olStartNumber = olNumber;
+                        }
+                        olValues.push(olNumber);
+                        if (!currentListType) currentListType = 'ol';
+                    } else {
+                        break;
+                    }
+
+                    let childHtml = '';
+                    let childIdx = idx + 1;
+                    while (childIdx < lines.length && lines[childIdx].trim() === '') childIdx++;
+                    if (childIdx < lines.length) {
+                        const nextLine = lines[childIdx];
+                        const nextUl = nextLine.match(/^(\s*)[-*+]\s+/);
+                        const nextOl = nextLine.match(/^(\s*)(\d+)\.\s+/);
+                        const nextTask = nextLine.match(/^(\s*)[-*+]\s+\[[ x]\]\s+/);
+                        if (nextUl || nextOl || nextTask) {
+                            const nextIndent = parseInt((nextUl || nextOl || nextTask)[1].length);
+                            if (nextIndent > indent) {
+                                const [childHtmlResult, childConsumed] = parseList(childIdx, indent);
+                                childHtml = childHtmlResult;
+                                idx += childConsumed;
+                            }
+                        }
+                    }
+
+                    if (!currentListType) {
+                        currentListType = type === 'ol' ? 'ol' : 'ul';
+                    }
+
+                    const isTask = type === 'task';
+                    const liClass = isTask ? ' class="task-list-item"' : '';
+
+                    let renderedContent;
+                    if (type === 'task' && typeof content === 'object') {
+                        renderedContent = content.checkbox + renderInline(content.text);
+                    } else {
+                        renderedContent = renderInline(content);
+                    }
+
+                    let liTag = '<li' + liClass;
+                    if (type === 'ol') {
+                        liTag += ' value="' + olNumber + '"';
+                    }
+                    const childHtmlWithNewline = childHtml ? '\n' + childHtml : '';
+                    liTag += '>' + renderedContent + childHtmlWithNewline + '</li>';
+
+                    items.push({
+                        type: type,
+                        olNumber: olNumber,
+                        html: liTag
+                    });
+
+                    idx++;
+                }
+
+                if (items.length === 0) {
+                    return ['', 0];
+                }
+
+                const listTag = currentListType === 'ol' ? 'ol' : 'ul';
+                let listClass = '';
+                if (listTag === 'ul') {
+                    const hasTask = items.some(item => item.type === 'task');
+                    listClass = hasTask ? ' class="task-list"' : '';
+                }
+                let startAttr = '';
+                if (currentListType === 'ol' && olStartNumber !== null && olStartNumber !== 1) {
+                    startAttr = ' start="' + olStartNumber + '"';
+                }
+                const itemsHtml = items.map(item => item.html).join('\n');
+                html = '\n<' + listTag + listClass + startAttr + '>\n' + itemsHtml + '\n</' + listTag + '>';
+                return [html, idx - startIdx];
+            }
+
             let i = 0;
             while (i < lines.length) {
                 const line = lines[i];
                 const trimmed = line.trim();
+
+                if (trimmed === '') {
+                    consecutiveEmptyLines++;
+                    i++;
+                    if (consecutiveEmptyLines === 2 && !inCodeBlock && !inTable) {
+                        result += '\n<br>\n';
+                        consecutiveEmptyLines = 0;
+                    }
+                    continue;
+                } else {
+                    consecutiveEmptyLines = 0;
+                }
 
                 const codeBlockStart = line.match(/^(```|~~~)(\w*)/);
                 if (codeBlockStart) {
@@ -2097,12 +2235,6 @@
                 }
                 if (inCodeBlock) {
                     codeBlockLines.push(line);
-                    i++;
-                    continue;
-                }
-
-                if (trimmed === '') {
-                    flushTable();
                     i++;
                     continue;
                 }
@@ -2150,14 +2282,14 @@
                     flushTable();
                     const level = headingMatch[1].length;
                     const text = headingMatch[2];
-                    result += '<h' + level + '>' + renderInline(text) + '</h' + level + '>';
+                    result += '\n<h' + level + '>' + renderInline(text) + '</h' + level + '>\n';
                     i++;
                     continue;
                 }
 
                 if (/^---$/.test(trimmed) || /^\*\*\*$/.test(trimmed) || /^___$/.test(trimmed)) {
                     flushTable();
-                    result += '<hr />';
+                    result += '\n<hr />\n';
                     i++;
                     continue;
                 }
@@ -2173,119 +2305,8 @@
                     }
                     while (i < lines.length && lines[i].trim() === '') i++;
                     let ddHtml = defs.map(d => '<dd>' + d + '</dd>').join('');
-                    result += '<dl><dt>' + term + '</dt>' + ddHtml + '</dl>';
+                    result += '\n<dl><dt>' + term + '</dt>' + ddHtml + '</dl>\n';
                     continue;
-                }
-
-                function parseList(startIdx, parentIndent) {
-                    let html = '';
-                    let idx = startIdx;
-                    let currentListType = null;
-                    let items = [];
-                    let olStartNumber = null;
-                    let olValues = [];
-
-                    while (idx < lines.length) {
-                        const l = lines[idx];
-                        const t = l.trim();
-                        if (t === '') break;
-
-                        const ulMatch = l.match(/^(\s*)[-*+]\s+(.+)/);
-                        const olMatch = l.match(/^(\s*)(\d+)\.\s+(.+)/);
-                        const taskMatch = l.match(/^(\s*)[-*+]\s+\[([ x])\]\s+(.+)/);
-
-                        let match = null;
-                        let type = null;
-                        let content = '';
-                        let indent = 0;
-                        let olNumber = 0;
-
-                        if (taskMatch) {
-                            indent = taskMatch[1].length;
-                            if (indent < parentIndent) break;
-                            type = 'task';
-                            const checked = taskMatch[2] === 'x';
-                            content = '<input type="checkbox"' + (checked ? ' checked' : '') + ' disabled> ' + taskMatch[3];
-                            if (!currentListType) currentListType = 'ul';
-                        } else if (ulMatch) {
-                            indent = ulMatch[1].length;
-                            if (indent < parentIndent) break;
-                            type = 'ul';
-                            content = ulMatch[2];
-                            if (!currentListType) currentListType = 'ul';
-                        } else if (olMatch) {
-                            indent = olMatch[1].length;
-                            if (indent < parentIndent) break;
-                            type = 'ol';
-                            olNumber = parseInt(olMatch[2]);
-                            content = olMatch[3];
-                            if (olStartNumber === null) {
-                                olStartNumber = olNumber;
-                            }
-                            olValues.push(olNumber);
-                            if (!currentListType) currentListType = 'ol';
-                        } else {
-                            break;
-                        }
-
-                        let childHtml = '';
-                        let childIdx = idx + 1;
-                        while (childIdx < lines.length && lines[childIdx].trim() === '') childIdx++;
-                        if (childIdx < lines.length) {
-                            const nextLine = lines[childIdx];
-                            const nextUl = nextLine.match(/^(\s*)[-*+]\s+/);
-                            const nextOl = nextLine.match(/^(\s*)(\d+)\.\s+/);
-                            const nextTask = nextLine.match(/^(\s*)[-*+]\s+\[[ x]\]\s+/);
-                            if (nextUl || nextOl || nextTask) {
-                                const nextIndent = parseInt((nextUl || nextOl || nextTask)[1].length);
-                                if (nextIndent > indent) {
-                                    const [childHtmlResult, childConsumed] = parseList(childIdx, indent);
-                                    childHtml = childHtmlResult;
-                                    idx += childConsumed;
-                                }
-                            }
-                        }
-
-                        if (!currentListType) {
-                            currentListType = type === 'ol' ? 'ol' : 'ul';
-                        }
-
-                        const isTask = type === 'task';
-                        const liClass = isTask ? ' class="task-list-item"' : '';
-                        const renderedContent = renderInline(content);
-
-                        let liTag = '<li' + liClass;
-                        if (type === 'ol') {
-                            liTag += ' value="' + olNumber + '"';
-                        }
-                        liTag += '>' + renderedContent + childHtml + '</li>';
-
-                        items.push({
-                            type: type,
-                            olNumber: olNumber,
-                            html: liTag
-                        });
-
-                        idx++;
-                    }
-
-                    if (items.length === 0) {
-                        return ['', 0];
-                    }
-
-                    const listTag = currentListType === 'ol' ? 'ol' : 'ul';
-                    let listClass = '';
-                    if (listTag === 'ul') {
-                        const hasTask = items.some(item => item.type === 'task');
-                        listClass = hasTask ? ' class="task-list"' : '';
-                    }
-                    let startAttr = '';
-                    if (currentListType === 'ol' && olStartNumber !== null && olStartNumber !== 1) {
-                        startAttr = ' start="' + olStartNumber + '"';
-                    }
-                    const itemsHtml = items.map(item => item.html).join('\n');
-                    html = '<' + listTag + listClass + startAttr + '>\n' + itemsHtml + '\n</' + listTag + '>';
-                    return [html, idx - startIdx];
                 }
 
                 const listCheck = line.match(/^(\s*)[-*+]\s+/);
@@ -2333,15 +2354,16 @@
                     }
                     let innerHtml = renderInline(quoteLines.join('\n'));
                     for (let lv = 0; lv < level; lv++) {
-                        innerHtml = '<blockquote>' + innerHtml + '</blockquote>';
+                        const indent = '  '.repeat(lv);
+                        innerHtml = '\n<blockquote>\n' + indent + '  ' + innerHtml + '\n' + indent + '</blockquote>';
                     }
-                    result += innerHtml;
+                    result += '\n' + innerHtml + '\n';
                     i = j;
                     continue;
                 }
 
                 flushTable();
-                result += '<p>' + renderInline(line) + '</p>';
+                result += '\n<p>' + renderInline(line) + '</p>\n';
                 i++;
             }
 
@@ -2349,7 +2371,7 @@
             flushTable();
 
             if (footnoteKeys.length > 0) {
-                result += '<div class="footnotes">\n';
+                result += '\n<div class="footnotes">\n';
                 for (const key of footnoteKeys) {
                     if (footnotes[key]) {
                         result += '<div class="footnote-def" id="fn-' + key + '">';

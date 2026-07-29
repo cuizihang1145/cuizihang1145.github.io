@@ -1869,13 +1869,46 @@
         }
 
         function calculateReadTime(wordCount) {
+            if (wordCount === 0) return 114514;
             const minutes = Math.ceil(wordCount / 300);
             return minutes < 1 ? 1 : minutes;
+        }
+
+        function formatReadTime(minutes) {
+            if (minutes === 114514) return '114514 分钟';
+            return '大约 ' + minutes + ' 分钟';
+        }
+
+        function formatWordCount(count) {
+            if (count === 0) return '没有字哦';
+            return count + ' 字';
+        }
+
+        function getSharePreview(content, title) {
+            const plain = markdownToPlainText(content);
+            const wordCount = countWords(content);
+            if (wordCount === 0) return '[没有字捏 是什么自己打开看]';
+            const chars = [...plain];
+            if (chars.length <= 80) return plain;
+            const truncated = chars.slice(0, 80).join('');
+            return truncated + '…';
+        }
+
+        function getShareDesc(content) {
+            const wordCount = countWords(content);
+            if (wordCount === 0) return '[没有字捏 是什么自己打开看]';
+            const plain = markdownToPlainText(content);
+            const chars = [...plain];
+            if (chars.length <= 80) return plain;
+            const truncated = chars.slice(0, 80).join('');
+            return truncated + '…';
         }
 
         function getPlainPreview(content, maxLength) {
             maxLength = maxLength || 80;
             const plain = markdownToPlainText(content);
+            const wordCount = countWords(content);
+            if (wordCount === 0) return '[没有字捏 是什么自己打开看]';
             const chars = [...plain];
             if (chars.length <= maxLength) return plain;
             const truncated = chars.slice(0, maxLength).join('');
@@ -1942,17 +1975,17 @@
                     if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
                     else if (w) style = ' style="width:' + w + 'px; height:auto;"';
                     else if (h) style = ' style="height:' + h + 'px; width:auto;"';
+                    const descHtml = desc ? '<div class="video-alt-text">' + desc + '</div>' : '';
                     const youtubeMatch = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
                     if (youtubeMatch) {
                         const vid = youtubeMatch[1];
-                        return '<iframe src="https://www.youtube.com/embed/' + vid + '" frameborder="0" allowfullscreen' + style + '></iframe>';
+                        return '<div class="video-placeholder">' + descHtml + '<iframe src="https://www.youtube.com/embed/' + vid + '" frameborder="0" allowfullscreen' + style + '></iframe></div>';
                     }
                     const bilibiliMatch = src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
                     if (bilibiliMatch) {
                         const vid = bilibiliMatch[1];
-                        return '<iframe src="https://player.bilibili.com/player.html?bvid=' + vid + '" frameborder="0" allowfullscreen' + style + '></iframe>';
+                        return '<div class="video-placeholder">' + descHtml + '<iframe src="https://player.bilibili.com/player.html?bvid=' + vid + '" frameborder="0" allowfullscreen' + style + '></iframe></div>';
                     }
-                    const descHtml = desc ? '<div class="video-alt-text">' + desc + '</div>' : '';
                     return '<div class="video-placeholder">' + descHtml + '<video src="' + src + '" controls' + style + '></video></div>';
                 });
                 html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
@@ -2543,6 +2576,8 @@
 
                     const wordCount = countWords(content);
                     const readTime = calculateReadTime(wordCount);
+                    const displayWord = formatWordCount(wordCount);
+                    const displayTime = formatReadTime(readTime);
 
                     const preview = getPlainPreview(content, 80);
                     const articleUrl = window.location.origin + window.location.pathname + '?id=' + idx;
@@ -2561,7 +2596,7 @@
                     appContent.innerHTML = `
                             <div class="article-detail">
                                 <h1 class="detail-title">${escapeHtml(title)}</h1>
-                                <span class="detail-date">${date ? escapeHtml(date) + '  ·  ' : ''}大约 ${readTime} 分钟 · ${wordCount} 字</span>
+                                <span class="detail-date">${date ? escapeHtml(date) + '  ·  ' : ''}${displayTime} · ${displayWord}</span>
                                 ${tagsHtml}
                                 <hr class="detail-divider">
                                 <div class="detail-content">${renderedContent}</div>
@@ -3083,15 +3118,7 @@
 
             const title = currentArticle.title || '无标题';
             const date = currentArticle.date || '';
-            const plainContent = markdownToPlainText(currentArticle.content || '');
-            let desc = plainContent.substring(0, 80);
-            if (plainContent.length > 80) {
-                desc = desc + '…';
-            }
-            desc = desc.replace(/[,，、。.；;：:！!？?…~～]+$/, '');
-            if (plainContent.length > 80 && !desc.endsWith('…')) {
-                desc = desc + '…';
-            }
+            const desc = getShareDesc(currentArticle.content || '');
             const url = window.location.href;
 
             const canvas = document.createElement('canvas');

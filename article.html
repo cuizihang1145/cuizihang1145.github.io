@@ -10,8 +10,6 @@
     <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js">
     </script>
-    <script src="libs/quikdown_edit_standalone.umd.min.js">
-    </script>
     <style>
         * {
             margin: 0;
@@ -1847,6 +1845,432 @@
         let lbPlayTimer = null;
         let lbIntervalId = null;
 
+        function renderMarkdown(md) {
+            if (!md) return '';
+
+            const escMap = {};
+            let escCounter = 0;
+            md = md.replace(/\\([\\`*_{}\[\]()#+\-.!|$])/g, function(match, char) {
+                const key = '\uE000' + (escCounter++) + '\uE001';
+                escMap[key] = char;
+                return key;
+            });
+
+            const lines = md.split('\n');
+            let result = '';
+            let inCodeBlock = false;
+            let codeBlockLines = [];
+            let codeLang = '';
+            let codeBlockCounter = 0;
+            let inTable = false;
+            let tableRows = [];
+            let tableAligns = [];
+            let footnotes = {};
+            let footnoteKeys = [];
+
+            function restoreEscapes(text) {
+                let r = text;
+                for (const [key, char] of Object.entries(escMap)) {
+                    r = r.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), char);
+                }
+                return r;
+            }
+
+            function renderInline(text) {
+                let html = escapeHtml(text);
+                html = html.replace(/&lt;(https?:\/\/[^\s<>]+)&gt;/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+                html = html.replace(/&lt;([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})&gt;/g, '<a href="mailto:$1">$1</a>');
+                html = html.replace(/(?<!\]\()https?:\/\/[^\s<>]+/g, '<a href="$&" target="_blank" rel="noopener">$&</a>');
+                html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+                html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+                html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
+                html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, alt, src, w, h) {
+                    let style = '';
+                    if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
+                    else if (w) style = ' style="width:' + w + 'px; height:auto;"';
+                    else if (h) style = ' style="height:' + h + 'px; width:auto;"';
+                    return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + ' />';
+                });
+                html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+                html = html.replace(/\[\^([^\]]+)\]/g, function(match, key) {
+                    if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
+                    return '<sup class="footnote-ref"><a href="#fn-' + key + '" id="fnref-' + key + '">' + key +
+                        '</a></sup>';
+                });
+                html = restoreEscapes(html);
+                return html;
+            }
+
+            function flushTable() {
+                if (tableRows.length === 0) return;
+                let html = '<table>';
+                for (let i = 0; i < tableRows.length; i++) {
+                    const cells = tableRows[i];
+                    const isHeader = i === 0;
+                    html += '<tr>';
+                    for (let j = 0; j < cells.length; j++) {
+                        const tag = isHeader ? 'th' : 'td';
+                        const align = (i === 1 && tableAligns[j]) ? ' style="text-align:' + tableAligns[j] + ';"' : '';
+                        const cellContent = cells[j].replace(/\\n/g, '\n').replace(/\n/g, '<br>');
+                        html += '<' + tag + align + '>' + renderInline(cellContent) + '</' + tag + '>';
+                    }
+                    html += '</tr>';
+                }
+                html += '</table>';
+                result += html;
+                tableRows = [];
+                tableAligns = [];
+                inTable = false;
+            }
+
+            function flushCodeBlock() {
+                if (codeBlockLines.length === 0) {
+                    inCodeBlock = false;
+                    codeLang = '';
+                    return;
+                }
+                let code = codeBlockLines.join('\n');
+                code = code.replace(/^\s*\n/, '').replace(/\n\s*$/, '');
+
+                const langParts = codeLang.split(/\s+/);
+                const lang = langParts[0] || 'text';
+                const copyId = 'code-' + Date.now() + '-' + (codeBlockCounter++);
+
+                const lines = code.split('\n');
+                const lineCount = lines.length;
+                let maxLineLength = 0;
+                let totalChars = 0;
+                for (let j = 0; j < lines.length; j++) {
+                    const lineLen = lines[j].length;
+                    if (lineLen > maxLineLength) maxLineLength = lineLen;
+                    totalChars += lineLen;
+                }
+                totalChars += lineCount > 0 ? lineCount - 1 : 0;
+
+                const statsHtml = '<span>' + lineCount + ' 行</span> · <span>' + maxLineLength + ' 列</span> · <span>' +
+                    totalChars + ' 字符</span>';
+
+                let codeHtml = '';
+                for (let j = 0; j < lines.length; j++) {
+                    const lineNum = j + 1;
+                    const escapedLine = escapeHtml(lines[j]);
+                    codeHtml += `<span class="code-line"><span class="line-number">${lineNum}</span><span class="hljs">${escapedLine}</span></span>`;
+                }
+
+                result += `
+                        <div class="code-block-wrapper" id="cbw-${copyId}">
+                            <div class="code-block-header">
+                                <span class="lang-label">${escapeHtml(lang)}</span>
+                                <span class="code-stats">${statsHtml}</span>
+                                <span class="header-actions">
+                                    <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
+                                    <button class="collapse-btn" data-target="cbw-${copyId}">
+                                        <i class="fas fa-chevron-up"></i>
+                                    </button>
+                                </span>
+                            </div>
+                            <div class="code-block-body-wrapper">
+                                <div class="code-block-body" id="code-body-${copyId}">
+                                    ${codeHtml}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                codeBlockLines = [];
+                inCodeBlock = false;
+                codeLang = '';
+            }
+
+            let i = 0;
+            while (i < lines.length) {
+                const line = lines[i];
+                const trimmed = line.trim();
+
+                const codeBlockStart = line.match(/^(```|~~~)(\w*)/);
+                if (codeBlockStart) {
+                    if (!inCodeBlock) {
+                        flushTable();
+                        inCodeBlock = true;
+                        codeLang = codeBlockStart[2] || 'text';
+                        i++;
+                        continue;
+                    } else {
+                        flushCodeBlock();
+                        i++;
+                        continue;
+                    }
+                }
+                if (inCodeBlock) {
+                    codeBlockLines.push(line);
+                    i++;
+                    continue;
+                }
+
+                if (trimmed === '') {
+                    flushTable();
+                    i++;
+                    continue;
+                }
+
+                const fnMatch = line.match(/^\[\^([^\]]+)\]:\s*(.+)/);
+                if (fnMatch) {
+                    flushTable();
+                    const key = fnMatch[1];
+                    const content = fnMatch[2];
+                    footnotes[key] = renderInline(content);
+                    if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
+                    i++;
+                    continue;
+                }
+
+                if (line.includes('|') && trimmed.startsWith('|') && trimmed.endsWith('|')) {
+                    if (!inTable) {
+                        flushTable();
+                        inTable = true;
+                        tableRows = [];
+                        tableAligns = [];
+                    }
+                    const cells = trimmed.slice(1, -1).split('|').map(s => s.trim());
+                    if (cells.every(c => /^:?-+:?$/.test(c))) {
+                        tableAligns = cells.map(c => {
+                            if (c.startsWith(':') && c.endsWith(':')) return 'center';
+                            if (c.endsWith(':')) return 'right';
+                            if (c.startsWith(':')) return 'left';
+                            return '';
+                        });
+                        i++;
+                        continue;
+                    }
+                    tableRows.push(cells);
+                    i++;
+                    continue;
+                }
+                if (inTable) {
+                    flushTable();
+                    continue;
+                }
+
+                const headingMatch = line.match(/^(#{1,6})\s+(.+)/);
+                if (headingMatch) {
+                    flushTable();
+                    const level = headingMatch[1].length;
+                    const text = headingMatch[2];
+                    result += '<h' + level + '>' + renderInline(text) + '</h' + level + '>';
+                    i++;
+                    continue;
+                }
+
+                if (/^---$/.test(trimmed) || /^\*\*\*$/.test(trimmed) || /^___$/.test(trimmed)) {
+                    flushTable();
+                    result += '<hr />';
+                    i++;
+                    continue;
+                }
+
+                if (i + 1 < lines.length && lines[i + 1].match(/^:\s+/)) {
+                    flushTable();
+                    const term = renderInline(trimmed);
+                    let defs = [];
+                    i++;
+                    while (i < lines.length && lines[i].match(/^:\s+/)) {
+                        defs.push(renderInline(lines[i].replace(/^:\s+/, '')));
+                        i++;
+                    }
+                    while (i < lines.length && lines[i].trim() === '') i++;
+                    let ddHtml = defs.map(d => '<dd>' + d + '</dd>').join('');
+                    result += '<dl><dt>' + term + '</dt>' + ddHtml + '</dl>';
+                    continue;
+                }
+
+                function parseList(startIdx, parentIndent) {
+                    let html = '';
+                    let idx = startIdx;
+                    let currentListType = null;
+                    let items = [];
+                    let olStartNumber = null;
+                    let olValues = [];
+
+                    while (idx < lines.length) {
+                        const l = lines[idx];
+                        const t = l.trim();
+                        if (t === '') break;
+
+                        const ulMatch = l.match(/^(\s*)[-*+]\s+(.+)/);
+                        const olMatch = l.match(/^(\s*)(\d+)\.\s+(.+)/);
+                        const taskMatch = l.match(/^(\s*)[-*+]\s+\[([ x])\]\s+(.+)/);
+
+                        let match = null;
+                        let type = null;
+                        let content = '';
+                        let indent = 0;
+                        let olNumber = 0;
+
+                        if (taskMatch) {
+                            indent = taskMatch[1].length;
+                            if (indent < parentIndent) break;
+                            type = 'task';
+                            const checked = taskMatch[2] === 'x';
+                            content = '<input type="checkbox"' + (checked ? ' checked' : '') + ' disabled> ' + taskMatch[3];
+                            if (!currentListType) currentListType = 'ul';
+                        } else if (ulMatch) {
+                            indent = ulMatch[1].length;
+                            if (indent < parentIndent) break;
+                            type = 'ul';
+                            content = ulMatch[2];
+                            if (!currentListType) currentListType = 'ul';
+                        } else if (olMatch) {
+                            indent = olMatch[1].length;
+                            if (indent < parentIndent) break;
+                            type = 'ol';
+                            olNumber = parseInt(olMatch[2]);
+                            content = olMatch[3];
+                            if (olStartNumber === null) {
+                                olStartNumber = olNumber;
+                            }
+                            olValues.push(olNumber);
+                            if (!currentListType) currentListType = 'ol';
+                        } else {
+                            break;
+                        }
+
+                        let childHtml = '';
+                        let childIdx = idx + 1;
+                        while (childIdx < lines.length && lines[childIdx].trim() === '') childIdx++;
+                        if (childIdx < lines.length) {
+                            const nextLine = lines[childIdx];
+                            const nextUl = nextLine.match(/^(\s*)[-*+]\s+/);
+                            const nextOl = nextLine.match(/^(\s*)(\d+)\.\s+/);
+                            const nextTask = nextLine.match(/^(\s*)[-*+]\s+\[[ x]\]\s+/);
+                            if (nextUl || nextOl || nextTask) {
+                                const nextIndent = parseInt((nextUl || nextOl || nextTask)[1].length);
+                                if (nextIndent > indent) {
+                                    const [childHtmlResult, childConsumed] = parseList(childIdx, indent);
+                                    childHtml = childHtmlResult;
+                                    idx += childConsumed;
+                                }
+                            }
+                        }
+
+                        if (!currentListType) {
+                            currentListType = type === 'ol' ? 'ol' : 'ul';
+                        }
+
+                        const isTask = type === 'task';
+                        const liClass = isTask ? ' class="task-list-item"' : '';
+                        const renderedContent = renderInline(content);
+
+                        let liTag = '<li' + liClass;
+                        if (type === 'ol') {
+                            liTag += ' value="' + olNumber + '"';
+                        }
+                        liTag += '>' + renderedContent + childHtml + '</li>';
+
+                        items.push({
+                            type: type,
+                            olNumber: olNumber,
+                            html: liTag
+                        });
+
+                        idx++;
+                    }
+
+                    if (items.length === 0) {
+                        return ['', 0];
+                    }
+
+                    const listTag = currentListType === 'ol' ? 'ol' : 'ul';
+                    let listClass = '';
+                    if (listTag === 'ul') {
+                        const hasTask = items.some(item => item.type === 'task');
+                        listClass = hasTask ? ' class="task-list"' : '';
+                    }
+                    let startAttr = '';
+                    if (currentListType === 'ol' && olStartNumber !== null && olStartNumber !== 1) {
+                        startAttr = ' start="' + olStartNumber + '"';
+                    }
+                    const itemsHtml = items.map(item => item.html).join('\n');
+                    html = '<' + listTag + listClass + startAttr + '>\n' + itemsHtml + '\n</' + listTag + '>';
+                    return [html, idx - startIdx];
+                }
+
+                const listCheck = line.match(/^(\s*)[-*+]\s+/);
+                const taskCheck = line.match(/^(\s*)[-*+]\s+\[[ x]\]\s+/);
+                const olCheck = line.match(/^(\s*)(\d+)\.\s+/);
+
+                if (taskCheck || listCheck || olCheck) {
+                    flushTable();
+                    const [listHtml, consumed] = parseList(i, 0);
+                    result += listHtml;
+                    i += consumed;
+                    continue;
+                }
+
+                if (line.startsWith('>')) {
+                    flushTable();
+                    let level = 0;
+                    let temp = line;
+                    while (temp.startsWith('>')) {
+                        level++;
+                        temp = temp.substring(1);
+                        if (temp.startsWith(' ')) temp = temp.substring(1);
+                    }
+                    const content = temp.trim();
+                    let quoteLines = [content];
+                    let j = i + 1;
+                    while (j < lines.length) {
+                        const nextLine = lines[j];
+                        if (nextLine.startsWith('>')) {
+                            let lv = 0;
+                            let tmp = nextLine;
+                            while (tmp.startsWith('>')) {
+                                lv++;
+                                tmp = tmp.substring(1);
+                                if (tmp.startsWith(' ')) tmp = tmp.substring(1);
+                            }
+                            quoteLines.push(tmp.trim());
+                            j++;
+                        } else if (nextLine.trim() === '') {
+                            quoteLines.push('');
+                            j++;
+                        } else {
+                            break;
+                        }
+                    }
+                    let innerHtml = renderInline(quoteLines.join('\n'));
+                    for (let lv = 0; lv < level; lv++) {
+                        innerHtml = '<blockquote>' + innerHtml + '</blockquote>';
+                    }
+                    result += innerHtml;
+                    i = j;
+                    continue;
+                }
+
+                flushTable();
+                result += '<p>' + renderInline(line) + '</p>';
+                i++;
+            }
+
+            flushCodeBlock();
+            flushTable();
+
+            if (footnoteKeys.length > 0) {
+                result += '<div class="footnotes">\n';
+                for (const key of footnoteKeys) {
+                    if (footnotes[key]) {
+                        result += '<div class="footnote-def" id="fn-' + key + '">';
+                        result += '<a href="#fnref-' + key + '" class="footnote-back">↩</a> ';
+                        result += footnotes[key];
+                        result += '</div>\n';
+                    }
+                }
+                result += '</div>\n';
+            }
+
+            result = restoreEscapes(result);
+            return result;
+        }
+
         function initImageLazyLoad() {
             const placeholders = document.querySelectorAll('.img-placeholder');
             placeholders.forEach(function(container) {
@@ -2017,57 +2441,7 @@
                     const date = currentArticle.date || '';
                     const content = currentArticle.content || '（暂无内容）';
                     const tags = currentArticle.tags || [];
-
-                    const fencePlugin = {
-                        render: function(code, lang) {
-                            const lines = code.split('\n');
-                            const lineCount = lines.length;
-                            const totalChars = code.length;
-                            const maxLineLength = Math.max(...lines.map(l => l.length), 0);
-
-                            let codeHtml = '';
-                            for (let i = 0; i < lines.length; i++) {
-                                const lineNum = i + 1;
-                                const escapedLine = escapeHtml(lines[i]);
-                                codeHtml +=
-                                    `<span class="code-line"><span class="line-number">${lineNum}</span><span class="hljs">${escapedLine}</span></span>`;
-                            }
-
-                            const copyId = 'code-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
-
-                            return `
-                                <div class="code-block-wrapper" id="cbw-${copyId}">
-                                    <div class="code-block-header">
-                                        <span class="lang-label">${escapeHtml(lang || 'text')}</span>
-                                        <span class="code-stats">
-                                            <span>${lineCount} 行</span> ·
-                                            <span>${maxLineLength} 列</span> ·
-                                            <span>${totalChars} 字符</span>
-                                        </span>
-                                        <span class="header-actions">
-                                            <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
-                                            <button class="collapse-btn" data-target="cbw-${copyId}">
-                                                <i class="fas fa-chevron-up"></i>
-                                            </button>
-                                        </span>
-                                    </div>
-                                    <div class="code-block-body-wrapper">
-                                        <div class="code-block-body">
-                                            ${codeHtml}
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    };
-
-                    let renderedContent = quikdown(content, {
-                        html: true,
-                        linkify: true,
-                        typographer: true,
-                        fence_plugin: fencePlugin,
-                        lazy_linefeeds: true
-                    });
+                    let renderedContent = renderMarkdown(content);
 
                     renderedContent = renderedContent.replace(/<img\s+src="([^"]*)"\s+alt="([^"]*)"([^>]*)>/g, function(
                         match, src, alt, rest) {

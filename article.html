@@ -1979,14 +1979,14 @@
                     const youtubeMatch = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
                     if (youtubeMatch) {
                         const vid = youtubeMatch[1];
-                        return '<div class="video-placeholder">' + descHtml + '<iframe src="https://www.youtube.com/embed/' + vid + '" frameborder="0" allowfullscreen' + style + '></iframe></div>';
+                        return '<div class="video-placeholder"><iframe src="https://www.youtube.com/embed/' + vid + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
                     }
                     const bilibiliMatch = src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
                     if (bilibiliMatch) {
                         const vid = bilibiliMatch[1];
-                        return '<div class="video-placeholder">' + descHtml + '<iframe src="https://player.bilibili.com/player.html?bvid=' + vid + '" frameborder="0" allowfullscreen' + style + '></iframe></div>';
+                        return '<div class="video-placeholder"><iframe src="https://player.bilibili.com/player.html?bvid=' + vid + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
                     }
-                    return '<div class="video-placeholder">' + descHtml + '<video src="' + src + '" controls' + style + '></video></div>';
+                    return '<div class="video-placeholder"><video src="' + src + '" controls' + style + '></video>' + descHtml + '</div>';
                 });
                 html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
                 html = html.replace(/\[\^([^\]]+)\]/g, function(match, key) {

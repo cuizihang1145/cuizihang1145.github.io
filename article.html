@@ -2129,11 +2129,11 @@
                             });
                         } else {
                             while (listStack.length > 0 && listStack[listStack.length - 1].level >= currentLevel) {
-                                const last = listStack.pop();
-                                if (listStack.length > 0) {
-                                    listStack[listStack.length - 1].items.push(last.items.join(''));
-                                }
-                            }
+    const last = listStack.pop();
+    if (listStack.length > 0 && last.items.length > 0) {
+        listStack[listStack.length - 1].items.push(last.items.join(''));
+    }
+}
                             if (listStack.length === 0 || listStack[listStack.length - 1].level < currentLevel) {
                                 listStack.push({
                                     type: listType,

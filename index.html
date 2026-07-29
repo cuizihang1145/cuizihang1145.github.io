@@ -2184,6 +2184,8 @@
         var text = markdown
             .replace(/```[\s\S]*?```/g, '')
             .replace(/`[^`]+`/g, '')
+            .replace(/!video\[[^\]]*\]\([^)]*\)/g, '')
+            .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
             .replace(/\*\*(.*?)\*\*/g, '$1')
             .replace(/\*([^*]+)\*/g, '$1')
             .replace(/~~(.*?)~~/g, '$1')
@@ -2239,11 +2241,12 @@
         var text = md;
         text = text.replace(/```[\s\S]*?```/g, '');
         text = text.replace(/`([^`]+)`/g, '$1');
+        text = text.replace(/!video\[[^\]]*\]\([^)]*\)/g, '');
+        text = text.replace(/!\[[^\]]*\]\([^)]*\)/g, '');
         text = text.replace(/\*\*(.*?)\*\*/g, '$1');
         text = text.replace(/\*([^*]+)\*/g, '$1');
         text = text.replace(/~~(.*?)~~/g, '$1');
         text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
-        text = text.replace(/!\[([^\]]*)\]\([^)]*\)/g, '');
         text = text.replace(/^#{1,6}\s+/gm, '');
         text = text.replace(/^-\s+/gm, '');
         text = text.replace(/^\d+\.\s+/gm, '');
@@ -2256,20 +2259,34 @@
     function getPreviewAroundMatch(content, keyword, contextLength) {
         contextLength = contextLength || 80;
         var plainText = markdownToPlainText(content);
-        if (!keyword || !plainText) {
-            return plainText.substring(0, 120) + (plainText.length > 120 ? '...' : '');
+        if (!plainText || plainText.length === 0) {
+            return 'emmm…可能是图片或视频之类的，点进去看看？';
+        }
+        if (!keyword || keyword.trim() === '') {
+            var preview = plainText.substring(0, 120);
+            if (preview.length === 0) {
+                return 'emmm…可能是图片或视频之类的，点进去看看？';
+            }
+            return preview + (plainText.length > 120 ? '...' : '');
         }
         var kw = keyword.trim().toLowerCase();
         var lowerText = plainText.toLowerCase();
         var index = lowerText.indexOf(kw);
         if (index === -1) {
-            return plainText.substring(0, 120) + (plainText.length > 120 ? '...' : '');
+            var preview = plainText.substring(0, 120);
+            if (preview.length === 0) {
+                return 'emmm…可能是图片或视频之类的，点进去看看？';
+            }
+            return preview + (plainText.length > 120 ? '...' : '');
         }
         var start = Math.max(0, index - contextLength);
         var end = Math.min(plainText.length, index + kw.length + contextLength);
         var preview = plainText.substring(start, end);
         if (start > 0) preview = '...' + preview;
         if (end < plainText.length) preview = preview + '...';
+        if (preview.length === 0) {
+            return 'emmm…可能是图片或视频之类的，点进去看看？';
+        }
         return preview;
     }
 
@@ -2341,8 +2358,14 @@
             var date = item.date || '';
             var content = item.content || '';
             var wordCount = item._wordCount || 0;
-            var readTime = Math.ceil(wordCount / 300);
-            var readTimeDisplay = readTime === 1 ? '1分钟' : readTime + '分钟';
+            var readTimeDisplay;
+            if (wordCount === 0) {
+                readTimeDisplay = '114514分钟';
+            } else {
+                var readTime = Math.ceil(wordCount / 300);
+                readTimeDisplay = readTime === 1 ? '1分钟' : readTime + '分钟';
+            }
+            var wordDisplay = wordCount === 0 ? '没有字哦' : wordCount + '字';
             var titleHtml = highlightText(escapeHtml(title), kw);
             var previewText = getPreviewAroundMatch(content, kw);
             var previewHtml = renderPreviewMarkdown(previewText);
@@ -2362,7 +2385,7 @@
                 <div class="article-item" data-index="${realIndex}">
                     <div class="item-header">
                         <span class="item-title">${titleHtml}</span>
-                        <span class="item-meta">${readTimeDisplay} · ${wordCount}字</span>
+                        <span class="item-meta">${readTimeDisplay} · ${wordDisplay}</span>
                     </div>
                     <div class="item-summary">${previewHighlighted}</div>
                     <div class="item-footer">
@@ -2643,6 +2666,7 @@
         }
     }
 
+    // ===== ARCHIVE =====
     function renderArchive() {
         var container = document.getElementById('appContent');
 
@@ -2931,6 +2955,7 @@
         });
     }
 
+    // ===== ABOUT =====
     function renderAbout() {
         var container = document.getElementById('appContent');
 
@@ -2971,6 +2996,8 @@
                     var text = content
                         .replace(/```[\s\S]*?```/g, '')
                         .replace(/`[^`]+`/g, '')
+                        .replace(/!video\[[^\]]*\]\([^)]*\)/g, '')
+                        .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
                         .replace(/\*\*(.*?)\*\*/g, '$1')
                         .replace(/\*([^*]+)\*/g, '$1')
                         .replace(/~~(.*?)~~/g, '$1')

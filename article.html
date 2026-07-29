@@ -1672,13 +1672,6 @@
             return div.innerHTML;
         }
 
-        function unescapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.innerHTML = text;
-            return div.textContent;
-        }
-
         function markdownToPlainText(md) {
             if (!md) return '';
             let text = md;
@@ -1941,7 +1934,17 @@
                 return key;
             });
 
-            const safeTags = ['u', 'kbd', 'mark', 's', 'sub', 'sup', 'ins', 'del', 'b', 'i', 'em', 'strong', 'code', 'span', 'br', 'hr'];
+            const lines = md.split('\n');
+            let result = '';
+            let inCodeBlock = false;
+            let codeBlockLines = [];
+            let codeLang = '';
+            let codeBlockCounter = 0;
+            let inTable = false;
+            let tableRows = [];
+            let tableAligns = [];
+            let footnotes = {};
+            let footnoteKeys = [];
 
             function restoreEscapes(text) {
                 let r = text;
@@ -1952,371 +1955,432 @@
             }
 
             function renderInline(text) {
-                let html = text;
-
-                var tagMap = {};
-                var tagIndex = 0;
-                html = html.replace(/<[^>]+>/g, function(match) {
-                    var key = '\uE002' + (tagIndex++) + '\uE003';
-                    tagMap[key] = match;
-                    return key;
-                });
-
-                html = html.replace(/<([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)>(.*?)<\/\1>/gs, function(match, tag, attrs, content) {
-                    if (safeTags.includes(tag.toLowerCase())) {
-                        return '<' + tag + attrs + '>' + renderInline(content) + '</' + tag + '>';
-                    }
-                    return match;
-                });
-
-                html = html.replace(/<br\s*\/?>/gi, '<br>');
-
-                html = html.replace(/<https?:\/\/[^\s<>]+>/g, function(match) {
-                    var url = match.slice(1, -1);
-                    return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>';
-                });
-
-
-
+                let html = escapeHtml(text);
+                html = html.replace(/&lt;(https?:\/\/[^\s<>]+)&gt;/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+                html = html.replace(/&lt;([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})&gt;/g, '<a href="mailto:$1">$1</a>');
+                html = html.replace(/(?<!\]\()https?:\/\/[^\s<>]+/g, '<a href="$&" target="_blank" rel="noopener">$&</a>');
                 html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-
                 html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
                 html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-
                 html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
-
-                html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, alt, src, title, w, h) {
-                    var style = '';
+                html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, alt, src, w, h) {
+                    let style = '';
                     if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
                     else if (w) style = ' style="width:' + w + 'px; height:auto;"';
                     else if (h) style = ' style="height:' + h + 'px; width:auto;"';
-                    var titleAttr = title ? ' title="' + title + '"' : '';
-                    return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + titleAttr + ' />';
+                    return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + ' />';
                 });
-
-                html = html.replace(/!video\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, desc, src, title, w, h) {
-                    var style = '';
+                html = html.replace(/!video\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, desc, src, w, h) {
+                    let style = '';
                     if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
                     else if (w) style = ' style="width:' + w + 'px; height:auto;"';
                     else if (h) style = ' style="height:' + h + 'px; width:auto;"';
-                    var descHtml = desc ? '<div class="video-alt-text">' + desc + '</div>' : '';
-                    var youtubeMatch = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+                    const descHtml = desc ? '<div class="video-alt-text">' + desc + '</div>' : '';
+                    const youtubeMatch = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
                     if (youtubeMatch) {
-                        var vid = youtubeMatch[1];
+                        const vid = youtubeMatch[1];
                         return '<div class="video-placeholder"><iframe src="https://www.youtube.com/embed/' + vid + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
                     }
-                    var bilibiliMatch = src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
+                    const bilibiliMatch = src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
                     if (bilibiliMatch) {
-                        var vid = bilibiliMatch[1];
+                        const vid = bilibiliMatch[1];
                         return '<div class="video-placeholder"><iframe src="https://player.bilibili.com/player.html?bvid=' + vid + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
                     }
                     return '<div class="video-placeholder"><video src="' + src + '" controls' + style + '></video>' + descHtml + '</div>';
                 });
-
                 html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-
+                html = html.replace(/\[\^([^\]]+)\]/g, function(match, key) {
+                    if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
+                    return '<sup class="footnote-ref"><a href="#fn-' + key + '" id="fnref-' + key + '">' + key + '</a></sup>';
+                });
                 html = restoreEscapes(html);
-
-                for (var key in tagMap) {
-                    if (tagMap.hasOwnProperty(key)) {
-                        html = html.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), tagMap[key]);
-                    }
-                }
-
                 return html;
             }
 
-            function renderBlock(content) {
-                if (!content) return '';
-                var lines = content.split('\n');
-                var result = '';
-                var inList = false;
-                var listStack = [];
-
-                function flushList() {
-                    if (!inList) return;
-                    var html = '';
-                    for (var i = listStack.length - 1; i >= 0; i--) {
-                        var list = listStack[i];
-                        var tag = list.type === 'ol' ? 'ol' : 'ul';
-                        var cls = list.type === 'task' ? ' class="task-list"' : '';
-                        var startAttr = '';
-                        if (list.type === 'ol' && list.start !== null && list.start !== 1) {
-                            startAttr = ' start="' + list.start + '"';
-                        }
-                        html = '<' + tag + cls + startAttr + '>\n' + list.items.join('\n') + '\n</' + tag + '>\n' + html;
+            function flushTable() {
+                if (tableRows.length === 0) return;
+                let html = '<table>';
+                for (let i = 0; i < tableRows.length; i++) {
+                    const cells = tableRows[i];
+                    const isHeader = i === 0;
+                    html += '<tr>';
+                    for (let j = 0; j < cells.length; j++) {
+                        const tag = isHeader ? 'th' : 'td';
+                        const align = (i === 1 && tableAligns[j]) ? ' style="text-align:' + tableAligns[j] + ';"' : '';
+                        const cellContent = cells[j].replace(/\\n/g, '\n').replace(/\n/g, '<br>');
+                        html += '<' + tag + align + '>' + renderInline(cellContent) + '</' + tag + '>';
                     }
-                    result += html;
-                    inList = false;
-                    listStack = [];
+                    html += '</tr>';
                 }
-
-                for (var i = 0; i < lines.length; i++) {
-                    var line = lines[i];
-
-                    if (line.trim() === '') {
-                        if (inList) {
-                            flushList();
-                            result += '<p><br></p>\n';
-                        } else {
-                            result += '<p><br></p>\n';
-                        }
-                        continue;
-                    }
-
-                    var blockquoteMatch = line.match(/^(>+)\s*(.*)/);
-                    if (blockquoteMatch) {
-                        if (inList) flushList();
-                        var level = blockquoteMatch[1].length;
-                        var quoteContent = blockquoteMatch[2];
-                        var quoteLines = [quoteContent];
-                        var j = i + 1;
-                        while (j < lines.length) {
-                            var nextLine = lines[j];
-                            var nextMatch = nextLine.match(/^(>+)\s*(.*)/);
-                            if (nextMatch) {
-                                quoteLines.push(nextMatch[2]);
-                                j++;
-                            } else if (nextLine.trim() === '') {
-                                quoteLines.push('');
-                                j++;
-                            } else {
-                                break;
-                            }
-                        }
-                        var blockHtml = renderInline(quoteLines.join('\n'));
-                        for (var lv = 0; lv < level; lv++) {
-                            blockHtml = '<blockquote>' + blockHtml + '</blockquote>';
-                        }
-                        result += blockHtml + '\n';
-                        i = j - 1;
-                        continue;
-                    }
-
-                    var headingMatch = line.match(/^(#{1,6})\s+(.*)/);
-                    if (headingMatch) {
-                        if (inList) flushList();
-                        var hlevel = headingMatch[1].length;
-                        var htext = headingMatch[2];
-                        result += '<h' + hlevel + '>' + renderInline(htext) + '</h' + hlevel + '>\n';
-                        continue;
-                    }
-
-                    if (/^---$/.test(line.trim()) || /^\*\*\*$/.test(line.trim()) || /^___$/.test(line.trim())) {
-                        if (inList) flushList();
-                        result += '<hr />\n';
-                        continue;
-                    }
-
-                    var listMatch = line.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
-                    if (listMatch) {
-                        var indent = listMatch[1].length;
-                        var marker = listMatch[2];
-                        var listContent = listMatch[3];
-
-                        var isTask = listContent.match(/^\[([ x])\]\s+(.*)/);
-                        var taskChecked = false;
-                        var taskContent = listContent;
-                        if (isTask) {
-                            taskChecked = isTask[1] === 'x';
-                            taskContent = isTask[2];
-                        }
-
-                        var isOrdered = marker.match(/^\d+\.$/);
-                        var listType = isOrdered ? 'ol' : (isTask ? 'task' : 'ul');
-
-                        var currentLevel = Math.floor(indent / 2);
-
-                        if (!inList) {
-                            inList = true;
-                            listStack = [];
-                            listStack.push({
-                                type: listType,
-                                items: [],
-                                level: currentLevel,
-                                start: isOrdered ? parseInt(marker) : null
-                            });
-                        } else {
-                            while (listStack.length > 0 && listStack[listStack.length - 1].level >= currentLevel) {
-                                var last = listStack.pop();
-                                if (listStack.length > 0 && last.items.length > 0) {
-                                    listStack[listStack.length - 1].items.push(last.items.join(''));
-                                }
-                            }
-                            if (listStack.length === 0 || listStack[listStack.length - 1].level < currentLevel) {
-                                listStack.push({
-                                    type: listType,
-                                    items: [],
-                                    level: currentLevel,
-                                    start: isOrdered ? parseInt(marker) : null
-                                });
-                            }
-                        }
-
-                        var itemContent = isTask ?
-                            '<input type="checkbox" ' + (taskChecked ? 'checked ' : '') + 'disabled> ' + taskContent :
-                            listContent;
-
-                        if (listStack.length > 0) {
-                            var currentList = listStack[listStack.length - 1];
-                            if (currentList.type !== listType && currentList.type !== 'task') {
-                                var newList = {
-                                    type: listType,
-                                    items: [],
-                                    level: currentLevel + 1,
-                                    start: isOrdered ? parseInt(marker) : null
-                                };
-                                listStack.push(newList);
-                            } else {
-                                currentList.items.push('<li>' + renderInline(itemContent) + '</li>');
-                            }
-                        }
-
-                        var subItems = [];
-                        var k = i + 1;
-                        while (k < lines.length) {
-                            var nextLine2 = lines[k];
-                            var nextMatch2 = nextLine2.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
-                            if (nextMatch2 && parseInt(nextMatch2[1].length) > indent) {
-                                var subContent = nextMatch2[3];
-                                var subIsTask = subContent.match(/^\[([ x])\]\s+(.*)/);
-                                var subHtml = '';
-                                if (subIsTask) {
-                                    var subChecked = subIsTask[1] === 'x';
-                                    subHtml = '<input type="checkbox" ' + (subChecked ? 'checked ' : '') + 'disabled> ' + subIsTask[2];
-                                } else {
-                                    subHtml = subContent;
-                                }
-                                subItems.push('<li>' + renderInline(subHtml) + '</li>');
-                                k++;
-                            } else {
-                                break;
-                            }
-                        }
-
-                        if (subItems.length > 0) {
-                            var hasCheckbox = subItems.some(function(item) {
-                                return item.includes('input[type="checkbox"]') || item.includes('checked');
-                            });
-                            var subHtml2 = '<ul class="' + (hasCheckbox ? 'task-list' : '') + '">\n' + subItems.join('\n') + '\n</ul>';
-                            if (listStack.length > 0) {
-                                var currentList2 = listStack[listStack.length - 1];
-                                var lastItem2 = currentList2.items[currentList2.items.length - 1];
-                                currentList2.items[currentList2.items.length - 1] = lastItem2.replace(/<\/li>$/, subHtml2 + '</li>');
-                            }
-                        }
-
-                        i = k - 1;
-                        continue;
-                    }
-
-                    if (inList) {
-                        flushList();
-                    }
-
-                    var dlMatch = line.match(/^([^:]+):\s+(.*)/);
-                    if (dlMatch && i + 1 < lines.length && lines[i + 1].match(/^:\s+/)) {
-                        var term = renderInline(dlMatch[1]);
-                        var defs = [];
-                        i++;
-                        while (i < lines.length && lines[i].match(/^:\s+/)) {
-                            defs.push(renderInline(lines[i].replace(/^:\s+/, '')));
-                            i++;
-                        }
-                        while (i < lines.length && lines[i].trim() === '') i++;
-                        var ddHtml = defs.map(function(d) { return '<dd>' + d + '</dd>'; }).join('');
-                        result += '<dl><dt>' + term + '</dt>' + ddHtml + '</dl>\n';
-                        continue;
-                    }
-
-                    result += '<p>' + renderInline(line) + '</p>\n';
-                }
-
-                if (inList) {
-                    flushList();
-                }
-
-                return result;
+                html += '</table>';
+                result += html;
+                tableRows = [];
+                tableAligns = [];
+                inTable = false;
             }
 
-            var codeBlockRegex = /^```(\w*)\s*([\s\S]*?)```/gm;
-            var codeBlocks = [];
-            var codeIndex = 0;
-            md = md.replace(codeBlockRegex, function(match, lang, code) {
-                var id = 'CODEBLOCK_' + (codeIndex++);
-                codeBlocks.push({ id: id, lang: lang, code: code });
-                return id;
-            });
+            function flushCodeBlock() {
+                if (codeBlockLines.length === 0) {
+                    inCodeBlock = false;
+                    codeLang = '';
+                    return;
+                }
+                let code = codeBlockLines.join('\n');
+                code = code.replace(/^\s*\n/, '').replace(/\n\s*$/, '');
 
-            var html = renderBlock(md);
+                const langParts = codeLang.split(/\s+/);
+                const lang = langParts[0] || 'text';
+                const copyId = 'code-' + Date.now() + '-' + (codeBlockCounter++);
 
-            for (var b = 0; b < codeBlocks.length; b++) {
-                var block = codeBlocks[b];
-                var copyId = 'code-' + Date.now() + '-' + codeIndex;
-                var lines2 = block.code.split('\n');
-                var lineCount = lines2.length;
-                var maxLineLength = 0;
-                var totalChars = 0;
-                for (var j2 = 0; j2 < lines2.length; j2++) {
-                    var lineLen = lines2[j2].length;
+                const lines = code.split('\n');
+                const lineCount = lines.length;
+                let maxLineLength = 0;
+                let totalChars = 0;
+                for (let j = 0; j < lines.length; j++) {
+                    const lineLen = lines[j].length;
                     if (lineLen > maxLineLength) maxLineLength = lineLen;
                     totalChars += lineLen;
                 }
                 totalChars += lineCount > 0 ? lineCount - 1 : 0;
 
-                var codeHtml = '';
-                for (var j3 = 0; j3 < lines2.length; j3++) {
-                    var lineNum = j3 + 1;
-                    var escapedLine = escapeHtml(lines2[j3]);
-                    codeHtml += '<span class="code-line"><span class="line-number">' + lineNum + '</span><span class="hljs">' + escapedLine + '</span></span>';
+                const statsHtml = '<span>' + lineCount + ' 行</span> · <span>' + maxLineLength + ' 列</span> · <span>' + totalChars + ' 字符</span>';
+
+                let codeHtml = '';
+                for (let j = 0; j < lines.length; j++) {
+                    const lineNum = j + 1;
+                    const escapedLine = escapeHtml(lines[j]);
+                    codeHtml += `<span class="code-line"><span class="line-number">${lineNum}</span><span class="hljs">${escapedLine}</span></span>`;
                 }
 
-                var statsHtml = '<span>' + lineCount + ' 行</span> · <span>' + maxLineLength + ' 列</span> · <span>' + totalChars + ' 字符</span>';
-
-                var codeBlockHtml = `
-                    <div class="code-block-wrapper" id="cbw-${copyId}">
-                        <div class="code-block-header">
-                            <span class="lang-label">${escapeHtml(block.lang || 'text')}</span>
-                            <span class="code-stats">${statsHtml}</span>
-                            <span class="header-actions">
-                                <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
-                                <button class="collapse-btn" data-target="cbw-${copyId}">
-                                    <i class="fas fa-chevron-up"></i>
-                                </button>
-                            </span>
-                        </div>
-                        <div class="code-block-body-wrapper">
-                            <div class="code-block-body" id="code-body-${copyId}">
-                                ${codeHtml}
+                result += `
+                        <div class="code-block-wrapper" id="cbw-${copyId}">
+                            <div class="code-block-header">
+                                <span class="lang-label">${escapeHtml(lang)}</span>
+                                <span class="code-stats">${statsHtml}</span>
+                                <span class="header-actions">
+                                    <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
+                                    <button class="collapse-btn" data-target="cbw-${copyId}">
+                                        <i class="fas fa-chevron-up"></i>
+                                    </button>
+                                </span>
+                            </div>
+                            <div class="code-block-body-wrapper">
+                                <div class="code-block-body" id="code-body-${copyId}">
+                                    ${codeHtml}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
-
-                html = html.replace(block.id, codeBlockHtml);
+                    `;
+                codeBlockLines = [];
+                inCodeBlock = false;
+                codeLang = '';
             }
 
-            html = html.replace(/\n{3,}/g, '\n\n');
+            let i = 0;
+            while (i < lines.length) {
+                const line = lines[i];
+                const trimmed = line.trim();
 
-            return html;
+                const codeBlockStart = line.match(/^(```|~~~)(\w*)/);
+                if (codeBlockStart) {
+                    if (!inCodeBlock) {
+                        flushTable();
+                        inCodeBlock = true;
+                        codeLang = codeBlockStart[2] || 'text';
+                        i++;
+                        continue;
+                    } else {
+                        flushCodeBlock();
+                        i++;
+                        continue;
+                    }
+                }
+                if (inCodeBlock) {
+                    codeBlockLines.push(line);
+                    i++;
+                    continue;
+                }
+
+                if (trimmed === '') {
+                    flushTable();
+                    i++;
+                    continue;
+                }
+
+                const fnMatch = line.match(/^\[\^([^\]]+)\]:\s*(.+)/);
+                if (fnMatch) {
+                    flushTable();
+                    const key = fnMatch[1];
+                    const content = fnMatch[2];
+                    footnotes[key] = renderInline(content);
+                    if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
+                    i++;
+                    continue;
+                }
+
+                if (line.includes('|') && trimmed.startsWith('|') && trimmed.endsWith('|')) {
+                    if (!inTable) {
+                        flushTable();
+                        inTable = true;
+                        tableRows = [];
+                        tableAligns = [];
+                    }
+                    const cells = trimmed.slice(1, -1).split('|').map(s => s.trim());
+                    if (cells.every(c => /^:?-+:?$/.test(c))) {
+                        tableAligns = cells.map(c => {
+                            if (c.startsWith(':') && c.endsWith(':')) return 'center';
+                            if (c.endsWith(':')) return 'right';
+                            if (c.startsWith(':')) return 'left';
+                            return '';
+                        });
+                        i++;
+                        continue;
+                    }
+                    tableRows.push(cells);
+                    i++;
+                    continue;
+                }
+                if (inTable) {
+                    flushTable();
+                    continue;
+                }
+
+                const headingMatch = line.match(/^(#{1,6})\s+(.+)/);
+                if (headingMatch) {
+                    flushTable();
+                    const level = headingMatch[1].length;
+                    const text = headingMatch[2];
+                    result += '<h' + level + '>' + renderInline(text) + '</h' + level + '>';
+                    i++;
+                    continue;
+                }
+
+                if (/^---$/.test(trimmed) || /^\*\*\*$/.test(trimmed) || /^___$/.test(trimmed)) {
+                    flushTable();
+                    result += '<hr />';
+                    i++;
+                    continue;
+                }
+
+                if (i + 1 < lines.length && lines[i + 1].match(/^:\s+/)) {
+                    flushTable();
+                    const term = renderInline(trimmed);
+                    let defs = [];
+                    i++;
+                    while (i < lines.length && lines[i].match(/^:\s+/)) {
+                        defs.push(renderInline(lines[i].replace(/^:\s+/, '')));
+                        i++;
+                    }
+                    while (i < lines.length && lines[i].trim() === '') i++;
+                    let ddHtml = defs.map(d => '<dd>' + d + '</dd>').join('');
+                    result += '<dl><dt>' + term + '</dt>' + ddHtml + '</dl>';
+                    continue;
+                }
+
+                function parseList(startIdx, parentIndent) {
+                    let html = '';
+                    let idx = startIdx;
+                    let currentListType = null;
+                    let items = [];
+                    let olStartNumber = null;
+                    let olValues = [];
+
+                    while (idx < lines.length) {
+                        const l = lines[idx];
+                        const t = l.trim();
+                        if (t === '') break;
+
+                        const ulMatch = l.match(/^(\s*)[-*+]\s+(.+)/);
+                        const olMatch = l.match(/^(\s*)(\d+)\.\s+(.+)/);
+                        const taskMatch = l.match(/^(\s*)[-*+]\s+\[([ x])\]\s+(.+)/);
+
+                        let match = null;
+                        let type = null;
+                        let content = '';
+                        let indent = 0;
+                        let olNumber = 0;
+
+                        if (taskMatch) {
+                            indent = taskMatch[1].length;
+                            if (indent < parentIndent) break;
+                            type = 'task';
+                            const checked = taskMatch[2] === 'x';
+                            content = '<input type="checkbox"' + (checked ? ' checked' : '') + ' disabled> ' + taskMatch[3];
+                            if (!currentListType) currentListType = 'ul';
+                        } else if (ulMatch) {
+                            indent = ulMatch[1].length;
+                            if (indent < parentIndent) break;
+                            type = 'ul';
+                            content = ulMatch[2];
+                            if (!currentListType) currentListType = 'ul';
+                        } else if (olMatch) {
+                            indent = olMatch[1].length;
+                            if (indent < parentIndent) break;
+                            type = 'ol';
+                            olNumber = parseInt(olMatch[2]);
+                            content = olMatch[3];
+                            if (olStartNumber === null) {
+                                olStartNumber = olNumber;
+                            }
+                            olValues.push(olNumber);
+                            if (!currentListType) currentListType = 'ol';
+                        } else {
+                            break;
+                        }
+
+                        let childHtml = '';
+                        let childIdx = idx + 1;
+                        while (childIdx < lines.length && lines[childIdx].trim() === '') childIdx++;
+                        if (childIdx < lines.length) {
+                            const nextLine = lines[childIdx];
+                            const nextUl = nextLine.match(/^(\s*)[-*+]\s+/);
+                            const nextOl = nextLine.match(/^(\s*)(\d+)\.\s+/);
+                            const nextTask = nextLine.match(/^(\s*)[-*+]\s+\[[ x]\]\s+/);
+                            if (nextUl || nextOl || nextTask) {
+                                const nextIndent = parseInt((nextUl || nextOl || nextTask)[1].length);
+                                if (nextIndent > indent) {
+                                    const [childHtmlResult, childConsumed] = parseList(childIdx, indent);
+                                    childHtml = childHtmlResult;
+                                    idx += childConsumed;
+                                }
+                            }
+                        }
+
+                        if (!currentListType) {
+                            currentListType = type === 'ol' ? 'ol' : 'ul';
+                        }
+
+                        const isTask = type === 'task';
+                        const liClass = isTask ? ' class="task-list-item"' : '';
+                        const renderedContent = renderInline(content);
+
+                        let liTag = '<li' + liClass;
+                        if (type === 'ol') {
+                            liTag += ' value="' + olNumber + '"';
+                        }
+                        liTag += '>' + renderedContent + childHtml + '</li>';
+
+                        items.push({
+                            type: type,
+                            olNumber: olNumber,
+                            html: liTag
+                        });
+
+                        idx++;
+                    }
+
+                    if (items.length === 0) {
+                        return ['', 0];
+                    }
+
+                    const listTag = currentListType === 'ol' ? 'ol' : 'ul';
+                    let listClass = '';
+                    if (listTag === 'ul') {
+                        const hasTask = items.some(item => item.type === 'task');
+                        listClass = hasTask ? ' class="task-list"' : '';
+                    }
+                    let startAttr = '';
+                    if (currentListType === 'ol' && olStartNumber !== null && olStartNumber !== 1) {
+                        startAttr = ' start="' + olStartNumber + '"';
+                    }
+                    const itemsHtml = items.map(item => item.html).join('\n');
+                    html = '<' + listTag + listClass + startAttr + '>\n' + itemsHtml + '\n</' + listTag + '>';
+                    return [html, idx - startIdx];
+                }
+
+                const listCheck = line.match(/^(\s*)[-*+]\s+/);
+                const taskCheck = line.match(/^(\s*)[-*+]\s+\[[ x]\]\s+/);
+                const olCheck = line.match(/^(\s*)(\d+)\.\s+/);
+
+                if (taskCheck || listCheck || olCheck) {
+                    flushTable();
+                    const [listHtml, consumed] = parseList(i, 0);
+                    result += listHtml;
+                    i += consumed;
+                    continue;
+                }
+
+                if (line.startsWith('>')) {
+                    flushTable();
+                    let level = 0;
+                    let temp = line;
+                    while (temp.startsWith('>')) {
+                        level++;
+                        temp = temp.substring(1);
+                        if (temp.startsWith(' ')) temp = temp.substring(1);
+                    }
+                    const content = temp.trim();
+                    let quoteLines = [content];
+                    let j = i + 1;
+                    while (j < lines.length) {
+                        const nextLine = lines[j];
+                        if (nextLine.startsWith('>')) {
+                            let lv = 0;
+                            let tmp = nextLine;
+                            while (tmp.startsWith('>')) {
+                                lv++;
+                                tmp = tmp.substring(1);
+                                if (tmp.startsWith(' ')) tmp = tmp.substring(1);
+                            }
+                            quoteLines.push(tmp.trim());
+                            j++;
+                        } else if (nextLine.trim() === '') {
+                            quoteLines.push('');
+                            j++;
+                        } else {
+                            break;
+                        }
+                    }
+                    let innerHtml = renderInline(quoteLines.join('\n'));
+                    for (let lv = 0; lv < level; lv++) {
+                        innerHtml = '<blockquote>' + innerHtml + '</blockquote>';
+                    }
+                    result += innerHtml;
+                    i = j;
+                    continue;
+                }
+
+                flushTable();
+                result += '<p>' + renderInline(line) + '</p>';
+                i++;
+            }
+
+            flushCodeBlock();
+            flushTable();
+
+            if (footnoteKeys.length > 0) {
+                result += '<div class="footnotes">\n';
+                for (const key of footnoteKeys) {
+                    if (footnotes[key]) {
+                        result += '<div class="footnote-def" id="fn-' + key + '">';
+                        result += '<span class="footnote-number">' + key + '.</span> ';
+                        result += '<a href="#fnref-' + key + '" class="footnote-back" onclick="event.preventDefault(); scrollToFootnote(\'fnref-' + key + '\');">↩</a> ';
+                        result += footnotes[key];
+                        result += '</div>\n';
+                    }
+                }
+                result += '</div>\n';
+            }
+
+            result = restoreEscapes(result);
+            return result;
         }
 
         function scrollToFootnote(id) {
-            var el = document.getElementById(id);
+            const el = document.getElementById(id);
             if (!el) return;
-            var targetY = el.getBoundingClientRect().top + window.scrollY - 80;
-            var startY = window.scrollY || window.pageYOffset;
-            var distance = targetY - startY;
+            const targetY = el.getBoundingClientRect().top + window.scrollY - 80;
+            const startY = window.scrollY || window.pageYOffset;
+            const distance = targetY - startY;
             if (Math.abs(distance) < 5) return;
-            var duration = 350;
-            var startTime = performance.now();
+            const duration = 350;
+            const startTime = performance.now();
 
             function step(currentTime) {
-                var elapsed = currentTime - startTime;
-                var progress = Math.min(elapsed / duration, 1);
-                var ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-                var nextY = startY + distance * ease;
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+                const nextY = startY + distance * ease;
                 window.scrollTo(0, nextY);
                 if (progress < 1) {
                     requestAnimationFrame(step);
@@ -2331,39 +2395,39 @@
         }
 
         function initImageLazyLoad() {
-            var placeholders = document.querySelectorAll('.img-placeholder');
+            const placeholders = document.querySelectorAll('.img-placeholder');
             placeholders.forEach(function(container) {
-                var img = container.querySelector('img');
+                const img = container.querySelector('img');
                 if (!img) return;
                 if (img.complete && img.naturalWidth !== 0) {
                     container.classList.add('loaded');
                     img.classList.add('loaded');
-                    var loading = container.querySelector('.img-loading');
+                    const loading = container.querySelector('.img-loading');
                     if (loading) loading.style.display = 'none';
                     return;
                 }
                 img.addEventListener('load', function() {
                     container.classList.add('loaded');
                     img.classList.add('loaded');
-                    var loading = container.querySelector('.img-loading');
+                    const loading = container.querySelector('.img-loading');
                     if (loading) loading.style.display = 'none';
                 });
                 img.addEventListener('error', function() {
                     container.classList.add('loaded');
-                    var loading = container.querySelector('.img-loading');
+                    const loading = container.querySelector('.img-loading');
                     if (loading) loading.style.display = 'none';
                 });
             });
         }
 
         function compressImage(file, maxSize, quality) {
-            return new Promise(function(resolve) {
-                var reader = new FileReader();
+            return new Promise((resolve) => {
+                const reader = new FileReader();
                 reader.onload = function(e) {
-                    var img = new Image();
+                    const img = new Image();
                     img.onload = function() {
-                        var canvas = document.createElement('canvas');
-                        var w = img.width,
+                        const canvas = document.createElement('canvas');
+                        let w = img.width,
                             h = img.height;
                         if (w > h) {
                             if (w > maxSize) { h = h * maxSize / w;
@@ -2374,7 +2438,7 @@
                         }
                         canvas.width = w;
                         canvas.height = h;
-                        var ctx = canvas.getContext('2d');
+                        const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, w, h);
                         canvas.toBlob(function(blob) {
                             resolve(new File([blob], file.name, { type: 'image/jpeg' }));
@@ -2388,73 +2452,57 @@
 
         function initWaline(articleId) {
             if (walineInitialized) return;
-            var commentEl = document.getElementById('waline-comments');
+            const commentEl = document.getElementById('waline-comments');
             if (!commentEl) return;
             walineInitialized = true;
             import('https://unpkg.com/@waline/client@v3/dist/waline.js')
-                .then(function(module) {
-                    var init = module.init;
+                .then((module) => {
+                    const { init } = module;
                     init({
                         el: '#waline-comments',
                         serverURL: 'https://comment.cuizi.top',
                         lang: 'zh-CN',
                         path: '/article/' + articleId,
                         dark: 'body.dark',
-                        imageUploader: function(file) {
-                            return new Promise(function(resolve, reject) {
-                                var uploadFile = file;
-                                var shouldCompress = !['image/gif', 'image/svg+xml'].includes(file.type);
-                                if (shouldCompress) {
-                                    compressImage(file, 720, 0.8).then(function(compressed) {
-                                        uploadFile = compressed;
-                                        var reader = new FileReader();
-                                        reader.onload = function() {
-                                            var base64 = reader.result.split(',')[1];
-                                            fetch('https://comment.cuizi.top/api/upload', {
-                                                method: 'POST',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({ image: base64, filename: file.name })
-                                            }).then(function(resp) { return resp.json(); }).then(function(data) {
-                                                resolve(data.url);
-                                            }).catch(reject);
-                                        };
-                                        reader.readAsDataURL(uploadFile);
-                                    }).catch(reject);
-                                } else {
-                                    var reader = new FileReader();
-                                    reader.onload = function() {
-                                        var base64 = reader.result.split(',')[1];
-                                        fetch('https://comment.cuizi.top/api/upload', {
-                                            method: 'POST',
-                                            headers: { 'Content-Type': 'application/json' },
-                                            body: JSON.stringify({ image: base64, filename: file.name })
-                                        }).then(function(resp) { return resp.json(); }).then(function(data) {
-                                            resolve(data.url);
-                                        }).catch(reject);
-                                    };
-                                    reader.readAsDataURL(uploadFile);
-                                }
+                        imageUploader: async (file) => {
+                            let uploadFile = file;
+                            const shouldCompress = !['image/gif', 'image/svg+xml'].includes(file.type);
+                            if (shouldCompress) {
+                                uploadFile = await compressImage(file, 720, 0.8);
+                            }
+                            const reader = new FileReader();
+                            const base64 = await new Promise((resolve) => {
+                                reader.onload = () => resolve(reader.result.split(',')[1]);
+                                reader.readAsDataURL(uploadFile);
                             });
+
+                            const resp = await fetch('https://comment.cuizi.top/api/upload', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ image: base64, filename: file.name })
+                            });
+                            const data = await resp.json();
+                            return data.url;
                         },
                         emoji: ['https://unpkg.com/@waline/emojis@1.4.0/alus', 'https://unpkg.com/@waline/emojis@1.4.0/bilibili', 'https://unpkg.com/@waline/emojis@1.4.0/bmoji', 'https://unpkg.com/@waline/emojis@1.4.0/qq', 'https://unpkg.com/@waline/emojis@1.4.0/tieba'],
                         requiredMeta: ['nick', 'mail']
                     });
                 })
-                .catch(function(err) {
+                .catch((err) => {
                     console.error('Waline 加载失败:', err);
                     walineInitialized = false;
                 });
         }
 
         function generateQRCanvas(text, size) {
-            return new Promise(function(resolve, reject) {
-                var img = new Image();
+            return new Promise((resolve, reject) => {
+                const img = new Image();
                 img.crossOrigin = 'anonymous';
                 img.onload = function() {
-                    var canvas = document.createElement('canvas');
+                    const canvas = document.createElement('canvas');
                     canvas.width = size;
                     canvas.height = size;
-                    var ctx = canvas.getContext('2d');
+                    const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, size, size);
                     resolve(canvas);
                 };
@@ -2466,7 +2514,7 @@
         }
 
         function renderArticle() {
-            var id = getParam('id');
+            const id = getParam('id');
             if (id === null) {
                 appContent.innerHTML = `
                         <div class="not-found">
@@ -2479,13 +2527,13 @@
             }
 
             fetch('wenzhang.json', { cache: 'no-cache' })
-                .then(function(response) {
+                .then(response => {
                     if (!response.ok) throw new Error('文件不存在');
                     return response.json();
                 })
-                .then(function(data) {
-                    var articles = data.announcements || [];
-                    var idx = parseInt(id);
+                .then(data => {
+                    const articles = data.announcements || [];
+                    const idx = parseInt(id);
                     if (isNaN(idx) || idx < 0 || idx >= articles.length) {
                         appContent.innerHTML = `
                                 <div class="not-found">
@@ -2497,7 +2545,7 @@
                         return;
                     }
 
-                    var article = articles[idx];
+                    const article = articles[idx];
                     if (article.delete === true) {
                         appContent.innerHTML = `
                                 <div class="not-found">
@@ -2512,34 +2560,34 @@
                     currentArticle = article;
                     document.title = (currentArticle.title || '文章详情') + ' · ks';
 
-                    var title = currentArticle.title || '无标题';
-                    var date = currentArticle.date || '';
-                    var content = currentArticle.content || '（暂无内容）';
-                    var tags = currentArticle.tags || [];
-                    var renderedContent = renderMarkdown(content);
+                    const title = currentArticle.title || '无标题';
+                    const date = currentArticle.date || '';
+                    const content = currentArticle.content || '（暂无内容）';
+                    const tags = currentArticle.tags || [];
+                    let renderedContent = renderMarkdown(content);
 
                     renderedContent = renderedContent.replace(/<img\s+src="([^"]*)"\s+alt="([^"]*)"([^>]*)>/g, function(
                         match, src, alt, rest) {
-                        var altText = alt || '';
-                        var altHtml = altText ? '<span class="img-alt-text">' + altText + '</span>' : '';
+                        const altText = alt || '';
+                        const altHtml = altText ? '<span class="img-alt-text">' + altText + '</span>' : '';
                         return '<div class="img-placeholder"><span class="img-loading"><i class="fas fa-spinner fa-spin"></i></span><img src="' +
                             src + '" alt="' + alt + '"' + rest + '>' + altHtml + '</div>';
                     });
 
-                    var wordCount = countWords(content);
-                    var readTime = calculateReadTime(wordCount);
-                    var displayWord = formatWordCount(wordCount);
-                    var displayTime = formatReadTime(readTime);
+                    const wordCount = countWords(content);
+                    const readTime = calculateReadTime(wordCount);
+                    const displayWord = formatWordCount(wordCount);
+                    const displayTime = formatReadTime(readTime);
 
-                    var preview = getPlainPreview(content, 80);
-                    var articleUrl = window.location.origin + window.location.pathname + '?id=' + idx;
+                    const preview = getPlainPreview(content, 80);
+                    const articleUrl = window.location.origin + window.location.pathname + '?id=' + idx;
                     currentShareText = title + '：' + preview + '\n查看完整内容？请访问：' + articleUrl;
 
-                    var tagsHtml = '';
+                    let tagsHtml = '';
                     if (tags.length > 0) {
                         tagsHtml = '<div class="detail-tags">';
                         tags.forEach(function(tag) {
-                            var tagName = escapeHtml(tag);
+                            const tagName = escapeHtml(tag);
                             tagsHtml += '<span class="tag" data-tag="' + tagName + '"><i class="fas fa-tag"></i> ' + tagName + '</span>';
                         });
                         tagsHtml += '</div>';
@@ -2555,7 +2603,7 @@
                             </div>
                         `;
 
-                    document.querySelectorAll('.code-line .hljs').forEach(function(el) {
+                    document.querySelectorAll('.code-line .hljs').forEach(el => {
                         try {
                             hljs.highlightElement(el);
                         } catch (e) {}
@@ -2563,18 +2611,18 @@
 
                     initImageLazyLoad();
 
-                    var images = document.querySelectorAll('.detail-content .img-placeholder img');
-                    var allImages = [];
-                    images.forEach(function(img) {
-                        var src = img.getAttribute('src');
-                        var alt = img.getAttribute('alt') || '';
+                    const images = document.querySelectorAll('.detail-content .img-placeholder img');
+                    const allImages = [];
+                    images.forEach(img => {
+                        const src = img.getAttribute('src');
+                        const alt = img.getAttribute('alt') || '';
                         if (src) {
                             allImages.push({ src: src, alt: alt, el: img });
                         }
                     });
                     lbImageData = allImages;
 
-                    images.forEach(function(img, index) {
+                    images.forEach((img, index) => {
                         img.style.cursor = 'pointer';
                         img.addEventListener('click', function(e) {
                             e.stopPropagation();
@@ -2587,7 +2635,7 @@
 
                     initWaline(id);
                 })
-                .catch(function() {
+                .catch(() => {
                     appContent.innerHTML = `
                             <div class="not-found">
                                 <i class="far fa-frown"></i>
@@ -2598,12 +2646,12 @@
                 });
         }
 
-        var lbProgressEl = null;
-        var lbProgressBarEl = null;
+        let lbProgressEl = null;
+        let lbProgressBarEl = null;
 
         function createLbProgress() {
             if (document.querySelector('.lightbox-progress')) return;
-            var div = document.createElement('div');
+            const div = document.createElement('div');
             div.className = 'lightbox-progress';
             div.innerHTML = '<div class="lb-progress-bar"></div>';
             document.body.appendChild(div);
@@ -2638,10 +2686,10 @@
 
             createLbProgress();
 
-            var existing = document.querySelector('.lightbox-overlay');
+            const existing = document.querySelector('.lightbox-overlay');
             if (existing) existing.remove();
 
-            var overlay = document.createElement('div');
+            const overlay = document.createElement('div');
             overlay.className = 'lightbox-overlay';
             overlay.innerHTML = `
                     <button class="lightbox-close">&times;</button>
@@ -2659,37 +2707,37 @@
             document.body.appendChild(overlay);
             document.body.style.overflow = 'hidden';
 
-            var scale = 1;
-            var translateX = 0;
-            var translateY = 0;
-            var isDragging = false;
-            var mouseDown = false;
-            var mouseStartX = 0,
+            let scale = 1;
+            let translateX = 0;
+            let translateY = 0;
+            let isDragging = false;
+            let mouseDown = false;
+            let mouseStartX = 0,
                 mouseStartY = 0;
-            var mouseLastX = 0,
+            let mouseLastX = 0,
                 mouseLastY = 0;
-            var touchStartDist = 0,
+            let touchStartDist = 0,
                 touchStartScale = 1;
-            var touchStartX = 0,
+            let touchStartX = 0,
                 touchStartY = 0;
-            var touchLastX = 0,
+            let touchLastX = 0,
                 touchLastY = 0;
 
-            var imgWrapper = overlay.querySelector('.lightbox-img-wrapper');
-            var img = overlay.querySelector('img');
-            var altEl = overlay.querySelector('.lightbox-alt');
-            var counterEl = overlay.querySelector('.lightbox-counter');
-            var prevBtn = overlay.querySelector('.lightbox-nav.prev');
-            var nextBtn = overlay.querySelector('.lightbox-nav.next');
-            var playBtn = overlay.querySelector('.lightbox-play');
-            var closeBtn = overlay.querySelector('.lightbox-close');
+            const imgWrapper = overlay.querySelector('.lightbox-img-wrapper');
+            const img = overlay.querySelector('img');
+            const altEl = overlay.querySelector('.lightbox-alt');
+            const counterEl = overlay.querySelector('.lightbox-counter');
+            const prevBtn = overlay.querySelector('.lightbox-nav.prev');
+            const nextBtn = overlay.querySelector('.lightbox-nav.next');
+            const playBtn = overlay.querySelector('.lightbox-play');
+            const closeBtn = overlay.querySelector('.lightbox-close');
 
-            var playIntervalId = null;
-            var progressAnimId = null;
-            var PLAY_DELAY = 3000;
+            let playIntervalId = null;
+            let progressAnimId = null;
+            const PLAY_DELAY = 3000;
 
             function updateLightbox() {
-                var data = lbImageData[currentLbIndex];
+                const data = lbImageData[currentLbIndex];
                 if (!data) return;
                 img.src = data.src;
                 img.alt = data.alt || '';
@@ -2764,15 +2812,15 @@
                     progressAnimId = null;
                 }
                 resetLbProgress();
-                var startTime = performance.now();
+                const startTime = performance.now();
 
                 function updateProgress(currentTime) {
                     if (!isPlaying) {
                         progressAnimId = null;
                         return;
                     }
-                    var elapsed = currentTime - startTime;
-                    var progress = Math.min((elapsed / PLAY_DELAY) * 100, 100);
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min((elapsed / PLAY_DELAY) * 100, 100);
                     if (lbProgressBarEl) {
                         lbProgressBarEl.style.width = progress + '%';
                     }
@@ -2893,12 +2941,12 @@
 
             img.addEventListener('wheel', function(e) {
                 e.preventDefault();
-                var delta = e.deltaY > 0 ? -0.1 : 0.1;
-                var newScale = Math.min(Math.max(0.5, scale + delta), 5);
-                var rect = img.getBoundingClientRect();
-                var ratioX = (e.clientX - rect.left) / rect.width;
-                var ratioY = (e.clientY - rect.top) / rect.height;
-                var oldScale = scale;
+                const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                const newScale = Math.min(Math.max(0.5, scale + delta), 5);
+                const rect = img.getBoundingClientRect();
+                const ratioX = (e.clientX - rect.left) / rect.width;
+                const ratioY = (e.clientY - rect.top) / rect.height;
+                const oldScale = scale;
                 scale = newScale;
                 translateX += (1 - newScale / oldScale) * (rect.width / 2 - rect.width * ratioX);
                 translateY += (1 - newScale / oldScale) * (rect.height / 2 - rect.height * ratioY);
@@ -2907,7 +2955,7 @@
 
             imgWrapper.addEventListener('touchstart', function(e) {
                 if (e.touches.length === 2) {
-                    var t = e.touches;
+                    const t = e.touches;
                     touchStartDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
                     touchStartScale = scale;
                 } else if (e.touches.length === 1) {
@@ -2922,13 +2970,13 @@
 
             imgWrapper.addEventListener('touchmove', function(e) {
                 if (e.touches.length === 2) {
-                    var t = e.touches;
-                    var dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+                    const t = e.touches;
+                    const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
                     scale = Math.min(Math.max(0.5, touchStartScale * (dist / touchStartDist)), 5);
                     updateTransform(false);
                 } else if (e.touches.length === 1 && isDragging) {
-                    var dx = e.touches[0].clientX - touchStartX;
-                    var dy = e.touches[0].clientY - touchStartY;
+                    const dx = e.touches[0].clientX - touchStartX;
+                    const dy = e.touches[0].clientY - touchStartY;
                     translateX = touchLastX + dx;
                     translateY = touchLastY + dy;
                     updateTransform(false);
@@ -2971,8 +3019,8 @@
 
             document.addEventListener('mousemove', function(e) {
                 if (mouseDown) {
-                    var dx = e.clientX - mouseStartX;
-                    var dy = e.clientY - mouseStartY;
+                    const dx = e.clientX - mouseStartX;
+                    const dy = e.clientY - mouseStartY;
                     translateX = mouseLastX + dx;
                     translateY = mouseLastY + dy;
                     updateTransform(false);
@@ -3065,32 +3113,30 @@
             });
         }
 
-        var currentShareImageDataUrl = '';
-
-        function generateShareImage() {
+        async function generateShareImage() {
             if (!currentArticle) return;
 
-            var title = currentArticle.title || '无标题';
-            var date = currentArticle.date || '';
-            var desc = getShareDesc(currentArticle.content || '');
-            var url = window.location.href;
+            const title = currentArticle.title || '无标题';
+            const date = currentArticle.date || '';
+            const desc = getShareDesc(currentArticle.content || '');
+            const url = window.location.href;
 
-            var canvas = document.createElement('canvas');
-            var ctx = canvas.getContext('2d');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
 
-            var W = 900,
+            const W = 900,
                 H = 540;
             canvas.width = W;
             canvas.height = H;
 
-            var grad = ctx.createLinearGradient(0, 0, W, H);
+            const grad = ctx.createLinearGradient(0, 0, W, H);
             grad.addColorStop(0, '#f8f5ff');
             grad.addColorStop(1, '#e8e0ff');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, W, H);
 
             ctx.globalAlpha = 0.05;
-            for (var i = 0; i < 6; i++) {
+            for (let i = 0; i < 6; i++) {
                 ctx.beginPath();
                 ctx.arc(60 + i * 160, 40 + (i % 3) * 30, 80, 0, Math.PI * 2);
                 ctx.fillStyle = '#7a6bcf';
@@ -3108,33 +3154,34 @@
             ctx.textBaseline = 'top';
             ctx.font = '700 52px "Inter", "PingFang SC", sans-serif';
             ctx.fillStyle = '#1a1a2e';
-            var titleLines = wrapText(ctx, title || '无标题', W - 260);
-            var titleDisplay = truncateLines(titleLines, 2);
-            titleDisplay.forEach(function(line, i) {
+            const titleLines = wrapText(ctx, title || '无标题', W - 260);
+            const titleDisplay = truncateLines(titleLines, 2);
+            titleDisplay.forEach((line, i) => {
                 ctx.fillText(line, 40, 70 + i * 60);
             });
 
-            var subY = 70 + Math.min(titleDisplay.length, 2) * 60 + 20;
+            let subY = 70 + Math.min(titleDisplay.length, 2) * 60 + 20;
             ctx.font = '400 22px "Inter", "PingFang SC", sans-serif';
             ctx.fillStyle = '#4a4a6e';
-            var descLines = wrapText(ctx, desc || ' ', W - 260);
-            var descDisplay = truncateLines(descLines, 4);
-            descDisplay.forEach(function(line, i) {
+            const descLines = wrapText(ctx, desc || ' ', W - 260);
+            const descDisplay = truncateLines(descLines, 4);
+            descDisplay.forEach((line, i) => {
                 ctx.fillText(line, 40, subY + 10 + i * 34);
             });
 
-            var bottomY = H - 44;
+            const bottomY = H - 44;
             ctx.font = '500 16px "Inter", "PingFang SC", sans-serif';
             ctx.fillStyle = '#6a6a92';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'bottom';
             ctx.fillText('ks', 40, bottomY);
 
-            var qrSize = 180;
-            var qrX = W - qrSize - 40;
-            var qrY = H - qrSize - 40;
+            const qrSize = 180;
+            const qrX = W - qrSize - 40;
+            const qrY = H - qrSize - 40;
 
-            generateQRCanvas(url, qrSize).then(function(qrCanvas) {
+            try {
+                const qrCanvas = await generateQRCanvas(url, qrSize);
                 ctx.shadowColor = 'rgba(0,0,0,0.06)';
                 ctx.shadowBlur = 16;
                 ctx.shadowOffsetX = 0;
@@ -3142,22 +3189,7 @@
                 ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
                 ctx.shadowColor = 'transparent';
                 ctx.shadowBlur = 0;
-
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'top';
-                ctx.font = '400 13px "Inter", sans-serif';
-                ctx.fillStyle = '#aaaacc';
-                ctx.fillText('扫码观看全文', qrX + qrSize / 2, qrY + qrSize + 10);
-
-                ctx.textAlign = 'right';
-                ctx.textBaseline = 'bottom';
-                ctx.font = '400 13px "Inter", sans-serif';
-                ctx.fillStyle = '#c8c8e0';
-                ctx.fillText('cuizi.top', W - 40, 18);
-
-                currentShareImageDataUrl = canvas.toDataURL('image/png');
-                document.getElementById('sharePreviewImg').src = currentShareImageDataUrl;
-            }).catch(function() {
+            } catch (e) {
                 ctx.fillStyle = '#f0edff';
                 ctx.fillRect(qrX, qrY, qrSize, qrSize);
                 ctx.fillStyle = '#aaa';
@@ -3165,30 +3197,29 @@
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText('二维码失败', qrX + qrSize / 2, qrY + qrSize / 2);
+            }
 
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'top';
-                ctx.font = '400 13px "Inter", sans-serif';
-                ctx.fillStyle = '#aaaacc';
-                ctx.fillText('扫码观看全文', qrX + qrSize / 2, qrY + qrSize + 10);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.font = '400 13px "Inter", sans-serif';
+            ctx.fillStyle = '#aaaacc';
+            ctx.fillText('扫码观看全文', qrX + qrSize / 2, qrY + qrSize + 10);
 
-                ctx.textAlign = 'right';
-                ctx.textBaseline = 'bottom';
-                ctx.font = '400 13px "Inter", sans-serif';
-                ctx.fillStyle = '#c8c8e0';
-                ctx.fillText('cuizi.top', W - 40, 18);
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'bottom';
+            ctx.font = '400 13px "Inter", sans-serif';
+            ctx.fillStyle = '#c8c8e0';
+            ctx.fillText('cuizi.top', W - 40, 18);
 
-                currentShareImageDataUrl = canvas.toDataURL('image/png');
-                document.getElementById('sharePreviewImg').src = currentShareImageDataUrl;
-            });
+            currentShareImageDataUrl = canvas.toDataURL('image/png');
+            sharePreviewImg.src = currentShareImageDataUrl;
         }
 
         function wrapText(ctx, text, maxWidth) {
-            var chars = Array.from(text);
-            var lines = [];
-            var current = '';
-            for (var i = 0; i < chars.length; i++) {
-                var ch = chars[i];
+            const chars = [...text];
+            const lines = [];
+            let current = '';
+            for (const ch of chars) {
                 if (ctx.measureText(current + ch).width > maxWidth) {
                     lines.push(current);
                     current = ch;
@@ -3202,32 +3233,34 @@
 
         function truncateLines(lines, maxLines) {
             if (lines.length <= maxLines) return lines;
-            var result = lines.slice(0, maxLines);
-            var last = result[result.length - 1];
-            var trimmed = last.slice(0, -1) + '…';
+            const result = lines.slice(0, maxLines);
+            const last = result[result.length - 1];
+            const trimmed = last.slice(0, -1) + '…';
             result[result.length - 1] = trimmed;
             return result;
         }
 
+        let currentShareImageDataUrl = '';
+
         document.addEventListener('click', function(e) {
-            var copyBtn = e.target.closest('.copy-btn');
+            const copyBtn = e.target.closest('.copy-btn');
             if (copyBtn) {
-                var targetId = copyBtn.dataset.copy;
+                const targetId = copyBtn.dataset.copy;
                 if (!targetId) return;
-                var wrapper = document.getElementById('cbw-' + targetId);
+                const wrapper = document.getElementById('cbw-' + targetId);
                 if (!wrapper) return;
 
-                var codeLines = wrapper.querySelectorAll('.code-line');
-                var text = '';
-                codeLines.forEach(function(line) {
-                    var clone = line.cloneNode(true);
-                    var lineNum = clone.querySelector('.line-number');
+                const codeLines = wrapper.querySelectorAll('.code-line');
+                let text = '';
+                codeLines.forEach(line => {
+                    const clone = line.cloneNode(true);
+                    const lineNum = clone.querySelector('.line-number');
                     if (lineNum) lineNum.remove();
                     text += clone.textContent + '\n';
                 });
                 text = text.replace(/\n$/, '');
 
-                var ta = document.createElement('textarea');
+                const ta = document.createElement('textarea');
                 ta.value = text;
                 ta.style.position = 'fixed';
                 ta.style.left = '-9999px';
@@ -3240,11 +3273,11 @@
                 ta.select();
 
                 try {
-                    var success = document.execCommand('copy');
+                    const success = document.execCommand('copy');
                     if (success) {
                         copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
                         copyBtn.classList.add('copied');
-                        setTimeout(function() {
+                        setTimeout(() => {
                             copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
                             copyBtn.classList.remove('copied');
                         }, 2000);
@@ -3258,13 +3291,13 @@
                 return;
             }
 
-            var collapseBtn = e.target.closest('.collapse-btn');
+            const collapseBtn = e.target.closest('.collapse-btn');
             if (collapseBtn) {
-                var targetId = collapseBtn.dataset.target;
+                const targetId = collapseBtn.dataset.target;
                 if (!targetId) return;
-                var wrapper = document.getElementById(targetId);
+                const wrapper = document.getElementById(targetId);
                 if (!wrapper) return;
-                var iconEl = collapseBtn.querySelector('i');
+                const iconEl = collapseBtn.querySelector('i');
                 wrapper.classList.toggle('collapsed');
                 if (wrapper.classList.contains('collapsed')) {
                     iconEl.className = 'fas fa-chevron-down';
@@ -3275,9 +3308,6 @@
             }
         });
 
-        var shareModal = document.getElementById('shareModal');
-        var sharePreviewImg = document.getElementById('sharePreviewImg');
-
         document.getElementById('shareButton').addEventListener('click', function() {
             if (!currentArticle) {
                 showToast('文章未加载', 'fa-exclamation-circle');
@@ -3287,7 +3317,9 @@
             document.body.style.overflow = 'hidden';
         });
 
-        document.getElementById('shareCloseBtn').addEventListener('click', function() {
+        const shareCloseBtn = document.getElementById('shareCloseBtn');
+
+        shareCloseBtn.addEventListener('click', function() {
             shareModal.classList.remove('active');
             document.body.style.overflow = '';
         });
@@ -3299,15 +3331,16 @@
             }
         });
 
-        var shareTextDisplay = document.getElementById('shareTextDisplay');
-        var textModal = document.getElementById('textModal');
+        const shareCopyBtn = document.getElementById('shareCopyBtn');
 
-        document.getElementById('shareCopyBtn').addEventListener('click', function() {
+        shareCopyBtn.addEventListener('click', function() {
             shareTextDisplay.textContent = currentShareText || '暂无内容';
             textModal.classList.add('active');
         });
 
-        document.getElementById('textModalCancel').addEventListener('click', function() {
+        const textModalCancel = document.getElementById('textModalCancel');
+
+        textModalCancel.addEventListener('click', function() {
             textModal.classList.remove('active');
         });
 
@@ -3317,15 +3350,17 @@
             }
         });
 
-        document.getElementById('textModalCopy').addEventListener('click', function() {
-            var text = shareTextDisplay.textContent;
-            navigator.clipboard.writeText(text).then(function() {
+        const textModalCopy = document.getElementById('textModalCopy');
+
+        textModalCopy.addEventListener('click', function() {
+            const text = shareTextDisplay.textContent;
+            navigator.clipboard.writeText(text).then(() => {
                 showToast('已复制', 'fa-check-circle');
                 textModal.classList.remove('active');
                 shareModal.classList.remove('active');
                 document.body.style.overflow = '';
-            }).catch(function() {
-                var ta = document.createElement('textarea');
+            }).catch(() => {
+                const ta = document.createElement('textarea');
                 ta.value = text;
                 document.body.appendChild(ta);
                 ta.select();
@@ -3338,15 +3373,17 @@
             });
         });
 
-        document.getElementById('shareSaveBtn').addEventListener('click', function() {
+        const shareSaveBtn = document.getElementById('shareSaveBtn');
+
+        shareSaveBtn.addEventListener('click', function() {
             if (!currentShareImageDataUrl) {
                 showToast('图片未生成', 'fa-exclamation-circle');
                 return;
             }
-            var a = document.createElement('a');
+            const a = document.createElement('a');
             a.href = currentShareImageDataUrl;
-            var now = new Date();
-            var ts = now.getFullYear().toString().slice(2) +
+            const now = new Date();
+            const ts = now.getFullYear().toString().slice(2) +
                 String(now.getMonth() + 1).padStart(2, '0') +
                 String(now.getDate()).padStart(2, '0') +
                 String(now.getHours()).padStart(2, '0') +

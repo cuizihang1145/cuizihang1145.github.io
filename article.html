@@ -2186,9 +2186,10 @@
                         }
 
                         if (subItems.length > 0) {
-                            const subListType = subItems.some(item => item.includes('input[type="checkbox"]')) ? 'task' : 'ul';
-                            const subTag = subListType === 'task' ? 'ul' : 'ul';
-                            const subCls = subListType === 'task' ? ' class="task-list"' : '';
+                            const hasCheckbox = subItems.some(item => item.includes('input[type="checkbox"]'));
+                            const subListType = hasCheckbox ? 'task' : 'ul';
+                            const subTag = 'ul';
+                            const subCls = hasCheckbox ? ' class="task-list"' : '';
                             const subHtml = '<' + subTag + subCls + '>\n' + subItems.join('\n') + '\n</' + subTag + '>';
                             if (listStack.length > 0) {
                                 const currentList = listStack[listStack.length - 1];

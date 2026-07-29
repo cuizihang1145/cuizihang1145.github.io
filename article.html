@@ -2017,10 +2017,55 @@
                     const date = currentArticle.date || '';
                     const content = currentArticle.content || '（暂无内容）';
                     const tags = currentArticle.tags || [];
+
+                    const fencePlugin = {
+                        render: function(code, lang) {
+                            const lines = code.split('\n');
+                            const lineCount = lines.length;
+                            const totalChars = code.length;
+                            const maxLineLength = Math.max(...lines.map(l => l.length), 0);
+
+                            let codeHtml = '';
+                            for (let i = 0; i < lines.length; i++) {
+                                const lineNum = i + 1;
+                                const escapedLine = escapeHtml(lines[i]);
+                                codeHtml +=
+                                    `<span class="code-line"><span class="line-number">${lineNum}</span><span class="hljs">${escapedLine}</span></span>`;
+                            }
+
+                            const copyId = 'code-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+
+                            return `
+                                <div class="code-block-wrapper" id="cbw-${copyId}">
+                                    <div class="code-block-header">
+                                        <span class="lang-label">${escapeHtml(lang || 'text')}</span>
+                                        <span class="code-stats">
+                                            <span>${lineCount} 行</span> ·
+                                            <span>${maxLineLength} 列</span> ·
+                                            <span>${totalChars} 字符</span>
+                                        </span>
+                                        <span class="header-actions">
+                                            <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
+                                            <button class="collapse-btn" data-target="cbw-${copyId}">
+                                                <i class="fas fa-chevron-up"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                    <div class="code-block-body-wrapper">
+                                        <div class="code-block-body">
+                                            ${codeHtml}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    };
+
                     let renderedContent = quikdown(content, {
                         html: true,
                         linkify: true,
-                        typographer: true
+                        typographer: true,
+                        fence_plugin: fencePlugin
                     });
 
                     renderedContent = renderedContent.replace(/<img\s+src="([^"]*)"\s+alt="([^"]*)"([^>]*)>/g, function(

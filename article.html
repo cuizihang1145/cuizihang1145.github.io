@@ -1976,9 +1976,6 @@
                     return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>';
                 });
 
-                html = html.replace(/<([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})>/g, function(match, email) {
-                    return '<a href="mailto:' + email + '">' + email + '</a>';
-                });
 
 
                 html = html.replace(/`([^`]+)`/g, '<code>$1</code>');

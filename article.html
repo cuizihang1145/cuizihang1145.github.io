@@ -639,20 +639,41 @@
             list-style: none;
             margin-bottom: 0.2rem;
         }
-        .article-detail .detail-content ul.task-list li input[type="checkbox"] {
-            -webkit-appearance: checkbox !important;
-            appearance: checkbox !important;
-            display: inline-block !important;
-            visibility: visible !important;
-            position: static !important;
-            opacity: 1 !important;
+        .task-checkbox {
+            display: inline-block;
             width: 1rem;
             height: 1rem;
+            border: 2px solid #6B5ACF;
+            border-radius: 3px;
+            background: transparent;
             flex-shrink: 0;
-            accent-color: #6B5ACF;
-            cursor: default;
-            pointer-events: none;
-            margin: 0.25rem 0 0 0;
+            margin-top: 0.25rem;
+            position: relative;
+        }
+        .task-checkbox.checked {
+            background: #6B5ACF;
+            border-color: #6B5ACF;
+        }
+        .task-checkbox.checked::after {
+            content: '';
+            position: absolute;
+            left: 2px;
+            top: 0px;
+            width: 5px;
+            height: 9px;
+            border: solid #fff;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        body.dark .task-checkbox {
+            border-color: #88ccff;
+        }
+        body.dark .task-checkbox.checked {
+            background: #88ccff;
+            border-color: #88ccff;
+        }
+        body.dark .task-checkbox.checked::after {
+            border-color: #1a1a2e;
         }
         .article-detail .detail-content ul.task-list ul.task-list {
             padding-left: 1.2rem;
@@ -1950,6 +1971,8 @@
             function renderInline(text) {
                 let html = text;
 
+                html = html.replace(/<([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s<>]+)>/g, '<a href="$1">$1</a>');
+
                 var tagMap = {};
                 var tagIndex = 0;
                 html = html.replace(/<[^>]+>/g, function(match) {
@@ -2084,9 +2107,10 @@
                             var k = start;
                             while (k <= end) {
                                 var seg = segs[k];
+                                if (!seg) break;
                                 if (seg.level > currentLevel) {
                                     var subStart = k;
-                                    while (k <= end && segs[k].level > currentLevel) k++;
+                                    while (k <= end && segs[k] && segs[k].level > currentLevel) k++;
                                     html += '<blockquote>' + buildQuotes(segs, subStart, k-1, currentLevel+1) + '</blockquote>';
                                 } else if (seg.level === currentLevel) {
                                     html += renderInline(seg.content) + '<br>';
@@ -2161,9 +2185,12 @@
                             }
                         }
 
-                        var itemContent = isTask ?
-                            '<input type="checkbox" ' + (taskChecked ? 'checked ' : '') + 'disabled> ' + taskContent :
-                            listContent;
+                        var itemContent;
+                        if (isTask) {
+                            itemContent = '<span class="task-checkbox' + (taskChecked ? ' checked' : '') + '"></span> ' + taskContent;
+                        } else {
+                            itemContent = listContent;
+                        }
 
                         if (listStack.length > 0) {
                             var currentList = listStack[listStack.length - 1];
@@ -2191,7 +2218,7 @@
                                 var subHtml = '';
                                 if (subIsTask) {
                                     var subChecked = subIsTask[1] === 'x';
-                                    subHtml = '<input type="checkbox" ' + (subChecked ? 'checked ' : '') + 'disabled> ' + subIsTask[2];
+                                    subHtml = '<span class="task-checkbox' + (subChecked ? ' checked' : '') + '"></span> ' + subIsTask[2];
                                 } else {
                                     subHtml = subContent;
                                 }
@@ -2204,7 +2231,7 @@
 
                         if (subItems.length > 0) {
                             var hasCheckbox = subItems.some(function(item) {
-                                return item.includes('input[type="checkbox"]') || item.includes('checked');
+                                return item.includes('task-checkbox');
                             });
                             var subHtml2 = '<ul class="' + (hasCheckbox ? 'task-list' : '') + '">\n' + subItems.join('\n') + '\n</ul>';
                             if (listStack.length > 0) {

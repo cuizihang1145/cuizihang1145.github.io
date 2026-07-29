@@ -323,7 +323,1509 @@
     <div class="toast" id="toast"></div>
     <div id="qrTemp"></div>
     <script>
-        function getParam(e){var t=new URL(window.location.href);return t.searchParams.get(e)}function escapeHtml(e){if(!e)return"";var t=document.createElement("div");return t.textContent=e,t.innerHTML}function unescapeHtml(e){if(!e)return"";var t=document.createElement("div");return t.innerHTML=e,t.textContent}function markdownToPlainText(e){if(!e)return"";return e=e.replace(/```[\s\S]*?```/g,""),e=e.replace(/`([^`]+)`/g,"$1"),e=e.replace(/!video\[[^\]]*\]\([^)]*\)/g,""),e=e.replace(/!\[[^\]]*\]\([^)]*\)/g,""),e=e.replace(/\*\*(.*?)\*\*/g,"$1"),e=e.replace(/\*([^*]+)\*/g,"$1"),e=e.replace(/~~(.*?)~~/g,"$1"),e=e.replace(/\[([^\]]*)\]\([^)]*\)/g,"$1"),e=e.replace(/^#{1,6}\s+/gm,""),e=e.replace(/^-\s+/gm,""),e=e.replace(/^\d+\.\s+/gm,""),e=e.replace(/^>\s+/gm,""),e=e.replace(/^---$/gm,""),e=e.replace(/\n/g," "),e=e.replace(/\s{2,}/g," "),e.trim()}function showToast(e,t){t=t||"fa-info-circle";var n=document.getElementById("toast");n.innerHTML='<i class="fas '+t+'"></i> '+e,n.classList.add("show"),clearTimeout(n._hideTimer),n._hideTimer=setTimeout(function(){n.classList.remove("show")},2e3)}var progressWrap=document.getElementById("readingProgress"),progressBar=document.getElementById("progressBar"),lastProgress=0,hideTimer=null,isProgressLocked=!1,progressRAF=null,lbProgress=0;function updateReadingProgress(){if(!isProgressLocked){var e=document.querySelector(".article-detail");if(!e){progressBar.style.width="0%";return}var t=e.getBoundingClientRect(),n=t.height,o=t.top+window.scrollY,a=window.innerHeight,r=n-a,i=0;r<=0?i=100:(s=window.scrollY-o,i=Math.min(Math.max(s/r*100,0),100)),progressBar.style.width=i+"%",i>=100&&lastProgress<100?(hideTimer&&(clearTimeout(hideTimer),hideTimer=null),hideTimer=setTimeout(function(){progressWrap.style.transition="opacity 0.8s ease",progressWrap.style.opacity="0",setTimeout(function(){progressWrap.style.display="none"},800)},600)):i<100&&(hideTimer&&(clearTimeout(hideTimer),hideTimer=null),progressWrap.style.display="block",progressWrap.style.opacity="1",progressWrap.style.transition="opacity 0.3s ease"),lastProgress=i}var s}window.addEventListener("scroll",updateReadingProgress),window.addEventListener("resize",updateReadingProgress),window.addEventListener("load",updateReadingProgress);var themeToggle=document.getElementById("themeToggle"),themeIcon=document.getElementById("themeIcon"),prefersDark=window.matchMedia("(prefers-color-scheme: dark)").matches,currentTheme=localStorage.getItem("ks-theme")||(prefersDark?"dark":"light");function setTheme(e){document.body.classList.toggle("dark","dark"===e),themeIcon.className="dark"===e?"fas fa-sun":"fas fa-moon",localStorage.setItem("ks-theme",e),currentTheme=e}setTheme(currentTheme),themeToggle.addEventListener("click",function(){setTheme("dark"===currentTheme?"light":"dark")});var backToTopBtn=document.getElementById("backToTopBtn"),isScrollingToTop=!1;function fastScrollToTop(){var e=window.scrollY||window.pageYOffset;if(0!==e){var t=300,n=performance.now();function o(a){var r=Math.min((a-n)/t,1),i=1-Math.pow(1-r,3),s=e*(1-i);window.scrollTo(0,s),r<1?requestAnimationFrame(o):(window.scrollTo(0,0),isScrollingToTop=!1,backToTopBtn.classList.remove("disabled"),backToTopBtn.classList.remove("show"))}requestAnimationFrame(o)}}window.addEventListener("scroll",function(){var e=window.scrollY||window.pageYOffset;e>300&&!isScrollingToTop?backToTopBtn.classList.add("show"):isScrollingToTop||backToTopBtn.classList.remove("show")}),backToTopBtn.addEventListener("click",function(){if(!isScrollingToTop){var e=window.scrollY||window.pageYOffset;0!==e&&(isScrollingToTop=!0,backToTopBtn.classList.add("disabled"),fastScrollToTop())}});var backBtn=document.getElementById("backButton"),from=getParam("from"),page=getParam("page"),folder=getParam("folder"),returnUrl="index.html?return=articles";page&&(returnUrl+="&page="+page),"archive"===from&&"articles"===folder?returnUrl="index.html?return=archive&folder=articles":"archive"===from&&(returnUrl="index.html?return=archive"),backBtn.href=returnUrl;var appContent=document.getElementById("appContent"),currentArticle=null,currentShareText="",walineInitialized=!1;function countWords(e){if(!e)return 0;return e=e.replace(/```[\s\S]*?```/g,""),e=e.replace(/`[^`]+`/g,""),e=e.replace(/!video\[[^\]]*\]\([^)]*\)/g,""),e=e.replace(/!\[[^\]]*\]\([^)]*\)/g,""),e=e.replace(/\*\*(.*?)\*\*/g,"$1"),e=e.replace(/\*([^*]+)\*/g,"$1"),e=e.replace(/~~(.*?)~~/g,"$1"),e=e.replace(/\[([^\]]*)\]\([^)]*\)/g,"$1"),e=e.replace(/!\[([^\]]*)\]\([^)]*\)/g,""),e=e.replace(/^#{1,6}\s+/gm,""),e=e.replace(/^-\s+/gm,""),e=e.replace(/^\d+\.\s+/gm,""),e=e.replace(/^>\s+/gm,""),e=e.replace(/^---$/gm,""),e=e.replace(/^\s*[-*+]\s+\[[ x]\]\s+/gm,""),e=e.replace(/\s+/g," "),e=e.trim(),e.length}function calculateReadTime(e){if(0===e)return 114514;var t=Math.ceil(e/300);return t<1?1:t}function formatReadTime(e){return 114514===e?"114514 分钟":"大约 "+e+" 分钟"}function formatWordCount(e){return 0===e?"没有字哦":e+" 字"}function getSharePreview(e,t){var n=markdownToPlainText(e);if(0===countWords(e))return"[没有字捏 是什么自己打开看]";var o=[...n];return o.length<=80?n:o.slice(0,80).join("")+"…"}function getShareDesc(e){var t=countWords(e);if(0===t)return"[没有字捏 是什么自己打开看]";var n=markdownToPlainText(e),o=[...n];return o.length<=80?n:o.slice(0,80).join("")+"…"}function getPlainPreview(e,t){t=t||80;var n=markdownToPlainText(e);if(0===countWords(e))return"[没有字捏 是什么自己打开看]";var o=[...n];return o.length<=t?n:o.slice(0,t).join("")+"…"}var lbImageData=[],currentLbIndex=0,isPlaying=!1,lbIsOpen=!1,lbProgressRAF=null,lbPlayTimer=null,lbIntervalId=null;function renderMarkdown(e){if(!e)return"";var t={},n=0;function o(e){var n=e;for(var[a,r]of Object.entries(t))n=n.replace(new RegExp(a.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"g"),r);return n}e=e.replace(/\\([\\`*_{}\[\]()#+\-.!|$])/g,function(e,o){var a=""+n+++"";return t[a]=o,a});var a=["u","kbd","mark","s","sub","sup","ins","del","b","i","em","strong","code","span","br","hr"];function r(t){var n=t;n=n.replace(/<([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s<>]+)>/g,'<a href="$1">$1</a>');var r={},i=0;return n=n.replace(/<[^>]+>/g,function(e){var t=""+i+++"";return r[t]=e,t}),n=n.replace(/<([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)>(.*?)<\/\1>/gs,function(e,t,n,i){return a.includes(t.toLowerCase())?"<"+t+n+">"+r(i)+"</"+t+">":e}),n=n.replace(/<br\s*\/?>/gi,"<br>"),n=n.replace(/`([^`]+)`/g,"<code>$1</code>"),n=n.replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>"),n=n.replace(/\*([^*]+)\*/g,"<em>$1</em>"),n=n.replace(/~~(.*?)~~/g,"<del>$1</del>"),n=n.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,function(e,t,n,o,a,r){var i="";a&&r?i=' style="width:'+a+"px; height:"+r+'px;"':a?i=' style="width:'+a+'px; height:auto;"':r&&(i=' style="height:'+r+'px; width:auto;"');var s=o?' title="'+o+'"':"";return'<img src="'+n+'" alt="'+t+'" loading="lazy"'+i+s+" />"}),n=n.replace(/!video\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,function(e,t,n,o,a,r){var i="";a&&r?i=' style="width:'+a+"px; height:"+r+'px;"':a?i=' style="width:'+a+'px; height:auto;"':r&&(i=' style="height:'+r+'px; width:auto;"');var s=t?'<div class="video-alt-text">'+t+"</div>":"",c=n.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);if(c)return'<div class="video-placeholder"><iframe src="https://www.youtube.com/embed/'+c[1]+'" frameborder="0" allowfullscreen'+i+"></iframe>"+s+"</div>";var l=n.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);return l?'<div class="video-placeholder"><iframe src="https://player.bilibili.com/player.html?bvid='+l[1]+'" frameborder="0" allowfullscreen'+i+"></iframe>"+s+"</div>":'<div class="video-placeholder"><video src="'+n+'" controls'+i+"></video>"+s+"</div>"}),n=n.replace(/\[([^\]]*)\]\(([^)]*)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>'),n=o(n),function(e,t){for(var n in t)t.hasOwnProperty(n)&&(e=e.replace(new RegExp(n.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"g"),t[n]));return e}(n,r)}function i(e){if(!e)return"";var t=e.split("\n"),n="",a=!1,s=[];function c(){if(a){for(var e="",t=s.length-1;t>=0;t--){var o=s[t],r="ol"===o.type?"ol":"ul",i="task"===o.type?' class="task-list"':"",c="";"ol"===o.type&&null!==o.start&&1!==o.start&&(c=' start="'+o.start+'"'),e="<"+r+i+c+">\n"+o.items.join("\n")+"\n</"+r+">\n"+e}n+=e,a=!1,s=[]}}for(var l=0;l<t.length;l++){var d=t[l];if(""===d.trim()){a?(c(),n+="<p><br></p>\n"):n+="<p><br></p>\n";continue}var u=d.match(/^(>+)\s?(.*)/);if(u){a&&c();for(var p=[],h=l;h<t.length;){var f=t[h].match(/^(>+)\s?(.*)/);if(f)p.push(t[h]),h++;else break}l=h-1;var m=p.map(function(e){var t=e.match(/^(>+)\s?(.*)/);return t?{level:t[1].length,content:t[2]}:{level:0,content:""}});function g(e,t,o,a){for(var r="",i=t;i<=o;){var s=e[i];if(!s)break;if(s.level>a){for(var c=i;i<=o&&e[i]&&e[i].level>a;)i++;r+="<blockquote>"+g(e,c,i-1,a+1)+"</blockquote>"}else if(s.level===a)r+=r?r+"<br>"+r?:r+"<br>"+r+r(s.content)+"<br>",i++;else break}return r}var v=g(m,0,m.length-1,1);v&&(n+="<blockquote>"+v+"</blockquote>\n");continue}var w=d.match(/^(#{1,6})\s+(.*)/);if(w){a&&c();var b=w[1].length,k=w[2];n+="<h"+b+">"+r(k)+"</h"+b+">\n";continue}if(/^---$/.test(d.trim())||/^\*\*\*$/.test(d.trim())||/^___$/.test(d.trim())){a&&c(),n+="<hr />\n";continue}var y=d.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);if(y){var x=y[1].length,C=y[2],_=y[3],N=_.match(/^\[([ x])\]\s+(.*)/),L=!1,T=_;if(N&&(L="x"===N[1],T=N[2]),C.match(/^\d+\.$/))var $="ol";else $=N?"task":"ul";var A=Math.floor(x/2);if(!a){a=!0,s=[],s.push({type:$,items:[],level:A,start:"ol"===$?parseInt(C):null})}else{for(;s.length>0&&s[s.length-1].level>=A;){var S=s.pop();s.length>0&&S.items.length>0&&s[s.length-1].items.push(S.items.join(""))}if(0===s.length||s[s.length-1].level<A)s.push({type:$,items:[],level:A,start:"ol"===$?parseInt(C):null})}var E;E=N?'<li data-checked="'+!!L+'">'+r(T)+"</li>":"<li>"+r(_)+"</li>",s.length>0&&(s[s.length-1].type!==$&&"task"!==s[s.length-1].type?s.push({type:$,items:[E],level:A+1,start:"ol"===$?parseInt(C):null}):s[s.length-1].items.push(E));for(var P=[],M=l+1;M<t.length;){var H=t[M].match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);if(H&&parseInt(H[1].length)>x){var O=H[3],I=O.match(/^\[([ x])\]\s+(.*)/),q="";if(I){var j="x"===I[1];q='<li data-checked="'+!!j+'">'+r(I[2])+"</li>"}else q="<li>"+r(O)+"</li>";P.push(q),M++}else break}if(P.length>0){var R=P.some(function(e){return e.includes('data-checked')}),D='<ul class="'+(R?"task-list":"")+'">\n'+P.join("\n")+"\n</ul>";if(s.length>0){var B=s[s.length-1],F=B.items[B.items.length-1];B.items[B.items.length-1]=F.replace(/<\/li>$/,D+"</li>")}}l=M-1;continue}if(a&&c(),d.match(/^([^:]+):\s+(.*)/)&&l+1<t.length&&t[l+1].match(/^:\s+/)){var z=r(d.match(/^([^:]+):\s+(.*)/)[1]),W=[];for(l++;l<t.length&&t[l].match(/^:\s+/);)W.push(r(t[l].replace(/^:\s+/,""))),l++;for(;l<t.length&&""===t[l].trim();)l++;var U=W.map(function(e){return"<dd>"+e+"</dd>"}).join("");n+="<dl><dt>"+z+"</dt>"+U+"</dl>\n";continue}n+="<p>"+r(d)+"</p>\n"}return a&&c(),n}var s=/^```(\w*)\s*([\s\S]*?)```/gm,c=[],l=0;e=e.replace(s,function(e,t,n){var o="CODEBLOCK_"+l++;return c.push({id:o,lang:t,code:n}),o});for(var d=i(e),u=0;u<c.length;u++){var p=c[u],h="code-"+Date.now()+"-"+u,f=p.code.split("\n"),m=f.length,g=0,v=0;for(var w=0;w<f.length;w++){var b=f[w].length;b>g&&(g=b),v+=b}v+=m>0?m-1:0;for(var k="",y=0;y<f.length;y++){var x=y+1,C=escapeHtml(f[y]);k+='<span class="code-line"><span class="line-number">'+x+'</span><span class="hljs">'+C+"</span></span>"}var _="<span>"+m+" 行</span> · <span>"+g+" 列</span> · <span>"+v+" 字符</span>",N='<div class="code-block-wrapper" id="cbw-'+h+'"><div class="code-block-header"><span class="lang-label">'+escapeHtml(p.lang||"text")+'</span><span class="code-stats">'+_+'</span><span class="header-actions"><button class="copy-btn" data-copy="'+h+'"><i class="fas fa-copy"></i> 复制</button><button class="collapse-btn" data-target="cbw-'+h+'"><i class="fas fa-chevron-up"></i></button></span></div><div class="code-block-body-wrapper"><div class="code-block-body" id="code-body-'+h+'">'+k+"</div></div></div>";d=d.replace(p.id,N)}return d=d.replace(/\n{3,}/g,"\n\n")}function scrollToFootnote(e){var t=document.getElementById(e);if(t){var n=t.getBoundingClientRect().top+window.scrollY-80,o=window.scrollY||window.pageYOffset,a=n-o;if(!(Math.abs(a)<5)){var r=350,i=performance.now();function s(e){var t=Math.min((e-i)/r,1),c=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,l=o+a*c;window.scrollTo(0,l),t<1?requestAnimationFrame(s):(window.scrollTo(0,n),window.history&&window.history.replaceState&&window.history.replaceState(null,"",window.location.pathname+window.location.search))}requestAnimationFrame(s)}}}function initImageLazyLoad(){document.querySelectorAll(".img-placeholder").forEach(function(e){var t=e.querySelector("img");if(t)return t.complete&&0!==t.naturalWidth?(e.classList.add("loaded"),t.classList.add("loaded"),void((a=e.querySelector(".img-loading"))&&(a.style.display="none"))):(t.addEventListener("load",function(){e.classList.add("loaded"),t.classList.add("loaded");var n=e.querySelector(".img-loading");n&&(n.style.display="none")}),void t.addEventListener("error",function(){e.classList.add("loaded");var t=e.querySelector(".img-loading");t&&(t.style.display="none")}));var a})}function compressImage(e,t,n){return new Promise(function(o){var a=new FileReader;a.onload=function(r){var i=new Image;i.onload=function(){var s=document.createElement("canvas"),c=i.width,l=i.height;c>l?c>t&&(l=l*t/c,c=t):l>t&&(c=c*t/l,l=t),s.width=c,s.height=l;var d=s.getContext("2d");d.drawImage(i,0,0,c,l),s.toBlob(function(e){o(new File([e],e.name,{type:"image/jpeg"}))},"image/jpeg",n)},i.src=r.target.result},a.readAsDataURL(e)})}function initWaline(e){if(!walineInitialized){var t=document.getElementById("waline-comments");t&&(walineInitialized=!0,import("https://unpkg.com/@waline/client@v3/dist/waline.js").then(function(n){n.init({el:"#waline-comments",serverURL:"https://comment.cuizi.top",lang:"zh-CN",path:"/article/"+e,dark:"body.dark",imageUploader:function(e){return new Promise(function(t,n){var o=e,a=!["image/gif","image/svg+xml"].includes(e.type);if(a)compressImage(e,720,.8).then(function(e){o=e;var a=new FileReader;a.onload=function(){var e=a.result.split(",")[1];fetch("https://comment.cuizi.top/api/upload",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({image:e,filename:e.name})}).then(function(e){return e.json()}).then(function(e){t(e.url)}).catch(n)},a.readAsDataURL(o)}).catch(n);else{var r=new FileReader;r.onload=function(){var e=r.result.split(",")[1];fetch("https://comment.cuizi.top/api/upload",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({image:e,filename:e.name})}).then(function(e){return e.json()}).then(function(e){t(e.url)}).catch(n)},r.readAsDataURL(o)}})},emoji:["https://unpkg.com/@waline/emojis@1.4.0/alus","https://unpkg.com/@waline/emojis@1.4.0/bilibili","https://unpkg.com/@waline/emojis@1.4.0/bmoji","https://unpkg.com/@waline/emojis@1.4.0/qq","https://unpkg.com/@waline/emojis@1.4.0/tieba"],requiredMeta:["nick","mail"]})}).catch(function(e){console.error("Waline 加载失败:",e),walineInitialized=!1}))}}function generateQRCanvas(e,t){return new Promise(function(n,o){var a=new Image;a.crossOrigin="anonymous",a.onload=function(){var e=document.createElement("canvas");e.width=t,e.height=t;var r=e.getContext("2d");r.drawImage(a,0,0,t,t),n(e)},a.onerror=function(){o(new Error("二维码图片加载失败"))},a.src="https://api.qrserver.com/v1/create-qr-code/?size="+t+"x"+t+"&data="+encodeURIComponent(e)})}function renderArticle(){var e=getParam("id");if(null===e)appContent.innerHTML='<div class="not-found"><i class="far fa-frown"></i><p>缺少文章 ID</p><p style="font-size:0.85rem; margin-top:0.5rem;">请从文章列表点击进入</p></div>';else{fetch("wenzhang.json",{cache:"no-cache"}).then(function(e){if(!e.ok)throw new Error("文件不存在");return e.json()}).then(function(e){var t=e.announcements||[],n=parseInt(id);if(isNaN(n)||n<0||n>=t.length)appContent.innerHTML='<div class="not-found"><i class="far fa-frown"></i><p>文章不存在</p><p style="font-size:0.85rem; margin-top:0.5rem;">可能已被删除</p></div>';else{var o=t[n];if(!0===o.delete)appContent.innerHTML='<div class="not-found"><i class="far fa-frown"></i><p>文章不存在</p><p style="font-size:0.85rem; margin-top:0.5rem;">可能已被删除</p></div>';else{currentArticle=o,document.title=(currentArticle.title||"文章详情")+" · ks";var a=currentArticle.title||"无标题",r=currentArticle.date||"",i=currentArticle.content||"（暂无内容）",s=currentArticle.tags||[],c=renderMarkdown(i);c=c.replace(/<img\s+src="([^"]*)"\s+alt="([^"]*)"([^>]*)>/g,function(e,t,n,o){var a=n||"";return'<div class="img-placeholder"><span class="img-loading"><i class="fas fa-spinner fa-spin"></i></span><img src="'+t+'" alt="'+n+'"'+o+">"+(a?'<span class="img-alt-text">'+a+"</span>":"")+"</div>"});var l=countWords(i),d=calculateReadTime(l),u=formatWordCount(l),p=formatReadTime(d),h=getPlainPreview(i,80),f=window.location.origin+window.location.pathname+"?id="+n;currentShareText=a+"："+h+"\n查看完整内容？请访问："+f;var m="";s.length>0&&(m='<div class="detail-tags">',s.forEach(function(e){var t=escapeHtml(e);m+='<span class="tag" data-tag="'+t+'"><i class="fas fa-tag"></i> '+t+"</span>"}),m+="</div>"),appContent.innerHTML='<div class="article-detail"><h1 class="detail-title">'+escapeHtml(a)+'</h1><span class="detail-date">'+(r?escapeHtml(r)+"  ·  ":"")+p+" · "+u+"</span>"+m+'<hr class="detail-divider"><div class="detail-content">'+c+"</div></div>",document.querySelectorAll(".code-line .hljs").forEach(function(e){try{hljs.highlightElement(e)}catch(e){}}),initImageLazyLoad();var g=document.querySelectorAll(".detail-content .img-placeholder img"),v=[];g.forEach(function(e){var t=e.getAttribute("src"),n=e.getAttribute("alt")||"";t&&v.push({src:t,alt:n,el:e})}),lbImageData=v,g.forEach(function(e,t){e.style.cursor="pointer",e.addEventListener("click",function(e){e.stopPropagation(),openLightbox(t)})}),setTimeout(updateReadingProgress,100),generateShareImage(),initWaline(id)}}}).catch(function(){appContent.innerHTML='<div class="not-found"><i class="far fa-frown"></i><p>加载文章数据失败</p><p style="font-size:0.85rem; margin-top:0.5rem;">请确保 wenzhang.json 文件存在</p></div>'})}}var lbProgressEl=null,lbProgressBarEl=null;function createLbProgress(){if(!document.querySelector(".lightbox-progress")){var e=document.createElement("div");e.className="lightbox-progress",e.innerHTML='<div class="lb-progress-bar"></div>',document.body.appendChild(e),lbProgressEl=e,lbProgressBarEl=e.querySelector(".lb-progress-bar")}}function updateLbProgress(e){lbProgressBarEl&&(lbProgressBarEl.style.width=e+"%")}function showLbProgress(e){lbProgressEl&&(e?lbProgressEl.classList.add("active"):lbProgressEl.classList.remove("active"))}function resetLbProgress(){lbProgressBarEl&&(lbProgressBarEl.style.width="0%")}function openLightbox(e){if(0!==lbImageData.length&&!lbIsOpen){lbIsOpen=!0,currentLbIndex=e,createLbProgress();var t=document.querySelector(".lightbox-overlay");t&&t.remove();var n=document.createElement("div");n.className="lightbox-overlay",n.innerHTML='<button class="lightbox-close">&times;</button><button class="lightbox-nav prev" id="lbPrev"><i class="fas fa-chevron-left"></i></button><button class="lightbox-nav next" id="lbNext"><i class="fas fa-chevron-right"></i></button><button class="lightbox-play" id="lbPlay"><i class="fas fa-play"></i></button><div class="lightbox-container"><div class="lightbox-img-wrapper"><img src="" alt="" /></div><div class="lightbox-alt"></div></div><div class="lightbox-counter"></div>',document.body.appendChild(n),document.body.style.overflow="hidden";var o=1,a=0,r=0,i=!1,s=!1,c=0,l=0,d=0,u=0,p=0,h=1,f=0,m=0,g=0,v=0,w=n.querySelector(".lightbox-img-wrapper"),b=n.querySelector("img"),k=n.querySelector(".lightbox-alt"),y=n.querySelector(".lightbox-counter"),x=n.querySelector(".lightbox-nav.prev"),C=n.querySelector(".lightbox-nav.next"),_=n.querySelector(".lightbox-play"),N=n.querySelector(".lightbox-close"),L=null,T=null,$=3e3;function A(){var e=lbImageData[currentLbIndex];e&&(b.src=e.src,b.alt=e.alt||"",k.textContent=e.alt||"",y.textContent=currentLbIndex+1+" / "+lbImageData.length,lbImageData.length<=1?(x.disabled=!0,C.disabled=!0):(x.disabled=isPlaying,C.disabled=isPlaying),o=1,a=0,r=0,function(e){e=e||!1,b.style.transition=e?"transform 0.2s cubic-bezier(0.34,1.56,0.64,1)":"none",b.style.transform="scale("+o+") translate("+a+"px, "+r+"px)"}(!1),resetLbProgress(),showLbProgress(isPlaying),function(){lbImageData.length<=1?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):currentLbIndex===lbImageData.length-1&&!isPlaying?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):(_disabled=!1,_.innerHTML=isPlaying?'<i class="fas fa-pause"></i>':'<i class="fas fa-play"></i>')}())}function S(){isPlaying=!1,L&&(clearInterval(L),L=null),T&&(cancelAnimationFrame(T),T=null),lbImageData.length>1&&(x.disabled=!1,C.disabled=!1),showLbProgress(!1),resetLbProgress(),function(){lbImageData.length<=1?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):currentLbIndex===lbImageData.length-1&&!isPlaying?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):(_disabled=!1,_.innerHTML=isPlaying?'<i class="fas fa-pause"></i>':'<i class="fas fa-play"></i>')}()}function E(){T&&(cancelAnimationFrame(T),T=null),resetLbProgress();var e=performance.now();!function t(n){if(!isPlaying){T=null;return}var o=Math.min((n-e)/$*100,100);lbProgressBarEl&&(lbProgressBarEl.style.width=o+"%"),o<100?T=requestAnimationFrame(t):T=null}(performance.now())}function P(){isPlaying||lbImageData.length<=1||currentLbIndex===lbImageData.length-1&&(function(){lbImageData.length<=1?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):currentLbIndex===lbImageData.length-1&&!isPlaying?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):(_disabled=!1,_.innerHTML=isPlaying?'<i class="fas fa-pause"></i>':'<i class="fas fa-play"></i>')}()),L&&(clearInterval(L),L=null),T&&(cancelAnimationFrame(T),T=null),isPlaying=!0,lbImageData.length>1&&(x.disabled=!0,C.disabled=!0),showLbProgress(!0),resetLbProgress(),function(){lbImageData.length<=1?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):currentLbIndex===lbImageData.length-1&&!isPlaying?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):(_disabled=!1,_.innerHTML=isPlaying?'<i class="fas fa-pause"></i>':'<i class="fas fa-play"></i>')}(),E(),L=setInterval(function(){isPlaying&&(currentLbIndex<lbImageData.length-1?(currentLbIndex++,A(),resetLbProgress(),E(),function(){lbImageData.length<=1?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):currentLbIndex===lbImageData.length-1&&!isPlaying?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):(_disabled=!1,_.innerHTML=isPlaying?'<i class="fas fa-pause"></i>':'<i class="fas fa-play"></i>')}()):S())},$)}function M(){lbImageData.length<=1||currentLbIndex===lbImageData.length-1&&!isPlaying?function(){lbImageData.length<=1?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):currentLbIndex===lbImageData.length-1&&!isPlaying?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):(_disabled=!1,_.innerHTML=isPlaying?'<i class="fas fa-pause"></i>':'<i class="fas fa-play"></i>')}():isPlaying?S():P()}function H(){lbIsOpen&&(lbIsOpen=!1,isPlaying=!1,L&&(clearInterval(L),L=null),T&&(cancelAnimationFrame(T),T=null),showLbProgress(!1),resetLbProgress(),isProgressLocked=!1,progressWrap.style.transition="opacity 0.3s ease",n.classList.remove("active"),setTimeout(function(){n.parentNode&&n.remove(),document.body.style.overflow="",document.removeEventListener("keydown",O),updateReadingProgress(),lbProgressEl&&lbProgressEl.parentNode&&(lbProgressEl.parentNode.removeChild(lbProgressEl),lbProgressEl=null,lbProgressBarEl=null)},350))}function O(e){"Escape"===e.key&&H(),"ArrowLeft"===e.key&&!isPlaying&&(e.preventDefault(),lbImageData.length>1&&(currentLbIndex=(currentLbIndex-1+lbImageData.length)%lbImageData.length,A(),function(){lbImageData.length<=1?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):currentLbIndex===lbImageData.length-1&&!isPlaying?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):(_disabled=!1,_.innerHTML=isPlaying?'<i class="fas fa-pause"></i>':'<i class="fas fa-play"></i>')}())),"ArrowRight"===e.key&&!isPlaying&&(e.preventDefault(),lbImageData.length>1&&(currentLbIndex=(currentLbIndex+1)%lbImageData.length,A(),function(){lbImageData.length<=1?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):currentLbIndex===lbImageData.length-1&&!isPlaying?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):(_disabled=!1,_.innerHTML=isPlaying?'<i class="fas fa-pause"></i>':'<i class="fas fa-play"></i>')}()))}b.addEventListener("wheel",function(e){e.preventDefault();var t=e.deltaY>0?-.1:.1,n=Math.min(Math.max(.5,o+t),5),r=b.getBoundingClientRect(),i=(e.clientX-r.left)/r.width,s=(e.clientY-r.top)/r.height,c=o;o=n,a+=(1-n/c)*(r.width/2-r.width*i),r+=(1-n/c)*(r.height/2-r.height*s),function(e){e=e||!1,b.style.transition=e?"transform 0.2s cubic-bezier(0.34,1.56,0.64,1)":"none",b.style.transform="scale("+o+") translate("+a+"px, "+r+"px)"}(!1)},{passive:!1}),w.addEventListener("touchstart",function(e){2===e.touches.length?(c=e.touches,u=Math.hypot(c[0].clientX-c[1].clientX,c[0].clientY-c[1].clientY),p=o):1===e.touches.length&&(i=!0,f=e.touches[0].clientX,m=e.touches[0].clientY,g=a,v=r,w.style.cursor="grabbing")},{passive:!0}),w.addEventListener("touchmove",function(e){if(2===e.touches.length){var t=e.touches,n=Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);o=Math.min(Math.max(.5,p*(n/u)),5),function(e){e=e||!1,b.style.transition=e?"transform 0.2s cubic-bezier(0.34,1.56,0.64,1)":"none",b.style.transform="scale("+o+") translate("+a+"px, "+r+"px)"}(!1)}else if(1===e.touches.length&&i){var s=e.touches[0].clientX-f,c=e.touches[0].clientY-m;a=g+s,r=v+c,function(e){e=e||!1,b.style.transition=e?"transform 0.2s cubic-bezier(0.34,1.56,0.64,1)":"none",b.style.transform="scale("+o+") translate("+a+"px, "+r+"px)"}(!1)}},{passive:!0}),w.addEventListener("touchend",function(e){i=!1,w.style.cursor="grab",o<.6?(o=.6,a=0,r=0,function(e){e=e||!1,b.style.transition=e?"transform 0.2s cubic-bezier(0.34,1.56,0.64,1)":"none",b.style.transform="scale("+o+") translate("+a+"px, "+r+"px)"}(!0)):o<1?(o=1,a=0,r=0,function(e){e=e||!1,b.style.transition=e?"transform 0.2s cubic-bezier(0.34,1.56,0.64,1)":"none",b.style.transform="scale("+o+") translate("+a+"px, "+r+"px)"}(!0)):o>3&&(o=3,function(e){e=e||!1,b.style.transition=e?"transform 0.2s cubic-bezier(0.34,1.56,0.64,1)":"none",b.style.transform="scale("+o+") translate("+a+"px, "+r+"px)"}(!0)),(Math.abs(a)>300||Math.abs(r)>300)&&(a=0,r=0,function(e){e=e||!1,b.style.transition=e?"transform 0.2s cubic-bezier(0.34,1.56,0.64,1)":"none",b.style.transform="scale("+o+") translate("+a+"px, "+r+"px)"}(!0))},{passive:!0}),w.addEventListener("mousedown",function(e){s=!0,c=e.clientX,l=e.clientY,d=a,u=r,w.style.cursor="grabbing",e.preventDefault()}),document.addEventListener("mousemove",function(e){if(s){var t=e.clientX-c,n=e.clientY-l;a=d+t,r=u+n,function(e){e=e||!1,b.style.transition=e?"transform 0.2s cubic-bezier(0.34,1.56,0.64,1)":"none",b.style.transform="scale("+o+") translate("+a+"px, "+r+"px)"}(!1)}}),document.addEventListener("mouseup",function(){s&&(s=!1,w.style.cursor="grab",o<.6?(o=.6,a=0,r=0,function(e){e=e||!1,b.style.transition=e?"transform 0.2s cubic-bezier(0.34,1.56,0.64,1)":"none",b.style.transform="scale("+o+") translate("+a+"px, "+r+"px)"}(!0)):o<1?(o=1,a=0,r=0,function(e){e=e||!1,b.style.transition=e?"transform 0.2s cubic-bezier(0.34,1.56,0.64,1)":"none",b.style.transform="scale("+o+") translate("+a+"px, "+r+"px)"}(!0)):o>3&&(o=3,function(e){e=e||!1,b.style.transition=e?"transform 0.2s cubic-bezier(0.34,1.56,0.64,1)":"none",b.style.transform="scale("+o+") translate("+a+"px, "+r+"px)"}(!0)),(Math.abs(a)>300||Math.abs(r)>300)&&(a=0,r=0,function(e){e=e||!1,b.style.transition=e?"transform 0.2s cubic-bezier(0.34,1.56,0.64,1)":"none",b.style.transform="scale("+o+") translate("+a+"px, "+r+"px)"}(!0)))}),N.addEventListener("click",H),n.addEventListener("click",function(e){e.target===this&&H()}),x.addEventListener("click",function(e){e.stopPropagation(),isPlaying&&S(),lbImageData.length>1&&(currentLbIndex=(currentLbIndex-1+lbImageData.length)%lbImageData.length,A(),function(){lbImageData.length<=1?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):currentLbIndex===lbImageData.length-1&&!isPlaying?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):(_disabled=!1,_.innerHTML=isPlaying?'<i class="fas fa-pause"></i>':'<i class="fas fa-play"></i>')}())}),C.addEventListener("click",function(e){e.stopPropagation(),isPlaying&&S(),lbImageData.length>1&&(currentLbIndex=(currentLbIndex+1)%lbImageData.length,A(),function(){lbImageData.length<=1?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):currentLbIndex===lbImageData.length-1&&!isPlaying?(_disabled=!0,_.innerHTML='<i class="fas fa-play"></i>'):(_disabled=!1,_.innerHTML=isPlaying?'<i class="fas fa-pause"></i>':'<i class="fas fa-play"></i>')}())}),_.addEventListener("click",function(e){e.stopPropagation(),M()}),document.addEventListener("keydown",O),isProgressLocked=!0,progressWrap.style.display="block",progressWrap.style.opacity="1",lbProgress=0,lbProgressBarEl&&(lbProgressBarEl.style.width="0%"),lbProgressRAF&&(cancelAnimationFrame(lbProgressRAF),lbProgressRAF=null),A(),lbImageData.length<=1&&(_disabled=!0,showLbProgress(!1)),requestAnimationFrame(function(){n.classList.add("active")})}}var currentShareImageDataUrl="";function generateShareImage(){if(currentArticle){var e=currentArticle.title||"无标题",t=currentArticle.date||"",n=getShareDesc(currentArticle.content||""),o=window.location.href,a=document.createElement("canvas"),r=a.getContext("2d"),i=900,s=540;a.width=i,a.height=s;var c=r.createLinearGradient(0,0,i,s);c.addColorStop(0,"#f8f5ff"),c.addColorStop(1,"#e8e0ff"),r.fillStyle=c,r.fillRect(0,0,i,s),r.globalAlpha=.05;for(var l=0;l<6;l++)r.beginPath(),r.arc(60+160*l,40+l%3*30,80,0,2*Math.PI),r.fillStyle="#7a6bcf",r.fill();r.globalAlpha=1,r.textAlign="right",r.textBaseline="top",r.font='400 14px "Inter", sans-serif',r.fillStyle="#8a8ab5",r.fillText(t||"",i-40,28),r.textAlign="left",r.textBaseline="top",r.font='700 52px "Inter", "PingFang SC", sans-serif',r.fillStyle="#1a1a2e";var d=wrapText(r,e||"无标题",i-260),u=truncateLines(d,2);u.forEach(function(e,t){r.fillText(e,40,70+60*t)});var p=70+Math.min(u.length,2)*60+20;r.font='400 22px "Inter", "PingFang SC", sans-serif',r.fillStyle="#4a4a6e";var h=wrapText(r,n||" ",i-260),f=truncateLines(h,4);f.forEach(function(e,t){r.fillText(e,40,p+10+34*t)});var m=s-44;r.font='500 16px "Inter", "PingFang SC", sans-serif',r.fillStyle="#6a6a92",r.textAlign="left",r.textBaseline="bottom",r.fillText("ks",40,m);var g=180,v=i-g-40,w=s-g-40;generateQRCanvas(o,g).then(function(e){r.shadowColor="rgba(0,0,0,0.06)",r.shadowBlur=16,r.shadowOffsetX=0,r.shadowOffsetY=4,r.drawImage(e,v,w,g,g),r.shadowColor="transparent",r.shadowBlur=0,r.textAlign="center",r.textBaseline="top",r.font='400 13px "Inter", sans-serif',r.fillStyle="#aaaacc",r.fillText("扫码观看全文",v+g/2,w+g+10),r.textAlign="right",r.textBaseline="bottom",r.font='400 13px "Inter", sans-serif',r.fillStyle="#c8c8e0",r.fillText("cuizi.top",i-40,18),currentShareImageDataUrl=a.toDataURL("image/png"),document.getElementById("sharePreviewImg").src=currentShareImageDataUrl}).catch(function(){r.fillStyle="#f0edff",r.fillRect(v,w,g,g),r.fillStyle="#aaa",r.font='16px "Inter", sans-serif',r.textAlign="center",r.textBaseline="middle",r.fillText("二维码失败",v+g/2,w+g/2),r.textAlign="center",r.textBaseline="top",r.font='400 13px "Inter", sans-serif',r.fillStyle="#aaaacc",r.fillText("扫码观看全文",v+g/2,w+g+10),r.textAlign="right",r.textBaseline="bottom",r.font='400 13px "Inter", sans-serif',r.fillStyle="#c8c8e0",r.fillText("cuizi.top",i-40,18),currentShareImageDataUrl=a.toDataURL("image/png"),document.getElementById("sharePreviewImg").src=currentShareImageDataUrl})}}function wrapText(e,t,n){for(var o=Array.from(t),a=[],r="",i=0;i<o.length;i++){var s=o[i];e.measureText(r+s).width>n?(a.push(r),r=s):r+=s}return r&&a.push(r),a}function truncateLines(e,t){if(e.length<=t)return e;var n=e.slice(0,t),o=n[n.length-1],a=o.slice(0,-1)+"…";return n[n.length-1]=a,n}document.addEventListener("click",function(e){var t=e.target.closest(".copy-btn");if(t){var n=t.dataset.copy;if(!n)return;var o=document.getElementById("cbw-"+n);if(!o)return;var a="";o.querySelectorAll(".code-line").forEach(function(e){var t=e.cloneNode(!0),n=t.querySelector(".line-number");n&&n.remove(),a+=t.textContent+"\n"}),a=a.replace(/\n$/,"");var r=document.createElement("textarea");r.value=a,r.style.position="fixed",r.style.left="-9999px",r.style.top="0",r.style.width="1px",r.style.height="1px",r.style.opacity="0",document.body.appendChild(r),r.focus(),r.select();try{document.execCommand("copy")?(t.innerHTML='<i class="fas fa-check"></i> 已复制',t.classList.add("copied"),setTimeout(function(){t.innerHTML='<i class="fas fa-copy"></i> 复制',t.classList.remove("copied")},2e3)):showToast("复制失败","fa-exclamation-circle")}catch(e){showToast("复制失败","fa-exclamation-circle")}document.body.removeChild(r)}else{var i=e.target.closest(".collapse-btn");if(i){var s=i.dataset.target;if(!s)return;var c=document.getElementById(s);if(!c)return;var l=i.querySelector("i");c.classList.toggle("collapsed"),l.className=c.classList.contains("collapsed")?"fas fa-chevron-down":"fas fa-chevron-up"}}});var shareModal=document.getElementById("shareModal"),sharePreviewImg=document.getElementById("sharePreviewImg");document.getElementById("shareButton").addEventListener("click",function(){currentArticle?(shareModal.classList.add("active"),document.body.style.overflow="hidden"):showToast("文章未加载","fa-exclamation-circle")}),document.getElementById("shareCloseBtn").addEventListener("click",function(){shareModal.classList.remove("active"),document.body.style.overflow=""}),shareModal.addEventListener("click",function(e){e.target===this&&(shareModal.classList.remove("active"),document.body.style.overflow="")});var shareTextDisplay=document.getElementById("shareTextDisplay"),textModal=document.getElementById("textModal");document.getElementById("shareCopyBtn").addEventListener("click",function(){shareTextDisplay.textContent=currentShareText||"暂无内容",textModal.classList.add("active")}),document.getElementById("textModalCancel").addEventListener("click",function(){textModal.classList.remove("active")}),textModal.addEventListener("click",function(e){e.target===this&&textModal.classList.remove("active")}),document.getElementById("textModalCopy").addEventListener("click",function(){var e=shareTextDisplay.textContent;navigator.clipboard.writeText(e).then(function(){showToast("已复制","fa-check-circle"),textModal.classList.remove("active"),shareModal.classList.remove("active"),document.body.style.overflow=""}).catch(function(){var t=document.createElement("textarea");t.value=e,document.body.appendChild(t),t.select(),document.execCommand("copy"),document.body.removeChild(t),showToast("已复制","fa-check-circle"),textModal.classList.remove("active"),shareModal.classList.remove("active"),document.body.style.overflow=""})}),document.getElementById("shareSaveBtn").addEventListener("click",function(){if(!currentShareImageDataUrl)showToast("图片未生成","fa-exclamation-circle");else{var e=document.createElement("a");e.href=currentShareImageDataUrl;var t=new Date,n=t.getFullYear().toString().slice(2)+String(t.getMonth()+1).padStart(2,"0")+String(t.getDate()).padStart(2,"0")+String(t.getHours()).padStart(2,"0")+String(t.getMinutes()).padStart(2,"0");e.download="分享图_"+n+".png",document.body.appendChild(e),e.click(),document.body.removeChild(e),showToast("已保存","fa-check-circle")}}),renderArticle();
+        function getParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function unescapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.innerHTML = text;
+            return div.textContent;
+        }
+
+        function markdownToPlainText(md) {
+            if (!md) return '';
+            let text = md;
+            text = text.replace(/```[\s\S]*?```/g, '');
+            text = text.replace(/`([^`]+)`/g, '$1');
+            text = text.replace(/!video\[[^\]]*\]\([^)]*\)/g, '');
+            text = text.replace(/!\[[^\]]*\]\([^)]*\)/g, '');
+            text = text.replace(/\*\*(.*?)\*\*/g, '$1');
+            text = text.replace(/\*([^*]+)\*/g, '$1');
+            text = text.replace(/~~(.*?)~~/g, '$1');
+            text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+            text = text.replace(/^#{1,6}\s+/gm, '');
+            text = text.replace(/^-\s+/gm, '');
+            text = text.replace(/^\d+\.\s+/gm, '');
+            text = text.replace(/^>\s+/gm, '');
+            text = text.replace(/^---$/gm, '');
+            text = text.replace(/\n/g, ' ');
+            text = text.replace(/\s{2,}/g, ' ');
+            return text.trim();
+        }
+
+        function showToast(message, icon) {
+            icon = icon || 'fa-info-circle';
+            const toast = document.getElementById('toast');
+            toast.innerHTML = '<i class="fas ' + icon + '"></i> ' + message;
+            toast.classList.add('show');
+            clearTimeout(toast._hideTimer);
+            toast._hideTimer = setTimeout(function() {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        const progressWrap = document.getElementById('readingProgress');
+        const progressBar = document.getElementById('progressBar');
+        let lastProgress = 0;
+        let hideTimer = null;
+        let isProgressLocked = false;
+        let progressRAF = null;
+        let lbProgress = 0;
+
+        function updateReadingProgress() {
+            if (isProgressLocked) return;
+            const articleDetail = document.querySelector('.article-detail');
+            if (!articleDetail) {
+                progressBar.style.width = '0%';
+                return;
+            }
+            const rect = articleDetail.getBoundingClientRect();
+            const articleHeight = rect.height;
+            const articleTop = rect.top + window.scrollY;
+            const windowHeight = window.innerHeight;
+            const maxScroll = articleHeight - windowHeight;
+
+            let progress = 0;
+            if (maxScroll <= 0) {
+                progress = 100;
+            } else {
+                const currentScroll = window.scrollY - articleTop;
+                progress = Math.min(Math.max((currentScroll / maxScroll) * 100, 0), 100);
+            }
+
+            progressBar.style.width = progress + '%';
+
+            if (progress >= 100 && lastProgress < 100) {
+                if (hideTimer) {
+                    clearTimeout(hideTimer);
+                    hideTimer = null;
+                }
+                hideTimer = setTimeout(() => {
+                    progressWrap.style.transition = 'opacity 0.8s ease';
+                    progressWrap.style.opacity = '0';
+                    setTimeout(() => {
+                        progressWrap.style.display = 'none';
+                    }, 800);
+                }, 600);
+            }
+
+            if (progress < 100) {
+                if (hideTimer) {
+                    clearTimeout(hideTimer);
+                    hideTimer = null;
+                }
+                progressWrap.style.display = 'block';
+                progressWrap.style.opacity = '1';
+                progressWrap.style.transition = 'opacity 0.3s ease';
+            }
+
+            lastProgress = progress;
+        }
+
+        window.addEventListener('scroll', updateReadingProgress);
+        window.addEventListener('resize', updateReadingProgress);
+        window.addEventListener('load', updateReadingProgress);
+
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        let currentTheme = localStorage.getItem('ks-theme') || (prefersDark ? 'dark' : 'light');
+
+        function setTheme(theme) {
+            document.body.classList.toggle('dark', theme === 'dark');
+            themeIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            localStorage.setItem('ks-theme', theme);
+            currentTheme = theme;
+        }
+        setTheme(currentTheme);
+        themeToggle.addEventListener('click', function() {
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
+        const backToTopBtn = document.getElementById('backToTopBtn');
+        let isScrollingToTop = false;
+
+        window.addEventListener('scroll', function() {
+            const scrollY = window.scrollY || window.pageYOffset;
+            if (scrollY > 300 && !isScrollingToTop) {
+                backToTopBtn.classList.add('show');
+            } else if (!isScrollingToTop) {
+                backToTopBtn.classList.remove('show');
+            }
+        });
+
+        function fastScrollToTop() {
+            const startY = window.scrollY || window.pageYOffset;
+            if (startY === 0) return;
+            const duration = 300;
+            const startTime = performance.now();
+
+            function step(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const ease = 1 - Math.pow(1 - progress, 3);
+                const nextY = startY * (1 - ease);
+                window.scrollTo(0, nextY);
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    window.scrollTo(0, 0);
+                    isScrollingToTop = false;
+                    backToTopBtn.classList.remove('disabled');
+                    backToTopBtn.classList.remove('show');
+                }
+            }
+            requestAnimationFrame(step);
+        }
+
+        backToTopBtn.addEventListener('click', function() {
+            if (isScrollingToTop) return;
+            const scrollY = window.scrollY || window.pageYOffset;
+            if (scrollY === 0) return;
+            isScrollingToTop = true;
+            backToTopBtn.classList.add('disabled');
+            fastScrollToTop();
+        });
+
+        const backBtn = document.getElementById('backButton');
+        const from = getParam('from');
+        const page = getParam('page');
+        const folder = getParam('folder');
+        let returnUrl = 'index.html?return=articles';
+        if (page) returnUrl += '&page=' + page;
+        if (from === 'archive' && folder === 'articles') {
+            returnUrl = 'index.html?return=archive&folder=articles';
+        } else if (from === 'archive') {
+            returnUrl = 'index.html?return=archive';
+        }
+        backBtn.href = returnUrl;
+
+        const appContent = document.getElementById('appContent');
+        let currentArticle = null;
+        let currentShareText = '';
+        let walineInitialized = false;
+
+        function countWords(markdown) {
+            if (!markdown) return 0;
+            let text = markdown
+                .replace(/```[\s\S]*?```/g, '')
+                .replace(/`[^`]+`/g, '')
+                .replace(/!video\[[^\]]*\]\([^)]*\)/g, '')
+                .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+                .replace(/\*\*(.*?)\*\*/g, '$1')
+                .replace(/\*([^*]+)\*/g, '$1')
+                .replace(/~~(.*?)~~/g, '$1')
+                .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+                .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')
+                .replace(/^#{1,6}\s+/gm, '')
+                .replace(/^-\s+/gm, '')
+                .replace(/^\d+\.\s+/gm, '')
+                .replace(/^>\s+/gm, '')
+                .replace(/^---$/gm, '')
+                .replace(/^\s*[-*+]\s+\[[ x]\]\s+/gm, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+            return text.length;
+        }
+
+        function calculateReadTime(wordCount) {
+            if (wordCount === 0) return 114514;
+            const minutes = Math.ceil(wordCount / 300);
+            return minutes < 1 ? 1 : minutes;
+        }
+
+        function formatReadTime(minutes) {
+            if (minutes === 114514) return '114514 分钟';
+            return '大约 ' + minutes + ' 分钟';
+        }
+
+        function formatWordCount(count) {
+            if (count === 0) return '没有字哦';
+            return count + ' 字';
+        }
+
+        function getSharePreview(content, title) {
+            const plain = markdownToPlainText(content);
+            const wordCount = countWords(content);
+            if (wordCount === 0) return '[没有字捏 是什么自己打开看]';
+            const chars = [...plain];
+            if (chars.length <= 80) return plain;
+            const truncated = chars.slice(0, 80).join('');
+            return truncated + '…';
+        }
+
+        function getShareDesc(content) {
+            const wordCount = countWords(content);
+            if (wordCount === 0) return '[没有字捏 是什么自己打开看]';
+            const plain = markdownToPlainText(content);
+            const chars = [...plain];
+            if (chars.length <= 80) return plain;
+            const truncated = chars.slice(0, 80).join('');
+            return truncated + '…';
+        }
+
+        function getPlainPreview(content, maxLength) {
+            maxLength = maxLength || 80;
+            const plain = markdownToPlainText(content);
+            const wordCount = countWords(content);
+            if (wordCount === 0) return '[没有字捏 是什么自己打开看]';
+            const chars = [...plain];
+            if (chars.length <= maxLength) return plain;
+            const truncated = chars.slice(0, maxLength).join('');
+            return truncated + '…';
+        }
+
+        let lbImageData = [];
+        let currentLbIndex = 0;
+        let isPlaying = false;
+        let lbIsOpen = false;
+        let lbProgressRAF = null;
+        let lbPlayTimer = null;
+        let lbIntervalId = null;
+
+        function renderMarkdown(md) {
+            if (!md) return '';
+
+            const escMap = {};
+            let escCounter = 0;
+            md = md.replace(/\\([\\`*_{}\[\]()#+\-.!|$])/g, function(match, char) {
+                const key = '\uE000' + (escCounter++) + '\uE001';
+                escMap[key] = char;
+                return key;
+            });
+
+            const safeTags = ['u', 'kbd', 'mark', 's', 'sub', 'sup', 'ins', 'del', 'b', 'i', 'em', 'strong', 'code', 'span', 'br', 'hr'];
+
+            function restoreEscapes(text) {
+                let r = text;
+                for (const [key, char] of Object.entries(escMap)) {
+                    r = r.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), char);
+                }
+                return r;
+            }
+
+            function renderInline(text) {
+                let html = text;
+
+                // 处理尖括号内的链接（如 <https://cuizi.top>）
+                html = html.replace(/<([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s<>]+)>/g, '<a href="$1">$1</a>');
+
+                var tagMap = {};
+                var tagIndex = 0;
+                html = html.replace(/<[^>]+>/g, function(match) {
+                    var key = '\uE002' + (tagIndex++) + '\uE003';
+                    tagMap[key] = match;
+                    return key;
+                });
+
+                html = html.replace(/<([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)>(.*?)<\/\1>/gs, function(match, tag, attrs, content) {
+                    if (safeTags.includes(tag.toLowerCase())) {
+                        return '<' + tag + attrs + '>' + renderInline(content) + '</' + tag + '>';
+                    }
+                    return match;
+                });
+
+                html = html.replace(/<br\s*\/?>/gi, '<br>');
+
+                html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+                html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+                html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
+
+                html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, alt, src, title, w, h) {
+                    var style = '';
+                    if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
+                    else if (w) style = ' style="width:' + w + 'px; height:auto;"';
+                    else if (h) style = ' style="height:' + h + 'px; width:auto;"';
+                    var titleAttr = title ? ' title="' + title + '"' : '';
+                    return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + titleAttr + ' />';
+                });
+
+                html = html.replace(/!video\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, desc, src, title, w, h) {
+                    var style = '';
+                    if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
+                    else if (w) style = ' style="width:' + w + 'px; height:auto;"';
+                    else if (h) style = ' style="height:' + h + 'px; width:auto;"';
+                    var descHtml = desc ? '<div class="video-alt-text">' + desc + '</div>' : '';
+                    var youtubeMatch = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+                    if (youtubeMatch) {
+                        var vid = youtubeMatch[1];
+                        return '<div class="video-placeholder"><iframe src="https://www.youtube.com/embed/' + vid + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
+                    }
+                    var bilibiliMatch = src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
+                    if (bilibiliMatch) {
+                        var vid = bilibiliMatch[1];
+                        return '<div class="video-placeholder"><iframe src="https://player.bilibili.com/player.html?bvid=' + vid + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
+                    }
+                    return '<div class="video-placeholder"><video src="' + src + '" controls' + style + '></video>' + descHtml + '</div>';
+                });
+
+                html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+                html = restoreEscapes(html);
+
+                for (var key in tagMap) {
+                    if (tagMap.hasOwnProperty(key)) {
+                        html = html.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), tagMap[key]);
+                    }
+                }
+
+                return html;
+            }
+
+            function renderBlock(content) {
+                if (!content) return '';
+                var lines = content.split('\n');
+                var result = '';
+                var inList = false;
+                var listStack = [];
+
+                function flushList() {
+                    if (!inList) return;
+                    var html = '';
+                    for (var i = listStack.length - 1; i >= 0; i--) {
+                        var list = listStack[i];
+                        var tag = list.type === 'ol' ? 'ol' : 'ul';
+                        var cls = list.type === 'task' ? ' class="task-list"' : '';
+                        var startAttr = '';
+                        if (list.type === 'ol' && list.start !== null && list.start !== 1) {
+                            startAttr = ' start="' + list.start + '"';
+                        }
+                        html = '<' + tag + cls + startAttr + '>\n' + list.items.join('\n') + '\n</' + tag + '>\n' + html;
+                    }
+                    result += html;
+                    inList = false;
+                    listStack = [];
+                }
+
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i];
+
+                    if (line.trim() === '') {
+                        if (inList) {
+                            flushList();
+                            result += '<p><br></p>\n';
+                        } else {
+                            result += '<p><br></p>\n';
+                        }
+                        continue;
+                    }
+
+                    var blockquoteMatch = line.match(/^(>+)\s?(.*)/);
+                    if (blockquoteMatch) {
+                        if (inList) flushList();
+                        var quoteLines = [];
+                        var j = i;
+                        while (j < lines.length) {
+                            var qMatch = lines[j].match(/^(>+)\s?(.*)/);
+                            if (qMatch) {
+                                quoteLines.push(lines[j]);
+                                j++;
+                            } else if (lines[j].trim() === '') {
+                                quoteLines.push('');
+                                j++;
+                            } else {
+                                break;
+                            }
+                        }
+                        i = j - 1;
+
+                        var segments = quoteLines.map(function(l) {
+                            var m = l.match(/^(>+)\s?(.*)/);
+                            if (m) return { level: m[1].length, content: m[2] };
+                            return { level: 0, content: '' };
+                        });
+
+                        function buildQuotes(segs, start, end, currentLevel) {
+                            var html = '';
+                            var k = start;
+                            while (k <= end) {
+                                var seg = segs[k];
+                                if (!seg) break;
+                                if (seg.level > currentLevel) {
+                                    var subStart = k;
+                                    while (k <= end && segs[k] && segs[k].level > currentLevel) k++;
+                                    html += '<blockquote>' + buildQuotes(segs, subStart, k - 1, currentLevel + 1) + '</blockquote>';
+                                } else if (seg.level === currentLevel) {
+                                    html += renderInline(seg.content) + '<br>';
+                                    k++;
+                                } else {
+                                    break;
+                                }
+                            }
+                            return html;
+                        }
+
+                        var quoteHtml = buildQuotes(segments, 0, segments.length - 1, 1);
+                        result += '<blockquote>' + quoteHtml + '</blockquote>\n';
+                        continue;
+                    }
+
+                    var headingMatch = line.match(/^(#{1,6})\s+(.*)/);
+                    if (headingMatch) {
+                        if (inList) flushList();
+                        var hlevel = headingMatch[1].length;
+                        var htext = headingMatch[2];
+                        result += '<h' + hlevel + '>' + renderInline(htext) + '</h' + hlevel + '>\n';
+                        continue;
+                    }
+
+                    if (/^---$/.test(line.trim()) || /^\*\*\*$/.test(line.trim()) || /^___$/.test(line.trim())) {
+                        if (inList) flushList();
+                        result += '<hr />\n';
+                        continue;
+                    }
+
+                    var listMatch = line.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
+                    if (listMatch) {
+                        var indent = listMatch[1].length;
+                        var marker = listMatch[2];
+                        var listContent = listMatch[3];
+
+                        var isTask = listContent.match(/^\[([ x])\]\s+(.*)/);
+                        var taskChecked = false;
+                        var taskContent = listContent;
+                        if (isTask) {
+                            taskChecked = isTask[1] === 'x';
+                            taskContent = isTask[2];
+                        }
+
+                        var isOrdered = marker.match(/^\d+\.$/);
+                        var listType = isOrdered ? 'ol' : (isTask ? 'task' : 'ul');
+
+                        var currentLevel = Math.floor(indent / 2);
+
+                        if (!inList) {
+                            inList = true;
+                            listStack = [];
+                            listStack.push({
+                                type: listType,
+                                items: [],
+                                level: currentLevel,
+                                start: isOrdered ? parseInt(marker) : null
+                            });
+                        } else {
+                            while (listStack.length > 0 && listStack[listStack.length - 1].level >= currentLevel) {
+                                var last = listStack.pop();
+                                if (listStack.length > 0 && last.items.length > 0) {
+                                    listStack[listStack.length - 1].items.push(last.items.join(''));
+                                }
+                            }
+                            if (listStack.length === 0 || listStack[listStack.length - 1].level < currentLevel) {
+                                listStack.push({
+                                    type: listType,
+                                    items: [],
+                                    level: currentLevel,
+                                    start: isOrdered ? parseInt(marker) : null
+                                });
+                            }
+                        }
+
+                        var itemContent;
+                        if (isTask) {
+                            itemContent = '<li data-checked="' + !!taskChecked + '">' + renderInline(taskContent) + '</li>';
+                        } else {
+                            itemContent = '<li>' + renderInline(listContent) + '</li>';
+                        }
+
+                        if (listStack.length > 0) {
+                            var currentList = listStack[listStack.length - 1];
+                            if (currentList.type !== listType && currentList.type !== 'task') {
+                                var newList = {
+                                    type: listType,
+                                    items: [itemContent],
+                                    level: currentLevel + 1,
+                                    start: isOrdered ? parseInt(marker) : null
+                                };
+                                listStack.push(newList);
+                            } else {
+                                currentList.items.push(itemContent);
+                            }
+                        }
+
+                        var subItems = [];
+                        var k = i + 1;
+                        while (k < lines.length) {
+                            var nextLine2 = lines[k];
+                            var nextMatch2 = nextLine2.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
+                            if (nextMatch2 && parseInt(nextMatch2[1].length) > indent) {
+                                var subContent = nextMatch2[3];
+                                var subIsTask = subContent.match(/^\[([ x])\]\s+(.*)/);
+                                var subHtml = '';
+                                if (subIsTask) {
+                                    var subChecked = subIsTask[1] === 'x';
+                                    subHtml = '<li data-checked="' + !!subChecked + '">' + renderInline(subIsTask[2]) + '</li>';
+                                } else {
+                                    subHtml = '<li>' + renderInline(subContent) + '</li>';
+                                }
+                                subItems.push(subHtml);
+                                k++;
+                            } else {
+                                break;
+                            }
+                        }
+
+                        if (subItems.length > 0) {
+                            var hasCheckbox = subItems.some(function(item) {
+                                return item.includes('data-checked');
+                            });
+                            var subHtml2 = '<ul class="' + (hasCheckbox ? 'task-list' : '') + '">\n' + subItems.join('\n') + '\n</ul>';
+                            if (listStack.length > 0) {
+                                var currentList2 = listStack[listStack.length - 1];
+                                var lastItem2 = currentList2.items[currentList2.items.length - 1];
+                                currentList2.items[currentList2.items.length - 1] = lastItem2.replace(/<\/li>$/, subHtml2 + '</li>');
+                            }
+                        }
+
+                        i = k - 1;
+                        continue;
+                    }
+
+                    if (inList) {
+                        flushList();
+                    }
+
+                    var dlMatch = line.match(/^([^:]+):\s+(.*)/);
+                    if (dlMatch && i + 1 < lines.length && lines[i + 1].match(/^:\s+/)) {
+                        var term = renderInline(dlMatch[1]);
+                        var defs = [];
+                        i++;
+                        while (i < lines.length && lines[i].match(/^:\s+/)) {
+                            defs.push(renderInline(lines[i].replace(/^:\s+/, '')));
+                            i++;
+                        }
+                        while (i < lines.length && lines[i].trim() === '') i++;
+                        var ddHtml = defs.map(function(d) { return '<dd>' + d + '</dd>'; }).join('');
+                        result += '<dl><dt>' + term + '</dt>' + ddHtml + '</dl>\n';
+                        continue;
+                    }
+
+                    result += '<p>' + renderInline(line) + '</p>\n';
+                }
+
+                if (inList) {
+                    flushList();
+                }
+
+                return result;
+            }
+
+            var codeBlockRegex = /^```(\w*)\s*([\s\S]*?)```/gm;
+            var codeBlocks = [];
+            var codeIndex = 0;
+            md = md.replace(codeBlockRegex, function(match, lang, code) {
+                var id = 'CODEBLOCK_' + (codeIndex++);
+                codeBlocks.push({ id: id, lang: lang, code: code });
+                return id;
+            });
+
+            var html = renderBlock(md);
+
+            for (var b = 0; b < codeBlocks.length; b++) {
+                var block = codeBlocks[b];
+                var copyId = 'code-' + Date.now() + '-' + b;
+                var lines2 = block.code.split('\n');
+                var lineCount = lines2.length;
+                var maxLineLength = 0;
+                var totalChars = 0;
+                for (var j2 = 0; j2 < lines2.length; j2++) {
+                    var lineLen = lines2[j2].length;
+                    if (lineLen > maxLineLength) maxLineLength = lineLen;
+                    totalChars += lineLen;
+                }
+                totalChars += lineCount > 0 ? lineCount - 1 : 0;
+
+                var codeHtml = '';
+                for (var j3 = 0; j3 < lines2.length; j3++) {
+                    var lineNum = j3 + 1;
+                    var escapedLine = escapeHtml(lines2[j3]);
+                    codeHtml += '<span class="code-line"><span class="line-number">' + lineNum + '</span><span class="hljs">' + escapedLine + '</span></span>';
+                }
+
+                var statsHtml = '<span>' + lineCount + ' 行</span> · <span>' + maxLineLength + ' 列</span> · <span>' + totalChars + ' 字符</span>';
+
+                var codeBlockHtml =
+                    '<div class="code-block-wrapper" id="cbw-' + copyId + '">' +
+                    '<div class="code-block-header">' +
+                    '<span class="lang-label">' + escapeHtml(block.lang || 'text') + '</span>' +
+                    '<span class="code-stats">' + statsHtml + '</span>' +
+                    '<span class="header-actions">' +
+                    '<button class="copy-btn" data-copy="' + copyId + '"><i class="fas fa-copy"></i> 复制</button>' +
+                    '<button class="collapse-btn" data-target="cbw-' + copyId + '"><i class="fas fa-chevron-up"></i></button>' +
+                    '</span>' +
+                    '</div>' +
+                    '<div class="code-block-body-wrapper">' +
+                    '<div class="code-block-body" id="code-body-' + copyId + '">' + codeHtml + '</div>' +
+                    '</div>' +
+                    '</div>';
+
+                html = html.replace(block.id, codeBlockHtml);
+            }
+
+            html = html.replace(/\n{3,}/g, '\n\n');
+
+            return html;
+        }
+
+        function scrollToFootnote(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            var targetY = el.getBoundingClientRect().top + window.scrollY - 80;
+            var startY = window.scrollY || window.pageYOffset;
+            var distance = targetY - startY;
+            if (Math.abs(distance) < 5) return;
+            var duration = 350;
+            var startTime = performance.now();
+
+            function step(currentTime) {
+                var elapsed = currentTime - startTime;
+                var progress = Math.min(elapsed / duration, 1);
+                var ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+                var nextY = startY + distance * ease;
+                window.scrollTo(0, nextY);
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    window.scrollTo(0, targetY);
+                    if (window.history && window.history.replaceState) {
+                        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+                    }
+                }
+            }
+            requestAnimationFrame(step);
+        }
+
+        function initImageLazyLoad() {
+            var placeholders = document.querySelectorAll('.img-placeholder');
+            placeholders.forEach(function(container) {
+                var img = container.querySelector('img');
+                if (!img) return;
+                if (img.complete && img.naturalWidth !== 0) {
+                    container.classList.add('loaded');
+                    img.classList.add('loaded');
+                    var loading = container.querySelector('.img-loading');
+                    if (loading) loading.style.display = 'none';
+                    return;
+                }
+                img.addEventListener('load', function() {
+                    container.classList.add('loaded');
+                    img.classList.add('loaded');
+                    var loading = container.querySelector('.img-loading');
+                    if (loading) loading.style.display = 'none';
+                });
+                img.addEventListener('error', function() {
+                    container.classList.add('loaded');
+                    var loading = container.querySelector('.img-loading');
+                    if (loading) loading.style.display = 'none';
+                });
+            });
+        }
+
+        function compressImage(file, maxSize, quality) {
+            return new Promise(function(resolve) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var img = new Image();
+                    img.onload = function() {
+                        var canvas = document.createElement('canvas');
+                        var w = img.width,
+                            h = img.height;
+                        if (w > h) {
+                            if (w > maxSize) { h = h * maxSize / w;
+                                w = maxSize; }
+                        } else {
+                            if (h > maxSize) { w = w * maxSize / h;
+                                h = maxSize; }
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        canvas.toBlob(function(blob) {
+                            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                        }, 'image/jpeg', quality);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function initWaline(articleId) {
+            if (walineInitialized) return;
+            var commentEl = document.getElementById('waline-comments');
+            if (!commentEl) return;
+            walineInitialized = true;
+            import('https://unpkg.com/@waline/client@v3/dist/waline.js')
+                .then(function(module) {
+                    var init = module.init;
+                    init({
+                        el: '#waline-comments',
+                        serverURL: 'https://comment.cuizi.top',
+                        lang: 'zh-CN',
+                        path: '/article/' + articleId,
+                        dark: 'body.dark',
+                        imageUploader: function(file) {
+                            return new Promise(function(resolve, reject) {
+                                var uploadFile = file;
+                                var shouldCompress = !['image/gif', 'image/svg+xml'].includes(file.type);
+                                if (shouldCompress) {
+                                    compressImage(file, 720, 0.8).then(function(compressed) {
+                                        uploadFile = compressed;
+                                        var reader = new FileReader();
+                                        reader.onload = function() {
+                                            var base64 = reader.result.split(',')[1];
+                                            fetch('https://comment.cuizi.top/api/upload', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ image: base64, filename: file.name })
+                                            }).then(function(resp) { return resp.json(); }).then(function(data) {
+                                                resolve(data.url);
+                                            }).catch(reject);
+                                        };
+                                        reader.readAsDataURL(uploadFile);
+                                    }).catch(reject);
+                                } else {
+                                    var reader = new FileReader();
+                                    reader.onload = function() {
+                                        var base64 = reader.result.split(',')[1];
+                                        fetch('https://comment.cuizi.top/api/upload', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ image: base64, filename: file.name })
+                                        }).then(function(resp) { return resp.json(); }).then(function(data) {
+                                            resolve(data.url);
+                                        }).catch(reject);
+                                    };
+                                    reader.readAsDataURL(uploadFile);
+                                }
+                            });
+                        },
+                        emoji: ['https://unpkg.com/@waline/emojis@1.4.0/alus', 'https://unpkg.com/@waline/emojis@1.4.0/bilibili', 'https://unpkg.com/@waline/emojis@1.4.0/bmoji', 'https://unpkg.com/@waline/emojis@1.4.0/qq', 'https://unpkg.com/@waline/emojis@1.4.0/tieba'],
+                        requiredMeta: ['nick', 'mail']
+                    });
+                })
+                .catch(function(err) {
+                    console.error('Waline 加载失败:', err);
+                    walineInitialized = false;
+                });
+        }
+
+        function generateQRCanvas(text, size) {
+            return new Promise(function(resolve, reject) {
+                var img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = size;
+                    canvas.height = size;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, size, size);
+                    resolve(canvas);
+                };
+                img.onerror = function() {
+                    reject(new Error('二维码图片加载失败'));
+                };
+                img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&data=' + encodeURIComponent(text);
+            });
+        }
+
+        function renderArticle() {
+            var id = getParam('id');
+            if (id === null) {
+                appContent.innerHTML =
+                    '<div class="not-found">' +
+                    '<i class="far fa-frown"></i>' +
+                    '<p>缺少文章 ID</p>' +
+                    '<p style="font-size:0.85rem; margin-top:0.5rem;">请从文章列表点击进入</p>' +
+                    '</div>';
+                return;
+            }
+
+            fetch('wenzhang.json', { cache: 'no-cache' })
+                .then(function(response) {
+                    if (!response.ok) throw new Error('文件不存在');
+                    return response.json();
+                })
+                .then(function(data) {
+                    var articles = data.announcements || [];
+                    var idx = parseInt(id);
+                    if (isNaN(idx) || idx < 0 || idx >= articles.length) {
+                        appContent.innerHTML =
+                            '<div class="not-found">' +
+                            '<i class="far fa-frown"></i>' +
+                            '<p>文章不存在</p>' +
+                            '<p style="font-size:0.85rem; margin-top:0.5rem;">可能已被删除</p>' +
+                            '</div>';
+                        return;
+                    }
+
+                    var article = articles[idx];
+                    if (article.delete === true) {
+                        appContent.innerHTML =
+                            '<div class="not-found">' +
+                            '<i class="far fa-frown"></i>' +
+                            '<p>文章不存在</p>' +
+                            '<p style="font-size:0.85rem; margin-top:0.5rem;">可能已被删除</p>' +
+                            '</div>';
+                        return;
+                    }
+
+                    currentArticle = article;
+                    document.title = (currentArticle.title || '文章详情') + ' · ks';
+
+                    var title = currentArticle.title || '无标题';
+                    var date = currentArticle.date || '';
+                    var content = currentArticle.content || '（暂无内容）';
+                    var tags = currentArticle.tags || [];
+                    var renderedContent = renderMarkdown(content);
+
+                    renderedContent = renderedContent.replace(/<img\s+src="([^"]*)"\s+alt="([^"]*)"([^>]*)>/g,
+                        function(match, src, alt, rest) {
+                            var altText = alt || '';
+                            var altHtml = altText ? '<span class="img-alt-text">' + altText + '</span>' : '';
+                            return '<div class="img-placeholder"><span class="img-loading"><i class="fas fa-spinner fa-spin"></i></span><img src="' + src + '" alt="' + alt + '"' + rest + '>' + altHtml + '</div>';
+                        });
+
+                    var wordCount = countWords(content);
+                    var readTime = calculateReadTime(wordCount);
+                    var displayWord = formatWordCount(wordCount);
+                    var displayTime = formatReadTime(readTime);
+
+                    var preview = getPlainPreview(content, 80);
+                    var articleUrl = window.location.origin + window.location.pathname + '?id=' + idx;
+                    currentShareText = title + '：' + preview + '\n查看完整内容？请访问：' + articleUrl;
+
+                    var tagsHtml = '';
+                    if (tags.length > 0) {
+                        tagsHtml = '<div class="detail-tags">';
+                        tags.forEach(function(tag) {
+                            var tagName = escapeHtml(tag);
+                            tagsHtml += '<span class="tag" data-tag="' + tagName + '"><i class="fas fa-tag"></i> ' + tagName + '</span>';
+                        });
+                        tagsHtml += '</div>';
+                    }
+
+                    appContent.innerHTML =
+                        '<div class="article-detail">' +
+                        '<h1 class="detail-title">' + escapeHtml(title) + '</h1>' +
+                        '<span class="detail-date">' + (date ? escapeHtml(date) + '  ·  ' : '') + displayTime + ' · ' + displayWord + '</span>' +
+                        tagsHtml +
+                        '<hr class="detail-divider">' +
+                        '<div class="detail-content">' + renderedContent + '</div>' +
+                        '</div>';
+
+                    document.querySelectorAll('.code-line .hljs').forEach(function(el) {
+                        try { hljs.highlightElement(el); } catch (e) {}
+                    });
+
+                    initImageLazyLoad();
+
+                    var images = document.querySelectorAll('.detail-content .img-placeholder img');
+                    var allImages = [];
+                    images.forEach(function(img) {
+                        var src = img.getAttribute('src');
+                        var alt = img.getAttribute('alt') || '';
+                        if (src) allImages.push({ src: src, alt: alt, el: img });
+                    });
+                    lbImageData = allImages;
+
+                    images.forEach(function(img, index) {
+                        img.style.cursor = 'pointer';
+                        img.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            openLightbox(index);
+                        });
+                    });
+
+                    setTimeout(updateReadingProgress, 100);
+                    generateShareImage();
+                    initWaline(id);
+                })
+                .catch(function() {
+                    appContent.innerHTML =
+                        '<div class="not-found">' +
+                        '<i class="far fa-frown"></i>' +
+                        '<p>加载文章数据失败</p>' +
+                        '<p style="font-size:0.85rem; margin-top:0.5rem;">请确保 wenzhang.json 文件存在</p>' +
+                        '</div>';
+                });
+        }
+
+        var lbProgressEl = null;
+        var lbProgressBarEl = null;
+
+        function createLbProgress() {
+            if (document.querySelector('.lightbox-progress')) return;
+            var div = document.createElement('div');
+            div.className = 'lightbox-progress';
+            div.innerHTML = '<div class="lb-progress-bar"></div>';
+            document.body.appendChild(div);
+            lbProgressEl = div;
+            lbProgressBarEl = div.querySelector('.lb-progress-bar');
+        }
+
+        function updateLbProgress(value) {
+            if (!lbProgressBarEl) return;
+            lbProgressBarEl.style.width = value + '%';
+        }
+
+        function showLbProgress(show) {
+            if (!lbProgressEl) return;
+            if (show) lbProgressEl.classList.add('active');
+            else lbProgressEl.classList.remove('active');
+        }
+
+        function resetLbProgress() {
+            if (lbProgressBarEl) lbProgressBarEl.style.width = '0%';
+        }
+
+        function openLightbox(index) {
+            if (lbImageData.length === 0 || lbIsOpen) return;
+            lbIsOpen = true;
+            currentLbIndex = index;
+            createLbProgress();
+
+            var existing = document.querySelector('.lightbox-overlay');
+            if (existing) existing.remove();
+
+            var overlay = document.createElement('div');
+            overlay.className = 'lightbox-overlay';
+            overlay.innerHTML =
+                '<button class="lightbox-close">&times;</button>' +
+                '<button class="lightbox-nav prev" id="lbPrev"><i class="fas fa-chevron-left"></i></button>' +
+                '<button class="lightbox-nav next" id="lbNext"><i class="fas fa-chevron-right"></i></button>' +
+                '<button class="lightbox-play" id="lbPlay"><i class="fas fa-play"></i></button>' +
+                '<div class="lightbox-container">' +
+                '<div class="lightbox-img-wrapper"><img src="" alt="" /></div>' +
+                '<div class="lightbox-alt"></div>' +
+                '</div>' +
+                '<div class="lightbox-counter"></div>';
+            document.body.appendChild(overlay);
+            document.body.style.overflow = 'hidden';
+
+            var scale = 1,
+                translateX = 0,
+                translateY = 0;
+            var isDragging = false,
+                mouseDown = false;
+            var mouseStartX = 0,
+                mouseStartY = 0,
+                mouseLastX = 0,
+                mouseLastY = 0;
+            var touchStartDist = 0,
+                touchStartScale = 1;
+            var touchStartX = 0,
+                touchStartY = 0,
+                touchLastX = 0,
+                touchLastY = 0;
+
+            var imgWrapper = overlay.querySelector('.lightbox-img-wrapper');
+            var img = overlay.querySelector('img');
+            var altEl = overlay.querySelector('.lightbox-alt');
+            var counterEl = overlay.querySelector('.lightbox-counter');
+            var prevBtn = overlay.querySelector('.lightbox-nav.prev');
+            var nextBtn = overlay.querySelector('.lightbox-nav.next');
+            var playBtn = overlay.querySelector('.lightbox-play');
+            var closeBtn = overlay.querySelector('.lightbox-close');
+
+            var playIntervalId = null;
+            var progressAnimId = null;
+            var PLAY_DELAY = 3000;
+
+            function updateLightbox() {
+                var data = lbImageData[currentLbIndex];
+                if (!data) return;
+                img.src = data.src;
+                img.alt = data.alt || '';
+                altEl.textContent = data.alt || '';
+                counterEl.textContent = (currentLbIndex + 1) + ' / ' + lbImageData.length;
+
+                if (lbImageData.length <= 1) {
+                    prevBtn.disabled = true;
+                    nextBtn.disabled = true;
+                } else {
+                    prevBtn.disabled = isPlaying;
+                    nextBtn.disabled = isPlaying;
+                }
+
+                scale = 1;
+                translateX = 0;
+                translateY = 0;
+                updateTransform(false);
+                resetLbProgress();
+                showLbProgress(isPlaying);
+                updatePlayButtonState();
+            }
+
+            function updateTransform(animate) {
+                img.style.transition = animate ? 'transform 0.2s cubic-bezier(0.34,1.56,0.64,1)' : 'none';
+                img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
+            }
+
+            function updatePlayButtonState() {
+                if (lbImageData.length <= 1) { playBtn.disabled = true;
+                    playBtn.innerHTML = '<i class="fas fa-play"></i>'; return; }
+                if (currentLbIndex === lbImageData.length - 1 && !isPlaying) { playBtn.disabled = true;
+                    playBtn.innerHTML = '<i class="fas fa-play"></i>'; return; }
+                playBtn.disabled = false;
+                playBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+            }
+
+            function stopPlayback() {
+                isPlaying = false;
+                if (playIntervalId) clearInterval(playIntervalId);
+                if (progressAnimId) cancelAnimationFrame(progressAnimId);
+                playIntervalId = null;
+                progressAnimId = null;
+                if (lbImageData.length > 1) { prevBtn.disabled = false;
+                    nextBtn.disabled = false; }
+                showLbProgress(false);
+                resetLbProgress();
+                updatePlayButtonState();
+            }
+
+            function startProgressAnimation() {
+                if (progressAnimId) cancelAnimationFrame(progressAnimId);
+                resetLbProgress();
+                var startTime = performance.now();
+
+                function updateProgress(currentTime) {
+                    if (!isPlaying) return;
+                    var elapsed = currentTime - startTime;
+                    var progress = Math.min((elapsed / PLAY_DELAY) * 100, 100);
+                    if (lbProgressBarEl) lbProgressBarEl.style.width = progress + '%';
+                    if (progress < 100) progressAnimId = requestAnimationFrame(updateProgress);
+                    else progressAnimId = null;
+                }
+                progressAnimId = requestAnimationFrame(updateProgress);
+            }
+
+            function startPlayback() {
+                if (isPlaying || lbImageData.length <= 1) return;
+                if (currentLbIndex === lbImageData.length - 1) { updatePlayButtonState(); return; }
+                if (playIntervalId) clearInterval(playIntervalId);
+                if (progressAnimId) cancelAnimationFrame(progressAnimId);
+                isPlaying = true;
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+                showLbProgress(true);
+                resetLbProgress();
+                updatePlayButtonState();
+                startProgressAnimation();
+                playIntervalId = setInterval(function() {
+                    if (!isPlaying) return;
+                    if (currentLbIndex < lbImageData.length - 1) {
+                        currentLbIndex++;
+                        updateLightbox();
+                        resetLbProgress();
+                        startProgressAnimation();
+                        updatePlayButtonState();
+                    } else stopPlayback();
+                }, PLAY_DELAY);
+            }
+
+            function togglePlay() {
+                if (lbImageData.length <= 1) return;
+                if (isPlaying) stopPlayback();
+                else startPlayback();
+            }
+
+            function closeLightbox() {
+                if (!lbIsOpen) return;
+                lbIsOpen = false;
+                stopPlayback();
+                isProgressLocked = false;
+                progressWrap.style.transition = 'opacity 0.3s ease';
+                overlay.classList.remove('active');
+                setTimeout(function() {
+                    if (overlay.parentNode) overlay.remove();
+                    document.body.style.overflow = '';
+                    document.removeEventListener('keydown', escHandler);
+                    updateReadingProgress();
+                    if (lbProgressEl && lbProgressEl.parentNode) {
+                        lbProgressEl.parentNode.removeChild(lbProgressEl);
+                        lbProgressEl = null;
+                        lbProgressBarEl = null;
+                    }
+                }, 350);
+            }
+
+            function escHandler(e) {
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowLeft' && !isPlaying) {
+                    e.preventDefault();
+                    if (lbImageData.length > 1) { currentLbIndex = (currentLbIndex - 1 + lbImageData.length) % lbImageData.length;
+                        updateLightbox(); }
+                }
+                if (e.key === 'ArrowRight' && !isPlaying) {
+                    e.preventDefault();
+                    if (lbImageData.length > 1) { currentLbIndex = (currentLbIndex + 1) % lbImageData.length;
+                        updateLightbox(); }
+                }
+            }
+
+            img.addEventListener('wheel', function(e) {
+                e.preventDefault();
+                var delta = e.deltaY > 0 ? -0.1 : 0.1;
+                var newScale = Math.min(Math.max(0.5, scale + delta), 5);
+                var rect = img.getBoundingClientRect();
+                var ratioX = (e.clientX - rect.left) / rect.width;
+                var ratioY = (e.clientY - rect.top) / rect.height;
+                var oldScale = scale;
+                scale = newScale;
+                translateX += (1 - newScale / oldScale) * (rect.width / 2 - rect.width * ratioX);
+                translateY += (1 - newScale / oldScale) * (rect.height / 2 - rect.height * ratioY);
+                updateTransform(false);
+            }, { passive: false });
+
+            imgWrapper.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 2) {
+                    var t = e.touches;
+                    touchStartDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+                    touchStartScale = scale;
+                } else if (e.touches.length === 1) {
+                    isDragging = true;
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    touchLastX = translateX;
+                    touchLastY = translateY;
+                    imgWrapper.style.cursor = 'grabbing';
+                }
+            }, { passive: true });
+
+            imgWrapper.addEventListener('touchmove', function(e) {
+                if (e.touches.length === 2) {
+                    var t = e.touches;
+                    var dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+                    scale = Math.min(Math.max(0.5, touchStartScale * (dist / touchStartDist)), 5);
+                    updateTransform(false);
+                } else if (e.touches.length === 1 && isDragging) {
+                    var dx = e.touches[0].clientX - touchStartX;
+                    var dy = e.touches[0].clientY - touchStartY;
+                    translateX = touchLastX + dx;
+                    translateY = touchLastY + dy;
+                    updateTransform(false);
+                }
+            }, { passive: true });
+
+            imgWrapper.addEventListener('touchend', function(e) {
+                isDragging = false;
+                imgWrapper.style.cursor = 'grab';
+                if (scale < 0.6) { scale = 0.6;
+                    translateX = 0;
+                    translateY = 0;
+                    updateTransform(true); } else if (scale < 1) { scale = 1;
+                    translateX = 0;
+                    translateY = 0;
+                    updateTransform(true); } else if (scale > 3) { scale = 3;
+                    updateTransform(true); }
+                if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) { translateX = 0;
+                    translateY = 0;
+                    updateTransform(true); }
+            }, { passive: true });
+
+            imgWrapper.addEventListener('mousedown', function(e) {
+                mouseDown = true;
+                mouseStartX = e.clientX;
+                mouseStartY = e.clientY;
+                mouseLastX = translateX;
+                mouseLastY = translateY;
+                imgWrapper.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (mouseDown) {
+                    var dx = e.clientX - mouseStartX;
+                    var dy = e.clientY - mouseStartY;
+                    translateX = mouseLastX + dx;
+                    translateY = mouseLastY + dy;
+                    updateTransform(false);
+                }
+            });
+
+            document.addEventListener('mouseup', function() {
+                if (mouseDown) {
+                    mouseDown = false;
+                    imgWrapper.style.cursor = 'grab';
+                    if (scale < 0.6) { scale = 0.6;
+                        translateX = 0;
+                        translateY = 0;
+                        updateTransform(true); } else if (scale < 1) { scale = 1;
+                        translateX = 0;
+                        translateY = 0;
+                        updateTransform(true); } else if (scale > 3) { scale = 3;
+                        updateTransform(true); }
+                    if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) { translateX = 0;
+                        translateY = 0;
+                        updateTransform(true); }
+                }
+            });
+
+            closeBtn.addEventListener('click', closeLightbox);
+            overlay.addEventListener('click', function(e) { if (e.target === this) closeLightbox(); });
+            prevBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (isPlaying) stopPlayback();
+                if (lbImageData.length > 1) { currentLbIndex = (currentLbIndex - 1 + lbImageData.length) % lbImageData.length;
+                    updateLightbox(); }
+            });
+            nextBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (isPlaying) stopPlayback();
+                if (lbImageData.length > 1) { currentLbIndex = (currentLbIndex + 1) % lbImageData.length;
+                    updateLightbox(); }
+            });
+            playBtn.addEventListener('click', function(e) { e.stopPropagation();
+                togglePlay(); });
+            document.addEventListener('keydown', escHandler);
+
+            isProgressLocked = true;
+            progressWrap.style.display = 'block';
+            progressWrap.style.opacity = '1';
+            if (lbProgressBarEl) lbProgressBarEl.style.width = '0%';
+            if (lbProgressRAF) cancelAnimationFrame(lbProgressRAF);
+
+            updateLightbox();
+            if (lbImageData.length <= 1) { playBtn.disabled = true;
+                showLbProgress(false); }
+            requestAnimationFrame(function() { overlay.classList.add('active'); });
+        }
+
+        var currentShareImageDataUrl = '';
+
+        function generateShareImage() {
+            if (!currentArticle) return;
+            var title = currentArticle.title || '无标题';
+            var date = currentArticle.date || '';
+            var desc = getShareDesc(currentArticle.content || '');
+            var url = window.location.href;
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d');
+            var W = 900,
+                H = 540;
+            canvas.width = W;
+            canvas.height = H;
+            var grad = ctx.createLinearGradient(0, 0, W, H);
+            grad.addColorStop(0, '#f8f5ff');
+            grad.addColorStop(1, '#e8e0ff');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+            ctx.globalAlpha = 0.05;
+            for (var i = 0; i < 6; i++) {
+                ctx.beginPath();
+                ctx.arc(60 + i * 160, 40 + (i % 3) * 30, 80, 0, Math.PI * 2);
+                ctx.fillStyle = '#7a6bcf';
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'top';
+            ctx.font = '400 14px "Inter", sans-serif';
+            ctx.fillStyle = '#8a8ab5';
+            ctx.fillText(date || '', W - 40, 28);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.font = '700 52px "Inter", "PingFang SC", sans-serif';
+            ctx.fillStyle = '#1a1a2e';
+            var titleLines = wrapText(ctx, title || '无标题', W - 260);
+            var titleDisplay = truncateLines(titleLines, 2);
+            titleDisplay.forEach(function(line, i) { ctx.fillText(line, 40, 70 + i * 60); });
+            var subY = 70 + Math.min(titleDisplay.length, 2) * 60 + 20;
+            ctx.font = '400 22px "Inter", "PingFang SC", sans-serif';
+            ctx.fillStyle = '#4a4a6e';
+            var descLines = wrapText(ctx, desc || ' ', W - 260);
+            var descDisplay = truncateLines(descLines, 4);
+            descDisplay.forEach(function(line, i) { ctx.fillText(line, 40, subY + 10 + i * 34); });
+            var bottomY = H - 44;
+            ctx.font = '500 16px "Inter", "PingFang SC", sans-serif';
+            ctx.fillStyle = '#6a6a92';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText('ks', 40, bottomY);
+            var qrSize = 180;
+            var qrX = W - qrSize - 40;
+            var qrY = H - qrSize - 40;
+            generateQRCanvas(url, qrSize).then(function(qrCanvas) {
+                ctx.shadowColor = 'rgba(0,0,0,0.06)';
+                ctx.shadowBlur = 16;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 4;
+                ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.font = '400 13px "Inter", sans-serif';
+                ctx.fillStyle = '#aaaacc';
+                ctx.fillText('扫码观看全文', qrX + qrSize / 2, qrY + qrSize + 10);
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.font = '400 13px "Inter", sans-serif';
+                ctx.fillStyle = '#c8c8e0';
+                ctx.fillText('cuizi.top', W - 40, 18);
+                currentShareImageDataUrl = canvas.toDataURL('image/png');
+                document.getElementById('sharePreviewImg').src = currentShareImageDataUrl;
+            }).catch(function() {
+                ctx.fillStyle = '#f0edff';
+                ctx.fillRect(qrX, qrY, qrSize, qrSize);
+                ctx.fillStyle = '#aaa';
+                ctx.font = '16px "Inter", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('二维码失败', qrX + qrSize / 2, qrY + qrSize / 2);
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.font = '400 13px "Inter", sans-serif';
+                ctx.fillStyle = '#aaaacc';
+                ctx.fillText('扫码观看全文', qrX + qrSize / 2, qrY + qrSize + 10);
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.font = '400 13px "Inter", sans-serif';
+                ctx.fillStyle = '#c8c8e0';
+                ctx.fillText('cuizi.top', W - 40, 18);
+                currentShareImageDataUrl = canvas.toDataURL('image/png');
+                document.getElementById('sharePreviewImg').src = currentShareImageDataUrl;
+            });
+        }
+
+        function wrapText(ctx, text, maxWidth) {
+            var chars = Array.from(text);
+            var lines = [];
+            var current = '';
+            for (var i = 0; i < chars.length; i++) {
+                var ch = chars[i];
+                if (ctx.measureText(current + ch).width > maxWidth) { lines.push(current);
+                    current = ch; } else current += ch;
+            }
+            if (current) lines.push(current);
+            return lines;
+        }
+
+        function truncateLines(lines, maxLines) {
+            if (lines.length <= maxLines) return lines;
+            var result = lines.slice(0, maxLines);
+            var last = result[result.length - 1];
+            var trimmed = last.slice(0, -1) + '…';
+            result[result.length - 1] = trimmed;
+            return result;
+        }
+
+        document.addEventListener('click', function(e) {
+            var copyBtn = e.target.closest('.copy-btn');
+            if (copyBtn) {
+                var targetId = copyBtn.dataset.copy;
+                if (!targetId) return;
+                var wrapper = document.getElementById('cbw-' + targetId);
+                if (!wrapper) return;
+                var codeLines = wrapper.querySelectorAll('.code-line');
+                var text = '';
+                codeLines.forEach(function(line) {
+                    var clone = line.cloneNode(true);
+                    var lineNum = clone.querySelector('.line-number');
+                    if (lineNum) lineNum.remove();
+                    text += clone.textContent + '\n';
+                });
+                text = text.replace(/\n$/, '');
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                ta.style.top = '0';
+                ta.style.width = '1px';
+                ta.style.height = '1px';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                try {
+                    if (document.execCommand('copy')) {
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                        copyBtn.classList.add('copied');
+                        setTimeout(function() { copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
+                            copyBtn.classList.remove('copied'); }, 2000);
+                    } else showToast('复制失败', 'fa-exclamation-circle');
+                } catch (err) { showToast('复制失败', 'fa-exclamation-circle'); }
+                document.body.removeChild(ta);
+                return;
+            }
+            var collapseBtn = e.target.closest('.collapse-btn');
+            if (collapseBtn) {
+                var targetId = collapseBtn.dataset.target;
+                if (!targetId) return;
+                var wrapper = document.getElementById(targetId);
+                if (!wrapper) return;
+                var iconEl = collapseBtn.querySelector('i');
+                wrapper.classList.toggle('collapsed');
+                iconEl.className = wrapper.classList.contains('collapsed') ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+                return;
+            }
+        });
+
+        var shareModal = document.getElementById('shareModal');
+        var sharePreviewImg = document.getElementById('sharePreviewImg');
+        document.getElementById('shareButton').addEventListener('click', function() {
+            if (!currentArticle) { showToast('文章未加载', 'fa-exclamation-circle'); return; }
+            shareModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        document.getElementById('shareCloseBtn').addEventListener('click', function() { shareModal.classList.remove('active');
+            document.body.style.overflow = ''; });
+        shareModal.addEventListener('click', function(e) { if (e.target === this) { shareModal.classList.remove('active');
+                document.body.style.overflow = ''; } });
+        var shareTextDisplay = document.getElementById('shareTextDisplay');
+        var textModal = document.getElementById('textModal');
+        document.getElementById('shareCopyBtn').addEventListener('click', function() {
+            shareTextDisplay.textContent = currentShareText || '暂无内容';
+            textModal.classList.add('active');
+        });
+        document.getElementById('textModalCancel').addEventListener('click', function() { textModal.classList.remove('active'); });
+        textModal.addEventListener('click', function(e) { if (e.target === this) textModal.classList.remove('active'); });
+        document.getElementById('textModalCopy').addEventListener('click', function() {
+            var text = shareTextDisplay.textContent;
+            navigator.clipboard.writeText(text).then(function() {
+                showToast('已复制', 'fa-check-circle');
+                textModal.classList.remove('active');
+                shareModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }).catch(function() {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast('已复制', 'fa-check-circle');
+                textModal.classList.remove('active');
+                shareModal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        });
+        document.getElementById('shareSaveBtn').addEventListener('click', function() {
+            if (!currentShareImageDataUrl) { showToast('图片未生成', 'fa-exclamation-circle'); return; }
+            var a = document.createElement('a');
+            a.href = currentShareImageDataUrl;
+            var now = new Date();
+            var ts = now.getFullYear().toString().slice(2) + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0') + String(now.getHours()).padStart(2, '0') + String(now.getMinutes()).padStart(2, '0');
+            a.download = '分享图_' + ts + '.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('已保存', 'fa-check-circle');
+        });
+
+        renderArticle();
     </script>
 </body>
 </html>

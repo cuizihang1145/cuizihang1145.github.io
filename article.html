@@ -2186,17 +2186,16 @@
                         }
 
                         if (subItems.length > 0) {
-                            const hasCheckbox = subItems.some(item => item.includes('input[type="checkbox"]'));
-                            const subListType = hasCheckbox ? 'task' : 'ul';
-                            const subTag = 'ul';
-                            const subCls = hasCheckbox ? ' class="task-list"' : '';
-                            const subHtml = '<' + subTag + subCls + '>\n' + subItems.join('\n') + '\n</' + subTag + '>';
-                            if (listStack.length > 0) {
-                                const currentList = listStack[listStack.length - 1];
-                                const lastItem = currentList.items[currentList.items.length - 1];
-                                currentList.items[currentList.items.length - 1] = lastItem.replace(/<\/li>$/, subHtml + '</li>');
-                            }
-                        }
+    const hasCheckbox = subItems.some(item => {
+        return item.includes('input[type="checkbox"]') || item.includes('checked');
+    });
+    const subHtml = '<ul class="' + (hasCheckbox ? 'task-list' : '') + '">\n' + subItems.join('\n') + '\n</ul>';
+    if (listStack.length > 0) {
+        const currentList = listStack[listStack.length - 1];
+        const lastItem = currentList.items[currentList.items.length - 1];
+        currentList.items[currentList.items.length - 1] = lastItem.replace(/<\/li>$/, subHtml + '</li>');
+    }
+}
 
                         i = j - 1;
                         continue;

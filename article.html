@@ -1980,7 +1980,6 @@
                     return '<a href="mailto:' + email + '">' + email + '</a>';
                 });
 
-                html = html.replace(/(?<!\]\()https?:\/\/[^\s<>]+/g, '<a href="$&" target="_blank" rel="noopener">$&</a>');
 
                 html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
 

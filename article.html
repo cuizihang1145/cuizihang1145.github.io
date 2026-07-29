@@ -1672,6 +1672,13 @@
             return div.innerHTML;
         }
 
+        function unescapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.innerHTML = text;
+            return div.textContent;
+        }
+
         function markdownToPlainText(md) {
             if (!md) return '';
             let text = md;
@@ -1934,17 +1941,7 @@
                 return key;
             });
 
-            const lines = md.split('\n');
-            let result = '';
-            let inCodeBlock = false;
-            let codeBlockLines = [];
-            let codeLang = '';
-            let codeBlockCounter = 0;
-            let inTable = false;
-            let tableRows = [];
-            let tableAligns = [];
-            let footnotes = {};
-            let footnoteKeys = [];
+            const safeTags = ['u', 'kbd', 'mark', 's', 'sub', 'sup', 'ins', 'del', 'b', 'i', 'em', 'strong', 'code', 'span', 'br', 'hr'];
 
             function restoreEscapes(text) {
                 let r = text;
@@ -1955,22 +1952,46 @@
             }
 
             function renderInline(text) {
-                let html = escapeHtml(text);
-                html = html.replace(/&lt;(https?:\/\/[^\s<>]+)&gt;/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
-                html = html.replace(/&lt;([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})&gt;/g, '<a href="mailto:$1">$1</a>');
+                let html = text;
+
+                html = html.replace(/<([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)>(.*?)<\/\1>/gs, function(match, tag, attrs, content) {
+                    if (safeTags.includes(tag.toLowerCase())) {
+                        return '<' + tag + attrs + '>' + renderInline(content) + '</' + tag + '>';
+                    }
+                    return match;
+                });
+
+                html = html.replace(/<br\s*\/?>/gi, '<br>');
+
+                html = html.replace(/<https?:\/\/[^\s<>]+>/g, function(match) {
+                    const url = match.slice(1, -1);
+                    return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>';
+                });
+
+                html = html.replace(/<([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})>/g, function(match, email) {
+                    return '<a href="mailto:' + email + '">' + email + '</a>';
+                });
+
                 html = html.replace(/(?<!\]\()https?:\/\/[^\s<>]+/g, '<a href="$&" target="_blank" rel="noopener">$&</a>');
+
                 html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
                 html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
                 html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
                 html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
-                html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, alt, src, w, h) {
+
+                html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, alt, src, title, w, h) {
                     let style = '';
                     if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
                     else if (w) style = ' style="width:' + w + 'px; height:auto;"';
                     else if (h) style = ' style="height:' + h + 'px; width:auto;"';
-                    return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + ' />';
+                    let titleAttr = title ? ' title="' + title + '"' : '';
+                    return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + titleAttr + ' />';
                 });
-                html = html.replace(/!video\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, desc, src, w, h) {
+
+                html = html.replace(/!video\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, desc, src, title, w, h) {
                     let style = '';
                     if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
                     else if (w) style = ' style="width:' + w + 'px; height:auto;"';
@@ -1988,51 +2009,241 @@
                     }
                     return '<div class="video-placeholder"><video src="' + src + '" controls' + style + '></video>' + descHtml + '</div>';
                 });
+
                 html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-                html = html.replace(/\[\^([^\]]+)\]/g, function(match, key) {
-                    if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
-                    return '<sup class="footnote-ref"><a href="#fn-' + key + '" id="fnref-' + key + '">' + key + '</a></sup>';
-                });
+
                 html = restoreEscapes(html);
                 return html;
             }
 
-            function flushTable() {
-                if (tableRows.length === 0) return;
-                let html = '<table>';
-                for (let i = 0; i < tableRows.length; i++) {
-                    const cells = tableRows[i];
-                    const isHeader = i === 0;
-                    html += '<tr>';
-                    for (let j = 0; j < cells.length; j++) {
-                        const tag = isHeader ? 'th' : 'td';
-                        const align = (i === 1 && tableAligns[j]) ? ' style="text-align:' + tableAligns[j] + ';"' : '';
-                        const cellContent = cells[j].replace(/\\n/g, '\n').replace(/\n/g, '<br>');
-                        html += '<' + tag + align + '>' + renderInline(cellContent) + '</' + tag + '>';
+            function renderBlock(content) {
+                if (!content) return '';
+                const lines = content.split('\n');
+                let result = '';
+                let inList = false;
+                let listStack = [];
+
+                function flushList() {
+                    if (!inList) return;
+                    let html = '';
+                    for (let i = listStack.length - 1; i >= 0; i--) {
+                        const list = listStack[i];
+                        const tag = list.type === 'ol' ? 'ol' : 'ul';
+                        const cls = list.type === 'task' ? ' class="task-list"' : '';
+                        let startAttr = '';
+                        if (list.type === 'ol' && list.start !== null && list.start !== 1) {
+                            startAttr = ' start="' + list.start + '"';
+                        }
+                        html = '<' + tag + cls + startAttr + '>\n' + list.items.join('\n') + '\n</' + tag + '>\n' + html;
                     }
-                    html += '</tr>';
+                    result += html;
+                    inList = false;
+                    listStack = [];
                 }
-                html += '</table>';
-                result += html;
-                tableRows = [];
-                tableAligns = [];
-                inTable = false;
+
+                for (let i = 0; i < lines.length; i++) {
+                    let line = lines[i];
+
+                    if (line.trim() === '') {
+                        if (inList) {
+                            flushList();
+                            result += '<p><br></p>\n';
+                        } else {
+                            result += '<p><br></p>\n';
+                        }
+                        continue;
+                    }
+
+                    const blockquoteMatch = line.match(/^(>+)\s*(.*)/);
+                    if (blockquoteMatch) {
+                        if (inList) flushList();
+                        const level = blockquoteMatch[1].length;
+                        const content = blockquoteMatch[2];
+                        let innerHtml = renderInline(content);
+                        let quoteLines = [content];
+                        let j = i + 1;
+                        while (j < lines.length) {
+                            const nextLine = lines[j];
+                            const nextMatch = nextLine.match(/^(>+)\s*(.*)/);
+                            if (nextMatch) {
+                                quoteLines.push(nextMatch[2]);
+                                j++;
+                            } else if (nextLine.trim() === '') {
+                                quoteLines.push('');
+                                j++;
+                            } else {
+                                break;
+                            }
+                        }
+                        let blockHtml = renderInline(quoteLines.join('\n'));
+                        for (let lv = 0; lv < level; lv++) {
+                            blockHtml = '<blockquote>' + blockHtml + '</blockquote>';
+                        }
+                        result += blockHtml + '\n';
+                        i = j - 1;
+                        continue;
+                    }
+
+                    const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
+                    if (headingMatch) {
+                        if (inList) flushList();
+                        const level = headingMatch[1].length;
+                        const text = headingMatch[2];
+                        result += '<h' + level + '>' + renderInline(text) + '</h' + level + '>\n';
+                        continue;
+                    }
+
+                    if (/^---$/.test(line.trim()) || /^\*\*\*$/.test(line.trim()) || /^___$/.test(line.trim())) {
+                        if (inList) flushList();
+                        result += '<hr />\n';
+                        continue;
+                    }
+
+                    const listMatch = line.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
+                    if (listMatch) {
+                        const indent = listMatch[1].length;
+                        const marker = listMatch[2];
+                        let content = listMatch[3];
+
+                        const isTask = content.match(/^\[([ x])\]\s+(.*)/);
+                        let taskChecked = false;
+                        let taskContent = content;
+                        if (isTask) {
+                            taskChecked = isTask[1] === 'x';
+                            taskContent = isTask[2];
+                        }
+
+                        const isOrdered = marker.match(/^\d+\.$/);
+                        const listType = isOrdered ? 'ol' : (isTask ? 'task' : 'ul');
+
+                        const currentLevel = Math.floor(indent / 2);
+
+                        if (!inList) {
+                            inList = true;
+                            listStack = [];
+                            listStack.push({
+                                type: listType,
+                                items: [],
+                                level: currentLevel,
+                                start: isOrdered ? parseInt(marker) : null
+                            });
+                        } else {
+                            while (listStack.length > 0 && listStack[listStack.length - 1].level >= currentLevel) {
+                                const last = listStack.pop();
+                                if (listStack.length > 0) {
+                                    listStack[listStack.length - 1].items.push(last.items.join(''));
+                                }
+                            }
+                            if (listStack.length === 0 || listStack[listStack.length - 1].level < currentLevel) {
+                                listStack.push({
+                                    type: listType,
+                                    items: [],
+                                    level: currentLevel,
+                                    start: isOrdered ? parseInt(marker) : null
+                                });
+                            }
+                        }
+
+                        let itemContent = isTask ?
+                            '<input type="checkbox" ' + (taskChecked ? 'checked ' : '') + 'disabled> ' + taskContent :
+                            content;
+
+                        if (listStack.length > 0) {
+                            const currentList = listStack[listStack.length - 1];
+                            if (currentList.type !== listType && currentList.type !== 'task') {
+                                const newList = {
+                                    type: listType,
+                                    items: [],
+                                    level: currentLevel + 1,
+                                    start: isOrdered ? parseInt(marker) : null
+                                };
+                                listStack.push(newList);
+                            } else {
+                                currentList.items.push('<li>' + renderInline(itemContent) + '</li>');
+                            }
+                        }
+
+                        let subItems = [];
+                        let j = i + 1;
+                        while (j < lines.length) {
+                            const nextLine = lines[j];
+                            const nextMatch = nextLine.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
+                            if (nextMatch && parseInt(nextMatch[1].length) > indent) {
+                                const subContent = nextMatch[3];
+                                const subIsTask = subContent.match(/^\[([ x])\]\s+(.*)/);
+                                let subHtml = '';
+                                if (subIsTask) {
+                                    const checked = subIsTask[1] === 'x';
+                                    subHtml = '<input type="checkbox" ' + (checked ? 'checked ' : '') + 'disabled> ' + subIsTask[2];
+                                } else {
+                                    subHtml = subContent;
+                                }
+                                subItems.push('<li>' + renderInline(subHtml) + '</li>');
+                                j++;
+                            } else {
+                                break;
+                            }
+                        }
+
+                        if (subItems.length > 0) {
+                            const subListType = subItems.some(item => item.includes('input[type="checkbox"]')) ? 'task' : 'ul';
+                            const subTag = subListType === 'task' ? 'ul' : 'ul';
+                            const subCls = subListType === 'task' ? ' class="task-list"' : '';
+                            const subHtml = '<' + subTag + subCls + '>\n' + subItems.join('\n') + '\n</' + subTag + '>';
+                            if (listStack.length > 0) {
+                                const currentList = listStack[listStack.length - 1];
+                                const lastItem = currentList.items[currentList.items.length - 1];
+                                currentList.items[currentList.items.length - 1] = lastItem.replace(/<\/li>$/, subHtml + '</li>');
+                            }
+                        }
+
+                        i = j - 1;
+                        continue;
+                    }
+
+                    if (inList) {
+                        flushList();
+                    }
+
+                    const dlMatch = line.match(/^([^:]+):\s+(.*)/);
+                    if (dlMatch && i + 1 < lines.length && lines[i + 1].match(/^:\s+/)) {
+                        const term = renderInline(dlMatch[1]);
+                        let defs = [];
+                        i++;
+                        while (i < lines.length && lines[i].match(/^:\s+/)) {
+                            defs.push(renderInline(lines[i].replace(/^:\s+/, '')));
+                            i++;
+                        }
+                        while (i < lines.length && lines[i].trim() === '') i++;
+                        let ddHtml = defs.map(d => '<dd>' + d + '</dd>').join('');
+                        result += '<dl><dt>' + term + '</dt>' + ddHtml + '</dl>\n';
+                        continue;
+                    }
+
+                    result += '<p>' + renderInline(line) + '</p>\n';
+                }
+
+                if (inList) {
+                    flushList();
+                }
+
+                return result;
             }
 
-            function flushCodeBlock() {
-                if (codeBlockLines.length === 0) {
-                    inCodeBlock = false;
-                    codeLang = '';
-                    return;
-                }
-                let code = codeBlockLines.join('\n');
-                code = code.replace(/^\s*\n/, '').replace(/\n\s*$/, '');
+            const codeBlockRegex = /^```(\w*)\s*([\s\S]*?)```/gm;
+            let codeBlocks = [];
+            let codeIndex = 0;
+            md = md.replace(codeBlockRegex, function(match, lang, code) {
+                const id = 'CODEBLOCK_' + (codeIndex++);
+                codeBlocks.push({ id: id, lang: lang, code: code });
+                return id;
+            });
 
-                const langParts = codeLang.split(/\s+/);
-                const lang = langParts[0] || 'text';
-                const copyId = 'code-' + Date.now() + '-' + (codeBlockCounter++);
+            let html = renderBlock(md);
 
-                const lines = code.split('\n');
+            for (const block of codeBlocks) {
+                const copyId = 'code-' + Date.now() + '-' + codeIndex;
+                const lines = block.code.split('\n');
                 const lineCount = lines.length;
                 let maxLineLength = 0;
                 let totalChars = 0;
@@ -2043,8 +2254,6 @@
                 }
                 totalChars += lineCount > 0 ? lineCount - 1 : 0;
 
-                const statsHtml = '<span>' + lineCount + ' 行</span> · <span>' + maxLineLength + ' 列</span> · <span>' + totalChars + ' 字符</span>';
-
                 let codeHtml = '';
                 for (let j = 0; j < lines.length; j++) {
                     const lineNum = j + 1;
@@ -2052,318 +2261,34 @@
                     codeHtml += `<span class="code-line"><span class="line-number">${lineNum}</span><span class="hljs">${escapedLine}</span></span>`;
                 }
 
-                result += `
-                        <div class="code-block-wrapper" id="cbw-${copyId}">
-                            <div class="code-block-header">
-                                <span class="lang-label">${escapeHtml(lang)}</span>
-                                <span class="code-stats">${statsHtml}</span>
-                                <span class="header-actions">
-                                    <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
-                                    <button class="collapse-btn" data-target="cbw-${copyId}">
-                                        <i class="fas fa-chevron-up"></i>
-                                    </button>
-                                </span>
-                            </div>
-                            <div class="code-block-body-wrapper">
-                                <div class="code-block-body" id="code-body-${copyId}">
-                                    ${codeHtml}
-                                </div>
+                const statsHtml = '<span>' + lineCount + ' 行</span> · <span>' + maxLineLength + ' 列</span> · <span>' + totalChars + ' 字符</span>';
+
+                const codeBlockHtml = `
+                    <div class="code-block-wrapper" id="cbw-${copyId}">
+                        <div class="code-block-header">
+                            <span class="lang-label">${escapeHtml(block.lang || 'text')}</span>
+                            <span class="code-stats">${statsHtml}</span>
+                            <span class="header-actions">
+                                <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
+                                <button class="collapse-btn" data-target="cbw-${copyId}">
+                                    <i class="fas fa-chevron-up"></i>
+                                </button>
+                            </span>
+                        </div>
+                        <div class="code-block-body-wrapper">
+                            <div class="code-block-body" id="code-body-${copyId}">
+                                ${codeHtml}
                             </div>
                         </div>
-                    `;
-                codeBlockLines = [];
-                inCodeBlock = false;
-                codeLang = '';
+                    </div>
+                `;
+
+                html = html.replace(block.id, codeBlockHtml);
             }
 
-            let i = 0;
-            while (i < lines.length) {
-                const line = lines[i];
-                const trimmed = line.trim();
+            html = html.replace(/\n{3,}/g, '\n\n');
 
-                const codeBlockStart = line.match(/^(```|~~~)(\w*)/);
-                if (codeBlockStart) {
-                    if (!inCodeBlock) {
-                        flushTable();
-                        inCodeBlock = true;
-                        codeLang = codeBlockStart[2] || 'text';
-                        i++;
-                        continue;
-                    } else {
-                        flushCodeBlock();
-                        i++;
-                        continue;
-                    }
-                }
-                if (inCodeBlock) {
-                    codeBlockLines.push(line);
-                    i++;
-                    continue;
-                }
-
-                if (trimmed === '') {
-                    flushTable();
-                    i++;
-                    continue;
-                }
-
-                const fnMatch = line.match(/^\[\^([^\]]+)\]:\s*(.+)/);
-                if (fnMatch) {
-                    flushTable();
-                    const key = fnMatch[1];
-                    const content = fnMatch[2];
-                    footnotes[key] = renderInline(content);
-                    if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
-                    i++;
-                    continue;
-                }
-
-                if (line.includes('|') && trimmed.startsWith('|') && trimmed.endsWith('|')) {
-                    if (!inTable) {
-                        flushTable();
-                        inTable = true;
-                        tableRows = [];
-                        tableAligns = [];
-                    }
-                    const cells = trimmed.slice(1, -1).split('|').map(s => s.trim());
-                    if (cells.every(c => /^:?-+:?$/.test(c))) {
-                        tableAligns = cells.map(c => {
-                            if (c.startsWith(':') && c.endsWith(':')) return 'center';
-                            if (c.endsWith(':')) return 'right';
-                            if (c.startsWith(':')) return 'left';
-                            return '';
-                        });
-                        i++;
-                        continue;
-                    }
-                    tableRows.push(cells);
-                    i++;
-                    continue;
-                }
-                if (inTable) {
-                    flushTable();
-                    continue;
-                }
-
-                const headingMatch = line.match(/^(#{1,6})\s+(.+)/);
-                if (headingMatch) {
-                    flushTable();
-                    const level = headingMatch[1].length;
-                    const text = headingMatch[2];
-                    result += '<h' + level + '>' + renderInline(text) + '</h' + level + '>';
-                    i++;
-                    continue;
-                }
-
-                if (/^---$/.test(trimmed) || /^\*\*\*$/.test(trimmed) || /^___$/.test(trimmed)) {
-                    flushTable();
-                    result += '<hr />';
-                    i++;
-                    continue;
-                }
-
-                if (i + 1 < lines.length && lines[i + 1].match(/^:\s+/)) {
-                    flushTable();
-                    const term = renderInline(trimmed);
-                    let defs = [];
-                    i++;
-                    while (i < lines.length && lines[i].match(/^:\s+/)) {
-                        defs.push(renderInline(lines[i].replace(/^:\s+/, '')));
-                        i++;
-                    }
-                    while (i < lines.length && lines[i].trim() === '') i++;
-                    let ddHtml = defs.map(d => '<dd>' + d + '</dd>').join('');
-                    result += '<dl><dt>' + term + '</dt>' + ddHtml + '</dl>';
-                    continue;
-                }
-
-                function parseList(startIdx, parentIndent) {
-                    let html = '';
-                    let idx = startIdx;
-                    let currentListType = null;
-                    let items = [];
-                    let olStartNumber = null;
-                    let olValues = [];
-
-                    while (idx < lines.length) {
-                        const l = lines[idx];
-                        const t = l.trim();
-                        if (t === '') break;
-
-                        const ulMatch = l.match(/^(\s*)[-*+]\s+(.+)/);
-                        const olMatch = l.match(/^(\s*)(\d+)\.\s+(.+)/);
-                        const taskMatch = l.match(/^(\s*)[-*+]\s+\[([ x])\]\s+(.+)/);
-
-                        let match = null;
-                        let type = null;
-                        let content = '';
-                        let indent = 0;
-                        let olNumber = 0;
-
-                        if (taskMatch) {
-                            indent = taskMatch[1].length;
-                            if (indent < parentIndent) break;
-                            type = 'task';
-                            const checked = taskMatch[2] === 'x';
-                            content = '<input type="checkbox"' + (checked ? ' checked' : '') + ' disabled> ' + taskMatch[3];
-                            if (!currentListType) currentListType = 'ul';
-                        } else if (ulMatch) {
-                            indent = ulMatch[1].length;
-                            if (indent < parentIndent) break;
-                            type = 'ul';
-                            content = ulMatch[2];
-                            if (!currentListType) currentListType = 'ul';
-                        } else if (olMatch) {
-                            indent = olMatch[1].length;
-                            if (indent < parentIndent) break;
-                            type = 'ol';
-                            olNumber = parseInt(olMatch[2]);
-                            content = olMatch[3];
-                            if (olStartNumber === null) {
-                                olStartNumber = olNumber;
-                            }
-                            olValues.push(olNumber);
-                            if (!currentListType) currentListType = 'ol';
-                        } else {
-                            break;
-                        }
-
-                        let childHtml = '';
-                        let childIdx = idx + 1;
-                        while (childIdx < lines.length && lines[childIdx].trim() === '') childIdx++;
-                        if (childIdx < lines.length) {
-                            const nextLine = lines[childIdx];
-                            const nextUl = nextLine.match(/^(\s*)[-*+]\s+/);
-                            const nextOl = nextLine.match(/^(\s*)(\d+)\.\s+/);
-                            const nextTask = nextLine.match(/^(\s*)[-*+]\s+\[[ x]\]\s+/);
-                            if (nextUl || nextOl || nextTask) {
-                                const nextIndent = parseInt((nextUl || nextOl || nextTask)[1].length);
-                                if (nextIndent > indent) {
-                                    const [childHtmlResult, childConsumed] = parseList(childIdx, indent);
-                                    childHtml = childHtmlResult;
-                                    idx += childConsumed;
-                                }
-                            }
-                        }
-
-                        if (!currentListType) {
-                            currentListType = type === 'ol' ? 'ol' : 'ul';
-                        }
-
-                        const isTask = type === 'task';
-                        const liClass = isTask ? ' class="task-list-item"' : '';
-                        const renderedContent = renderInline(content);
-
-                        let liTag = '<li' + liClass;
-                        if (type === 'ol') {
-                            liTag += ' value="' + olNumber + '"';
-                        }
-                        liTag += '>' + renderedContent + childHtml + '</li>';
-
-                        items.push({
-                            type: type,
-                            olNumber: olNumber,
-                            html: liTag
-                        });
-
-                        idx++;
-                    }
-
-                    if (items.length === 0) {
-                        return ['', 0];
-                    }
-
-                    const listTag = currentListType === 'ol' ? 'ol' : 'ul';
-                    let listClass = '';
-                    if (listTag === 'ul') {
-                        const hasTask = items.some(item => item.type === 'task');
-                        listClass = hasTask ? ' class="task-list"' : '';
-                    }
-                    let startAttr = '';
-                    if (currentListType === 'ol' && olStartNumber !== null && olStartNumber !== 1) {
-                        startAttr = ' start="' + olStartNumber + '"';
-                    }
-                    const itemsHtml = items.map(item => item.html).join('\n');
-                    html = '<' + listTag + listClass + startAttr + '>\n' + itemsHtml + '\n</' + listTag + '>';
-                    return [html, idx - startIdx];
-                }
-
-                const listCheck = line.match(/^(\s*)[-*+]\s+/);
-                const taskCheck = line.match(/^(\s*)[-*+]\s+\[[ x]\]\s+/);
-                const olCheck = line.match(/^(\s*)(\d+)\.\s+/);
-
-                if (taskCheck || listCheck || olCheck) {
-                    flushTable();
-                    const [listHtml, consumed] = parseList(i, 0);
-                    result += listHtml;
-                    i += consumed;
-                    continue;
-                }
-
-                if (line.startsWith('>')) {
-                    flushTable();
-                    let level = 0;
-                    let temp = line;
-                    while (temp.startsWith('>')) {
-                        level++;
-                        temp = temp.substring(1);
-                        if (temp.startsWith(' ')) temp = temp.substring(1);
-                    }
-                    const content = temp.trim();
-                    let quoteLines = [content];
-                    let j = i + 1;
-                    while (j < lines.length) {
-                        const nextLine = lines[j];
-                        if (nextLine.startsWith('>')) {
-                            let lv = 0;
-                            let tmp = nextLine;
-                            while (tmp.startsWith('>')) {
-                                lv++;
-                                tmp = tmp.substring(1);
-                                if (tmp.startsWith(' ')) tmp = tmp.substring(1);
-                            }
-                            quoteLines.push(tmp.trim());
-                            j++;
-                        } else if (nextLine.trim() === '') {
-                            quoteLines.push('');
-                            j++;
-                        } else {
-                            break;
-                        }
-                    }
-                    let innerHtml = renderInline(quoteLines.join('\n'));
-                    for (let lv = 0; lv < level; lv++) {
-                        innerHtml = '<blockquote>' + innerHtml + '</blockquote>';
-                    }
-                    result += innerHtml;
-                    i = j;
-                    continue;
-                }
-
-                flushTable();
-                result += '<p>' + renderInline(line) + '</p>';
-                i++;
-            }
-
-            flushCodeBlock();
-            flushTable();
-
-            if (footnoteKeys.length > 0) {
-                result += '<div class="footnotes">\n';
-                for (const key of footnoteKeys) {
-                    if (footnotes[key]) {
-                        result += '<div class="footnote-def" id="fn-' + key + '">';
-                        result += '<span class="footnote-number">' + key + '.</span> ';
-                        result += '<a href="#fnref-' + key + '" class="footnote-back" onclick="event.preventDefault(); scrollToFootnote(\'fnref-' + key + '\');">↩</a> ';
-                        result += footnotes[key];
-                        result += '</div>\n';
-                    }
-                }
-                result += '</div>\n';
-            }
-
-            result = restoreEscapes(result);
-            return result;
+            return html;
         }
 
         function scrollToFootnote(id) {

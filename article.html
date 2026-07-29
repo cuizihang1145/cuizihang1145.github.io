@@ -1892,11 +1892,27 @@
                     else if (h) style = ' style="height:' + h + 'px; width:auto;"';
                     return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + ' />';
                 });
+                html = html.replace(/!video\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, desc, src, w, h) {
+                    let style = '';
+                    if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
+                    else if (w) style = ' style="width:' + w + 'px; height:auto;"';
+                    else if (h) style = ' style="height:' + h + 'px; width:auto;"';
+                    const youtubeMatch = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+                    if (youtubeMatch) {
+                        const vid = youtubeMatch[1];
+                        return '<iframe src="https://www.youtube.com/embed/' + vid + '" frameborder="0" allowfullscreen' + style + '></iframe>';
+                    }
+                    const bilibiliMatch = src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
+                    if (bilibiliMatch) {
+                        const vid = bilibiliMatch[1];
+                        return '<iframe src="https://player.bilibili.com/player.html?bvid=' + vid + '" frameborder="0" allowfullscreen' + style + '></iframe>';
+                    }
+                    return '<video src="' + src + '" controls' + style + '><p>' + (desc || '视频') + '</p></video>';
+                });
                 html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
                 html = html.replace(/\[\^([^\]]+)\]/g, function(match, key) {
                     if (!footnoteKeys.includes(key)) footnoteKeys.push(key);
-                    return '<sup class="footnote-ref"><a href="#fn-' + key + '" id="fnref-' + key + '">' + key +
-                        '</a></sup>';
+                    return '<sup class="footnote-ref"><a href="#fn-' + key + '" id="fnref-' + key + '">' + key + '</a></sup>';
                 });
                 html = restoreEscapes(html);
                 return html;
@@ -1948,8 +1964,7 @@
                 }
                 totalChars += lineCount > 0 ? lineCount - 1 : 0;
 
-                const statsHtml = '<span>' + lineCount + ' 行</span> · <span>' + maxLineLength + ' 列</span> · <span>' +
-                    totalChars + ' 字符</span>';
+                const statsHtml = '<span>' + lineCount + ' 行</span> · <span>' + maxLineLength + ' 列</span> · <span>' + totalChars + ' 字符</span>';
 
                 let codeHtml = '';
                 for (let j = 0; j < lines.length; j++) {
@@ -2259,7 +2274,8 @@
                 for (const key of footnoteKeys) {
                     if (footnotes[key]) {
                         result += '<div class="footnote-def" id="fn-' + key + '">';
-                        result += '<a href="#fnref-' + key + '" class="footnote-back">↩</a> ';
+                        result += '<span class="footnote-number">' + key + '.</span> ';
+                        result += '<a href="#fnref-' + key + '" class="footnote-back" onclick="event.preventDefault(); scrollToFootnote(\'fnref-' + key + '\');">↩</a> ';
                         result += footnotes[key];
                         result += '</div>\n';
                     }
@@ -2269,6 +2285,34 @@
 
             result = restoreEscapes(result);
             return result;
+        }
+
+        function scrollToFootnote(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const targetY = el.getBoundingClientRect().top + window.scrollY - 80;
+            const startY = window.scrollY || window.pageYOffset;
+            const distance = targetY - startY;
+            if (Math.abs(distance) < 5) return;
+            const duration = 350;
+            const startTime = performance.now();
+
+            function step(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+                const nextY = startY + distance * ease;
+                window.scrollTo(0, nextY);
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    window.scrollTo(0, targetY);
+                    if (window.history && window.history.replaceState) {
+                        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+                    }
+                }
+            }
+            requestAnimationFrame(step);
         }
 
         function initImageLazyLoad() {

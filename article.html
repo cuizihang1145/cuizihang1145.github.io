@@ -1963,623 +1963,625 @@
     <div class="share-modal-overlay" id="textModal" style="z-index:1000;">
         <div class="share-modal-box" style="max-width:420px;">
             <div class="share-modal-title"><i class="fas fa-copy"></i> 复制内容</div>
-            <div class="share-text-box" id="shareTextDisplay"
-            style="background:rgba(0,0,0,0.04);border-radius:12px;padding:0.8rem 1rem;text-align:left;font-size:0.82rem;line-height:1.8;color:#4a4a6e;word-break:break-all;margin-bottom:1rem;border:1px solid rgba(0,0,0,0.04);max-height:200px;overflow-y:auto;font-family:'Inter',sans-serif;">
-            加载中...
-        </div>
-        <div class="share-modal-actions">
-            <button class="btn-text" id="textModalCancel" style="flex:1;">取消</button>
-            <button class="btn-image" id="textModalCopy" style="flex:1;"><i class="fas fa-copy"></i> 复制</button>
+            <div class="share-text-box" id="shareTextDisplay" style="background:rgba(0,0,0,0.04);border-radius:12px;padding:0.8rem 1rem;text-align:left;font-size:0.82rem;line-height:1.8;color:#4a4a6e;word-break:break-all;margin-bottom:1rem;border:1px solid rgba(0,0,0,0.04);max-height:200px;overflow-y:auto;font-family:'Inter',sans-serif;">
+                加载中...
+            </div>
+            <div class="share-modal-actions">
+                <button class="btn-text" id="textModalCancel" style="flex:1;">取消</button>
+                <button class="btn-image" id="textModalCopy" style="flex:1;"><i class="fas fa-copy"></i> 复制</button>
+            </div>
         </div>
     </div>
-</div>
-<div class="toast" id="toast"></div>
-<div id="qrTemp"></div>
-<script>
-    function getParam(name) {
-        const url = new URL(window.location.href);
-        return url.searchParams.get(name);
-    }
-
-    function escapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    function unescapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.innerHTML = text;
-        return div.textContent;
-    }
-
-    function markdownToPlainText(md) {
-        if (!md) return '';
-        let text = md;
-        text = text.replace(/```[\s\S]*?```/g, '');
-        text = text.replace(/`([^`]+)`/g, '$1');
-        text = text.replace(/!video\[[^\]]*\]\([^)]*\)/g, '');
-        text = text.replace(/!\[[^\]]*\]\([^)]*\)/g, '');
-        text = text.replace(/\*\*(.*?)\*\*/g, '$1');
-        text = text.replace(/\*([^*]+)\*/g, '$1');
-        text = text.replace(/~~(.*?)~~/g, '$1');
-        text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
-        text = text.replace(/^#{1,6}\s+/gm, '');
-        text = text.replace(/^-\s+/gm, '');
-        text = text.replace(/^\d+\.\s+/gm, '');
-        text = text.replace(/^>\s+/gm, '');
-        text = text.replace(/^---$/gm, '');
-        text = text.replace(/\n/g, ' ');
-        text = text.replace(/\s{2,}/g, ' ');
-        return text.trim();
-    }
-
-    function showToast(message, icon) {
-        icon = icon || 'fa-info-circle';
-        const toast = document.getElementById('toast');
-        toast.innerHTML = '<i class="fas ' + icon + '"></i> ' + message;
-        toast.classList.add('show');
-        clearTimeout(toast._hideTimer);
-        toast._hideTimer = setTimeout(function() {
-            toast.classList.remove('show');
-        }, 2000);
-    }
-    const progressWrap = document.getElementById('readingProgress');
-    const progressBar = document.getElementById('progressBar');
-    let lastProgress = 0;
-    let hideTimer = null;
-    let isProgressLocked = false;
-    let progressRAF = null;
-    let lbProgress = 0;
-
-    function updateReadingProgress() {
-        if (isProgressLocked) return;
-        const articleDetail = document.querySelector('.article-detail');
-        if (!articleDetail) {
-            progressBar.style.width = '0%';
-            return;
+    <div class="toast" id="toast"></div>
+    <div id="qrTemp"></div>
+    <script>
+        function getParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
         }
-        const rect = articleDetail.getBoundingClientRect();
-        const articleHeight = rect.height;
-        const articleTop = rect.top + window.scrollY;
-        const windowHeight = window.innerHeight;
-        const maxScroll = articleHeight - windowHeight;
-        let progress = 0;
-        if (maxScroll <= 0) {
-            progress = 100;
-        } else {
-            const currentScroll = window.scrollY - articleTop;
-            progress = Math.min(Math.max((currentScroll / maxScroll) * 100, 0), 100);
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
-        progressBar.style.width = progress + '%';
-        if (progress >= 100 && lastProgress < 100) {
-            if (hideTimer) {
-                clearTimeout(hideTimer);
-                hideTimer = null;
+
+        function unescapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.innerHTML = text;
+            return div.textContent;
+        }
+
+        function markdownToPlainText(md) {
+            if (!md) return '';
+            let text = md;
+            text = text.replace(/```[\s\S]*?```/g, '');
+            text = text.replace(/`([^`]+)`/g, '$1');
+            text = text.replace(/!video\[[^\]]*\]\([^)]*\)/g, '');
+            text = text.replace(/!\[[^\]]*\]\([^)]*\)/g, '');
+            text = text.replace(/\*\*(.*?)\*\*/g, '$1');
+            text = text.replace(/\*([^*]+)\*/g, '$1');
+            text = text.replace(/~~(.*?)~~/g, '$1');
+            text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+            text = text.replace(/^#{1,6}\s+/gm, '');
+            text = text.replace(/^-\s+/gm, '');
+            text = text.replace(/^\d+\.\s+/gm, '');
+            text = text.replace(/^>\s+/gm, '');
+            text = text.replace(/^---$/gm, '');
+            text = text.replace(/\n/g, ' ');
+            text = text.replace(/\s{2,}/g, ' ');
+            return text.trim();
+        }
+
+        function showToast(message, icon) {
+            icon = icon || 'fa-info-circle';
+            const toast = document.getElementById('toast');
+            toast.innerHTML = '<i class="fas ' + icon + '"></i> ' + message;
+            toast.classList.add('show');
+            clearTimeout(toast._hideTimer);
+            toast._hideTimer = setTimeout(function() {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+        const progressWrap = document.getElementById('readingProgress');
+        const progressBar = document.getElementById('progressBar');
+        let lastProgress = 0;
+        let hideTimer = null;
+        let isProgressLocked = false;
+        let progressRAF = null;
+        let lbProgress = 0;
+
+        function updateReadingProgress() {
+            if (isProgressLocked) return;
+            const articleDetail = document.querySelector('.article-detail');
+            if (!articleDetail) {
+                progressBar.style.width = '0%';
+                return;
             }
-            hideTimer = setTimeout(() => {
-                progressWrap.style.transition = 'opacity 0.8s ease';
-                progressWrap.style.opacity = '0';
-                setTimeout(() => {
-                    progressWrap.style.display = 'none';
-                }, 800);
-            }, 600);
-        }
-        if (progress < 100) {
-            if (hideTimer) {
-                clearTimeout(hideTimer);
-                hideTimer = null;
-            }
-            progressWrap.style.display = 'block';
-            progressWrap.style.opacity = '1';
-            progressWrap.style.transition = 'opacity 0.3s ease';
-        }
-        lastProgress = progress;
-    }
-    window.addEventListener('scroll', updateReadingProgress);
-    window.addEventListener('resize', updateReadingProgress);
-    window.addEventListener('load', updateReadingProgress);
-    const themeToggle = document.getElementById('themeToggle');
-    const themeIcon = document.getElementById('themeIcon');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    let currentTheme = localStorage.getItem('ks-theme') || (prefersDark ? 'dark' : 'light');
-
-    function setTheme(theme) {
-        document.body.classList.toggle('dark', theme === 'dark');
-        themeIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-        localStorage.setItem('ks-theme', theme);
-        currentTheme = theme;
-    }
-    setTheme(currentTheme);
-    themeToggle.addEventListener('click', function() {
-        setTheme(currentTheme === 'dark' ? 'light' : 'dark');
-    });
-    const backToTopBtn = document.getElementById('backToTopBtn');
-    let isScrollingToTop = false;
-    window.addEventListener('scroll', function() {
-        const scrollY = window.scrollY || window.pageYOffset;
-        if (scrollY > 300 && !isScrollingToTop) {
-            backToTopBtn.classList.add('show');
-        } else if (!isScrollingToTop) {
-            backToTopBtn.classList.remove('show');
-        }
-    });
-
-    function fastScrollToTop() {
-        const startY = window.scrollY || window.pageYOffset;
-        if (startY === 0) return;
-        const duration = 300;
-        const startTime = performance.now();
-
-        function step(currentTime) {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const ease = 1 - Math.pow(1 - progress, 3);
-            const nextY = startY * (1 - ease);
-            window.scrollTo(0, nextY);
-            if (progress < 1) {
-                requestAnimationFrame(step);
+            const rect = articleDetail.getBoundingClientRect();
+            const articleHeight = rect.height;
+            const articleTop = rect.top + window.scrollY;
+            const windowHeight = window.innerHeight;
+            const maxScroll = articleHeight - windowHeight;
+            let progress = 0;
+            if (maxScroll <= 0) {
+                progress = 100;
             } else {
-                window.scrollTo(0, 0);
-                isScrollingToTop = false;
-                backToTopBtn.classList.remove('disabled');
+                const currentScroll = window.scrollY - articleTop;
+                progress = Math.min(Math.max((currentScroll / maxScroll) * 100, 0), 100);
+            }
+            progressBar.style.width = progress + '%';
+            if (progress >= 100 && lastProgress < 100) {
+                if (hideTimer) {
+                    clearTimeout(hideTimer);
+                    hideTimer = null;
+                }
+                hideTimer = setTimeout(() => {
+                    progressWrap.style.transition = 'opacity 0.8s ease';
+                    progressWrap.style.opacity = '0';
+                    setTimeout(() => {
+                        progressWrap.style.display = 'none';
+                    }, 800);
+                }, 600);
+            }
+            if (progress < 100) {
+                if (hideTimer) {
+                    clearTimeout(hideTimer);
+                    hideTimer = null;
+                }
+                progressWrap.style.display = 'block';
+                progressWrap.style.opacity = '1';
+                progressWrap.style.transition = 'opacity 0.3s ease';
+            }
+            lastProgress = progress;
+        }
+        window.addEventListener('scroll', updateReadingProgress);
+        window.addEventListener('resize', updateReadingProgress);
+        window.addEventListener('load', updateReadingProgress);
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        let currentTheme = localStorage.getItem('ks-theme') || (prefersDark ? 'dark' : 'light');
+
+        function setTheme(theme) {
+            document.body.classList.toggle('dark', theme === 'dark');
+            themeIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            localStorage.setItem('ks-theme', theme);
+            currentTheme = theme;
+        }
+        setTheme(currentTheme);
+        themeToggle.addEventListener('click', function() {
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+        const backToTopBtn = document.getElementById('backToTopBtn');
+        let isScrollingToTop = false;
+        window.addEventListener('scroll', function() {
+            const scrollY = window.scrollY || window.pageYOffset;
+            if (scrollY > 300 && !isScrollingToTop) {
+                backToTopBtn.classList.add('show');
+            } else if (!isScrollingToTop) {
                 backToTopBtn.classList.remove('show');
             }
-        }
-        requestAnimationFrame(step);
-    }
-    backToTopBtn.addEventListener('click', function() {
-        if (isScrollingToTop) return;
-        const scrollY = window.scrollY || window.pageYOffset;
-        if (scrollY === 0) return;
-        isScrollingToTop = true;
-        backToTopBtn.classList.add('disabled');
-        fastScrollToTop();
-    });
-    const backBtn = document.getElementById('backButton');
-    const from = getParam('from');
-    const page = getParam('page');
-    const folder = getParam('folder');
-    let returnUrl = 'index.html?return=articles';
-    if (page) returnUrl += '&page=' + page;
-    if (from === 'archive' && folder === 'articles') {
-        returnUrl = 'index.html?return=archive&folder=articles';
-    } else if (from === 'archive') {
-        returnUrl = 'index.html?return=archive';
-    }
-    backBtn.href = returnUrl;
-    const appContent = document.getElementById('appContent');
-    let currentArticle = null;
-    let currentShareText = '';
-    let walineInitialized = false;
-
-    function countWords(markdown) {
-        if (!markdown) return 0;
-        let text = markdown
-            .replace(/```[\s\S]*?```/g, '')
-            .replace(/`[^`]+`/g, '')
-            .replace(/!video\[[^\]]*\]\([^)]*\)/g, '')
-            .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
-            .replace(/\*\*(.*?)\*\*/g, '$1')
-            .replace(/\*([^*]+)\*/g, '$1')
-            .replace(/~~(.*?)~~/g, '$1')
-            .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-            .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')
-            .replace(/^#{1,6}\s+/gm, '')
-            .replace(/^-\s+/gm, '')
-            .replace(/^\d+\.\s+/gm, '')
-            .replace(/^>\s+/gm, '')
-            .replace(/^---$/gm, '')
-            .replace(/^\s*[-*+]\s+\[[ x]\]\s+/gm, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-        return text.length;
-    }
-
-    function calculateReadTime(wordCount) {
-        if (wordCount === 0) return 114514;
-        const minutes = Math.ceil(wordCount / 300);
-        return minutes < 1 ? 1 : minutes;
-    }
-
-    function formatReadTime(minutes) {
-        if (minutes === 114514) return '114514 分钟';
-        return '大约 ' + minutes + ' 分钟';
-    }
-
-    function formatWordCount(count) {
-        if (count === 0) return '没有字哦';
-        return count + ' 字';
-    }
-
-    function getSharePreview(content, title) {
-        const plain = markdownToPlainText(content);
-        const wordCount = countWords(content);
-        if (wordCount === 0) return '[没有字捏 是什么自己打开看]';
-        const chars = [...plain];
-        if (chars.length <= 80) return plain;
-        const truncated = chars.slice(0, 80).join('');
-        return truncated + '…';
-    }
-
-    function getShareDesc(content) {
-        const wordCount = countWords(content);
-        if (wordCount === 0) return '[没有字捏 是什么自己打开看]';
-        const plain = markdownToPlainText(content);
-        const chars = [...plain];
-        if (chars.length <= 80) return plain;
-        const truncated = chars.slice(0, 80).join('');
-        return truncated + '…';
-    }
-
-    function getPlainPreview(content, maxLength) {
-        maxLength = maxLength || 80;
-        const plain = markdownToPlainText(content);
-        const wordCount = countWords(content);
-        if (wordCount === 0) return '[没有字捏 是什么自己打开看]';
-        const chars = [...plain];
-        if (chars.length <= maxLength) return plain;
-        const truncated = chars.slice(0, maxLength).join('');
-        return truncated + '…';
-    }
-    let lbImageData = [];
-    let currentLbIndex = 0;
-    let isPlaying = false;
-    let lbIsOpen = false;
-    let lbProgressRAF = null;
-    let lbPlayTimer = null;
-    let lbIntervalId = null;
-
-    function renderMarkdown(md) {
-        if (!md) return '';
-        const escMap = {};
-        let escCounter = 0;
-        md = md.replace(/\\([\\`*_{}\[\]()#+\-.!|$])/g, function(match, char) {
-            const key = '\uE000' + (escCounter++) + '\uE001';
-            escMap[key] = char;
-            return key;
         });
-        const safeTags = ['u', 'kbd', 'mark', 's', 'sub', 'sup', 'ins', 'del', 'b', 'i', 'em', 'strong', 'code',
-            'span', 'br', 'hr'
-        ];
 
-        function restoreEscapes(text) {
-            let r = text;
-            for (const [key, char] of Object.entries(escMap)) {
-                r = r.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), char);
+        function fastScrollToTop() {
+            const startY = window.scrollY || window.pageYOffset;
+            if (startY === 0) return;
+            const duration = 300;
+            const startTime = performance.now();
+
+            function step(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const ease = 1 - Math.pow(1 - progress, 3);
+                const nextY = startY * (1 - ease);
+                window.scrollTo(0, nextY);
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    window.scrollTo(0, 0);
+                    isScrollingToTop = false;
+                    backToTopBtn.classList.remove('disabled');
+                    backToTopBtn.classList.remove('show');
+                }
             }
-            return r;
+            requestAnimationFrame(step);
+        }
+        backToTopBtn.addEventListener('click', function() {
+            if (isScrollingToTop) return;
+            const scrollY = window.scrollY || window.pageYOffset;
+            if (scrollY === 0) return;
+            isScrollingToTop = true;
+            backToTopBtn.classList.add('disabled');
+            fastScrollToTop();
+        });
+        const backBtn = document.getElementById('backButton');
+        const from = getParam('from');
+        const page = getParam('page');
+        const folder = getParam('folder');
+        let returnUrl = 'index.html?return=articles';
+        if (page) returnUrl += '&page=' + page;
+        if (from === 'archive' && folder === 'articles') {
+            returnUrl = 'index.html?return=archive&folder=articles';
+        } else if (from === 'archive') {
+            returnUrl = 'index.html?return=archive';
+        }
+        backBtn.href = returnUrl;
+        const appContent = document.getElementById('appContent');
+        let currentArticle = null;
+        let currentShareText = '';
+        let walineInitialized = false;
+
+        function countWords(markdown) {
+            if (!markdown) return 0;
+            let text = markdown
+                .replace(/```[\s\S]*?```/g, '')
+                .replace(/`[^`]+`/g, '')
+                .replace(/!video\[[^\]]*\]\([^)]*\)/g, '')
+                .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+                .replace(/\*\*(.*?)\*\*/g, '$1')
+                .replace(/\*([^*]+)\*/g, '$1')
+                .replace(/~~(.*?)~~/g, '$1')
+                .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+                .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')
+                .replace(/^#{1,6}\s+/gm, '')
+                .replace(/^-\s+/gm, '')
+                .replace(/^\d+\.\s+/gm, '')
+                .replace(/^>\s+/gm, '')
+                .replace(/^---$/gm, '')
+                .replace(/^\s*[-*+]\s+\[[ x]\]\s+/gm, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+            return text.length;
         }
 
-        function renderInline(text) {
-            let html = text;
-            html = html.replace(/<([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s<>]+)>/g, '<a href="$1">$1</a>');
-            var tagMap = {};
-            var tagIndex = 0;
-            html = html.replace(/<[^>]+>/g, function(match) {
-                var key = '\uE002' + (tagIndex++) + '\uE003';
-                tagMap[key] = match;
+        function calculateReadTime(wordCount) {
+            if (wordCount === 0) return 114514;
+            const minutes = Math.ceil(wordCount / 300);
+            return minutes < 1 ? 1 : minutes;
+        }
+
+        function formatReadTime(minutes) {
+            if (minutes === 114514) return '114514 分钟';
+            return '大约 ' + minutes + ' 分钟';
+        }
+
+        function formatWordCount(count) {
+            if (count === 0) return '没有字哦';
+            return count + ' 字';
+        }
+
+        function getSharePreview(content, title) {
+            const plain = markdownToPlainText(content);
+            const wordCount = countWords(content);
+            if (wordCount === 0) return '[没有字捏 是什么自己打开看]';
+            const chars = [...plain];
+            if (chars.length <= 80) return plain;
+            const truncated = chars.slice(0, 80).join('');
+            return truncated + '…';
+        }
+
+        function getShareDesc(content) {
+            const wordCount = countWords(content);
+            if (wordCount === 0) return '[没有字捏 是什么自己打开看]';
+            const plain = markdownToPlainText(content);
+            const chars = [...plain];
+            if (chars.length <= 80) return plain;
+            const truncated = chars.slice(0, 80).join('');
+            return truncated + '…';
+        }
+
+        function getPlainPreview(content, maxLength) {
+            maxLength = maxLength || 80;
+            const plain = markdownToPlainText(content);
+            const wordCount = countWords(content);
+            if (wordCount === 0) return '[没有字捏 是什么自己打开看]';
+            const chars = [...plain];
+            if (chars.length <= maxLength) return plain;
+            const truncated = chars.slice(0, maxLength).join('');
+            return truncated + '…';
+        }
+        let lbImageData = [];
+        let currentLbIndex = 0;
+        let isPlaying = false;
+        let lbIsOpen = false;
+        let lbProgressRAF = null;
+        let lbPlayTimer = null;
+        let lbIntervalId = null;
+
+        function renderMarkdown(md) {
+            if (!md) return '';
+            const escMap = {};
+            let escCounter = 0;
+            md = md.replace(/\\([\\`*_{}\[\]()#+\-.!|$])/g, function(match, char) {
+                const key = '\uE000' + (escCounter++) + '\uE001';
+                escMap[key] = char;
                 return key;
             });
-            html = html.replace(/<([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)>(.*?)<\/\1>/gs, function(match, tag, attrs,
-                content) {
-                if (safeTags.includes(tag.toLowerCase())) {
-                    return '<' + tag + attrs + '>' + renderInline(content) + '</' + tag + '>';
-                }
-                return match;
-            });
-            html = html.replace(/<br\s*\/?>/gi, '<br>');
-            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-            html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
-            html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,
-                function(match, alt, src, title, w, h) {
-                    var style = '';
-                    if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
-                    else if (w) style = ' style="width:' + w + 'px; height:auto;"';
-                    else if (h) style = ' style="height:' + h + 'px; width:auto;"';
-                    var titleAttr = title ? ' title="' + title + '"' : '';
-                    return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + titleAttr +
-                        ' />';
-                });
-            html = html.replace(
-                /!video\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,
-                function(match, desc, src, title, w, h) {
-                    var style = '';
-                    if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
-                    else if (w) style = ' style="width:' + w + 'px; height:auto;"';
-                    else if (h) style = ' style="height:' + h + 'px; width:auto;"';
-                    var descHtml = desc ? '<div class="video-alt-text">' + desc + '</div>' : '';
-                    var youtubeMatch = src.match(
-                        /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-                    if (youtubeMatch) {
-                        var vid = youtubeMatch[1];
-                        return '<div class="video-placeholder"><span class="video-loading"><i class="fas fa-spinner fa-spin"></i></span><iframe src="https://www.youtube.com/embed/' +
-                            vid + '" frameborder="0" allowfullscreen' + style + '></iframe>' +
-                            descHtml + '</div>';
-                    }
-                    var bilibiliMatch = src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
-                    if (bilibiliMatch) {
-                        var vid = bilibiliMatch[1];
-                        return '<div class="video-placeholder"><span class="video-loading"><i class="fas fa-spinner fa-spin"></i></span><iframe src="https://player.bilibili.com/player.html?bvid=' +
-                            vid + '" frameborder="0" allowfullscreen' + style + '></iframe>' +
-                            descHtml + '</div>';
-                    }
-                    return '<div class="video-placeholder"><video src="' + src + '" controls' + style +
-                        '></video>' + descHtml + '</div>';
-                });
-            html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-            html = restoreEscapes(html);
-            for (var key in tagMap) {
-                if (tagMap.hasOwnProperty(key)) {
-                    html = html.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), tagMap[
-                    key]);
-                }
-            }
-            return html;
-        }
+            const safeTags = ['u', 'kbd', 'mark', 's', 'sub', 'sup', 'ins', 'del', 'b', 'i', 'em', 'strong', 'code',
+                'span', 'br', 'hr'
+            ];
 
-        function renderBlock(content) {
-            if (!content) return '';
-            var lines = content.split('\n');
-            var result = '';
-            var inList = false;
-            var listStack = [];
-
-            function flushList() {
-                if (!inList) return;
-                var html = '';
-                for (var i = listStack.length - 1; i >= 0; i--) {
-                    var list = listStack[i];
-                    var tag = list.type === 'ol' ? 'ol' : 'ul';
-                    var cls = list.type === 'task' ? ' class="task-list"' : '';
-                    var startAttr = '';
-                    if (list.type === 'ol' && list.start !== null && list.start !== 1) {
-                        startAttr = ' start="' + list.start + '"';
-                    }
-                    html = '<' + tag + cls + startAttr + '>\n' + list.items.join('\n') + '\n</' + tag + '>\n' +
-                        html;
+            function restoreEscapes(text) {
+                let r = text;
+                for (const [key, char] of Object.entries(escMap)) {
+                    r = r.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), char);
                 }
-                result += html;
-                inList = false;
-                listStack = [];
+                return r;
             }
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
-                if (line.trim() === '') {
-                    if (inList) {
-                        flushList();
-                        result += '<p><br></p>\n';
-                    } else {
-                        result += '<p><br></p>\n';
+
+            function renderInline(text) {
+                let html = text;
+                html = html.replace(/<([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s<>]+)>/g, '<a href="$1">$1</a>');
+                var tagMap = {};
+                var tagIndex = 0;
+                html = html.replace(/<[^>]+>/g, function(match) {
+                    var key = '\uE002' + (tagIndex++) + '\uE003';
+                    tagMap[key] = match;
+                    return key;
+                });
+                html = html.replace(/<([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)>(.*?)<\/\1>/gs, function(match, tag, attrs,
+                    content) {
+                    if (safeTags.includes(tag.toLowerCase())) {
+                        return '<' + tag + attrs + '>' + renderInline(content) + '</' + tag + '>';
                     }
-                    continue;
+                    return match;
+                });
+                html = html.replace(/<br\s*\/?>/gi, '<br>');
+                html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+                html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+                html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
+                html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,
+                    function(match, alt, src, title, w, h) {
+                        var style = '';
+                        if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
+                        else if (w) style = ' style="width:' + w + 'px; height:auto;"';
+                        else if (h) style = ' style="height:' + h + 'px; width:auto;"';
+                        var titleAttr = title ? ' title="' + title + '"' : '';
+                        return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + titleAttr +
+                            ' />';
+                    });
+                html = html.replace(
+                    /!video\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,
+                    function(match, desc, src, title, w, h) {
+                        var style = '';
+                        if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
+                        else if (w) style = ' style="width:' + w + 'px; height:auto;"';
+                        else if (h) style = ' style="height:' + h + 'px; width:auto;"';
+                        var descHtml = desc ? '<div class="video-alt-text">' + desc + '</div>' : '';
+                        var youtubeMatch = src.match(
+                            /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+                        if (youtubeMatch) {
+                            var vid = youtubeMatch[1];
+                            return '<div class="video-placeholder"><span class="video-loading"><i class="fas fa-spinner fa-spin"></i></span><iframe src="https://www.youtube.com/embed/' +
+                                vid + '" frameborder="0" allowfullscreen' + style + '></iframe>' +
+                                descHtml + '</div>';
+                        }
+                        var bilibiliMatch = src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
+                        if (bilibiliMatch) {
+                            var vid = bilibiliMatch[1];
+                            return '<div class="video-placeholder"><span class="video-loading"><i class="fas fa-spinner fa-spin"></i></span><iframe src="https://player.bilibili.com/player.html?bvid=' +
+                                vid + '" frameborder="0" allowfullscreen' + style + '></iframe>' +
+                                descHtml + '</div>';
+                        }
+                        return '<div class="video-placeholder"><video src="' + src + '" controls' + style +
+                            '></video>' + descHtml + '</div>';
+                    });
+                html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+                html = restoreEscapes(html);
+                for (var key in tagMap) {
+                    if (tagMap.hasOwnProperty(key)) {
+                        html = html.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), tagMap[
+                            key
+                        ]);
+                    }
                 }
-                var blockquoteMatch = line.match(/^(>+)\s?(.*)/);
-                if (blockquoteMatch) {
-                    if (inList) flushList();
-                    var quoteLines = [];
-                    var j = i;
-                    while (j < lines.length) {
-                        var qm = lines[j].match(/^((?:>\s*)+)(.*)/);
-                        if (qm) {
-                            var level = (qm[1].match(/>/g) || []).length;
-                            quoteLines.push({ level: level, content: qm[2] });
-                            j++;
-                        } else if (lines[j].trim() === '') {
-                            break;
+                return html;
+            }
+
+            function renderBlock(content) {
+                if (!content) return '';
+                var lines = content.split('\n');
+                var result = '';
+                var inList = false;
+                var listStack = [];
+
+                function flushList() {
+                    if (!inList) return;
+                    var html = '';
+                    for (var i = listStack.length - 1; i >= 0; i--) {
+                        var list = listStack[i];
+                        var tag = list.type === 'ol' ? 'ol' : 'ul';
+                        var cls = list.type === 'task' ? ' class="task-list"' : '';
+                        var startAttr = '';
+                        if (list.type === 'ol' && list.start !== null && list.start !== 1) {
+                            startAttr = ' start="' + list.start + '"';
+                        }
+                        html = '<' + tag + cls + startAttr + '>\n' + list.items.join('\n') + '\n</' + tag + '>\n' +
+                            html;
+                    }
+                    result += html;
+                    inList = false;
+                    listStack = [];
+                }
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i];
+                    if (line.trim() === '') {
+                        if (inList) {
+                            flushList();
+                            result += '<p><br></p>\n';
                         } else {
-                            break;
+                            result += '<p><br></p>\n';
                         }
+                        continue;
                     }
-                    i = j - 1;
+                    var blockquoteMatch = line.match(/^(>+)\s?(.*)/);
+                    if (blockquoteMatch) {
+                        if (inList) flushList();
+                        var quoteLines = [];
+                        var j = i;
+                        while (j < lines.length) {
+                            var qm = lines[j].match(/^((?:>\s*)+)(.*)/);
+                            if (qm) {
+                                var level = (qm[1].match(/>/g) || []).length;
+                                quoteLines.push({ level: level, content: qm[2] });
+                                j++;
+                            } else if (lines[j].trim() === '') {
+                                break;
+                            } else {
+                                break;
+                            }
+                        }
+                        i = j - 1;
 
-                    function processQuotes(quoteLines) {
-                        if (quoteLines.length === 0) return '';
-                        var minLevel = Math.min.apply(null, quoteLines.map(function(q) { return q
-                                .level; }));
+                        function processQuotes(quoteLines) {
+                            if (quoteLines.length === 0) return '';
+                            var minLevel = Math.min.apply(null, quoteLines.map(function(q) { return q
+                                    .level; }));
 
-                        function buildLevel(startIdx, currentLevel) {
-                            var html = '';
-                            var k = startIdx;
-                            while (k < quoteLines.length) {
-                                if (quoteLines[k].level < currentLevel) {
-                                    break;
-                                }
-                                if (quoteLines[k].level === currentLevel) {
-                                    var contentParts = [];
-                                    while (k < quoteLines.length && quoteLines[k].level ===
-                                        currentLevel) {
-                                        contentParts.push(renderInline(quoteLines[k].content));
-                                        k++;
+                            function buildLevel(startIdx, currentLevel) {
+                                var html = '';
+                                var k = startIdx;
+                                while (k < quoteLines.length) {
+                                    if (quoteLines[k].level < currentLevel) {
+                                        break;
                                     }
-                                    html += contentParts.join('<br>');
-                                } else if (quoteLines[k].level > currentLevel) {
-                                    var nextLevel = quoteLines[k].level;
-                                    var nestedResult = buildLevel(k, nextLevel);
-                                    html += nestedResult.html;
-                                    k = nestedResult.newIndex;
+                                    if (quoteLines[k].level === currentLevel) {
+                                        var contentParts = [];
+                                        while (k < quoteLines.length && quoteLines[k].level ===
+                                            currentLevel) {
+                                            contentParts.push(renderInline(quoteLines[k].content));
+                                            k++;
+                                        }
+                                        html += contentParts.join('<br>');
+                                    } else if (quoteLines[k].level > currentLevel) {
+                                        var nextLevel = quoteLines[k].level;
+                                        var nestedResult = buildLevel(k, nextLevel);
+                                        html += nestedResult.html;
+                                        k = nestedResult.newIndex;
+                                    }
                                 }
+                                return { html: '<blockquote>' + html + '</blockquote>', newIndex: k };
                             }
-                            return { html: '<blockquote>' + html + '</blockquote>', newIndex: k };
+                            return buildLevel(0, minLevel).html;
                         }
-                        return buildLevel(0, minLevel).html;
+                        result += processQuotes(quoteLines) + '\n';
+                        continue;
                     }
-                    result += processQuotes(quoteLines) + '\n';
-                    continue;
-                }
-                var headingMatch = line.match(/^(#{1,6})\s+(.*)/);
-                if (headingMatch) {
-                    if (inList) flushList();
-                    var hlevel = headingMatch[1].length;
-                    var htext = headingMatch[2];
-                    result += '<h' + hlevel + '>' + renderInline(htext) + '</h' + hlevel + '>\n';
-                    continue;
-                }
-                if (/^---$/.test(line.trim()) || /^\*\*\*$/.test(line.trim()) || /^___$/.test(line.trim())) {
-                    if (inList) flushList();
-                    result += '<hr />\n';
-                    continue;
-                }
-                var listMatch = line.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
-                if (listMatch) {
-                    var indent = listMatch[1].length;
-                    var marker = listMatch[2];
-                    var listContent = listMatch[3];
-                    var isTask = listContent.match(/^\[([ x])\]\s+(.*)/);
-                    var taskChecked = false;
-                    var taskContent = listContent;
-                    if (isTask) {
-                        taskChecked = isTask[1] === 'x';
-                        taskContent = isTask[2];
+                    var headingMatch = line.match(/^(#{1,6})\s+(.*)/);
+                    if (headingMatch) {
+                        if (inList) flushList();
+                        var hlevel = headingMatch[1].length;
+                        var htext = headingMatch[2];
+                        result += '<h' + hlevel + '>' + renderInline(htext) + '</h' + hlevel + '>\n';
+                        continue;
                     }
-                    var isOrdered = marker.match(/^\d+\.$/);
-                    var listType = isOrdered ? 'ol' : (isTask ? 'task' : 'ul');
-                    var currentLevel = Math.floor(indent / 2);
-                    if (!inList) {
-                        inList = true;
-                        listStack = [];
-                        listStack.push({
-                            type: listType,
-                            items: [],
-                            level: currentLevel,
-                            start: isOrdered ? parseInt(marker) : null
-                        });
-                    } else {
-                        while (listStack.length > 0 && listStack[listStack.length - 1].level >=
-                            currentLevel) {
-                            var last = listStack.pop();
-                            if (listStack.length > 0 && last.items.length > 0) {
-                                listStack[listStack.length - 1].items.push(last.items.join(''));
-                            }
+                    if (/^---$/.test(line.trim()) || /^\*\*\*$/.test(line.trim()) || /^___$/.test(line.trim())) {
+                        if (inList) flushList();
+                        result += '<hr />\n';
+                        continue;
+                    }
+                    var listMatch = line.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
+                    if (listMatch) {
+                        var indent = listMatch[1].length;
+                        var marker = listMatch[2];
+                        var listContent = listMatch[3];
+                        var isTask = listContent.match(/^\[([ x])\]\s+(.*)/);
+                        var taskChecked = false;
+                        var taskContent = listContent;
+                        if (isTask) {
+                            taskChecked = isTask[1] === 'x';
+                            taskContent = isTask[2];
                         }
-                        if (listStack.length === 0 || listStack[listStack.length - 1].level < currentLevel) {
+                        var isOrdered = marker.match(/^\d+\.$/);
+                        var listType = isOrdered ? 'ol' : (isTask ? 'task' : 'ul');
+                        var currentLevel = Math.floor(indent / 2);
+                        if (!inList) {
+                            inList = true;
+                            listStack = [];
                             listStack.push({
                                 type: listType,
                                 items: [],
                                 level: currentLevel,
                                 start: isOrdered ? parseInt(marker) : null
                             });
-                        }
-                    }
-                    var itemContent;
-                    if (isTask) {
-                        itemContent = '<li data-checked="' + (taskChecked ? 'true' : 'false') + '">' +
-                            renderInline(taskContent) + '</li>';
-                    } else {
-                        itemContent = '<li>' + renderInline(listContent) + '</li>';
-                    }
-                    if (listStack.length > 0) {
-                        var currentList = listStack[listStack.length - 1];
-                        if (currentList.type !== listType && currentList.type !== 'task') {
-                            var newList = {
-                                type: listType,
-                                items: [itemContent],
-                                level: currentLevel + 1,
-                                start: isOrdered ? parseInt(marker) : null
-                            };
-                            listStack.push(newList);
                         } else {
-                            currentList.items.push(itemContent);
-                        }
-                    }
-                    var subItems = [];
-                    var k = i + 1;
-                    while (k < lines.length) {
-                        var nextLine2 = lines[k];
-                        var nextMatch2 = nextLine2.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
-                        if (nextMatch2 && parseInt(nextMatch2[1].length) > indent) {
-                            var subContent = nextMatch2[3];
-                            var subIsTask = subContent.match(/^\[([ x])\]\s+(.*)/);
-                            var subHtml = '';
-                            if (subIsTask) {
-                                var subChecked = subIsTask[1] === 'x';
-                                subHtml = '<li data-checked="' + (subChecked ? 'true' : 'false') +
-                                    '">' + renderInline(subIsTask[2]) + '</li>';
-                            } else {
-                                subHtml = '<li>' + renderInline(subContent) + '</li>';
+                            while (listStack.length > 0 && listStack[listStack.length - 1].level > currentLevel) {
+                                var last = listStack.pop();
+                                if (listStack.length > 0 && last.items.length > 0) {
+                                    listStack[listStack.length - 1].items.push(last.items.join(''));
+                                } else if (listStack.length === 0 && last.items.length > 0) {
+                                    result += '<' + (last.type === 'ol' ? 'ol' : 'ul') + '>\n' + last.items.join(
+                                        '\n') + '\n</' + (last.type === 'ol' ? 'ol' : 'ul') + '>\n';
+                                }
                             }
-                            subItems.push(subHtml);
-                            k++;
+                            if (listStack.length === 0 || listStack[listStack.length - 1].level < currentLevel) {
+                                listStack.push({
+                                    type: listType,
+                                    items: [],
+                                    level: currentLevel,
+                                    start: isOrdered ? parseInt(marker) : null
+                                });
+                            }
+                        }
+                        var itemContent;
+                        if (isTask) {
+                            itemContent = '<li data-checked="' + (taskChecked ? 'true' : 'false') + '">' +
+                                renderInline(taskContent) + '</li>';
                         } else {
-                            break;
+                            itemContent = '<li>' + renderInline(listContent) + '</li>';
                         }
-                    }
-                    if (subItems.length > 0) {
-                        var hasCheckbox = subItems.some(function(item) {
-                            return item.includes('data-checked');
-                        });
-                        var subHtml2 = '<ul class="' + (hasCheckbox ? 'task-list' : '') + '">\n' + subItems
-                            .join('\n') + '\n</ul>';
                         if (listStack.length > 0) {
-                            var currentList2 = listStack[listStack.length - 1];
-                            var lastItem2 = currentList2.items[currentList2.items.length - 1];
-                            currentList2.items[currentList2.items.length - 1] = lastItem2.replace(
-                                /<\/li>$/, subHtml2 + '</li>');
+                            var currentList = listStack[listStack.length - 1];
+                            if (currentList.type !== listType && currentList.type !== 'task') {
+                                var newList = {
+                                    type: listType,
+                                    items: [itemContent],
+                                    level: currentLevel + 1,
+                                    start: isOrdered ? parseInt(marker) : null
+                                };
+                                listStack.push(newList);
+                            } else {
+                                currentList.items.push(itemContent);
+                            }
                         }
+                        var subItems = [];
+                        var k = i + 1;
+                        while (k < lines.length) {
+                            var nextLine2 = lines[k];
+                            var nextMatch2 = nextLine2.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
+                            if (nextMatch2 && parseInt(nextMatch2[1].length) > indent) {
+                                var subContent = nextMatch2[3];
+                                var subIsTask = subContent.match(/^\[([ x])\]\s+(.*)/);
+                                var subHtml = '';
+                                if (subIsTask) {
+                                    var subChecked = subIsTask[1] === 'x';
+                                    subHtml = '<li data-checked="' + (subChecked ? 'true' : 'false') +
+                                        '">' + renderInline(subIsTask[2]) + '</li>';
+                                } else {
+                                    subHtml = '<li>' + renderInline(subContent) + '</li>';
+                                }
+                                subItems.push(subHtml);
+                                k++;
+                            } else {
+                                break;
+                            }
+                        }
+                        if (subItems.length > 0) {
+                            var hasCheckbox = subItems.some(function(item) {
+                                return item.includes('data-checked');
+                            });
+                            var subHtml2 = '<ul class="' + (hasCheckbox ? 'task-list' : '') + '">\n' + subItems
+                                .join('\n') + '\n</ul>';
+                            if (listStack.length > 0) {
+                                var currentList2 = listStack[listStack.length - 1];
+                                var lastItem2 = currentList2.items[currentList2.items.length - 1];
+                                currentList2.items[currentList2.items.length - 1] = lastItem2.replace(
+                                    /<\/li>$/, subHtml2 + '</li>');
+                            }
+                        }
+                        i = k - 1;
+                        continue;
                     }
-                    i = k - 1;
-                    continue;
+                    if (inList) {
+                        flushList();
+                    }
+                    var dlMatch = line.match(/^([^:]+):\s+(.*)/);
+                    if (dlMatch && i + 1 < lines.length && lines[i + 1].match(/^:\s+/)) {
+                        var term = renderInline(dlMatch[1]);
+                        var defs = [];
+                        i++;
+                        while (i < lines.length && lines[i].match(/^:\s+/)) {
+                            defs.push(renderInline(lines[i].replace(/^:\s+/, '')));
+                            i++;
+                        }
+                        while (i < lines.length && lines[i].trim() === '') i++;
+                        var ddHtml = defs.map(function(d) { return '<dd>' + d + '</dd>'; }).join('');
+                        result += '<dl><dt>' + term + '</dt>' + ddHtml + '</dl>\n';
+                        continue;
+                    }
+                    result += '<p>' + renderInline(line) + '</p>\n';
                 }
                 if (inList) {
                     flushList();
                 }
-                var dlMatch = line.match(/^([^:]+):\s+(.*)/);
-                if (dlMatch && i + 1 < lines.length && lines[i + 1].match(/^:\s+/)) {
-                    var term = renderInline(dlMatch[1]);
-                    var defs = [];
-                    i++;
-                    while (i < lines.length && lines[i].match(/^:\s+/)) {
-                        defs.push(renderInline(lines[i].replace(/^:\s+/, '')));
-                        i++;
-                    }
-                    while (i < lines.length && lines[i].trim() === '') i++;
-                    var ddHtml = defs.map(function(d) { return '<dd>' + d + '</dd>'; }).join('');
-                    result += '<dl><dt>' + term + '</dt>' + ddHtml + '</dl>\n';
-                    continue;
+                return result;
+            }
+            var codeBlockRegex = /^```(\w*)\s*([\s\S]*?)```/gm;
+            var codeBlocks = [];
+            var codeIndex = 0;
+            md = md.replace(codeBlockRegex, function(match, lang, code) {
+                var id = 'CODEBLOCK_' + (codeIndex++);
+                codeBlocks.push({ id: id, lang: lang, code: code });
+                return id;
+            });
+            var html = renderBlock(md);
+            for (var b = 0; b < codeBlocks.length; b++) {
+                var block = codeBlocks[b];
+                var copyId = 'code-' + Date.now() + '-' + b;
+                var lines2 = block.code.split('\n');
+                var lineCount = lines2.length;
+                var maxLineLength = 0;
+                var totalChars = 0;
+                for (var j2 = 0; j2 < lines2.length; j2++) {
+                    var lineLen = lines2[j2].length;
+                    if (lineLen > maxLineLength) maxLineLength = lineLen;
+                    totalChars += lineLen;
                 }
-                result += '<p>' + renderInline(line) + '</p>\n';
-            }
-            if (inList) {
-                flushList();
-            }
-            return result;
-        }
-        var codeBlockRegex = /^```(\w*)\s*([\s\S]*?)```/gm;
-        var codeBlocks = [];
-        var codeIndex = 0;
-        md = md.replace(codeBlockRegex, function(match, lang, code) {
-            var id = 'CODEBLOCK_' + (codeIndex++);
-            codeBlocks.push({ id: id, lang: lang, code: code });
-            return id;
-        });
-        var html = renderBlock(md);
-        for (var b = 0; b < codeBlocks.length; b++) {
-            var block = codeBlocks[b];
-            var copyId = 'code-' + Date.now() + '-' + b;
-            var lines2 = block.code.split('\n');
-            var lineCount = lines2.length;
-            var maxLineLength = 0;
-            var totalChars = 0;
-            for (var j2 = 0; j2 < lines2.length; j2++) {
-                var lineLen = lines2[j2].length;
-                if (lineLen > maxLineLength) maxLineLength = lineLen;
-                totalChars += lineLen;
-            }
-            totalChars += lineCount > 0 ? lineCount - 1 : 0;
-            var codeHtml = '';
-            for (var j3 = 0; j3 < lines2.length; j3++) {
-                var lineNum = j3 + 1;
-                var escapedLine = escapeHtml(lines2[j3]);
-                codeHtml += '<span class="code-line"><span class="line-number">' + lineNum +
-                    '</span><span class="hljs">' + escapedLine + '</span></span>';
-            }
-            var statsHtml = '<span>' + lineCount + ' 行</span> · <span>' + maxLineLength + ' 列</span> · <span>' +
-                totalChars + ' 字符</span>';
-            var codeBlockHtml = `
+                totalChars += lineCount > 0 ? lineCount - 1 : 0;
+                var codeHtml = '';
+                for (var j3 = 0; j3 < lines2.length; j3++) {
+                    var lineNum = j3 + 1;
+                    var escapedLine = escapeHtml(lines2[j3]);
+                    codeHtml += '<span class="code-line"><span class="line-number">' + lineNum +
+                        '</span><span class="hljs">' + escapedLine + '</span></span>';
+                }
+                var statsHtml = '<span>' + lineCount + ' 行</span> · <span>' + maxLineLength + ' 列</span> · <span>' +
+                    totalChars + ' 字符</span>';
+                var codeBlockHtml = `
                     <div class="code-block-wrapper" id="cbw-${copyId}">
                         <div class="code-block-header">
                             <span class="lang-label">${escapeHtml(block.lang || 'text')}</span>
@@ -2598,279 +2600,279 @@
                         </div>
                     </div>
                 `;
-            html = html.replace(block.id, codeBlockHtml);
+                html = html.replace(block.id, codeBlockHtml);
+            }
+            html = html.replace(/\n{3,}/g, '\n\n');
+            return html;
         }
-        html = html.replace(/\n{3,}/g, '\n\n');
-        return html;
-    }
 
-    function scrollToFootnote(id) {
-        var el = document.getElementById(id);
-        if (!el) return;
-        var targetY = el.getBoundingClientRect().top + window.scrollY - 80;
-        var startY = window.scrollY || window.pageYOffset;
-        var distance = targetY - startY;
-        if (Math.abs(distance) < 5) return;
-        var duration = 350;
-        var startTime = performance.now();
+        function scrollToFootnote(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            var targetY = el.getBoundingClientRect().top + window.scrollY - 80;
+            var startY = window.scrollY || window.pageYOffset;
+            var distance = targetY - startY;
+            if (Math.abs(distance) < 5) return;
+            var duration = 350;
+            var startTime = performance.now();
 
-        function step(currentTime) {
-            var elapsed = currentTime - startTime;
-            var progress = Math.min(elapsed / duration, 1);
-            var ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-            var nextY = startY + distance * ease;
-            window.scrollTo(0, nextY);
-            if (progress < 1) {
-                requestAnimationFrame(step);
-            } else {
-                window.scrollTo(0, targetY);
-                if (window.history && window.history.replaceState) {
-                    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+            function step(currentTime) {
+                var elapsed = currentTime - startTime;
+                var progress = Math.min(elapsed / duration, 1);
+                var ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+                var nextY = startY + distance * ease;
+                window.scrollTo(0, nextY);
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    window.scrollTo(0, targetY);
+                    if (window.history && window.history.replaceState) {
+                        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+                    }
                 }
             }
+            requestAnimationFrame(step);
         }
-        requestAnimationFrame(step);
-    }
 
-    function initImageLazyLoad() {
-        var placeholders = document.querySelectorAll('.img-placeholder');
-        placeholders.forEach(function(container) {
-            var img = container.querySelector('img');
-            if (!img) return;
-            if (img.complete && img.naturalWidth !== 0) {
-                container.classList.add('loaded');
-                img.classList.add('loaded');
-                var loading = container.querySelector('.img-loading');
-                if (loading) loading.style.display = 'none';
-                return;
-            }
-            img.addEventListener('load', function() {
-                container.classList.add('loaded');
-                img.classList.add('loaded');
-                var loading = container.querySelector('.img-loading');
-                if (loading) loading.style.display = 'none';
+        function initImageLazyLoad() {
+            var placeholders = document.querySelectorAll('.img-placeholder');
+            placeholders.forEach(function(container) {
+                var img = container.querySelector('img');
+                if (!img) return;
+                if (img.complete && img.naturalWidth !== 0) {
+                    container.classList.add('loaded');
+                    img.classList.add('loaded');
+                    var loading = container.querySelector('.img-loading');
+                    if (loading) loading.style.display = 'none';
+                    return;
+                }
+                img.addEventListener('load', function() {
+                    container.classList.add('loaded');
+                    img.classList.add('loaded');
+                    var loading = container.querySelector('.img-loading');
+                    if (loading) loading.style.display = 'none';
+                });
+                img.addEventListener('error', function() {
+                    container.classList.add('loaded');
+                    var loading = container.querySelector('.img-loading');
+                    if (loading) loading.style.display = 'none';
+                });
             });
-            img.addEventListener('error', function() {
-                container.classList.add('loaded');
-                var loading = container.querySelector('.img-loading');
-                if (loading) loading.style.display = 'none';
-            });
-        });
-    }
+        }
 
-    function initVideoLazyLoad() {
-        var placeholders = document.querySelectorAll('.video-placeholder');
-        placeholders.forEach(function(container) {
-            var iframe = container.querySelector('iframe');
-            if (!iframe) return;
-            var loadingEl = container.querySelector('.video-loading');
-            iframe.addEventListener('load', function() {
-                container.classList.add('loaded');
-                if (loadingEl) loadingEl.style.display = 'none';
-            });
-            setTimeout(function() {
-                if (!container.classList.contains('loaded')) {
+        function initVideoLazyLoad() {
+            var placeholders = document.querySelectorAll('.video-placeholder');
+            placeholders.forEach(function(container) {
+                var iframe = container.querySelector('iframe');
+                if (!iframe) return;
+                var loadingEl = container.querySelector('.video-loading');
+                iframe.addEventListener('load', function() {
                     container.classList.add('loaded');
                     if (loadingEl) loadingEl.style.display = 'none';
-                }
-            }, 8000);
-        });
-    }
-
-    function compressImage(file, maxSize, quality) {
-        return new Promise(function(resolve) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                var img = new Image();
-                img.onload = function() {
-                    var canvas = document.createElement('canvas');
-                    var w = img.width,
-                        h = img.height;
-                    if (w > h) {
-                        if (w > maxSize) { h = h * maxSize / w;
-                            w = maxSize; }
-                    } else {
-                        if (h > maxSize) { w = w * maxSize / h;
-                            h = maxSize; }
+                });
+                setTimeout(function() {
+                    if (!container.classList.contains('loaded')) {
+                        container.classList.add('loaded');
+                        if (loadingEl) loadingEl.style.display = 'none';
                     }
-                    canvas.width = w;
-                    canvas.height = h;
-                    var ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
-                    canvas.toBlob(function(blob) {
-                        resolve(new File([blob], file.name, { type: 'image/jpeg' }));
-                    }, 'image/jpeg', quality);
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-    }
+                }, 8000);
+            });
+        }
 
-    function initWaline(articleId) {
-        if (walineInitialized) return;
-        var commentEl = document.getElementById('waline-comments');
-        if (!commentEl) return;
-        walineInitialized = true;
-        import('https://unpkg.com/@waline/client@v3/dist/waline.js')
-            .then(function(module) {
-                var init = module.init;
-                init({
-                    el: '#waline-comments',
-                    serverURL: 'https://comment.cuizi.top',
-                    lang: 'zh-CN',
-                    path: '/article/' + articleId,
-                    dark: 'body.dark',
-                    imageUploader: function(file) {
-                        return new Promise(function(resolve, reject) {
-                            var uploadFile = file;
-                            var shouldCompress = !['image/gif', 'image/svg+xml'].includes(file
-                                .type);
-                            if (shouldCompress) {
-                                compressImage(file, 720, 0.8).then(function(compressed) {
-                                    uploadFile = compressed;
+        function compressImage(file, maxSize, quality) {
+            return new Promise(function(resolve) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var img = new Image();
+                    img.onload = function() {
+                        var canvas = document.createElement('canvas');
+                        var w = img.width,
+                            h = img.height;
+                        if (w > h) {
+                            if (w > maxSize) { h = h * maxSize / w;
+                                w = maxSize; }
+                        } else {
+                            if (h > maxSize) { w = w * maxSize / h;
+                                h = maxSize; }
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        canvas.toBlob(function(blob) {
+                            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                        }, 'image/jpeg', quality);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function initWaline(articleId) {
+            if (walineInitialized) return;
+            var commentEl = document.getElementById('waline-comments');
+            if (!commentEl) return;
+            walineInitialized = true;
+            import('https://unpkg.com/@waline/client@v3/dist/waline.js')
+                .then(function(module) {
+                    var init = module.init;
+                    init({
+                        el: '#waline-comments',
+                        serverURL: 'https://comment.cuizi.top',
+                        lang: 'zh-CN',
+                        path: '/article/' + articleId,
+                        dark: 'body.dark',
+                        imageUploader: function(file) {
+                            return new Promise(function(resolve, reject) {
+                                var uploadFile = file;
+                                var shouldCompress = !['image/gif', 'image/svg+xml'].includes(file
+                                    .type);
+                                if (shouldCompress) {
+                                    compressImage(file, 720, 0.8).then(function(compressed) {
+                                        uploadFile = compressed;
+                                        var reader = new FileReader();
+                                        reader.onload = function() {
+                                            var base64 = reader.result.split(',')[1];
+                                            fetch(
+                                                    'https://comment.cuizi.top/api/upload', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ image: base64,
+                                                            filename: file.name })
+                                                    }).then(function(resp) { return resp
+                                                .json(); }).then(function(data) {
+                                                resolve(data.url);
+                                            }).catch(reject);
+                                        };
+                                        reader.readAsDataURL(uploadFile);
+                                    }).catch(reject);
+                                } else {
                                     var reader = new FileReader();
                                     reader.onload = function() {
                                         var base64 = reader.result.split(',')[1];
-                                        fetch(
-                                                'https://comment.cuizi.top/api/upload', {
-                                                    method: 'POST',
-                                                    headers: { 'Content-Type': 'application/json' },
-                                                    body: JSON.stringify({ image: base64,
-                                                        filename: file.name })
-                                                }).then(function(resp) { return resp
-                                            .json(); }).then(function(data) {
-                                            resolve(data.url);
-                                        }).catch(reject);
+                                        fetch('https://comment.cuizi.top/api/upload', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ image: base64,
+                                                filename: file.name })
+                                        }).then(function(resp) { return resp.json(); }).then(
+                                            function(data) {
+                                                resolve(data.url);
+                                            }).catch(reject);
                                     };
                                     reader.readAsDataURL(uploadFile);
-                                }).catch(reject);
-                            } else {
-                                var reader = new FileReader();
-                                reader.onload = function() {
-                                    var base64 = reader.result.split(',')[1];
-                                    fetch('https://comment.cuizi.top/api/upload', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ image: base64,
-                                            filename: file.name })
-                                    }).then(function(resp) { return resp.json(); }).then(
-                                        function(data) {
-                                            resolve(data.url);
-                                        }).catch(reject);
-                                };
-                                reader.readAsDataURL(uploadFile);
-                            }
-                        });
-                    },
-                    emoji: ['https://unpkg.com/@waline/emojis@1.4.0/alus',
-                        'https://unpkg.com/@waline/emojis@1.4.0/bilibili',
-                        'https://unpkg.com/@waline/emojis@1.4.0/bmoji',
-                        'https://unpkg.com/@waline/emojis@1.4.0/qq',
-                        'https://unpkg.com/@waline/emojis@1.4.0/tieba'
-                    ],
-                    requiredMeta: ['nick', 'mail']
+                                }
+                            });
+                        },
+                        emoji: ['https://unpkg.com/@waline/emojis@1.4.0/alus',
+                            'https://unpkg.com/@waline/emojis@1.4.0/bilibili',
+                            'https://unpkg.com/@waline/emojis@1.4.0/bmoji',
+                            'https://unpkg.com/@waline/emojis@1.4.0/qq',
+                            'https://unpkg.com/@waline/emojis@1.4.0/tieba'
+                        ],
+                        requiredMeta: ['nick', 'mail']
+                    });
+                })
+                .catch(function(err) {
+                    console.error('Waline 加载失败:', err);
+                    walineInitialized = false;
                 });
-            })
-            .catch(function(err) {
-                console.error('Waline 加载失败:', err);
-                walineInitialized = false;
+        }
+
+        function generateQRCanvas(text, size) {
+            return new Promise(function(resolve, reject) {
+                var img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = size;
+                    canvas.height = size;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, size, size);
+                    resolve(canvas);
+                };
+                img.onerror = function() {
+                    reject(new Error('二维码图片加载失败'));
+                };
+                img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&data=' +
+                    encodeURIComponent(text);
             });
-    }
+        }
 
-    function generateQRCanvas(text, size) {
-        return new Promise(function(resolve, reject) {
-            var img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = function() {
-                var canvas = document.createElement('canvas');
-                canvas.width = size;
-                canvas.height = size;
-                var ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, size, size);
-                resolve(canvas);
-            };
-            img.onerror = function() {
-                reject(new Error('二维码图片加载失败'));
-            };
-            img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size + '&data=' +
-                encodeURIComponent(text);
-        });
-    }
-
-    function renderArticle() {
-        var id = getParam('id');
-        if (id === null) {
-            appContent.innerHTML = `
+        function renderArticle() {
+            var id = getParam('id');
+            if (id === null) {
+                appContent.innerHTML = `
                     <div class="not-found">
                         <i class="far fa-frown"></i>
                         <p>缺少文章 ID</p>
                         <p style="font-size:0.85rem; margin-top:0.5rem;">请从文章列表点击进入</p>
                     </div>
                 `;
-            return;
-        }
-        fetch('wenzhang.json', { cache: 'no-cache' })
-            .then(function(response) {
-                if (!response.ok) throw new Error('文件不存在');
-                return response.json();
-            })
-            .then(function(data) {
-                var articles = data.announcements || [];
-                var idx = parseInt(id);
-                if (isNaN(idx) || idx < 0 || idx >= articles.length) {
-                    appContent.innerHTML = `
+                return;
+            }
+            fetch('wenzhang.json', { cache: 'no-cache' })
+                .then(function(response) {
+                    if (!response.ok) throw new Error('文件不存在');
+                    return response.json();
+                })
+                .then(function(data) {
+                    var articles = data.announcements || [];
+                    var idx = parseInt(id);
+                    if (isNaN(idx) || idx < 0 || idx >= articles.length) {
+                        appContent.innerHTML = `
                             <div class="not-found">
                                 <i class="far fa-frown"></i>
                                 <p>文章不存在</p>
                                 <p style="font-size:0.85rem; margin-top:0.5rem;">可能已被删除</p>
                             </div>
                         `;
-                    return;
-                }
-                var article = articles[idx];
-                if (article.delete === true) {
-                    appContent.innerHTML = `
+                        return;
+                    }
+                    var article = articles[idx];
+                    if (article.delete === true) {
+                        appContent.innerHTML = `
                             <div class="not-found">
                                 <i class="far fa-frown"></i>
                                 <p>文章不存在</p>
                                 <p style="font-size:0.85rem; margin-top:0.5rem;">可能已被删除</p>
                             </div>
                         `;
-                    return;
-                }
-                currentArticle = article;
-                document.title = (currentArticle.title || '文章详情') + ' · ks';
-                var title = currentArticle.title || '无标题';
-                var date = currentArticle.date || '';
-                var content = currentArticle.content || '（暂无内容）';
-                var tags = currentArticle.tags || [];
-                var renderedContent = renderMarkdown(content);
-                renderedContent = renderedContent.replace(/<img\s+src="([^"]*)"\s+alt="([^"]*)"([^>]*)>/g,
-                    function(match, src, alt, rest) {
-                        var altText = alt || '';
-                        var altHtml = altText ? '<span class="img-alt-text">' + altText + '</span>' : '';
-                        return '<div class="img-placeholder"><span class="img-loading"><i class="fas fa-spinner fa-spin"></i></span><img src="' +
-                            src + '" alt="' + alt + '"' + rest + '>' + altHtml + '</div>';
-                    });
-                var wordCount = countWords(content);
-                var readTime = calculateReadTime(wordCount);
-                var displayWord = formatWordCount(wordCount);
-                var displayTime = formatReadTime(readTime);
-                var preview = getPlainPreview(content, 80);
-                var articleUrl = window.location.origin + window.location.pathname + '?id=' + idx;
-                currentShareText = title + '：' + preview + '\n查看完整内容？请访问：' + articleUrl;
-                var tagsHtml = '';
-                if (tags.length > 0) {
-                    tagsHtml = '<div class="detail-tags">';
-                    tags.forEach(function(tag) {
-                        var tagName = escapeHtml(tag);
-                        tagsHtml += '<span class="tag" data-tag="' + tagName +
-                            '"><i class="fas fa-tag"></i> ' + tagName + '</span>';
-                    });
-                    tagsHtml += '</div>';
-                }
-                appContent.innerHTML = `
+                        return;
+                    }
+                    currentArticle = article;
+                    document.title = (currentArticle.title || '文章详情') + ' · ks';
+                    var title = currentArticle.title || '无标题';
+                    var date = currentArticle.date || '';
+                    var content = currentArticle.content || '（暂无内容）';
+                    var tags = currentArticle.tags || [];
+                    var renderedContent = renderMarkdown(content);
+                    renderedContent = renderedContent.replace(/<img\s+src="([^"]*)"\s+alt="([^"]*)"([^>]*)>/g,
+                        function(match, src, alt, rest) {
+                            var altText = alt || '';
+                            var altHtml = altText ? '<span class="img-alt-text">' + altText + '</span>' : '';
+                            return '<div class="img-placeholder"><span class="img-loading"><i class="fas fa-spinner fa-spin"></i></span><img src="' +
+                                src + '" alt="' + alt + '"' + rest + '>' + altHtml + '</div>';
+                        });
+                    var wordCount = countWords(content);
+                    var readTime = calculateReadTime(wordCount);
+                    var displayWord = formatWordCount(wordCount);
+                    var displayTime = formatReadTime(readTime);
+                    var preview = getPlainPreview(content, 80);
+                    var articleUrl = window.location.origin + window.location.pathname + '?id=' + idx;
+                    currentShareText = title + '：' + preview + '\n查看完整内容？请访问：' + articleUrl;
+                    var tagsHtml = '';
+                    if (tags.length > 0) {
+                        tagsHtml = '<div class="detail-tags">';
+                        tags.forEach(function(tag) {
+                            var tagName = escapeHtml(tag);
+                            tagsHtml += '<span class="tag" data-tag="' + tagName +
+                                '"><i class="fas fa-tag"></i> ' + tagName + '</span>';
+                        });
+                        tagsHtml += '</div>';
+                    }
+                    appContent.innerHTML = `
                         <div class="article-detail">
                             <h1 class="detail-title">${escapeHtml(title)}</h1>
                             <span class="detail-date">${date ? escapeHtml(date) + '  ·  ' : ''}${displayTime} · ${displayWord}</span>
@@ -2879,87 +2881,87 @@
                             <div class="detail-content">${renderedContent}</div>
                         </div>
                     `;
-                document.querySelectorAll('.code-line .hljs').forEach(function(el) {
-                    try {
-                        hljs.highlightElement(el);
-                    } catch (e) {}
-                });
-                initImageLazyLoad();
-                initVideoLazyLoad();
-                var images = document.querySelectorAll('.detail-content .img-placeholder img');
-                var allImages = [];
-                images.forEach(function(img) {
-                    var src = img.getAttribute('src');
-                    var alt = img.getAttribute('alt') || '';
-                    if (src) {
-                        allImages.push({ src: src, alt: alt, el: img });
-                    }
-                });
-                lbImageData = allImages;
-                images.forEach(function(img, index) {
-                    img.style.cursor = 'pointer';
-                    img.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        openLightbox(index);
+                    document.querySelectorAll('.code-line .hljs').forEach(function(el) {
+                        try {
+                            hljs.highlightElement(el);
+                        } catch (e) {}
                     });
-                });
-                setTimeout(updateReadingProgress, 100);
-                generateShareImage();
-                initWaline(id);
-            })
-            .catch(function() {
-                appContent.innerHTML = `
+                    initImageLazyLoad();
+                    initVideoLazyLoad();
+                    var images = document.querySelectorAll('.detail-content .img-placeholder img');
+                    var allImages = [];
+                    images.forEach(function(img) {
+                        var src = img.getAttribute('src');
+                        var alt = img.getAttribute('alt') || '';
+                        if (src) {
+                            allImages.push({ src: src, alt: alt, el: img });
+                        }
+                    });
+                    lbImageData = allImages;
+                    images.forEach(function(img, index) {
+                        img.style.cursor = 'pointer';
+                        img.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            openLightbox(index);
+                        });
+                    });
+                    setTimeout(updateReadingProgress, 100);
+                    generateShareImage();
+                    initWaline(id);
+                })
+                .catch(function() {
+                    appContent.innerHTML = `
                         <div class="not-found">
                             <i class="far fa-frown"></i>
                             <p>加载文章数据失败</p>
                             <p style="font-size:0.85rem; margin-top:0.5rem;">请确保 wenzhang.json 文件存在</p>
                         </div>
                     `;
-            });
-    }
-    var lbProgressEl = null;
-    var lbProgressBarEl = null;
-
-    function createLbProgress() {
-        if (document.querySelector('.lightbox-progress')) return;
-        var div = document.createElement('div');
-        div.className = 'lightbox-progress';
-        div.innerHTML = '<div class="lb-progress-bar"></div>';
-        document.body.appendChild(div);
-        lbProgressEl = div;
-        lbProgressBarEl = div.querySelector('.lb-progress-bar');
-    }
-
-    function updateLbProgress(value) {
-        if (!lbProgressBarEl) return;
-        lbProgressBarEl.style.width = value + '%';
-    }
-
-    function showLbProgress(show) {
-        if (!lbProgressEl) return;
-        if (show) {
-            lbProgressEl.classList.add('active');
-        } else {
-            lbProgressEl.classList.remove('active');
+                });
         }
-    }
+        var lbProgressEl = null;
+        var lbProgressBarEl = null;
 
-    function resetLbProgress() {
-        if (lbProgressBarEl) {
-            lbProgressBarEl.style.width = '0%';
+        function createLbProgress() {
+            if (document.querySelector('.lightbox-progress')) return;
+            var div = document.createElement('div');
+            div.className = 'lightbox-progress';
+            div.innerHTML = '<div class="lb-progress-bar"></div>';
+            document.body.appendChild(div);
+            lbProgressEl = div;
+            lbProgressBarEl = div.querySelector('.lb-progress-bar');
         }
-    }
 
-    function openLightbox(index) {
-        if (lbImageData.length === 0 || lbIsOpen) return;
-        lbIsOpen = true;
-        currentLbIndex = index;
-        createLbProgress();
-        var existing = document.querySelector('.lightbox-overlay');
-        if (existing) existing.remove();
-        var overlay = document.createElement('div');
-        overlay.className = 'lightbox-overlay';
-        overlay.innerHTML = `
+        function updateLbProgress(value) {
+            if (!lbProgressBarEl) return;
+            lbProgressBarEl.style.width = value + '%';
+        }
+
+        function showLbProgress(show) {
+            if (!lbProgressEl) return;
+            if (show) {
+                lbProgressEl.classList.add('active');
+            } else {
+                lbProgressEl.classList.remove('active');
+            }
+        }
+
+        function resetLbProgress() {
+            if (lbProgressBarEl) {
+                lbProgressBarEl.style.width = '0%';
+            }
+        }
+
+        function openLightbox(index) {
+            if (lbImageData.length === 0 || lbIsOpen) return;
+            lbIsOpen = true;
+            currentLbIndex = index;
+            createLbProgress();
+            var existing = document.querySelector('.lightbox-overlay');
+            if (existing) existing.remove();
+            var overlay = document.createElement('div');
+            overlay.className = 'lightbox-overlay';
+            overlay.innerHTML = `
                 <button class="lightbox-close">&times;</button>
                 <button class="lightbox-nav prev" id="lbPrev"><i class="fas fa-chevron-left"></i></button>
                 <button class="lightbox-nav next" id="lbNext"><i class="fas fa-chevron-right"></i></button>
@@ -2972,314 +2974,272 @@
                 </div>
                 <div class="lightbox-counter"></div>
             `;
-        document.body.appendChild(overlay);
-        document.body.style.overflow = 'hidden';
-        var scale = 1;
-        var translateX = 0;
-        var translateY = 0;
-        var isDragging = false;
-        var mouseDown = false;
-        var mouseStartX = 0,
-            mouseStartY = 0;
-        var mouseLastX = 0,
-            mouseLastY = 0;
-        var touchStartDist = 0,
-            touchStartScale = 1;
-        var touchStartX = 0,
-            touchStartY = 0;
-        var touchLastX = 0,
-            touchLastY = 0;
-        var imgWrapper = overlay.querySelector('.lightbox-img-wrapper');
-        var img = overlay.querySelector('img');
-        var altEl = overlay.querySelector('.lightbox-alt');
-        var counterEl = overlay.querySelector('.lightbox-counter');
-        var prevBtn = overlay.querySelector('.lightbox-nav.prev');
-        var nextBtn = overlay.querySelector('.lightbox-nav.next');
-        var playBtn = overlay.querySelector('.lightbox-play');
-        var closeBtn = overlay.querySelector('.lightbox-close');
-        var playIntervalId = null;
-        var progressAnimId = null;
-        var PLAY_DELAY = 3000;
+            document.body.appendChild(overlay);
+            document.body.style.overflow = 'hidden';
+            var scale = 1;
+            var translateX = 0;
+            var translateY = 0;
+            var isDragging = false;
+            var mouseDown = false;
+            var mouseStartX = 0,
+                mouseStartY = 0;
+            var mouseLastX = 0,
+                mouseLastY = 0;
+            var touchStartDist = 0,
+                touchStartScale = 1;
+            var touchStartX = 0,
+                touchStartY = 0;
+            var touchLastX = 0,
+                touchLastY = 0;
+            var imgWrapper = overlay.querySelector('.lightbox-img-wrapper');
+            var img = overlay.querySelector('img');
+            var altEl = overlay.querySelector('.lightbox-alt');
+            var counterEl = overlay.querySelector('.lightbox-counter');
+            var prevBtn = overlay.querySelector('.lightbox-nav.prev');
+            var nextBtn = overlay.querySelector('.lightbox-nav.next');
+            var playBtn = overlay.querySelector('.lightbox-play');
+            var closeBtn = overlay.querySelector('.lightbox-close');
+            var playIntervalId = null;
+            var progressAnimId = null;
+            var PLAY_DELAY = 3000;
 
-        function updateLightbox() {
-            var data = lbImageData[currentLbIndex];
-            if (!data) return;
-            img.src = data.src;
-            img.alt = data.alt || '';
-            altEl.textContent = data.alt || '';
-            counterEl.textContent = (currentLbIndex + 1) + ' / ' + lbImageData.length;
-            if (lbImageData.length <= 1) {
-                prevBtn.disabled = true;
-                nextBtn.disabled = true;
-            } else {
-                prevBtn.disabled = isPlaying;
-                nextBtn.disabled = isPlaying;
-            }
-            scale = 1;
-            translateX = 0;
-            translateY = 0;
-            updateTransform(false);
-            resetLbProgress();
-            showLbProgress(isPlaying);
-            updatePlayButtonState();
-        }
-
-        function updateTransform(animate) {
-            animate = animate || false;
-            img.style.transition = animate ? 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none';
-            img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
-        }
-
-        function updatePlayButtonState() {
-            if (lbImageData.length <= 1) {
-                playBtn.disabled = true;
-                playBtn.innerHTML = '<i class="fas fa-play"></i>';
-                return;
-            }
-            if (currentLbIndex === lbImageData.length - 1 && !isPlaying) {
-                playBtn.disabled = true;
-                playBtn.innerHTML = '<i class="fas fa-play"></i>';
-                return;
-            }
-            playBtn.disabled = false;
-            if (isPlaying) {
-                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-            } else {
-                playBtn.innerHTML = '<i class="fas fa-play"></i>';
-            }
-        }
-
-        function stopPlayback() {
-            isPlaying = false;
-            if (playIntervalId) {
-                clearInterval(playIntervalId);
-                playIntervalId = null;
-            }
-            if (progressAnimId) {
-                cancelAnimationFrame(progressAnimId);
-                progressAnimId = null;
-            }
-            if (lbImageData.length > 1) {
-                prevBtn.disabled = false;
-                nextBtn.disabled = false;
-            }
-            showLbProgress(false);
-            resetLbProgress();
-            updatePlayButtonState();
-        }
-
-        function startProgressAnimation() {
-            if (progressAnimId) {
-                cancelAnimationFrame(progressAnimId);
-                progressAnimId = null;
-            }
-            resetLbProgress();
-            var startTime = performance.now();
-
-            function updateProgress(currentTime) {
-                if (!isPlaying) {
-                    progressAnimId = null;
-                    return;
-                }
-                var elapsed = currentTime - startTime;
-                var progress = Math.min((elapsed / PLAY_DELAY) * 100, 100);
-                if (lbProgressBarEl) {
-                    lbProgressBarEl.style.width = progress + '%';
-                }
-                if (progress < 100) {
-                    progressAnimId = requestAnimationFrame(updateProgress);
+            function updateLightbox() {
+                var data = lbImageData[currentLbIndex];
+                if (!data) return;
+                img.src = data.src;
+                img.alt = data.alt || '';
+                altEl.textContent = data.alt || '';
+                counterEl.textContent = (currentLbIndex + 1) + ' / ' + lbImageData.length;
+                if (lbImageData.length <= 1) {
+                    prevBtn.disabled = true;
+                    nextBtn.disabled = true;
                 } else {
-                    progressAnimId = null;
+                    prevBtn.disabled = isPlaying;
+                    nextBtn.disabled = isPlaying;
                 }
-            }
-            progressAnimId = requestAnimationFrame(updateProgress);
-        }
-
-        function startPlayback() {
-            if (isPlaying) return;
-            if (lbImageData.length <= 1) return;
-            if (currentLbIndex === lbImageData.length - 1) {
-                updatePlayButtonState();
-                return;
-            }
-            if (playIntervalId) {
-                clearInterval(playIntervalId);
-                playIntervalId = null;
-            }
-            if (progressAnimId) {
-                cancelAnimationFrame(progressAnimId);
-                progressAnimId = null;
-            }
-            isPlaying = true;
-            if (lbImageData.length > 1) {
-                prevBtn.disabled = true;
-                nextBtn.disabled = true;
-            }
-            showLbProgress(true);
-            resetLbProgress();
-            updatePlayButtonState();
-            startProgressAnimation();
-            playIntervalId = setInterval(function() {
-                if (!isPlaying) return;
-                if (currentLbIndex < lbImageData.length - 1) {
-                    currentLbIndex++;
-                    updateLightbox();
-                    resetLbProgress();
-                    startProgressAnimation();
-                    updatePlayButtonState();
-                } else {
-                    stopPlayback();
-                }
-            }, PLAY_DELAY);
-        }
-
-        function togglePlay() {
-            if (lbImageData.length <= 1) return;
-            if (currentLbIndex === lbImageData.length - 1 && !isPlaying) {
-                updatePlayButtonState();
-                return;
-            }
-            if (isPlaying) {
-                stopPlayback();
-            } else {
-                startPlayback();
-            }
-        }
-
-        function closeLightbox() {
-            if (!lbIsOpen) return;
-            lbIsOpen = false;
-            isPlaying = false;
-            if (playIntervalId) {
-                clearInterval(playIntervalId);
-                playIntervalId = null;
-            }
-            if (progressAnimId) {
-                cancelAnimationFrame(progressAnimId);
-                progressAnimId = null;
-            }
-            showLbProgress(false);
-            resetLbProgress();
-            isProgressLocked = false;
-            progressWrap.style.transition = 'opacity 0.3s ease';
-            overlay.classList.remove('active');
-            setTimeout(function() {
-                if (overlay.parentNode) overlay.remove();
-                document.body.style.overflow = '';
-                document.removeEventListener('keydown', escHandler);
-                updateReadingProgress();
-                if (lbProgressEl && lbProgressEl.parentNode) {
-                    lbProgressEl.parentNode.removeChild(lbProgressEl);
-                    lbProgressEl = null;
-                    lbProgressBarEl = null;
-                }
-            }, 350);
-        }
-
-        function escHandler(e) {
-            if (e.key === 'Escape') closeLightbox();
-            if (e.key === 'ArrowLeft' && !isPlaying) {
-                e.preventDefault();
-                if (lbImageData.length > 1) {
-                    currentLbIndex = (currentLbIndex - 1 + lbImageData.length) % lbImageData.length;
-                    updateLightbox();
-                    updatePlayButtonState();
-                }
-            }
-            if (e.key === 'ArrowRight' && !isPlaying) {
-                e.preventDefault();
-                if (lbImageData.length > 1) {
-                    currentLbIndex = (currentLbIndex + 1) % lbImageData.length;
-                    updateLightbox();
-                    updatePlayButtonState();
-                }
-            }
-        }
-        img.addEventListener('wheel', function(e) {
-            e.preventDefault();
-            var delta = e.deltaY > 0 ? -0.1 : 0.1;
-            var newScale = Math.min(Math.max(0.5, scale + delta), 5);
-            var rect = img.getBoundingClientRect();
-            var ratioX = (e.clientX - rect.left) / rect.width;
-            var ratioY = (e.clientY - rect.top) / rect.height;
-            var oldScale = scale;
-            scale = newScale;
-            translateX += (1 - newScale / oldScale) * (rect.width / 2 - rect.width * ratioX);
-            translateY += (1 - newScale / oldScale) * (rect.height / 2 - rect.height * ratioY);
-            updateTransform(false);
-        }, { passive: false });
-        imgWrapper.addEventListener('touchstart', function(e) {
-            if (e.touches.length === 2) {
-                var t = e.touches;
-                touchStartDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
-                touchStartScale = scale;
-            } else if (e.touches.length === 1) {
-                isDragging = true;
-                touchStartX = e.touches[0].clientX;
-                touchStartY = e.touches[0].clientY;
-                touchLastX = translateX;
-                touchLastY = translateY;
-                imgWrapper.style.cursor = 'grabbing';
-            }
-        }, { passive: true });
-        imgWrapper.addEventListener('touchmove', function(e) {
-            if (e.touches.length === 2) {
-                var t = e.touches;
-                var dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
-                scale = Math.min(Math.max(0.5, touchStartScale * (dist / touchStartDist)), 5);
-                updateTransform(false);
-            } else if (e.touches.length === 1 && isDragging) {
-                var dx = e.touches[0].clientX - touchStartX;
-                var dy = e.touches[0].clientY - touchStartY;
-                translateX = touchLastX + dx;
-                translateY = touchLastY + dy;
-                updateTransform(false);
-            }
-        }, { passive: true });
-        imgWrapper.addEventListener('touchend', function(e) {
-            isDragging = false;
-            imgWrapper.style.cursor = 'grab';
-            if (scale < 0.6) {
-                scale = 0.6;
-                translateX = 0;
-                translateY = 0;
-                updateTransform(true);
-            } else if (scale < 1) {
                 scale = 1;
                 translateX = 0;
                 translateY = 0;
-                updateTransform(true);
-            } else if (scale > 3) {
-                scale = 3;
-                updateTransform(true);
-            }
-            if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) {
-                translateX = 0;
-                translateY = 0;
-                updateTransform(true);
-            }
-        }, { passive: true });
-        imgWrapper.addEventListener('mousedown', function(e) {
-            mouseDown = true;
-            mouseStartX = e.clientX;
-            mouseStartY = e.clientY;
-            mouseLastX = translateX;
-            mouseLastY = translateY;
-            imgWrapper.style.cursor = 'grabbing';
-            e.preventDefault();
-        });
-        document.addEventListener('mousemove', function(e) {
-            if (mouseDown) {
-                var dx = e.clientX - mouseStartX;
-                var dy = e.clientY - mouseStartY;
-                translateX = mouseLastX + dx;
-                translateY = mouseLastY + dy;
                 updateTransform(false);
+                resetLbProgress();
+                showLbProgress(isPlaying);
+                updatePlayButtonState();
             }
-        });
-        document.addEventListener('mouseup', function() {
-            if (mouseDown) {
-                mouseDown = false;
+
+            function updateTransform(animate) {
+                animate = animate || false;
+                img.style.transition = animate ? 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' : 'none';
+                img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
+            }
+
+            function updatePlayButtonState() {
+                if (lbImageData.length <= 1) {
+                    playBtn.disabled = true;
+                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    return;
+                }
+                if (currentLbIndex === lbImageData.length - 1 && !isPlaying) {
+                    playBtn.disabled = true;
+                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    return;
+                }
+                playBtn.disabled = false;
+                if (isPlaying) {
+                    playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                } else {
+                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                }
+            }
+
+            function stopPlayback() {
+                isPlaying = false;
+                if (playIntervalId) {
+                    clearInterval(playIntervalId);
+                    playIntervalId = null;
+                }
+                if (progressAnimId) {
+                    cancelAnimationFrame(progressAnimId);
+                    progressAnimId = null;
+                }
+                if (lbImageData.length > 1) {
+                    prevBtn.disabled = false;
+                    nextBtn.disabled = false;
+                }
+                showLbProgress(false);
+                resetLbProgress();
+                updatePlayButtonState();
+            }
+
+            function startProgressAnimation() {
+                if (progressAnimId) {
+                    cancelAnimationFrame(progressAnimId);
+                    progressAnimId = null;
+                }
+                resetLbProgress();
+                var startTime = performance.now();
+
+                function updateProgress(currentTime) {
+                    if (!isPlaying) {
+                        progressAnimId = null;
+                        return;
+                    }
+                    var elapsed = currentTime - startTime;
+                    var progress = Math.min((elapsed / PLAY_DELAY) * 100, 100);
+                    if (lbProgressBarEl) {
+                        lbProgressBarEl.style.width = progress + '%';
+                    }
+                    if (progress < 100) {
+                        progressAnimId = requestAnimationFrame(updateProgress);
+                    } else {
+                        progressAnimId = null;
+                    }
+                }
+                progressAnimId = requestAnimationFrame(updateProgress);
+            }
+
+            function startPlayback() {
+                if (isPlaying) return;
+                if (lbImageData.length <= 1) return;
+                if (currentLbIndex === lbImageData.length - 1) {
+                    updatePlayButtonState();
+                    return;
+                }
+                if (playIntervalId) {
+                    clearInterval(playIntervalId);
+                    playIntervalId = null;
+                }
+                if (progressAnimId) {
+                    cancelAnimationFrame(progressAnimId);
+                    progressAnimId = null;
+                }
+                isPlaying = true;
+                if (lbImageData.length > 1) {
+                    prevBtn.disabled = true;
+                    nextBtn.disabled = true;
+                }
+                showLbProgress(true);
+                resetLbProgress();
+                updatePlayButtonState();
+                startProgressAnimation();
+                playIntervalId = setInterval(function() {
+                    if (!isPlaying) return;
+                    if (currentLbIndex < lbImageData.length - 1) {
+                        currentLbIndex++;
+                        updateLightbox();
+                        resetLbProgress();
+                        startProgressAnimation();
+                        updatePlayButtonState();
+                    } else {
+                        stopPlayback();
+                    }
+                }, PLAY_DELAY);
+            }
+
+            function togglePlay() {
+                if (lbImageData.length <= 1) return;
+                if (currentLbIndex === lbImageData.length - 1 && !isPlaying) {
+                    updatePlayButtonState();
+                    return;
+                }
+                if (isPlaying) {
+                    stopPlayback();
+                } else {
+                    startPlayback();
+                }
+            }
+
+            function closeLightbox() {
+                if (!lbIsOpen) return;
+                lbIsOpen = false;
+                isPlaying = false;
+                if (playIntervalId) {
+                    clearInterval(playIntervalId);
+                    playIntervalId = null;
+                }
+                if (progressAnimId) {
+                    cancelAnimationFrame(progressAnimId);
+                    progressAnimId = null;
+                }
+                showLbProgress(false);
+                resetLbProgress();
+                isProgressLocked = false;
+                progressWrap.style.transition = 'opacity 0.3s ease';
+                overlay.classList.remove('active');
+                setTimeout(function() {
+                    if (overlay.parentNode) overlay.remove();
+                    document.body.style.overflow = '';
+                    document.removeEventListener('keydown', escHandler);
+                    updateReadingProgress();
+                    if (lbProgressEl && lbProgressEl.parentNode) {
+                        lbProgressEl.parentNode.removeChild(lbProgressEl);
+                        lbProgressEl = null;
+                        lbProgressBarEl = null;
+                    }
+                }, 350);
+            }
+
+            function escHandler(e) {
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowLeft' && !isPlaying) {
+                    e.preventDefault();
+                    if (lbImageData.length > 1) {
+                        currentLbIndex = (currentLbIndex - 1 + lbImageData.length) % lbImageData.length;
+                        updateLightbox();
+                        updatePlayButtonState();
+                    }
+                }
+                if (e.key === 'ArrowRight' && !isPlaying) {
+                    e.preventDefault();
+                    if (lbImageData.length > 1) {
+                        currentLbIndex = (currentLbIndex + 1) % lbImageData.length;
+                        updateLightbox();
+                        updatePlayButtonState();
+                    }
+                }
+            }
+            img.addEventListener('wheel', function(e) {
+                e.preventDefault();
+                var delta = e.deltaY > 0 ? -0.1 : 0.1;
+                var newScale = Math.min(Math.max(0.5, scale + delta), 5);
+                var rect = img.getBoundingClientRect();
+                var ratioX = (e.clientX - rect.left) / rect.width;
+                var ratioY = (e.clientY - rect.top) / rect.height;
+                var oldScale = scale;
+                scale = newScale;
+                translateX += (1 - newScale / oldScale) * (rect.width / 2 - rect.width * ratioX);
+                translateY += (1 - newScale / oldScale) * (rect.height / 2 - rect.height * ratioY);
+                updateTransform(false);
+            }, { passive: false });
+            imgWrapper.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 2) {
+                    var t = e.touches;
+                    touchStartDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+                    touchStartScale = scale;
+                } else if (e.touches.length === 1) {
+                    isDragging = true;
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    touchLastX = translateX;
+                    touchLastY = translateY;
+                    imgWrapper.style.cursor = 'grabbing';
+                }
+            }, { passive: true });
+            imgWrapper.addEventListener('touchmove', function(e) {
+                if (e.touches.length === 2) {
+                    var t = e.touches;
+                    var dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+                    scale = Math.min(Math.max(0.5, touchStartScale * (dist / touchStartDist)), 5);
+                    updateTransform(false);
+                } else if (e.touches.length === 1 && isDragging) {
+                    var dx = e.touches[0].clientX - touchStartX;
+                    var dy = e.touches[0].clientY - touchStartY;
+                    translateX = touchLastX + dx;
+                    translateY = touchLastY + dy;
+                    updateTransform(false);
+                }
+            }, { passive: true });
+            imgWrapper.addEventListener('touchend', function(e) {
+                isDragging = false;
                 imgWrapper.style.cursor = 'grab';
                 if (scale < 0.6) {
                     scale = 0.6;
@@ -3300,320 +3260,362 @@
                     translateY = 0;
                     updateTransform(true);
                 }
-            }
-        });
-        closeBtn.addEventListener('click', closeLightbox);
-        overlay.addEventListener('click', function(e) {
-            if (e.target === this) closeLightbox();
-        });
-        prevBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (isPlaying) {
-                stopPlayback();
-            }
-            if (lbImageData.length > 1) {
-                currentLbIndex = (currentLbIndex - 1 + lbImageData.length) % lbImageData.length;
-                updateLightbox();
-                updatePlayButtonState();
-            }
-        });
-        nextBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (isPlaying) {
-                stopPlayback();
-            }
-            if (lbImageData.length > 1) {
-                currentLbIndex = (currentLbIndex + 1) % lbImageData.length;
-                updateLightbox();
-                updatePlayButtonState();
-            }
-        });
-        playBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            togglePlay();
-        });
-        document.addEventListener('keydown', escHandler);
-        isProgressLocked = true;
-        progressWrap.style.display = 'block';
-        progressWrap.style.opacity = '1';
-        lbProgress = 0;
-        if (lbProgressBarEl) {
-            lbProgressBarEl.style.width = '0%';
-        }
-        if (lbProgressRAF) {
-            cancelAnimationFrame(lbProgressRAF);
-            lbProgressRAF = null;
-        }
-        updateLightbox();
-        if (lbImageData.length <= 1) {
-            playBtn.disabled = true;
-            showLbProgress(false);
-        }
-        requestAnimationFrame(function() {
-            overlay.classList.add('active');
-        });
-    }
-    var currentShareImageDataUrl = '';
-
-    function generateShareImage() {
-        if (!currentArticle) return;
-        var title = currentArticle.title || '无标题';
-        var date = currentArticle.date || '';
-        var desc = getShareDesc(currentArticle.content || '');
-        var url = window.location.href;
-        var canvas = document.createElement('canvas');
-        var ctx = canvas.getContext('2d');
-        var W = 900,
-            H = 540;
-        canvas.width = W;
-        canvas.height = H;
-        var grad = ctx.createLinearGradient(0, 0, W, H);
-        grad.addColorStop(0, '#f8f5ff');
-        grad.addColorStop(1, '#e8e0ff');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, W, H);
-        ctx.globalAlpha = 0.05;
-        for (var i = 0; i < 6; i++) {
-            ctx.beginPath();
-            ctx.arc(60 + i * 160, 40 + (i % 3) * 30, 80, 0, Math.PI * 2);
-            ctx.fillStyle = '#7a6bcf';
-            ctx.fill();
-        }
-        ctx.globalAlpha = 1;
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'top';
-        ctx.font = '400 14px "Inter", sans-serif';
-        ctx.fillStyle = '#8a8ab5';
-        ctx.fillText(date || '', W - 40, 28);
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.font = '700 52px "Inter", "PingFang SC", sans-serif';
-        ctx.fillStyle = '#1a1a2e';
-        var titleLines = wrapText(ctx, title || '无标题', W - 260);
-        var titleDisplay = truncateLines(titleLines, 2);
-        titleDisplay.forEach(function(line, i) {
-            ctx.fillText(line, 40, 70 + i * 60);
-        });
-        var subY = 70 + Math.min(titleDisplay.length, 2) * 60 + 20;
-        ctx.font = '400 22px "Inter", "PingFang SC", sans-serif';
-        ctx.fillStyle = '#4a4a6e';
-        var descLines = wrapText(ctx, desc || ' ', W - 260);
-        var descDisplay = truncateLines(descLines, 4);
-        descDisplay.forEach(function(line, i) {
-            ctx.fillText(line, 40, subY + 10 + i * 34);
-        });
-        var bottomY = H - 44;
-        ctx.font = '500 16px "Inter", "PingFang SC", sans-serif';
-        ctx.fillStyle = '#6a6a92';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText('ks', 40, bottomY);
-        var qrSize = 180;
-        var qrX = W - qrSize - 40;
-        var qrY = H - qrSize - 40;
-        generateQRCanvas(url, qrSize).then(function(qrCanvas) {
-            ctx.shadowColor = 'rgba(0,0,0,0.06)';
-            ctx.shadowBlur = 16;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 4;
-            ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
-            ctx.shadowColor = 'transparent';
-            ctx.shadowBlur = 0;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            ctx.font = '400 13px "Inter", sans-serif';
-            ctx.fillStyle = '#aaaacc';
-            ctx.fillText('扫码观看全文', qrX + qrSize / 2, qrY + qrSize + 10);
-            ctx.textAlign = 'right';
-            ctx.textBaseline = 'bottom';
-            ctx.font = '400 13px "Inter", sans-serif';
-            ctx.fillStyle = '#c8c8e0';
-            ctx.fillText('cuizi.top', W - 40, 18);
-            currentShareImageDataUrl = canvas.toDataURL('image/png');
-            document.getElementById('sharePreviewImg').src = currentShareImageDataUrl;
-        }).catch(function() {
-            ctx.fillStyle = '#f0edff';
-            ctx.fillRect(qrX, qrY, qrSize, qrSize);
-            ctx.fillStyle = '#aaa';
-            ctx.font = '16px "Inter", sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('二维码失败', qrX + qrSize / 2, qrY + qrSize / 2);
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            ctx.font = '400 13px "Inter", sans-serif';
-            ctx.fillStyle = '#aaaacc';
-            ctx.fillText('扫码观看全文', qrX + qrSize / 2, qrY + qrSize + 10);
-            ctx.textAlign = 'right';
-            ctx.textBaseline = 'bottom';
-            ctx.font = '400 13px "Inter", sans-serif';
-            ctx.fillStyle = '#c8c8e0';
-            ctx.fillText('cuizi.top', W - 40, 18);
-            currentShareImageDataUrl = canvas.toDataURL('image/png');
-            document.getElementById('sharePreviewImg').src = currentShareImageDataUrl;
-        });
-    }
-
-    function wrapText(ctx, text, maxWidth) {
-        var chars = Array.from(text);
-        var lines = [];
-        var current = '';
-        for (var i = 0; i < chars.length; i++) {
-            var ch = chars[i];
-            if (ctx.measureText(current + ch).width > maxWidth) {
-                lines.push(current);
-                current = ch;
-            } else {
-                current += ch;
-            }
-        }
-        if (current) lines.push(current);
-        return lines;
-    }
-
-    function truncateLines(lines, maxLines) {
-        if (lines.length <= maxLines) return lines;
-        var result = lines.slice(0, maxLines);
-        var last = result[result.length - 1];
-        var trimmed = last.slice(0, -1) + '…';
-        result[result.length - 1] = trimmed;
-        return result;
-    }
-    document.addEventListener('click', function(e) {
-        var copyBtn = e.target.closest('.copy-btn');
-        if (copyBtn) {
-            var targetId = copyBtn.dataset.copy;
-            if (!targetId) return;
-            var wrapper = document.getElementById('cbw-' + targetId);
-            if (!wrapper) return;
-            var codeLines = wrapper.querySelectorAll('.code-line');
-            var text = '';
-            codeLines.forEach(function(line) {
-                var clone = line.cloneNode(true);
-                var lineNum = clone.querySelector('.line-number');
-                if (lineNum) lineNum.remove();
-                text += clone.textContent + '\n';
+            }, { passive: true });
+            imgWrapper.addEventListener('mousedown', function(e) {
+                mouseDown = true;
+                mouseStartX = e.clientX;
+                mouseStartY = e.clientY;
+                mouseLastX = translateX;
+                mouseLastY = translateY;
+                imgWrapper.style.cursor = 'grabbing';
+                e.preventDefault();
             });
-            text = text.replace(/\n$/, '');
-            var ta = document.createElement('textarea');
-            ta.value = text;
-            ta.style.position = 'fixed';
-            ta.style.left = '-9999px';
-            ta.style.top = '0';
-            ta.style.width = '1px';
-            ta.style.height = '1px';
-            ta.style.opacity = '0';
-            document.body.appendChild(ta);
-            ta.focus();
-            ta.select();
-            try {
-                var success = document.execCommand('copy');
-                if (success) {
-                    copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
-                    copyBtn.classList.add('copied');
-                    setTimeout(function() {
-                        copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
-                        copyBtn.classList.remove('copied');
-                    }, 2000);
+            document.addEventListener('mousemove', function(e) {
+                if (mouseDown) {
+                    var dx = e.clientX - mouseStartX;
+                    var dy = e.clientY - mouseStartY;
+                    translateX = mouseLastX + dx;
+                    translateY = mouseLastY + dy;
+                    updateTransform(false);
+                }
+            });
+            document.addEventListener('mouseup', function() {
+                if (mouseDown) {
+                    mouseDown = false;
+                    imgWrapper.style.cursor = 'grab';
+                    if (scale < 0.6) {
+                        scale = 0.6;
+                        translateX = 0;
+                        translateY = 0;
+                        updateTransform(true);
+                    } else if (scale < 1) {
+                        scale = 1;
+                        translateX = 0;
+                        translateY = 0;
+                        updateTransform(true);
+                    } else if (scale > 3) {
+                        scale = 3;
+                        updateTransform(true);
+                    }
+                    if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) {
+                        translateX = 0;
+                        translateY = 0;
+                        updateTransform(true);
+                    }
+                }
+            });
+            closeBtn.addEventListener('click', closeLightbox);
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) closeLightbox();
+            });
+            prevBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (isPlaying) {
+                    stopPlayback();
+                }
+                if (lbImageData.length > 1) {
+                    currentLbIndex = (currentLbIndex - 1 + lbImageData.length) % lbImageData.length;
+                    updateLightbox();
+                    updatePlayButtonState();
+                }
+            });
+            nextBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (isPlaying) {
+                    stopPlayback();
+                }
+                if (lbImageData.length > 1) {
+                    currentLbIndex = (currentLbIndex + 1) % lbImageData.length;
+                    updateLightbox();
+                    updatePlayButtonState();
+                }
+            });
+            playBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                togglePlay();
+            });
+            document.addEventListener('keydown', escHandler);
+            isProgressLocked = true;
+            progressWrap.style.display = 'block';
+            progressWrap.style.opacity = '1';
+            lbProgress = 0;
+            if (lbProgressBarEl) {
+                lbProgressBarEl.style.width = '0%';
+            }
+            if (lbProgressRAF) {
+                cancelAnimationFrame(lbProgressRAF);
+                lbProgressRAF = null;
+            }
+            updateLightbox();
+            if (lbImageData.length <= 1) {
+                playBtn.disabled = true;
+                showLbProgress(false);
+            }
+            requestAnimationFrame(function() {
+                overlay.classList.add('active');
+            });
+        }
+        var currentShareImageDataUrl = '';
+
+        function generateShareImage() {
+            if (!currentArticle) return;
+            var title = currentArticle.title || '无标题';
+            var date = currentArticle.date || '';
+            var desc = getShareDesc(currentArticle.content || '');
+            var url = window.location.href;
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d');
+            var W = 900,
+                H = 540;
+            canvas.width = W;
+            canvas.height = H;
+            var grad = ctx.createLinearGradient(0, 0, W, H);
+            grad.addColorStop(0, '#f8f5ff');
+            grad.addColorStop(1, '#e8e0ff');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+            ctx.globalAlpha = 0.05;
+            for (var i = 0; i < 6; i++) {
+                ctx.beginPath();
+                ctx.arc(60 + i * 160, 40 + (i % 3) * 30, 80, 0, Math.PI * 2);
+                ctx.fillStyle = '#7a6bcf';
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'top';
+            ctx.font = '400 14px "Inter", sans-serif';
+            ctx.fillStyle = '#8a8ab5';
+            ctx.fillText(date || '', W - 40, 28);
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.font = '700 52px "Inter", "PingFang SC", sans-serif';
+            ctx.fillStyle = '#1a1a2e';
+            var titleLines = wrapText(ctx, title || '无标题', W - 260);
+            var titleDisplay = truncateLines(titleLines, 2);
+            titleDisplay.forEach(function(line, i) {
+                ctx.fillText(line, 40, 70 + i * 60);
+            });
+            var subY = 70 + Math.min(titleDisplay.length, 2) * 60 + 20;
+            ctx.font = '400 22px "Inter", "PingFang SC", sans-serif';
+            ctx.fillStyle = '#4a4a6e';
+            var descLines = wrapText(ctx, desc || ' ', W - 260);
+            var descDisplay = truncateLines(descLines, 4);
+            descDisplay.forEach(function(line, i) {
+                ctx.fillText(line, 40, subY + 10 + i * 34);
+            });
+            var bottomY = H - 44;
+            ctx.font = '500 16px "Inter", "PingFang SC", sans-serif';
+            ctx.fillStyle = '#6a6a92';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText('ks', 40, bottomY);
+            var qrSize = 180;
+            var qrX = W - qrSize - 40;
+            var qrY = H - qrSize - 40;
+            generateQRCanvas(url, qrSize).then(function(qrCanvas) {
+                ctx.shadowColor = 'rgba(0,0,0,0.06)';
+                ctx.shadowBlur = 16;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 4;
+                ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.font = '400 13px "Inter", sans-serif';
+                ctx.fillStyle = '#aaaacc';
+                ctx.fillText('扫码观看全文', qrX + qrSize / 2, qrY + qrSize + 10);
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.font = '400 13px "Inter", sans-serif';
+                ctx.fillStyle = '#c8c8e0';
+                ctx.fillText('cuizi.top', W - 40, 18);
+                currentShareImageDataUrl = canvas.toDataURL('image/png');
+                document.getElementById('sharePreviewImg').src = currentShareImageDataUrl;
+            }).catch(function() {
+                ctx.fillStyle = '#f0edff';
+                ctx.fillRect(qrX, qrY, qrSize, qrSize);
+                ctx.fillStyle = '#aaa';
+                ctx.font = '16px "Inter", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('二维码失败', qrX + qrSize / 2, qrY + qrSize / 2);
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.font = '400 13px "Inter", sans-serif';
+                ctx.fillStyle = '#aaaacc';
+                ctx.fillText('扫码观看全文', qrX + qrSize / 2, qrY + qrSize + 10);
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.font = '400 13px "Inter", sans-serif';
+                ctx.fillStyle = '#c8c8e0';
+                ctx.fillText('cuizi.top', W - 40, 18);
+                currentShareImageDataUrl = canvas.toDataURL('image/png');
+                document.getElementById('sharePreviewImg').src = currentShareImageDataUrl;
+            });
+        }
+
+        function wrapText(ctx, text, maxWidth) {
+            var chars = Array.from(text);
+            var lines = [];
+            var current = '';
+            for (var i = 0; i < chars.length; i++) {
+                var ch = chars[i];
+                if (ctx.measureText(current + ch).width > maxWidth) {
+                    lines.push(current);
+                    current = ch;
                 } else {
+                    current += ch;
+                }
+            }
+            if (current) lines.push(current);
+            return lines;
+        }
+
+        function truncateLines(lines, maxLines) {
+            if (lines.length <= maxLines) return lines;
+            var result = lines.slice(0, maxLines);
+            var last = result[result.length - 1];
+            var trimmed = last.slice(0, -1) + '…';
+            result[result.length - 1] = trimmed;
+            return result;
+        }
+        document.addEventListener('click', function(e) {
+            var copyBtn = e.target.closest('.copy-btn');
+            if (copyBtn) {
+                var targetId = copyBtn.dataset.copy;
+                if (!targetId) return;
+                var wrapper = document.getElementById('cbw-' + targetId);
+                if (!wrapper) return;
+                var codeLines = wrapper.querySelectorAll('.code-line');
+                var text = '';
+                codeLines.forEach(function(line) {
+                    var clone = line.cloneNode(true);
+                    var lineNum = clone.querySelector('.line-number');
+                    if (lineNum) lineNum.remove();
+                    text += clone.textContent + '\n';
+                });
+                text = text.replace(/\n$/, '');
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                ta.style.top = '0';
+                ta.style.width = '1px';
+                ta.style.height = '1px';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                try {
+                    var success = document.execCommand('copy');
+                    if (success) {
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
+                        copyBtn.classList.add('copied');
+                        setTimeout(function() {
+                            copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
+                            copyBtn.classList.remove('copied');
+                        }, 2000);
+                    } else {
+                        showToast('复制失败', 'fa-exclamation-circle');
+                    }
+                } catch (err) {
                     showToast('复制失败', 'fa-exclamation-circle');
                 }
-            } catch (err) {
-                showToast('复制失败', 'fa-exclamation-circle');
+                document.body.removeChild(ta);
+                return;
             }
-            document.body.removeChild(ta);
-            return;
-        }
-        var collapseBtn = e.target.closest('.collapse-btn');
-        if (collapseBtn) {
-            var targetId = collapseBtn.dataset.target;
-            if (!targetId) return;
-            var wrapper = document.getElementById(targetId);
-            if (!wrapper) return;
-            var iconEl = collapseBtn.querySelector('i');
-            wrapper.classList.toggle('collapsed');
-            if (wrapper.classList.contains('collapsed')) {
-                iconEl.className = 'fas fa-chevron-down';
-            } else {
-                iconEl.className = 'fas fa-chevron-up';
+            var collapseBtn = e.target.closest('.collapse-btn');
+            if (collapseBtn) {
+                var targetId = collapseBtn.dataset.target;
+                if (!targetId) return;
+                var wrapper = document.getElementById(targetId);
+                if (!wrapper) return;
+                var iconEl = collapseBtn.querySelector('i');
+                wrapper.classList.toggle('collapsed');
+                if (wrapper.classList.contains('collapsed')) {
+                    iconEl.className = 'fas fa-chevron-down';
+                } else {
+                    iconEl.className = 'fas fa-chevron-up';
+                }
+                return;
             }
-            return;
-        }
-    });
-    var shareModal = document.getElementById('shareModal');
-    var sharePreviewImg = document.getElementById('sharePreviewImg');
-    document.getElementById('shareButton').addEventListener('click', function() {
-        if (!currentArticle) {
-            showToast('文章未加载', 'fa-exclamation-circle');
-            return;
-        }
-        shareModal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    });
-    document.getElementById('shareCloseBtn').addEventListener('click', function() {
-        shareModal.classList.remove('active');
-        document.body.style.overflow = '';
-    });
-    shareModal.addEventListener('click', function(e) {
-        if (e.target === this) {
-            shareModal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-    });
-    var shareTextDisplay = document.getElementById('shareTextDisplay');
-    var textModal = document.getElementById('textModal');
-    document.getElementById('shareCopyBtn').addEventListener('click', function() {
-        shareTextDisplay.textContent = currentShareText || '暂无内容';
-        textModal.classList.add('active');
-    });
-    document.getElementById('textModalCancel').addEventListener('click', function() {
-        textModal.classList.remove('active');
-    });
-    textModal.addEventListener('click', function(e) {
-        if (e.target === this) {
-            textModal.classList.remove('active');
-        }
-    });
-    document.getElementById('textModalCopy').addEventListener('click', function() {
-        var text = shareTextDisplay.textContent;
-        navigator.clipboard.writeText(text).then(function() {
-            showToast('已复制', 'fa-check-circle');
-            textModal.classList.remove('active');
-            shareModal.classList.remove('active');
-            document.body.style.overflow = '';
-        }).catch(function() {
-            var ta = document.createElement('textarea');
-            ta.value = text;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            showToast('已复制', 'fa-check-circle');
-            textModal.classList.remove('active');
+        });
+        var shareModal = document.getElementById('shareModal');
+        var sharePreviewImg = document.getElementById('sharePreviewImg');
+        document.getElementById('shareButton').addEventListener('click', function() {
+            if (!currentArticle) {
+                showToast('文章未加载', 'fa-exclamation-circle');
+                return;
+            }
+            shareModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        document.getElementById('shareCloseBtn').addEventListener('click', function() {
             shareModal.classList.remove('active');
             document.body.style.overflow = '';
         });
-    });
-    document.getElementById('shareSaveBtn').addEventListener('click', function() {
-        if (!currentShareImageDataUrl) {
-            showToast('图片未生成', 'fa-exclamation-circle');
-            return;
-        }
-        var a = document.createElement('a');
-        a.href = currentShareImageDataUrl;
-        var now = new Date();
-        var ts = now.getFullYear().toString().slice(2) +
-            String(now.getMonth() + 1).padStart(2, '0') +
-            String(now.getDate()).padStart(2, '0') +
-            String(now.getHours()).padStart(2, '0') +
-            String(now.getMinutes()).padStart(2, '0');
-        a.download = '分享图_' + ts + '.png';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        showToast('已保存', 'fa-check-circle');
-    });
-    renderArticle();
-</script>
+        shareModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                shareModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+        var shareTextDisplay = document.getElementById('shareTextDisplay');
+        var textModal = document.getElementById('textModal');
+        document.getElementById('shareCopyBtn').addEventListener('click', function() {
+            shareTextDisplay.textContent = currentShareText || '暂无内容';
+            textModal.classList.add('active');
+        });
+        document.getElementById('textModalCancel').addEventListener('click', function() {
+            textModal.classList.remove('active');
+        });
+        textModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                textModal.classList.remove('active');
+            }
+        });
+        document.getElementById('textModalCopy').addEventListener('click', function() {
+            var text = shareTextDisplay.textContent;
+            navigator.clipboard.writeText(text).then(function() {
+                showToast('已复制', 'fa-check-circle');
+                textModal.classList.remove('active');
+                shareModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }).catch(function() {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast('已复制', 'fa-check-circle');
+                textModal.classList.remove('active');
+                shareModal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        });
+        document.getElementById('shareSaveBtn').addEventListener('click', function() {
+            if (!currentShareImageDataUrl) {
+                showToast('图片未生成', 'fa-exclamation-circle');
+                return;
+            }
+            var a = document.createElement('a');
+            a.href = currentShareImageDataUrl;
+            var now = new Date();
+            var ts = now.getFullYear().toString().slice(2) +
+                String(now.getMonth() + 1).padStart(2, '0') +
+                String(now.getDate()).padStart(2, '0') +
+                String(now.getHours()).padStart(2, '0') +
+                String(now.getMinutes()).padStart(2, '0');
+            a.download = '分享图_' + ts + '.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('已保存', 'fa-check-circle');
+        });
+        renderArticle();
+    </script>
 </body>
 </html>

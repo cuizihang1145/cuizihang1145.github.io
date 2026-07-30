@@ -745,6 +745,17 @@
             color: #60A5FA;
         }
 
+        .footnote-number {
+            font-weight: 600;
+            color: #6B5ACF;
+            margin-right: 0.3rem;
+            font-size: 0.85rem;
+        }
+
+        body.dark .footnote-number {
+            color: #88ccff;
+        }
+
         .article-detail .detail-content ul,
         .article-detail .detail-content ol {
             padding-left: 1.8rem;
@@ -2707,6 +2718,7 @@
                     if (footnotes[fnId]) {
                         footnotesHtml += '<div class="footnote-def" id="footnote-def-' + fnId + '">';
                         footnotesHtml += '<a class="footnote-back" data-footnote-back="' + fnId + '">↩</a> ';
+                        footnotesHtml += '<span class="footnote-number">[' + fnId + ']</span> ';
                         footnotesHtml += renderInline(footnotes[fnId].content);
                         footnotesHtml += '</div>';
                     }

@@ -679,25 +679,28 @@
             background: rgba(255, 255, 255, 0.02)
         }
 
-        .article-detail .detail-content .footnote-ref {
+        .article-detail .detail-content .footnote-ref a {
             font-size: 0.75em;
             vertical-align: super;
             text-decoration: none;
             color: #6B5ACF;
             margin-left: 1px;
-            transition: color 0.3s ease
+            transition: color 0.3s ease;
+            cursor: pointer;
+            font-weight: 600;
         }
 
-        body.dark .article-detail .detail-content .footnote-ref {
-            color: #88ccff
+        .article-detail .detail-content .footnote-ref a:hover {
+            color: #4A3DB8;
+            text-decoration: underline;
         }
 
-        .article-detail .detail-content .footnote-ref::before {
-            content: '['
+        body.dark .article-detail .detail-content .footnote-ref a {
+            color: #88ccff;
         }
 
-        .article-detail .detail-content .footnote-ref::after {
-            content: ']'
+        body.dark .article-detail .detail-content .footnote-ref a:hover {
+            color: #60A5FA;
         }
 
         .article-detail .detail-content .footnotes {
@@ -725,11 +728,21 @@
             left: 0;
             text-decoration: none;
             color: #6B5ACF;
-            font-size: 0.8rem
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .article-detail .detail-content .footnotes .footnote-def .footnote-back:hover {
+            color: #4A3DB8;
         }
 
         body.dark .article-detail .detail-content .footnotes .footnote-def .footnote-back {
             color: #88ccff
+        }
+
+        body.dark .article-detail .detail-content .footnotes .footnote-def .footnote-back:hover {
+            color: #60A5FA;
         }
 
         .article-detail .detail-content ul,
@@ -2249,6 +2262,18 @@
                 'span', 'br', 'hr'
             ];
 
+            let footnotes = {};
+            let footnoteCounter = 0;
+            let footnoteIdMap = {};
+
+            function getFootnoteId(key) {
+                if (!footnoteIdMap[key]) {
+                    footnoteCounter++;
+                    footnoteIdMap[key] = footnoteCounter;
+                }
+                return footnoteIdMap[key];
+            }
+
             function restoreEscapes(text) {
                 let r = text;
                 for (const [key, char] of Object.entries(escMap)) {
@@ -2316,6 +2341,11 @@
                             '></video>' + descHtml + '</div>';
                     });
                 html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+                html = html.replace(/\[\^([^\]]+)\]/g, function(match, key) {
+                    var id = getFootnoteId(key);
+                    return '<sup class="footnote-ref"><a data-footnote-ref="' + id + '">' + id +
+                        '</a></sup>';
+                });
                 html = restoreEscapes(html);
                 for (var key in tagMap) {
                     if (tagMap.hasOwnProperty(key)) {
@@ -2361,6 +2391,15 @@
                         } else {
                             result += '<p><br></p>\n';
                         }
+                        continue;
+                    }
+                    var footnoteDefMatch = line.match(/^\[\^([^\]]+)\]:\s*(.*)/);
+                    if (footnoteDefMatch) {
+                        if (inList) flushList();
+                        var fnKey = footnoteDefMatch[1];
+                        var fnContent = footnoteDefMatch[2];
+                        var fnId = getFootnoteId(fnKey);
+                        footnotes[fnId] = { key: fnKey, content: fnContent };
                         continue;
                     }
                     var blockquoteMatch = line.match(/^(>+)\s?(.*)/);
@@ -2661,6 +2700,19 @@
                     </div>
                 `;
                 html = html.replace(block.id, codeBlockHtml);
+            }
+            if (Object.keys(footnotes).length > 0) {
+                var footnotesHtml = '<div class="footnotes">';
+                for (var fnId = 1; fnId <= footnoteCounter; fnId++) {
+                    if (footnotes[fnId]) {
+                        footnotesHtml += '<div class="footnote-def" id="footnote-def-' + fnId + '">';
+                        footnotesHtml += '<a class="footnote-back" data-footnote-back="' + fnId + '">↩</a> ';
+                        footnotesHtml += renderInline(footnotes[fnId].content);
+                        footnotesHtml += '</div>';
+                    }
+                }
+                footnotesHtml += '</div>';
+                html += footnotesHtml;
             }
             html = html.replace(/\n{3,}/g, '\n\n');
             return html;
@@ -3542,6 +3594,43 @@
             return result;
         }
         document.addEventListener('click', function(e) {
+            var footnoteRef = e.target.closest('[data-footnote-ref]');
+            if (footnoteRef) {
+                e.preventDefault();
+                var refId = footnoteRef.getAttribute('data-footnote-ref');
+                scrollToFootnote('footnote-def-' + refId);
+                return;
+            }
+            var footnoteBack = e.target.closest('[data-footnote-back]');
+            if (footnoteBack) {
+                e.preventDefault();
+                var backId = footnoteBack.getAttribute('data-footnote-back');
+                var refLink = document.querySelector('[data-footnote-ref="' + backId + '"]');
+                if (refLink) {
+                    var targetY = refLink.getBoundingClientRect().top + window.scrollY - 80;
+                    var startY = window.scrollY || window.pageYOffset;
+                    var distance = targetY - startY;
+                    if (Math.abs(distance) < 5) return;
+                    var duration = 350;
+                    var startTime = performance.now();
+
+                    function step(currentTime) {
+                        var elapsed = currentTime - startTime;
+                        var progress = Math.min(elapsed / duration, 1);
+                        var ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress +
+                            2, 3) / 2;
+                        var nextY = startY + distance * ease;
+                        window.scrollTo(0, nextY);
+                        if (progress < 1) {
+                            requestAnimationFrame(step);
+                        } else {
+                            window.scrollTo(0, targetY);
+                        }
+                    }
+                    requestAnimationFrame(step);
+                }
+                return;
+            }
             var copyBtn = e.target.closest('.copy-btn');
             if (copyBtn) {
                 var targetId = copyBtn.dataset.copy;

@@ -2429,6 +2429,61 @@
                         result += '<hr />\n';
                         continue;
                     }
+                    var tableLineMatch = line.match(/^\|(.+)\|$/);
+                    if (tableLineMatch) {
+                        if (inList) flushList();
+                        var tableRows = [];
+                        var j = i;
+                        while (j < lines.length) {
+                            var tmatch = lines[j].match(/^\|(.+)\|$/);
+                            if (tmatch) {
+                                tableRows.push(tmatch[1]);
+                                j++;
+                            } else {
+                                break;
+                            }
+                        }
+                        i = j - 1;
+                        if (tableRows.length >= 2) {
+                            var headerCells = tableRows[0].split('|').map(function(cell) { return cell.trim(); });
+                            var alignRow = tableRows[1].split('|').map(function(cell) { return cell.trim(); });
+                            var isAlignRow = alignRow.every(function(cell) {
+                                return /^:?-+:?$/.test(cell);
+                            });
+                            var dataStart = isAlignRow ? 2 : 1;
+                            var alignments = [];
+                            if (isAlignRow) {
+                                alignments = alignRow.map(function(cell) {
+                                    if (/^:-+:$/.test(cell)) return 'center';
+                                    if (/^-+:$/.test(cell)) return 'right';
+                                    return 'left';
+                                });
+                            } else {
+                                alignments = headerCells.map(function() { return 'left'; });
+                            }
+                            var tableHtml = '<table><thead><tr>';
+                            for (var ci = 0; ci < headerCells.length; ci++) {
+                                var alignAttr = alignments[ci] ? ' style="text-align:' + alignments[ci] + ';"' :
+                                    '';
+                                tableHtml += '<th' + alignAttr + '>' + renderInline(headerCells[ci]) + '</th>';
+                            }
+                            tableHtml += '</tr></thead><tbody>';
+                            for (var ri = dataStart; ri < tableRows.length; ri++) {
+                                var rowCells = tableRows[ri].split('|').map(function(cell) { return cell.trim(); });
+                                tableHtml += '<tr>';
+                                for (var rci = 0; rci < headerCells.length; rci++) {
+                                    var cellContent = rci < rowCells.length ? rowCells[rci] : '';
+                                    var rAlignAttr = alignments[rci] ? ' style="text-align:' + alignments[rci] +
+                                        ';"' : '';
+                                    tableHtml += '<td' + rAlignAttr + '>' + renderInline(cellContent) + '</td>';
+                                }
+                                tableHtml += '</tr>';
+                            }
+                            tableHtml += '</tbody></table>';
+                            result += tableHtml + '\n';
+                            continue;
+                        }
+                    }
                     var listMatch = line.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
                     if (listMatch) {
                         var indent = listMatch[1].length;

@@ -937,6 +937,7 @@
         }
 
         .video-placeholder .video-alt-text {
+            display: none;
             text-align: center;
             font-style: italic;
             font-size: 0.85rem;
@@ -956,6 +957,10 @@
         body.dark .video-placeholder .video-alt-text {
             color: #8A8AB5;
             background: rgba(0, 0, 0, 0.2)
+        }
+
+        .video-placeholder.loaded .video-alt-text {
+            display: block
         }
 
         .article-detail .detail-content img {

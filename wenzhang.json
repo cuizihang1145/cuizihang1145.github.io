@@ -76,7 +76,7 @@
       "tags": [
         "测试"
       ],
-      "delete": false,
+      "delete": true,
       "content": "!video[`<u>***~~视频~~***</u>`](https://www.bilibili.com/video/BV1GJ411x7h7)\n---\n!video[🤔](https://www.bilibili.com/video/BV1xx411c79H)"
     }
   ]

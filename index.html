@@ -161,6 +161,10 @@ body.dark .tag-card .tag-card-count{color:#7A7AA0;}
 .archive-empty{text-align:center;padding:2rem 1rem;color:#8A8AB5;font-size:0.9rem;}
 .footer{margin-top:1rem;text-align:center;font-size:0.75rem;color:#A8A8CE;border-top:1px solid rgba(0,0,0,0.03);padding-top:1.6rem;letter-spacing:0.3px;transition:color 0.3s ease,border-color 0.3s ease;}
 body.dark .footer{color:#6A6A8A;border-top-color:rgba(255,255,255,0.04);}
+.footer a{color:#A8A8CE;text-decoration:none;opacity:0.8;transition:color 0.2s ease,opacity 0.2s ease;}
+.footer a:hover{color:#6B5ACF;opacity:1;text-decoration:underline;}
+body.dark .footer a{color:#6A6A8A;}
+body.dark .footer a:hover{color:#A89FD0;}
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:rgba(28,26,44,0.88);backdrop-filter:blur(18px);padding:10px 28px;border-radius:60px;color:#EFEAFF;font-size:0.85rem;opacity:0;transition:opacity 0.25s ease;pointer-events:none;z-index:100;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,0.1);}
 .articles-container{width:100%;max-width:520px;margin:0 auto;}
 .articles-toolbar{display:flex;flex-wrap:wrap;gap:0.6rem;align-items:center;justify-content:space-between;margin-bottom:1.2rem;padding:0.6rem 1rem;background:rgba(255,255,255,0.3);backdrop-filter:blur(8px);border-radius:1.2rem;border:1px solid rgba(255,255,255,0.2);transition:background 0.3s ease,border-color 0.3s ease;}
@@ -312,7 +316,7 @@ body.dark .weather-loading i{color:#7A6AA8;}
 <div class="container"><div class="site-header"><div class="avatar"><img class="avatar-img" src="https://s41.ax1x.com/2026/05/10/peOiehj.jpg" alt="ks头像" loading="eager" decoding="async"></div><div class="header-text"><h1 class="site-title">ks</h1><div class="welcome-tag"><i class="far fa-smile"></i> Hi，这里是 ks 的个人站点</div></div></div>
 <div class="nav-wrapper" id="navWrapper"><div class="nav-slider no-transition" id="navSlider"></div><div class="nav-scroll" id="navScroll"><div class="nav" id="navContainer"><a href="#" data-page="articles" class="active"><i class="fas fa-file-alt"></i> 文章</a><a href="#" data-page="recommend"><i class="fas fa-star"></i> 推荐</a><a href="#" data-page="about"><i class="fas fa-user"></i> 关于</a><a href="#" data-page="archive"><i class="fas fa-archive"></i> 归档</a></div></div></div>
 <div id="appContent"><div class="content-placeholder" id="homePlaceholder"><div class="placeholder-icon"><i class="far fa-compass"></i></div><div class="placeholder-text">这里暂时安静</div></div></div>
-<footer class="footer"><p>© ks · 个人博客 · 2026</p></footer></div>
+<footer class="footer"><p>© ks · 个人博客 · 2026 &nbsp;|&nbsp; <a href="https://icp.gov.moe/?keyword=20269004" target="_blank">萌ICP备20269004号</a></p></footer></div>
 <div id="toastMsg" class="toast"></div>
 <script>var toast=document.getElementById('toastMsg');function showMessage(text){toast.style.opacity='1';toast.innerText=text;setTimeout(function(){toast.style.opacity='0';},1500);}
 var themeToggle=document.getElementById('themeToggle');var icon=themeToggle.querySelector('i');var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;var currentTheme=localStorage.getItem('ks-theme')||(prefersDark?'dark':'light');

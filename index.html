@@ -515,7 +515,6 @@ function countWords(markdown) {
         .replace(/^\d+\.\s+/gm, '')
         .replace(/^>\s+/gm, '')
         .replace(/^---$/gm, '')
-        .replace(/^\s*[-*+]\s+\[[ x]\]\s+/gm, '')
         .replace(/\s+/g, ' ')
         .trim();
     return text.length;
@@ -1551,9 +1550,14 @@ function updateProgress() {
     document.getElementById('holidayBox').innerHTML = '距离 <strong>' + nextHoliday.name + '</strong> 还有 <span class="holiday-days">' +
         daysRemain + '</span> 天';
 }
-var weatherContent = document.getElementById('weatherContent');
 
+// ============ 修复天气渲染：每次重新获取元素 ============
 function getWeather() {
+    var weatherContent = document.getElementById('weatherContent');
+    if (!weatherContent) {
+        console.warn('天气容器未找到');
+        return;
+    }
     fetch('https://uapis.cn/api/v1/misc/weather?extended=true&forecast=true')
         .then(function(response) {
             if (!response.ok) throw new Error('请求失败');
@@ -1568,6 +1572,11 @@ function getWeather() {
 }
 
 function renderWeather(data) {
+    var weatherContent = document.getElementById('weatherContent');
+    if (!weatherContent) {
+        console.warn('天气容器未找到，无法渲染');
+        return;
+    }
     var city = data.city || '未知';
     var district = data.district || '';
     var temp = data.temperature || '--';

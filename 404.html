@@ -706,7 +706,7 @@
                     clearInterval(countdownTimer);
                     countdownTimer = null;
                     redirectTimer = setTimeout(() => {
-                        window.location.href = 'index.html';
+                        window.location.replace('index.html');
                     }, 500);
                 }
             }, 1000);
@@ -760,19 +760,19 @@
         });
 
         homeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
             if (isCountdownActive) {
-                e.preventDefault();
                 return;
             }
 
             if (clickCount >= 2 && clickCount <= 6) {
-                e.preventDefault();
                 showToast('呦呵↗ 听话听话～', false, 1500);
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    window.location.replace('index.html');
                 }, 350);
                 return;
             }
+            window.location.replace('index.html');
         });
 
         function resetAllState() {

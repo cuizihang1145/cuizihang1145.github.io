@@ -87,11 +87,16 @@ var allShuoshuo=[];
 var currentFilter='newest';
 var currentKeyword='';
 function renderShuoshuoList(){
+var listEl=document.getElementById('shuoshuoList');
+var countEl=document.getElementById('totalCount');
+if(allShuoshuo.length===0){
+countEl.textContent='0';
+listEl.innerHTML='<div style="text-align:center;padding:2rem;color:#8A8AB5;">还没有说说</div>';
+return;
+}
 var filtered=allShuoshuo.slice();
 if(currentKeyword.trim()){var kw=currentKeyword.trim().toLowerCase();filtered=filtered.filter(function(item){var content=(item.content||'').toLowerCase();var tags=(item.tags||[]).join(' ').toLowerCase();var location=(item.location||'').toLowerCase();return content.indexOf(kw)!==-1||tags.indexOf(kw)!==-1||location.indexOf(kw)!==-1;});}
 filtered.sort(function(a,b){var dateA=a.date||'1970-01-01';var dateB=b.date||'1970-01-01';if(currentFilter==='newest'){return dateB.localeCompare(dateA);}else{return dateA.localeCompare(dateB);}});
-var listEl=document.getElementById('shuoshuoList');
-var countEl=document.getElementById('totalCount');
 countEl.textContent=filtered.length;
 if(filtered.length===0){listEl.innerHTML='<div style="text-align:center;padding:2rem;color:#8A8AB5;">没有匹配的说说</div>';return;}
 var html='';

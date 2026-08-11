@@ -152,6 +152,31 @@
             position: relative
         }
 
+        #appContent {
+            width: 100%;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 1rem;
+            color: #8A8AB5;
+            transition: color 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        body.dark .loading {
+            color: #8A8AB5
+        }
+
         .top-buttons {
             position: fixed;
             top: 20px;
@@ -1277,23 +1302,6 @@
             display: block;
             margin-bottom: 1rem;
             opacity: 0.5
-        }
-
-        .loading {
-            text-align: center;
-            padding: 4rem 1rem;
-            color: #8A8AB5;
-            transition: color 0.3s ease
-        }
-
-        body.dark .loading {
-            color: #8A8AB5
-        }
-
-        .loading i {
-            font-size: 2rem;
-            display: block;
-            margin-bottom: 1rem
         }
 
         .lightbox-overlay {

@@ -2897,7 +2897,15 @@
                             'https://unpkg.com/@waline/emojis@1.4.0/qq',
                             'https://unpkg.com/@waline/emojis@1.4.0/tieba'
                         ],
-                        requiredMeta: ['nick', 'mail']
+                        requiredMeta: ['nick', 'mail'],
+                        locale: {
+                        placeholder:'邮箱用于接收邮件回复，不会展示给其他人。欢迎评论(¯ｰ¯)✎',
+                        sofa:'还没有人评论哦！来抢个沙发吧~',
+                        submit:'发射!',
+                        nick:'昵称*',
+                        mail:'邮箱*',
+                        link:'http(s)://'
+                        }
                     });
                 })
                 .catch(function(err) {

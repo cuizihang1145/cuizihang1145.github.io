@@ -270,7 +270,7 @@ body.dark {
   word-break: break-all;
 }
 
-/* ========== 关键修复：去掉面板的 overflow:hidden ========== */
+/* ===== 关键修复：将 overflow: hidden 改为 visible ===== */
 .wl-panel {
   position: relative;
   flex-shrink: 1;
@@ -282,12 +282,12 @@ body.dark {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: var(--waline-box-shadow);
-  overflow: visible;   /* 原为 hidden，改为 visible 让表情弹窗完整露出 */
+  overflow: visible;   /* 之前是 hidden，导致表情弹窗被裁 */
 }
 
 .wl-header {
   display: flex;
-  overflow: hidden;
+  overflow: hidden;     /* 保留头部裁剪，保持圆角效果 */
   padding: 0 4px;
   border-bottom: 2px dashed var(--waline-border-color);
   border-top-left-radius: 1.2rem;
@@ -1527,6 +1527,7 @@ body.dark .wl-card .wl-head .wl-nick {
   height: var(--waline-user-avatar-size, 48px);
 }
 
+/* ===== 以下是你原来的紫色增强样式，保持不变 ===== */
 .wl-btn.primary {
   background: linear-gradient(145deg, #7A6BCF, #624ED0) !important;
   border: none !important;
@@ -1562,6 +1563,7 @@ body.dark .wl-btn.primary:hover {
   background: var(--waline-bg-color) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
+  overflow: visible !important;  /* 再次确保弹窗不被裁 */
 }
 
 body.dark .wl-panel {

@@ -15,14 +15,4 @@
 .wl-card-item .wl-card-item{padding-inline-start:.4rem!important}
 .wl-card .wl-quote{margin:.1rem 0!important;padding:.1rem .4rem!important;border-inline-start-width:2px!important}
 .wl-card .wl-quote .wl-user{--avatar-size:1.6rem!important}
-.wl-header{padding:.2rem .3rem!important;gap:.2rem!important}
-.wl-header label{padding:.1rem .3rem!important;font-size:.65rem!important;min-width:auto!important}
-.wl-header input{padding:.1rem .4rem!important;font-size:.75rem!important}
-.wl-editor{min-height:4rem!important;padding:.3rem .6rem!important;margin:.3rem .5rem!important;font-size:.85rem!important;border-radius:.8rem!important}
-.wl-footer{margin:.1rem .5rem!important;padding:.1rem 0!important}
-.wl-btn{padding:.1rem .6rem!important;font-size:.65rem!important;min-width:auto!important;border-radius:1.2rem!important;line-height:1.5!important}
-.wl-info .wl-text-number{font-size:.6rem!important}
-.wl-info button svg{width:14px!important;height:14px!important}
-.wl-count{font-size:1rem!important}
-.wl-header-item{padding:0!important}
 .wl-reply,.wl-like,.wl-edit,.wl-rss,.wl-delete{background:transparent!important}

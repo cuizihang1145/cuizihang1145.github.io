@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.1/css/all.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css">
+    <link rel="stylesheet" href="https://cdn.jsdmirror.cn/npm/@waline/client@v3/dist/waline.css">
     <link rel="icon" href="/favicon.ico" sizes="32x32">
     <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js">
@@ -2848,7 +2848,7 @@
             var commentEl = document.getElementById('waline-comments');
             if (!commentEl) return;
             walineInitialized = true;
-            import('https://unpkg.com/@waline/client@v3/dist/waline.js')
+            import('')
                 .then(function(module) {
                     var init = module.init;
                     init({

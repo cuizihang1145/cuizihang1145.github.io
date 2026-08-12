@@ -1304,7 +1304,7 @@ body.dark .wl-card .wl-head .wl-nick {
   height: var(--waline-user-avatar-size, 48px);
 }
 
-/* 覆盖提交按钮为渐变风格 */
+/* ===== 覆盖：毛玻璃 + 蓝紫风格 ===== */
 .wl-btn.primary {
   background: linear-gradient(145deg, #7A6BCF, #624ED0) !important;
   border: none !important;
@@ -1332,7 +1332,6 @@ body.dark .wl-btn.primary:hover {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* 评论卡片背景毛玻璃 */
 .wl-panel {
   background: var(--waline-bg-color) !important;
   backdrop-filter: blur(12px) !important;
@@ -1342,7 +1341,7 @@ body.dark .wl-panel {
   background: var(--waline-bg-color) !important;
 }
 
-/* 列表项间距更紧凑 */
+/* 紧凑间距 */
 .wl-card-item {
   padding: 0.4rem 0.8rem !important;
 }
@@ -1368,8 +1367,33 @@ body.dark .wl-panel {
 .wl-card .wl-comment-actions .wl-reply {
   font-size: 0.7rem !important;
 }
-
-/* 编辑器高度适配 */
 .wl-editor {
   min-height: 4.5rem !important;
+}
+
+/* ===== 修复回复时评论变窄 ===== */
+.wl-card-item .wl-panel {
+  width: 100% !important;
+  flex-shrink: 0 !important;
+  margin-left: 0 !important;
+}
+.wl-card-item .wl-editor {
+  width: calc(100% - 1em) !important;
+  min-width: 0 !important;
+}
+.wl-card-item .wl-header,
+.wl-card-item .wl-footer {
+  width: 100% !important;
+  flex-wrap: wrap !important;
+}
+.wl-card-item .wl-header-item {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+}
+.wl-card-item .wl-header input {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+.wl-card-item .wl-actions {
+  flex-wrap: wrap !important;
 }

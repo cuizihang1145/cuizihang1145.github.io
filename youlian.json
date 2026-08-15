@@ -1,0 +1,16 @@
+[
+  {
+    "name": "ks的博客",
+    "feed": "https://www.cuizi.top/rss.xml",
+    "logo": "https://raw.githubusercontent.com/cuizihang1145/cuizihang1145.github.io/main/logo.png",
+    "desc": "保持好奇，保持诚实。",
+    "url": "https://www.cuizi.top/"
+  },
+  {
+    "name": "示例友链",
+    "feed": "https://example.com/feed.xml",
+    "logo": "fas fa-globe",
+    "desc": "这是一个示例友链，替换成你的内容即可。",
+    "url": "https://example.com/"
+  }
+]

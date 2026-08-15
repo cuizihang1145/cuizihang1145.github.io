@@ -468,7 +468,7 @@
             }
         }
 
-        /* 模态框 */
+        /* 模态框 - 滚动只作用于文章列表 */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -509,6 +509,8 @@
             max-height: 90vh;
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow: hidden; /* 防止整体滚动 */
         }
         body.dark .modal-box {
             background: rgba(30, 28, 50, 0.92);
@@ -519,16 +521,43 @@
             0% { opacity: 0; transform: scale(0.92) translateY(20px); }
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
-        .modal-scroll-area {
-            flex: 1;
-            overflow-y: auto;
+
+        .modal-status {
+            position: absolute;
+            top: 1.2rem;
+            right: 1.2rem;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+        }
+        body.dark .modal-status {
+            border-color: rgba(0, 0, 0, 0.3);
+        }
+        .modal-status.loading {
+            background: #8A8AB5;
+            animation: pulse-loading 1s ease-in-out infinite;
+        }
+        .modal-status.online {
+            background: #4CAF50;
+        }
+        .modal-status.offline {
+            background: #F44336;
+        }
+        @keyframes pulse-loading {
+            0%, 100% { opacity: 0.4; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* 固定上半部分 */
+        .modal-fixed-top {
+            flex-shrink: 0;
             padding: 2rem 1.8rem 0.5rem 1.8rem;
         }
-        .modal-bottom {
-            padding: 0.5rem 1.8rem 1.8rem 1.8rem;
-            flex-shrink: 0;
-        }
-        .modal-box .modal-logo {
+        .modal-fixed-top .modal-logo {
             width: 80px;
             height: 80px;
             border-radius: 50%;
@@ -541,26 +570,26 @@
             margin: 0 auto 0.6rem;
             overflow: hidden;
         }
-        body.dark .modal-box .modal-logo {
+        body.dark .modal-fixed-top .modal-logo {
             background: rgba(136, 204, 255, 0.10);
             color: #88ccff;
         }
-        .modal-box .modal-logo img {
+        .modal-fixed-top .modal-logo img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        .modal-box .modal-name {
+        .modal-fixed-top .modal-name {
             font-size: 1.4rem;
             font-weight: 700;
             color: #1A1A2E;
             transition: color 0.3s ease;
             text-align: center;
         }
-        body.dark .modal-box .modal-name {
+        body.dark .modal-fixed-top .modal-name {
             color: #E8E6F0;
         }
-        .modal-box .modal-desc {
+        .modal-fixed-top .modal-desc {
             font-size: 0.9rem;
             color: #6A6A92;
             margin-top: 0.2rem;
@@ -568,10 +597,10 @@
             transition: color 0.3s ease;
             text-align: center;
         }
-        body.dark .modal-box .modal-desc {
+        body.dark .modal-fixed-top .modal-desc {
             color: #A8A4C8;
         }
-        .modal-box .modal-url {
+        .modal-fixed-top .modal-url {
             font-size: 0.7rem;
             color: #8A8AB5;
             text-align: center;
@@ -579,10 +608,10 @@
             margin-bottom: 0.6rem;
             transition: color 0.3s ease;
         }
-        body.dark .modal-box .modal-url {
+        body.dark .modal-fixed-top .modal-url {
             color: #7A7AA0;
         }
-        .modal-box .modal-visit-btn {
+        .modal-fixed-top .modal-visit-btn {
             display: inline-block;
             width: 100%;
             padding: 0.7rem 1rem;
@@ -599,65 +628,90 @@
             text-align: center;
             display: block;
         }
-        .modal-box .modal-visit-btn:hover {
+        .modal-fixed-top .modal-visit-btn:hover {
             transform: scale(1.02);
             box-shadow: 0 12px 32px rgba(90, 70, 170, 0.3);
         }
-        body.dark .modal-box .modal-visit-btn {
+        body.dark .modal-fixed-top .modal-visit-btn {
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         }
-        body.dark .modal-box .modal-visit-btn:hover {
+        body.dark .modal-fixed-top .modal-visit-btn:hover {
             box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
         }
-        .modal-box .modal-divider {
+        .modal-fixed-top .modal-divider {
             border: none;
             border-top: 1px solid rgba(0, 0, 0, 0.06);
             margin: 0.8rem 0;
         }
-        body.dark .modal-box .modal-divider {
+        body.dark .modal-fixed-top .modal-divider {
             border-top-color: rgba(255, 255, 255, 0.06);
         }
-        .modal-box .modal-articles-title {
+        .modal-fixed-top .modal-articles-title {
             font-size: 0.85rem;
             font-weight: 600;
             color: #6A6A92;
             margin-bottom: 0.5rem;
             text-align: left;
         }
-        body.dark .modal-box .modal-articles-title {
+        body.dark .modal-fixed-top .modal-articles-title {
             color: #A8A4C8;
         }
-        .modal-box .modal-articles-list {
+
+        /* 滚动区域：仅文章列表滚动 */
+        .modal-articles-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 1.8rem 0.5rem 1.8rem;
+        }
+        .modal-articles-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .modal-articles-scroll::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.04);
+            border-radius: 10px;
+        }
+        .modal-articles-scroll::-webkit-scrollbar-thumb {
+            background: rgba(107,90,207,0.3);
+            border-radius: 10px;
+        }
+        body.dark .modal-articles-scroll::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.04);
+        }
+        body.dark .modal-articles-scroll::-webkit-scrollbar-thumb {
+            background: rgba(136,204,255,0.2);
+        }
+
+        .modal-articles-list {
             list-style: none;
             padding: 0;
             margin: 0;
             text-align: left;
         }
-        .modal-box .modal-articles-list li {
+        .modal-articles-list li {
             padding: 0.5rem 0;
             border-bottom: 1px solid rgba(0, 0, 0, 0.04);
             font-size: 0.85rem;
         }
-        body.dark .modal-box .modal-articles-list li {
+        body.dark .modal-articles-list li {
             border-bottom-color: rgba(255, 255, 255, 0.04);
         }
-        .modal-box .modal-articles-list li:last-child {
+        .modal-articles-list li:last-child {
             border-bottom: none;
         }
-        .modal-box .modal-articles-list .article-link {
+        .modal-articles-list .article-link {
             color: #6B5ACF;
             text-decoration: none;
             transition: 0.2s ease;
             display: block;
             font-weight: 500;
         }
-        body.dark .modal-box .modal-articles-list .article-link {
+        body.dark .modal-articles-list .article-link {
             color: #88ccff;
         }
-        .modal-box .modal-articles-list .article-link:hover {
+        .modal-articles-list .article-link:hover {
             text-decoration: underline;
         }
-        .modal-box .modal-articles-list .article-desc {
+        .modal-articles-list .article-desc {
             font-size: 0.75rem;
             color: #8A8AB5;
             margin-top: 0.1rem;
@@ -667,24 +721,30 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-        body.dark .modal-box .modal-articles-list .article-desc {
+        body.dark .modal-articles-list .article-desc {
             color: #7A7AA0;
         }
-        .modal-box .modal-articles-list .loading-item {
+        .modal-articles-list .loading-item {
             color: #8A8AB5;
             font-style: italic;
             padding: 0.5rem 0;
             border-bottom: none;
             text-align: center;
         }
-        .modal-box .modal-articles-list .no-feed {
+        .modal-articles-list .no-feed {
             color: #8A8AB5;
             text-align: center;
             padding: 0.5rem 0;
             border-bottom: none;
         }
-        body.dark .modal-box .modal-articles-list .no-feed {
+        body.dark .modal-articles-list .no-feed {
             color: #7A7AA0;
+        }
+
+        /* 底部关闭按钮固定 */
+        .modal-bottom {
+            flex-shrink: 0;
+            padding: 0.5rem 1.8rem 1.8rem 1.8rem;
         }
         .modal-box .modal-close-btn {
             width: 100%;
@@ -697,7 +757,6 @@
             font-weight: 500;
             cursor: pointer;
             transition: 0.2s ease;
-            margin-top: 0.2rem;
         }
         body.dark .modal-box .modal-close-btn {
             background: rgba(255, 255, 255, 0.08);
@@ -764,7 +823,10 @@
 <!-- 模态框 -->
 <div class="modal-overlay" id="friendModal">
     <div class="modal-box" id="modalBox">
-        <div class="modal-scroll-area">
+        <div class="modal-status" id="modalStatus"></div>
+
+        <!-- 固定上半部分 -->
+        <div class="modal-fixed-top">
             <div class="modal-logo" id="modalLogo"></div>
             <div class="modal-name" id="modalName"></div>
             <div class="modal-desc" id="modalDesc"></div>
@@ -772,10 +834,16 @@
             <a href="#" target="_blank" rel="noopener" class="modal-visit-btn" id="modalVisitBtn"><i class="fas fa-arrow-right"></i> 访问</a>
             <hr class="modal-divider" />
             <div class="modal-articles-title"><i class="fas fa-rss"></i> 订阅文章</div>
+        </div>
+
+        <!-- 滚动区域：仅文章列表 -->
+        <div class="modal-articles-scroll">
             <ul class="modal-articles-list" id="modalArticlesList">
                 <li class="loading-item">加载中...</li>
             </ul>
         </div>
+
+        <!-- 底部固定关闭按钮 -->
         <div class="modal-bottom">
             <button class="modal-close-btn" id="modalCloseBtn">关闭</button>
         </div>
@@ -846,7 +914,6 @@
             html += '</div>';
             container.innerHTML = html;
 
-            // 绑定点击事件
             document.querySelectorAll('.friend-card').forEach(function(card) {
                 card.addEventListener('click', function() {
                     const idx = parseInt(this.dataset.index);
@@ -855,7 +922,6 @@
             });
         }
 
-        // 加载数据
         function loadFriends() {
             fetch('youlian.json', { cache: 'no-cache' })
                 .then(function(response) {
@@ -879,6 +945,7 @@
 
         // ---------- 模态框 ----------
         const modalOverlay = document.getElementById('friendModal');
+        const modalStatus = document.getElementById('modalStatus');
         const modalLogo = document.getElementById('modalLogo');
         const modalName = document.getElementById('modalName');
         const modalDesc = document.getElementById('modalDesc');
@@ -891,7 +958,6 @@
             const friend = friendsData[index];
             if (!friend) return;
 
-            // 填充信息
             const logo = friend.logo || 'fas fa-user';
             let logoHtml = '';
             if (logo.startsWith('http://') || logo.startsWith('https://')) {
@@ -905,12 +971,23 @@
             modalUrl.textContent = friend.url || '';
             modalVisitBtn.href = friend.url || '#';
 
+            // 状态点：加载中
+            modalStatus.className = 'modal-status loading';
+            modalStatus.style.display = 'block';
+
             // 清空文章列表，显示加载中
             modalArticlesList.innerHTML = '<li class="loading-item">加载中...</li>';
 
             // 显示模态框
             modalOverlay.classList.add('active');
             document.body.style.overflow = 'hidden';
+
+            // 优先进行 Ping（检测网站是否在线）
+            if (friend.url && friend.url.trim() !== '') {
+                pingWebsite(friend.url.trim());
+            } else {
+                modalStatus.className = 'modal-status offline';
+            }
 
             // 如果有 feed，抓取文章
             if (friend.feed && friend.feed.trim() !== '') {
@@ -925,7 +1002,6 @@
             document.body.style.overflow = '';
         }
 
-        // 点击外部关闭
         modalOverlay.addEventListener('click', function(e) {
             if (e.target === this) {
                 closeModal();
@@ -934,34 +1010,57 @@
 
         modalCloseBtn.addEventListener('click', closeModal);
 
-        // 抓取 RSS 文章
+        // Ping 检测网站是否在线（超时 15 秒）
+        function pingWebsite(url) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+            // 使用 fetch 尝试获取网站首页，只检测状态，不读取内容
+            fetch(url, {
+                method: 'HEAD',
+                mode: 'no-cors', // 用于跨域，只能检测是否能访问
+                signal: controller.signal
+            })
+            .then(function() {
+                clearTimeout(timeoutId);
+                modalStatus.className = 'modal-status online';
+            })
+            .catch(function(err) {
+                clearTimeout(timeoutId);
+                if (err.name === 'AbortError') {
+                    modalStatus.className = 'modal-status offline';
+                } else {
+                    modalStatus.className = 'modal-status offline';
+                }
+            });
+        }
+
+        // 抓取 RSS 文章（超时 15 秒）
         function fetchFeedArticles(feedUrl) {
             const proxyUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feedUrl);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-            fetch(proxyUrl)
+            fetch(proxyUrl, { signal: controller.signal })
                 .then(function(response) {
+                    clearTimeout(timeoutId);
                     if (!response.ok) throw new Error('网络响应失败');
                     return response.json();
                 })
                 .then(function(data) {
                     if (data.status === 'ok' && data.items && data.items.length > 0) {
-                        // 只取前3篇
                         var items = data.items.slice(0, 3);
                         var html = '';
                         items.forEach(function(item) {
                             var title = item.title || '无标题';
                             var link = item.link || '#';
-                            // 提取正文内容，取纯文本前30字
                             var description = item.description || item.content || '';
-                            // 去除HTML标签
                             var tempDiv = document.createElement('div');
                             tempDiv.innerHTML = description;
                             var plainText = tempDiv.textContent || tempDiv.innerText || '';
                             plainText = plainText.trim();
-                            // 截取前30个字（中文字符算一个）
                             var shortDesc = plainText.substring(0, 30);
                             if (plainText.length > 30) shortDesc += '…';
-
                             html += `
                                 <li>
                                     <a href="${link}" target="_blank" rel="noopener" class="article-link">${title}</a>
@@ -974,8 +1073,13 @@
                         modalArticlesList.innerHTML = '<li class="no-feed">暂无文章</li>';
                     }
                 })
-                .catch(function() {
-                    modalArticlesList.innerHTML = '<li class="no-feed">加载失败</li>';
+                .catch(function(err) {
+                    clearTimeout(timeoutId);
+                    if (err.name === 'AbortError') {
+                        modalArticlesList.innerHTML = '<li class="no-feed">加载超时</li>';
+                    } else {
+                        modalArticlesList.innerHTML = '<li class="no-feed">加载失败</li>';
+                    }
                 });
         }
 

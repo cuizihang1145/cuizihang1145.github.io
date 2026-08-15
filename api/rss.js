@@ -1,15 +1,27 @@
-import { readFile } from './utils.js';
-
-const MAIN_REPO = 'cuizihang1145/cuizihang1145.github.io';
-
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    const result = await readFile(MAIN_REPO, 'wenzhang.json');
-    const articles = result.data.announcements || [];
+    const TOKEN = process.env.TOKEN;
+    const url = 'https://api.github.com/repos/cuizihang1145/cuizihang1145.github.io/contents/wenzhang.json';
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `token ${TOKEN}`,
+        'User-Agent': 'ks-admin',
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`GitHub API 失败: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = Buffer.from(data.content, 'base64').toString('utf-8');
+    const json = JSON.parse(content);
+    const articles = json.announcements || [];
 
     const filtered = articles
       .filter(item => !item.delete)
@@ -72,4 +84,4 @@ function escapeXml(unsafe) {
       default: return c;
     }
   });
-    }
+}

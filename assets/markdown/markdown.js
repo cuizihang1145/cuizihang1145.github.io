@@ -1,11 +1,6 @@
-/* markdown.js
- * 暴露全局对象：window.KSMarkdown
- * 依赖：Font Awesome 7（图标）、Highlight.js 11（如需代码高亮）
- */
 (function (global) {
   'use strict';
 
-  /* ---------- 工具函数 ---------- */
   function escapeHtml(text) {
     if (!text) return '';
     const div = document.createElement('div');
@@ -62,7 +57,6 @@
     return text.length;
   }
 
-  /* ---------- Markdown 渲染 ---------- */
   function renderMarkdown(md) {
     if (!md) return '';
 
@@ -196,7 +190,6 @@
           continue;
         }
 
-        // 脚注定义
         const footnoteDefMatch = line.match(/^\[\^([^\]]+)\]:\s*(.*)/);
         if (footnoteDefMatch) {
           if (inList) flushList();
@@ -205,7 +198,6 @@
           continue;
         }
 
-        // 引用
         const blockquoteMatch = line.match(/^(>+)\s?(.*)/);
         if (blockquoteMatch) {
           if (inList) flushList();
@@ -247,7 +239,6 @@
           continue;
         }
 
-        // 标题
         const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
         if (headingMatch) {
           if (inList) flushList();
@@ -255,14 +246,12 @@
           continue;
         }
 
-        // 分隔线
         if (/^---$/.test(line.trim()) || /^\*\*\*$/.test(line.trim()) || /^___$/.test(line.trim())) {
           if (inList) flushList();
           result += '<hr />\n';
           continue;
         }
 
-        // 表格
         const tableLineMatch = line.match(/^\|(.+)\|$/);
         if (tableLineMatch) {
           if (inList) flushList();
@@ -301,7 +290,6 @@
           }
         }
 
-        // 列表
         const listMatch = line.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
         if (listMatch) {
           const indent = listMatch[1].length;
@@ -360,7 +348,6 @@
 
         if (inList) flushList();
 
-        // 定义列表
         const dlMatch = line.match(/^([^:]+):\s+(.*)/);
         if (dlMatch && i + 1 < lines.length && lines[i + 1].match(/^:\s+/)) {
           const term = renderInline(dlMatch[1]);
@@ -382,7 +369,6 @@
       return result;
     }
 
-    // 代码块提取
     const codeBlockRegex = /^```(\w*)\s*([\s\S]*?)```/gm;
     const codeBlocks = [];
     let codeIndex = 0;
@@ -429,7 +415,6 @@
       html = html.replace(block.id, codeBlockHtml);
     });
 
-    // 脚注
     if (Object.keys(footnotes).length > 0) {
       let footnotesHtml = '<div class="footnotes">';
       for (let fnId = 1; fnId <= footnoteCounter; fnId++) {
@@ -448,7 +433,6 @@
     return html.replace(/\n{3,}/g, '\n\n');
   }
 
-  /* ---------- 图片/视频懒加载 ---------- */
   function initImageLazyLoad(container) {
     container.querySelectorAll('.img-placeholder').forEach(function (wrapper) {
       const img = wrapper.querySelector('img');
@@ -509,7 +493,6 @@
     });
   }
 
-  /* ---------- 灯箱 ---------- */
   let lbIsOpen = false;
 
   function openLightbox(images, index) {
@@ -517,7 +500,6 @@
     lbIsOpen = true;
     let currentIndex = index || 0;
 
-    // 进度条元素
     const progressEl = document.createElement('div');
     progressEl.className = 'lightbox-progress';
     progressEl.innerHTML = '<div class="lb-progress-bar"></div>';
@@ -789,18 +771,16 @@
     requestAnimationFrame(() => overlay.classList.add('active'));
   }
 
-  /* ---------- 挂载函数 ---------- */
   function mountMarkdown(container, markdownText) {
     if (!container) return;
-    const html = renderMarkdown(markdownText || '');
-    container.innerHTML = '<div class="markdown-body">' + html + '</div>';
-    const body = container.querySelector('.markdown-body');
-    wrapImagesInPlaceholders(body);
-    initImageLazyLoad(body);
-    initVideoLazyLoad(body);
-    initCodeHighlight(body);
-    bindImageLightbox(body);
-    return body;
+    container.innerHTML = renderMarkdown(markdownText || '');
+    container.classList.add('markdown-body');
+    wrapImagesInPlaceholders(container);
+    initImageLazyLoad(container);
+    initVideoLazyLoad(container);
+    initCodeHighlight(container);
+    bindImageLightbox(container);
+    return container;
   }
 
   function bindImageLightbox(container) {
@@ -820,7 +800,6 @@
     });
   }
 
-  /* ---------- 全局交互委托：代码块复制/折叠、脚注 ---------- */
   function scrollToFootnote(id) {
     const el = document.getElementById(id);
     if (!el) return;

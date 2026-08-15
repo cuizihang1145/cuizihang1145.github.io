@@ -191,8 +191,8 @@
 
         .friends-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 1.2rem;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
             margin-top: 0.5rem;
         }
 
@@ -200,16 +200,14 @@
             background: rgba(255, 255, 255, 0.55);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border-radius: 1.5rem;
-            padding: 1.6rem 1.4rem;
+            border-radius: 1.2rem;
+            padding: 0.8rem 1rem;
             border: 1px solid rgba(255, 255, 255, 0.4);
             transition: 0.25s ease;
-            text-decoration: none;
-            color: #1A1A2E;
+            cursor: pointer;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            text-align: center;
+            gap: 1rem;
         }
         body.dark .friend-card {
             background: rgba(35, 32, 60, 0.55);
@@ -217,94 +215,64 @@
             color: #E8E6F0;
         }
         .friend-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 16px 36px rgba(80, 60, 160, 0.12);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(80, 60, 160, 0.10);
             background: rgba(255, 255, 255, 0.8);
             border-color: #D6CCFF;
         }
         body.dark .friend-card:hover {
             background: rgba(50, 45, 80, 0.65);
             border-color: rgba(160, 140, 220, 0.25);
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.20);
         }
 
-        .friend-logo {
-            width: 64px;
-            height: 64px;
+        .friend-card .card-logo {
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
+            flex-shrink: 0;
             background: rgba(107, 90, 207, 0.12);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             color: #6B5ACF;
-            margin-bottom: 0.6rem;
-            flex-shrink: 0;
+            overflow: hidden;
         }
-        body.dark .friend-logo {
+        body.dark .friend-card .card-logo {
             background: rgba(136, 204, 255, 0.10);
             color: #88ccff;
         }
-        .friend-logo img {
+        .friend-card .card-logo img {
             width: 100%;
             height: 100%;
-            border-radius: 50%;
             object-fit: cover;
         }
-
-        .friend-name {
-            font-size: 1.1rem;
+        .friend-card .card-right {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .friend-card .card-name {
+            font-size: 1rem;
             font-weight: 600;
             color: #2D2D4A;
             transition: color 0.3s ease;
         }
-        body.dark .friend-name {
+        body.dark .friend-card .card-name {
             color: #D0CAF0;
         }
-
-        .friend-desc {
-            font-size: 0.82rem;
+        .friend-card .card-desc {
+            font-size: 0.75rem;
             color: #6A6A92;
-            margin: 0.3rem 0 0.6rem;
-            line-height: 1.5;
-            flex: 1;
             transition: color 0.3s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        body.dark .friend-desc {
+        body.dark .friend-card .card-desc {
             color: #A8A4C8;
-        }
-
-        .friend-links {
-            display: flex;
-            gap: 0.6rem;
-            margin-top: 0.2rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .friend-links a {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.2rem;
-            font-size: 0.7rem;
-            font-weight: 500;
-            color: #6B5ACF;
-            background: rgba(107, 90, 207, 0.10);
-            padding: 0.2rem 0.8rem;
-            border-radius: 40px;
-            text-decoration: none;
-            transition: 0.2s ease;
-            word-break: break-all;
-        }
-        body.dark .friend-links a {
-            color: #88ccff;
-            background: rgba(136, 204, 255, 0.10);
-        }
-        .friend-links a:hover {
-            background: rgba(107, 90, 207, 0.20);
-            transform: scale(1.03);
-        }
-        body.dark .friend-links a:hover {
-            background: rgba(136, 204, 255, 0.20);
         }
 
         .empty-state {
@@ -499,6 +467,211 @@
                 white-space: normal;
             }
         }
+
+        /* 模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            z-index: 999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, background 0.3s ease, backdrop-filter 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+            visibility: visible;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .modal-box {
+            max-width: 480px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 2rem;
+            padding: 2rem 1.8rem 1.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            animation: modalFadeIn 0.3s ease;
+            transition: background 0.4s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        body.dark .modal-box {
+            background: rgba(30, 28, 50, 0.92);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+        }
+        @keyframes modalFadeIn {
+            0% { opacity: 0; transform: scale(0.92) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-box .modal-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(107, 90, 207, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.4rem;
+            color: #6B5ACF;
+            margin: 0 auto 0.6rem;
+            overflow: hidden;
+        }
+        body.dark .modal-box .modal-logo {
+            background: rgba(136, 204, 255, 0.10);
+            color: #88ccff;
+        }
+        .modal-box .modal-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .modal-box .modal-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1A1A2E;
+            transition: color 0.3s ease;
+        }
+        body.dark .modal-box .modal-name {
+            color: #E8E6F0;
+        }
+        .modal-box .modal-desc {
+            font-size: 0.9rem;
+            color: #6A6A92;
+            margin-top: 0.2rem;
+            margin-bottom: 1.2rem;
+            transition: color 0.3s ease;
+        }
+        body.dark .modal-box .modal-desc {
+            color: #A8A4C8;
+        }
+        .modal-box .modal-visit-btn {
+            display: inline-block;
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border-radius: 60px;
+            background: linear-gradient(145deg, #7A6BCF, #624ED0);
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.25s ease;
+            box-shadow: 0 8px 24px rgba(90, 70, 170, 0.2);
+            border: none;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .modal-box .modal-visit-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 32px rgba(90, 70, 170, 0.3);
+        }
+        body.dark .modal-box .modal-visit-btn {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+        body.dark .modal-box .modal-visit-btn:hover {
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+        }
+        .modal-box .modal-divider {
+            border: none;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            margin: 1rem 0;
+        }
+        body.dark .modal-box .modal-divider {
+            border-top-color: rgba(255, 255, 255, 0.06);
+        }
+        .modal-box .modal-articles-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #6A6A92;
+            margin-bottom: 0.5rem;
+            text-align: left;
+        }
+        body.dark .modal-box .modal-articles-title {
+            color: #A8A4C8;
+        }
+        .modal-box .modal-articles-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+        .modal-box .modal-articles-list li {
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            font-size: 0.85rem;
+        }
+        body.dark .modal-box .modal-articles-list li {
+            border-bottom-color: rgba(255, 255, 255, 0.04);
+        }
+        .modal-box .modal-articles-list li:last-child {
+            border-bottom: none;
+        }
+        .modal-box .modal-articles-list a {
+            color: #6B5ACF;
+            text-decoration: none;
+            transition: 0.2s ease;
+            display: block;
+            word-break: break-word;
+        }
+        body.dark .modal-box .modal-articles-list a {
+            color: #88ccff;
+        }
+        .modal-box .modal-articles-list a:hover {
+            text-decoration: underline;
+        }
+        .modal-box .modal-articles-list .loading-item {
+            color: #8A8AB5;
+            font-style: italic;
+        }
+        .modal-box .modal-close-btn {
+            margin-top: 1rem;
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 60px;
+            background: rgba(0, 0, 0, 0.06);
+            color: #6A6A92;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s ease;
+            width: 100%;
+        }
+        body.dark .modal-box .modal-close-btn {
+            background: rgba(255, 255, 255, 0.08);
+            color: #9A96B8;
+        }
+        .modal-box .modal-close-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        body.dark .modal-box .modal-close-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .modal-box .no-feed {
+            color: #8A8AB5;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 0.5rem 0;
+        }
+        body.dark .modal-box .no-feed {
+            color: #7A7AA0;
+        }
     </style>
 </head>
 <body>
@@ -551,8 +724,25 @@
     </footer>
 </div>
 
+<!-- 模态框 -->
+<div class="modal-overlay" id="friendModal">
+    <div class="modal-box" id="modalBox">
+        <div class="modal-logo" id="modalLogo"></div>
+        <div class="modal-name" id="modalName"></div>
+        <div class="modal-desc" id="modalDesc"></div>
+        <a href="#" target="_blank" rel="noopener" class="modal-visit-btn" id="modalVisitBtn"><i class="fas fa-arrow-right"></i> 访问</a>
+        <hr class="modal-divider" />
+        <div class="modal-articles-title"><i class="fas fa-rss"></i> 订阅文章</div>
+        <ul class="modal-articles-list" id="modalArticlesList">
+            <li class="loading-item">加载中...</li>
+        </ul>
+        <button class="modal-close-btn" id="modalCloseBtn">关闭</button>
+    </div>
+</div>
+
 <script>
     (function() {
+        // 主题切换
         const themeToggle = document.getElementById('themeToggle');
         const themeIcon = document.getElementById('themeIcon');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -570,10 +760,15 @@
             setTheme(currentTheme === 'dark' ? 'light' : 'dark');
         });
 
+        // 数据
+        let friendsData = [];
+
+        // 渲染友链卡片
         function renderFriends(data) {
             const container = document.getElementById('friendsContainer');
+            friendsData = data || [];
 
-            if (!data || data.length === 0) {
+            if (!friendsData || friendsData.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-user-plus"></i>
@@ -584,11 +779,9 @@
             }
 
             let html = '<div class="friends-grid">';
-            data.forEach(function(friend) {
+            friendsData.forEach(function(friend, index) {
                 const name = friend.name || '未知';
                 const desc = friend.desc || '';
-                const url = friend.url || '#';
-                const feed = friend.feed || '';
                 const logo = friend.logo || 'fas fa-user';
 
                 let logoHtml = '';
@@ -598,24 +791,29 @@
                     logoHtml = '<i class="' + logo + '"></i>';
                 }
 
-                const feedLink = feed ? `<a href="${feed}" target="_blank" rel="noopener"><i class="fas fa-rss"></i> 订阅</a>` : '';
-
                 html += `
-                    <a href="${url}" target="_blank" rel="noopener" class="friend-card">
-                        <div class="friend-logo">${logoHtml}</div>
-                        <div class="friend-name">${name}</div>
-                        <div class="friend-desc">${desc}</div>
-                        <div class="friend-links">
-                            <a href="${url}" target="_blank" rel="noopener"><i class="fas fa-arrow-right"></i> 访问</a>
-                            ${feedLink}
+                    <div class="friend-card" data-index="${index}">
+                        <div class="card-logo">${logoHtml}</div>
+                        <div class="card-right">
+                            <div class="card-name">${name}</div>
+                            <div class="card-desc">${desc}</div>
                         </div>
-                    </a>
+                    </div>
                 `;
             });
             html += '</div>';
             container.innerHTML = html;
+
+            // 绑定点击事件
+            document.querySelectorAll('.friend-card').forEach(function(card) {
+                card.addEventListener('click', function() {
+                    const idx = parseInt(this.dataset.index);
+                    openModal(idx);
+                });
+            });
         }
 
+        // 加载数据
         function loadFriends() {
             fetch('youlian.json', { cache: 'no-cache' })
                 .then(function(response) {
@@ -637,7 +835,94 @@
 
         loadFriends();
 
-        // 评论区
+        // ---------- 模态框 ----------
+        const modalOverlay = document.getElementById('friendModal');
+        const modalLogo = document.getElementById('modalLogo');
+        const modalName = document.getElementById('modalName');
+        const modalDesc = document.getElementById('modalDesc');
+        const modalVisitBtn = document.getElementById('modalVisitBtn');
+        const modalArticlesList = document.getElementById('modalArticlesList');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        let currentFeedUrl = '';
+
+        function openModal(index) {
+            const friend = friendsData[index];
+            if (!friend) return;
+
+            // 填充信息
+            const logo = friend.logo || 'fas fa-user';
+            let logoHtml = '';
+            if (logo.startsWith('http://') || logo.startsWith('https://')) {
+                logoHtml = '<img src="' + logo + '" alt="' + friend.name + '" />';
+            } else {
+                logoHtml = '<i class="' + logo + '"></i>';
+            }
+            modalLogo.innerHTML = logoHtml;
+            modalName.textContent = friend.name || '未知';
+            modalDesc.textContent = friend.desc || '';
+            modalVisitBtn.href = friend.url || '#';
+            modalVisitBtn.textContent = '访问';
+
+            // 清空文章列表，显示加载中
+            modalArticlesList.innerHTML = '<li class="loading-item">加载中...</li>';
+
+            // 显示模态框
+            modalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // 如果有 feed，抓取文章
+            if (friend.feed && friend.feed.trim() !== '') {
+                currentFeedUrl = friend.feed.trim();
+                fetchFeedArticles(currentFeedUrl);
+            } else {
+                modalArticlesList.innerHTML = '<li class="no-feed">暂无订阅源</li>';
+            }
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // 点击外部关闭
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        modalCloseBtn.addEventListener('click', closeModal);
+
+        // 抓取 RSS 文章
+        function fetchFeedArticles(feedUrl) {
+            const proxyUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feedUrl);
+
+            fetch(proxyUrl)
+                .then(function(response) {
+                    if (!response.ok) throw new Error('网络响应失败');
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.status === 'ok' && data.items && data.items.length > 0) {
+                        let html = '';
+                        // 最多显示10条
+                        var items = data.items.slice(0, 10);
+                        items.forEach(function(item) {
+                            var title = item.title || '无标题';
+                            var link = item.link || '#';
+                            html += '<li><a href="' + link + '" target="_blank" rel="noopener">' + title + '</a></li>';
+                        });
+                        modalArticlesList.innerHTML = html;
+                    } else {
+                        modalArticlesList.innerHTML = '<li class="no-feed">暂无文章</li>';
+                    }
+                })
+                .catch(function() {
+                    modalArticlesList.innerHTML = '<li class="no-feed">加载失败</li>';
+                });
+        }
+
+        // ---------- 评论区 Waline ----------
         function initWaline() {
             var commentEl = document.getElementById('waline-comments');
             if (!commentEl) return;
@@ -674,8 +959,11 @@
                 });
         }
 
-        // 延迟初始化评论区
         setTimeout(initWaline, 500);
+
+        // 暴露给可能的调试，但不需要
+        window.openModal = openModal;
+        window.closeModal = closeModal;
     })();
 </script>
 

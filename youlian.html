@@ -197,18 +197,46 @@
         body.dark .modal-box { background:rgba(30,28,50,.92); border-color:rgba(255,255,255,.08); box-shadow:0 24px 60px rgba(0,0,0,.5); }
         @keyframes modalFadeIn { 0%{opacity:0; transform:scale(.92) translateY(20px)} 100%{opacity:1; transform:scale(1) translateY(0)} }
 
-        /* 状态指示灯 — 修复椭圆拉伸 */
+        /* 状态指示灯 — 强制正圆，带图标 */
         .modal-status {
             position:absolute; top:1.2rem; right:1.2rem;
-            width:14px; height:14px; border-radius:50%; flex-shrink:0;
+            width:28px; height:28px; border-radius:50%; flex-shrink:0;
             border:2px solid rgba(255,255,255,.8); box-shadow:0 2px 8px rgba(0,0,0,.15);
             z-index:10; aspect-ratio:1/1;
+            display:flex; align-items:center; justify-content:center;
+            transition:background .3s ease;
         }
         body.dark .modal-status { border-color:rgba(0,0,0,.3); }
-        .modal-status.loading { background:#8A8AB5; animation:pulse-loading 1s ease-in-out infinite; }
-        .modal-status.online { background:#4CAF50; }
-        .modal-status.offline { background:#F44336; }
-        @keyframes pulse-loading { 0%,100%{opacity:.4; transform:scale(.9)} 50%{opacity:1; transform:scale(1.1)} }
+
+        .modal-status .status-icon {
+            font-size:14px; color:#fff; line-height:1;
+            display:block;
+        }
+
+        /* 加载状态：绿色背景 + 旋转图标（与绿色状态一致，只是多了图标） */
+        .modal-status.loading {
+            background:#4CAF50;
+        }
+        .modal-status.loading .status-icon {
+            animation:spin 1s linear infinite;
+        }
+        @keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+
+        /* 在线状态：纯绿色，无图标 */
+        .modal-status.online {
+            background:#4CAF50;
+        }
+        .modal-status.online .status-icon {
+            display:none;
+        }
+
+        /* 离线状态：纯红色，无图标 */
+        .modal-status.offline {
+            background:#F44336;
+        }
+        .modal-status.offline .status-icon {
+            display:none;
+        }
 
         /* 固定上半部分 */
         .modal-fixed-top { flex-shrink:0; padding:2rem 1.8rem .5rem 1.8rem; }
@@ -314,7 +342,10 @@
 <!-- 模态框 -->
 <div class="modal-overlay" id="friendModal">
     <div class="modal-box" id="modalBox">
-        <div class="modal-status" id="modalStatus"></div>
+        <!-- 状态指示灯，内含图标 -->
+        <div class="modal-status" id="modalStatus">
+            <i class="fas fa-spinner status-icon" id="statusIcon"></i>
+        </div>
 
         <div class="modal-fixed-top">
             <div class="modal-logo" id="modalLogo"></div>
@@ -409,6 +440,7 @@
     // 模态框
     const modalOverlay = document.getElementById('friendModal');
     const modalStatus = document.getElementById('modalStatus');
+    const statusIcon = document.getElementById('statusIcon');
     const modalLogo = document.getElementById('modalLogo');
     const modalName = document.getElementById('modalName');
     const modalDesc = document.getElementById('modalDesc');
@@ -433,8 +465,10 @@
         modalUrl.textContent = friend.url || '';
         modalVisitBtn.href = friend.url || '#';
 
+        // 加载状态：绿色背景 + 旋转图标
         modalStatus.className = 'modal-status loading';
-        modalStatus.style.display = 'block';
+        statusIcon.style.display = 'block';
+        statusIcon.className = 'fas fa-sync-alt status-icon';  // 使用 fa-sync-alt 旋转
         modalArticlesList.innerHTML = '<li class="loading-item">加载中...</li>';
 
         modalOverlay.classList.add('active');
@@ -443,7 +477,9 @@
         if(friend.url && friend.url.trim()!==''){
             pingWebsite(friend.url.trim());
         } else {
+            // 无URL，直接离线
             modalStatus.className = 'modal-status offline';
+            statusIcon.style.display = 'none';
         }
 
         if(friend.feed && friend.feed.trim()!==''){
@@ -465,8 +501,18 @@
         const controller = new AbortController();
         const timeoutId = setTimeout(()=>controller.abort(), 15000);
         fetch(url, { method:'HEAD', mode:'no-cors', signal:controller.signal })
-            .then(()=>{ clearTimeout(timeoutId); modalStatus.className = 'modal-status online'; })
-            .catch(()=>{ clearTimeout(timeoutId); modalStatus.className = 'modal-status offline'; });
+            .then(()=>{
+                clearTimeout(timeoutId);
+                // 成功：在线，绿色无图标
+                modalStatus.className = 'modal-status online';
+                statusIcon.style.display = 'none';
+            })
+            .catch(()=>{
+                clearTimeout(timeoutId);
+                // 失败：离线，红色无图标
+                modalStatus.className = 'modal-status offline';
+                statusIcon.style.display = 'none';
+            });
     }
 
     function fetchFeedArticles(feedUrl){

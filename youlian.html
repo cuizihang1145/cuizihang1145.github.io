@@ -202,13 +202,11 @@
             width:14px; height:14px; min-width:14px; min-height:14px; max-width:14px; max-height:14px;
             border-radius:50%; flex-shrink:0;
             border:2px solid rgba(255,255,255,.8); box-shadow:0 2px 8px rgba(0,0,0,.15);
-            z-index:10;
+            z-index:10; display:none;
         }
         body.dark .modal-status { border-color:rgba(0,0,0,.3); }
-        .modal-status.loading { background:#8A8AB5; animation:pulse-loading 1s ease-in-out infinite; }
-        .modal-status.online { background:#4CAF50; }
-        .modal-status.offline { background:#F44336; }
-        @keyframes pulse-loading { 0%,100%{opacity:.4; transform:scale(.9)} 50%{opacity:1; transform:scale(1.1)} }
+        .modal-status.online { background:#4CAF50; display:block; }
+        .modal-status.offline { background:#F44336; display:block; }
 
         .modal-fixed-top { flex-shrink:0; padding:2rem 1.8rem .5rem 1.8rem; }
         .modal-fixed-top .modal-logo {
@@ -427,8 +425,8 @@
         modalUrl.textContent = friend.url || '';
         modalVisitBtn.href = friend.url || '#';
 
-        modalStatus.className = 'modal-status loading';
-        modalStatus.style.display = 'block';
+        modalStatus.className = 'modal-status';
+        modalStatus.style.display = 'none';
         modalArticlesList.innerHTML = '<li class="loading-item">加载中...</li>';
 
         modalOverlay.classList.add('active');
@@ -436,8 +434,6 @@
 
         if(friend.url && friend.url.trim()!==''){
             pingWebsite(friend.url.trim());
-        } else {
-            modalStatus.className = 'modal-status offline';
         }
 
         if(friend.feed && friend.feed.trim()!==''){
@@ -459,8 +455,16 @@
         const controller = new AbortController();
         const timeoutId = setTimeout(()=>controller.abort(), 15000);
         fetch(url, { method:'HEAD', mode:'no-cors', signal:controller.signal })
-            .then(()=>{ clearTimeout(timeoutId); modalStatus.className = 'modal-status online'; })
-            .catch(()=>{ clearTimeout(timeoutId); modalStatus.className = 'modal-status offline'; });
+            .then(()=>{
+                clearTimeout(timeoutId);
+                modalStatus.className = 'modal-status online';
+                modalStatus.style.display = 'block';
+            })
+            .catch(()=>{
+                clearTimeout(timeoutId);
+                modalStatus.className = 'modal-status offline';
+                modalStatus.style.display = 'block';
+            });
     }
 
     function fetchFeedArticles(feedUrl){

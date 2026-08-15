@@ -891,6 +891,44 @@
             return url.searchParams.get(name);
         }
 
+        // ↓↓↓ 之前漏掉的两个函数 ↓↓↓
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function compressImage(file, maxSize, quality) {
+            return new Promise(function(resolve, reject) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var img = new Image();
+                    img.onload = function() {
+                        var canvas = document.createElement('canvas');
+                        var w = img.width, h = img.height;
+                        if (w > h) {
+                            if (w > maxSize) { h = h * maxSize / w; w = maxSize; }
+                        } else {
+                            if (h > maxSize) { w = w * maxSize / h; h = maxSize; }
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        canvas.toBlob(function(blob) {
+                            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                        }, 'image/jpeg', quality);
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+        // ↑↑↑ 补丁结束 ↑↑↑
+
         function showToast(message, icon) {
             icon = icon || 'fa-info-circle';
             const toast = document.getElementById('toast');
@@ -1033,7 +1071,6 @@
         let currentShareText = '';
         let walineInitialized = false;
 
-        // 以下工具函数页面内保留（与分享/统计相关）
         function countWords(markdown) {
             if (!markdown) return 0;
             let text = markdown
@@ -1295,7 +1332,6 @@
                         tagsHtml += '</div>';
                     }
 
-                    // 构建文章主体（内容区域留空）
                     appContent.innerHTML = `
                         <div class="article-detail">
                             <h1 class="detail-title">${escapeHtml(title)}</h1>
@@ -1306,12 +1342,10 @@
                         </div>
                     `;
 
-                    // 使用外部 KSMarkdown 渲染内容并自动处理图片灯箱、代码高亮等
                     var detailContentEl = document.getElementById('detailContent');
                     if (detailContentEl && window.KSMarkdown && window.KSMarkdown.mountMarkdown) {
                         window.KSMarkdown.mountMarkdown(detailContentEl, content);
                     } else {
-                        // 降级处理：如果外部库未加载成功，则显示原文
                         detailContentEl.textContent = content;
                     }
 
@@ -1330,7 +1364,6 @@
                 });
         }
 
-        // 分享图相关逻辑（保持原样）
         var currentShareImageDataUrl = '';
 
         function generateShareImage() {
@@ -1432,7 +1465,6 @@
             });
         }
 
-        // 分享模态框相关事件
         var shareModal = document.getElementById('shareModal');
         var sharePreviewImg = document.getElementById('sharePreviewImg');
         document.getElementById('shareButton').addEventListener('click', function() {

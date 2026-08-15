@@ -1,3 +1,6 @@
+// api/rss.js
+import { renderMarkdown } from '../assets/markdown/markdown-node.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -37,7 +40,10 @@ export default async function handler(req, res) {
       const title = escapeXml(item.title || '无标题');
       const link = `${baseUrl}/article.html?id=${index}`;
       const pubDate = new Date(item.date).toUTCString();
-      const description = escapeXml(item.content ? item.content : '');
+      
+      // 完整渲染 Markdown，不截断
+      const htmlContent = renderMarkdown(item.content || '');
+      const description = htmlContent;
       const guid = `${baseUrl}/article.html?id=${index}`;
 
       itemsXml += `
@@ -46,7 +52,7 @@ export default async function handler(req, res) {
     <link>${link}</link>
     <guid>${guid}</guid>
     <pubDate>${pubDate}</pubDate>
-    <description>${description}</description>
+    <description><![CDATA[${description}]]></description>
   </item>`;
     });
 
@@ -84,4 +90,4 @@ function escapeXml(unsafe) {
       default: return c;
     }
   });
-      }
+}

@@ -55,9 +55,9 @@ export default async function handler(req, res) {
 
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Cache-Control', 'public, max-age=600');
-    res.status(200).json(feed);
+    res.status(200).send(JSON.stringify(feed, null, 2));
   } catch (error) {
     console.error('JSON Feed 生成失败:', error.message);
     res.status(500).json({ error: 'JSON Feed 生成失败' });
   }
-        }
+}

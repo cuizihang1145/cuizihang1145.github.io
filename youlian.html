@@ -502,14 +502,13 @@
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border-radius: 2rem;
-            padding: 2rem 1.8rem 1.8rem;
             border: 1px solid rgba(255, 255, 255, 0.5);
             box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15);
-            text-align: center;
             animation: modalFadeIn 0.3s ease;
             transition: background 0.4s ease, border-color 0.3s ease, box-shadow 0.3s ease;
             max-height: 90vh;
-            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
         body.dark .modal-box {
             background: rgba(30, 28, 50, 0.92);
@@ -519,6 +518,15 @@
         @keyframes modalFadeIn {
             0% { opacity: 0; transform: scale(0.92) translateY(20px); }
             100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem 1.8rem 0.5rem 1.8rem;
+        }
+        .modal-bottom {
+            padding: 0.5rem 1.8rem 1.8rem 1.8rem;
+            flex-shrink: 0;
         }
         .modal-box .modal-logo {
             width: 80px;
@@ -547,6 +555,7 @@
             font-weight: 700;
             color: #1A1A2E;
             transition: color 0.3s ease;
+            text-align: center;
         }
         body.dark .modal-box .modal-name {
             color: #E8E6F0;
@@ -555,11 +564,23 @@
             font-size: 0.9rem;
             color: #6A6A92;
             margin-top: 0.2rem;
-            margin-bottom: 1.2rem;
+            margin-bottom: 0.8rem;
             transition: color 0.3s ease;
+            text-align: center;
         }
         body.dark .modal-box .modal-desc {
             color: #A8A4C8;
+        }
+        .modal-box .modal-url {
+            font-size: 0.7rem;
+            color: #8A8AB5;
+            text-align: center;
+            word-break: break-all;
+            margin-bottom: 0.6rem;
+            transition: color 0.3s ease;
+        }
+        body.dark .modal-box .modal-url {
+            color: #7A7AA0;
         }
         .modal-box .modal-visit-btn {
             display: inline-block;
@@ -575,8 +596,8 @@
             box-shadow: 0 8px 24px rgba(90, 70, 170, 0.2);
             border: none;
             cursor: pointer;
-            margin-bottom: 1rem;
             text-align: center;
+            display: block;
         }
         .modal-box .modal-visit-btn:hover {
             transform: scale(1.02);
@@ -591,7 +612,7 @@
         .modal-box .modal-divider {
             border: none;
             border-top: 1px solid rgba(0, 0, 0, 0.06);
-            margin: 1rem 0;
+            margin: 0.8rem 0;
         }
         body.dark .modal-box .modal-divider {
             border-top-color: rgba(255, 255, 255, 0.06);
@@ -613,7 +634,7 @@
             text-align: left;
         }
         .modal-box .modal-articles-list li {
-            padding: 0.4rem 0;
+            padding: 0.5rem 0;
             border-bottom: 1px solid rgba(0, 0, 0, 0.04);
             font-size: 0.85rem;
         }
@@ -623,26 +644,51 @@
         .modal-box .modal-articles-list li:last-child {
             border-bottom: none;
         }
-        .modal-box .modal-articles-list a {
+        .modal-box .modal-articles-list .article-link {
             color: #6B5ACF;
             text-decoration: none;
             transition: 0.2s ease;
             display: block;
-            word-break: break-word;
+            font-weight: 500;
         }
-        body.dark .modal-box .modal-articles-list a {
+        body.dark .modal-box .modal-articles-list .article-link {
             color: #88ccff;
         }
-        .modal-box .modal-articles-list a:hover {
+        .modal-box .modal-articles-list .article-link:hover {
             text-decoration: underline;
+        }
+        .modal-box .modal-articles-list .article-desc {
+            font-size: 0.75rem;
+            color: #8A8AB5;
+            margin-top: 0.1rem;
+            transition: color 0.3s ease;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        body.dark .modal-box .modal-articles-list .article-desc {
+            color: #7A7AA0;
         }
         .modal-box .modal-articles-list .loading-item {
             color: #8A8AB5;
             font-style: italic;
+            padding: 0.5rem 0;
+            border-bottom: none;
+            text-align: center;
+        }
+        .modal-box .modal-articles-list .no-feed {
+            color: #8A8AB5;
+            text-align: center;
+            padding: 0.5rem 0;
+            border-bottom: none;
+        }
+        body.dark .modal-box .modal-articles-list .no-feed {
+            color: #7A7AA0;
         }
         .modal-box .modal-close-btn {
-            margin-top: 1rem;
-            padding: 0.5rem 1.5rem;
+            width: 100%;
+            padding: 0.6rem 1rem;
             border: none;
             border-radius: 60px;
             background: rgba(0, 0, 0, 0.06);
@@ -651,7 +697,7 @@
             font-weight: 500;
             cursor: pointer;
             transition: 0.2s ease;
-            width: 100%;
+            margin-top: 0.2rem;
         }
         body.dark .modal-box .modal-close-btn {
             background: rgba(255, 255, 255, 0.08);
@@ -662,15 +708,6 @@
         }
         body.dark .modal-box .modal-close-btn:hover {
             background: rgba(255, 255, 255, 0.15);
-        }
-        .modal-box .no-feed {
-            color: #8A8AB5;
-            font-size: 0.85rem;
-            text-align: center;
-            padding: 0.5rem 0;
-        }
-        body.dark .modal-box .no-feed {
-            color: #7A7AA0;
         }
     </style>
 </head>
@@ -727,16 +764,21 @@
 <!-- 模态框 -->
 <div class="modal-overlay" id="friendModal">
     <div class="modal-box" id="modalBox">
-        <div class="modal-logo" id="modalLogo"></div>
-        <div class="modal-name" id="modalName"></div>
-        <div class="modal-desc" id="modalDesc"></div>
-        <a href="#" target="_blank" rel="noopener" class="modal-visit-btn" id="modalVisitBtn"><i class="fas fa-arrow-right"></i> 访问</a>
-        <hr class="modal-divider" />
-        <div class="modal-articles-title"><i class="fas fa-rss"></i> 订阅文章</div>
-        <ul class="modal-articles-list" id="modalArticlesList">
-            <li class="loading-item">加载中...</li>
-        </ul>
-        <button class="modal-close-btn" id="modalCloseBtn">关闭</button>
+        <div class="modal-scroll-area">
+            <div class="modal-logo" id="modalLogo"></div>
+            <div class="modal-name" id="modalName"></div>
+            <div class="modal-desc" id="modalDesc"></div>
+            <div class="modal-url" id="modalUrl"></div>
+            <a href="#" target="_blank" rel="noopener" class="modal-visit-btn" id="modalVisitBtn"><i class="fas fa-arrow-right"></i> 访问</a>
+            <hr class="modal-divider" />
+            <div class="modal-articles-title"><i class="fas fa-rss"></i> 订阅文章</div>
+            <ul class="modal-articles-list" id="modalArticlesList">
+                <li class="loading-item">加载中...</li>
+            </ul>
+        </div>
+        <div class="modal-bottom">
+            <button class="modal-close-btn" id="modalCloseBtn">关闭</button>
+        </div>
     </div>
 </div>
 
@@ -840,10 +882,10 @@
         const modalLogo = document.getElementById('modalLogo');
         const modalName = document.getElementById('modalName');
         const modalDesc = document.getElementById('modalDesc');
+        const modalUrl = document.getElementById('modalUrl');
         const modalVisitBtn = document.getElementById('modalVisitBtn');
         const modalArticlesList = document.getElementById('modalArticlesList');
         const modalCloseBtn = document.getElementById('modalCloseBtn');
-        let currentFeedUrl = '';
 
         function openModal(index) {
             const friend = friendsData[index];
@@ -860,8 +902,8 @@
             modalLogo.innerHTML = logoHtml;
             modalName.textContent = friend.name || '未知';
             modalDesc.textContent = friend.desc || '';
+            modalUrl.textContent = friend.url || '';
             modalVisitBtn.href = friend.url || '#';
-            modalVisitBtn.textContent = '访问';
 
             // 清空文章列表，显示加载中
             modalArticlesList.innerHTML = '<li class="loading-item">加载中...</li>';
@@ -872,8 +914,7 @@
 
             // 如果有 feed，抓取文章
             if (friend.feed && friend.feed.trim() !== '') {
-                currentFeedUrl = friend.feed.trim();
-                fetchFeedArticles(currentFeedUrl);
+                fetchFeedArticles(friend.feed.trim());
             } else {
                 modalArticlesList.innerHTML = '<li class="no-feed">暂无订阅源</li>';
             }
@@ -904,13 +945,29 @@
                 })
                 .then(function(data) {
                     if (data.status === 'ok' && data.items && data.items.length > 0) {
-                        let html = '';
-                        // 最多显示10条
-                        var items = data.items.slice(0, 10);
+                        // 只取前3篇
+                        var items = data.items.slice(0, 3);
+                        var html = '';
                         items.forEach(function(item) {
                             var title = item.title || '无标题';
                             var link = item.link || '#';
-                            html += '<li><a href="' + link + '" target="_blank" rel="noopener">' + title + '</a></li>';
+                            // 提取正文内容，取纯文本前30字
+                            var description = item.description || item.content || '';
+                            // 去除HTML标签
+                            var tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = description;
+                            var plainText = tempDiv.textContent || tempDiv.innerText || '';
+                            plainText = plainText.trim();
+                            // 截取前30个字（中文字符算一个）
+                            var shortDesc = plainText.substring(0, 30);
+                            if (plainText.length > 30) shortDesc += '…';
+
+                            html += `
+                                <li>
+                                    <a href="${link}" target="_blank" rel="noopener" class="article-link">${title}</a>
+                                    ${shortDesc ? `<div class="article-desc">${shortDesc}</div>` : ''}
+                                </li>
+                            `;
                         });
                         modalArticlesList.innerHTML = html;
                     } else {
@@ -960,10 +1017,6 @@
         }
 
         setTimeout(initWaline, 500);
-
-        // 暴露给可能的调试，但不需要
-        window.openModal = openModal;
-        window.closeModal = closeModal;
     })();
 </script>
 

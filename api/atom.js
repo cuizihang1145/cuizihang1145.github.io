@@ -40,7 +40,8 @@ export default async function handler(req, res) {
       const id = `${baseUrl}/article.html?id=${index}`;
       const title = escapeXml(item.title || '无标题');
       const updated = new Date(item.date).toISOString();
-      const htmlContent = renderMarkdown(item.content || '');
+      // 关键改动：转义 HTML，不用 CDATA
+      const htmlContent = escapeXml(renderMarkdown(item.content || ''));
 
       entriesXml += `
   <entry>
@@ -48,7 +49,7 @@ export default async function handler(req, res) {
     <title>${title}</title>
     <link href="${id}" rel="alternate" />
     <updated>${updated}</updated>
-    <content type="html"><![CDATA[${htmlContent}]]></content>
+    <content type="html">${htmlContent}</content>
   </entry>`;
     });
 
@@ -87,4 +88,4 @@ function escapeXml(unsafe) {
       default: return c;
     }
   });
-                                         }
+}

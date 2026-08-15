@@ -178,7 +178,6 @@
         .toast .fa-exclamation-circle { color:#fbbf24; }
         @media (max-width:480px) { .toast { font-size:.8rem; padding:.6rem 1.5rem; min-width:180px; white-space:normal; } }
 
-        /* 模态框 */
         .modal-overlay {
             position:fixed; top:0; left:0; width:100%; height:100%;
             background:rgba(0,0,0,0); backdrop-filter:blur(0px); -webkit-backdrop-filter:blur(0px);
@@ -188,21 +187,22 @@
         }
         .modal-overlay.active { display:flex; opacity:1; visibility:visible; background:rgba(0,0,0,.5); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
         .modal-box {
+            position: relative;
             max-width:480px; width:100%; background:rgba(255,255,255,.85); backdrop-filter:blur(24px);
             -webkit-backdrop-filter:blur(24px); border-radius:2rem;
             border:1px solid rgba(255,255,255,.5); box-shadow:0 24px 60px rgba(0,0,0,.15);
             animation:modalFadeIn .3s ease; transition:background .4s ease,border-color .3s ease,box-shadow .3s ease;
-            max-height:90vh; display:flex; flex-direction:column; position:relative; overflow:hidden;
+            max-height:90vh; display:flex; flex-direction:column; overflow:hidden;
         }
         body.dark .modal-box { background:rgba(30,28,50,.92); border-color:rgba(255,255,255,.08); box-shadow:0 24px 60px rgba(0,0,0,.5); }
         @keyframes modalFadeIn { 0%{opacity:0; transform:scale(.92) translateY(20px)} 100%{opacity:1; transform:scale(1) translateY(0)} }
 
-        /* 状态指示灯 — 修复椭圆拉伸 */
         .modal-status {
             position:absolute; top:1.2rem; right:1.2rem;
-            width:14px; height:14px; border-radius:50%; flex-shrink:0;
+            width:14px; height:14px; min-width:14px; min-height:14px; max-width:14px; max-height:14px;
+            border-radius:50%; flex-shrink:0;
             border:2px solid rgba(255,255,255,.8); box-shadow:0 2px 8px rgba(0,0,0,.15);
-            z-index:10; aspect-ratio:1/1;
+            z-index:10;
         }
         body.dark .modal-status { border-color:rgba(0,0,0,.3); }
         .modal-status.loading { background:#8A8AB5; animation:pulse-loading 1s ease-in-out infinite; }
@@ -210,7 +210,6 @@
         .modal-status.offline { background:#F44336; }
         @keyframes pulse-loading { 0%,100%{opacity:.4; transform:scale(.9)} 50%{opacity:1; transform:scale(1.1)} }
 
-        /* 固定上半部分 */
         .modal-fixed-top { flex-shrink:0; padding:2rem 1.8rem .5rem 1.8rem; }
         .modal-fixed-top .modal-logo {
             width:80px; height:80px; border-radius:50%;
@@ -239,7 +238,6 @@
         .modal-fixed-top .modal-articles-title { font-size:.85rem; font-weight:600; color:#6A6A92; margin-bottom:.5rem; text-align:left; }
         body.dark .modal-fixed-top .modal-articles-title { color:#A8A4C8; }
 
-        /* 滚动区域：仅文章列表 */
         .modal-articles-scroll { flex:1; overflow-y:auto; padding:0 1.8rem .5rem 1.8rem; }
         .modal-articles-scroll::-webkit-scrollbar { width:4px; }
         .modal-articles-scroll::-webkit-scrollbar-track { background:rgba(0,0,0,.04); border-radius:10px; }
@@ -260,7 +258,6 @@
         .modal-articles-list .no-feed { color:#8A8AB5; text-align:center; padding:.5rem 0; border-bottom:none; }
         body.dark .modal-articles-list .no-feed { color:#7A7AA0; }
 
-        /* 底部固定关闭按钮 */
         .modal-bottom { flex-shrink:0; padding:.5rem 1.8rem 1.8rem 1.8rem; }
         .modal-box .modal-close-btn {
             width:100%; padding:.6rem 1rem; border:none; border-radius:60px;
@@ -311,7 +308,6 @@
     <footer class="footer">© ks · 个人博客 · 2026</footer>
 </div>
 
-<!-- 模态框 -->
 <div class="modal-overlay" id="friendModal">
     <div class="modal-box" id="modalBox">
         <div class="modal-status" id="modalStatus"></div>
@@ -340,7 +336,6 @@
 
 <script>
 (function(){
-    // 主题切换
     const themeToggle = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -406,7 +401,6 @@
     }
     loadFriends();
 
-    // 模态框
     const modalOverlay = document.getElementById('friendModal');
     const modalStatus = document.getElementById('modalStatus');
     const modalLogo = document.getElementById('modalLogo');
@@ -507,7 +501,6 @@
             });
     }
 
-    // Waline
     function initWaline(){
         const el = document.getElementById('waline-comments');
         if(!el) return;

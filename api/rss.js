@@ -41,9 +41,9 @@ export default async function handler(req, res) {
     const xml = `<?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>ks 的博客</title>
+    <title>ks的博客</title>
     <link>${baseUrl}</link>
-    <description>ks 的个人博客，记录技术、生活与想法。</description>
+    <description>ks的个人博客。保持好奇，保持诚实。</description>
     <language>zh-CN</language>
     <lastBuildDate>${now}</lastBuildDate>
     <atom:link href="${baseUrl}/api/rss" rel="self" type="application/rss+xml" />

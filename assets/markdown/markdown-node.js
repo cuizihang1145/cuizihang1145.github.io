@@ -1,4 +1,3 @@
-// assets/markdown/markdown-node.js
 function escapeHtml(text) {
   if (!text) return '';
   return text.replace(/&/g, '&amp;')
@@ -354,13 +353,38 @@ function renderMarkdown(md) {
 
   let html = renderBlock(md);
 
-  codeBlocks.forEach((block) => {
+  codeBlocks.forEach((block, b) => {
+    const copyId = 'code-' + Date.now() + '-' + b;
     const lines = block.code.split('\n');
-    let codeHtml = '';
-    lines.forEach((line) => {
-      codeHtml += escapeHtml(line) + '\n';
+    const lineCount = lines.length;
+    let maxLineLength = 0;
+    let totalChars = 0;
+    lines.forEach(line => {
+      maxLineLength = Math.max(maxLineLength, line.length);
+      totalChars += line.length;
     });
-    const codeBlockHtml = `<pre><code class="language-${block.lang || 'text'}">${codeHtml}</code></pre>`;
+    totalChars += lineCount > 0 ? lineCount - 1 : 0;
+
+    let codeHtml = '';
+    lines.forEach((line, j) => {
+      codeHtml += '<span class="code-line"><span class="line-number">' + (j + 1) + '</span><span class="hljs">' + escapeHtml(line) + '</span></span>';
+    });
+
+    const statsHtml = '<span>' + lineCount + ' 行</span> · <span>' + maxLineLength + ' 列</span> · <span>' + totalChars + ' 字符</span>';
+    const codeBlockHtml = `
+      <div class="code-block-wrapper" id="cbw-${copyId}">
+        <div class="code-block-header">
+          <span class="lang-label">${escapeHtml(block.lang || 'text')}</span>
+          <span class="code-stats">${statsHtml}</span>
+          <span class="header-actions">
+            <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
+            <button class="collapse-btn" data-target="cbw-${copyId}"><i class="fas fa-chevron-up"></i></button>
+          </span>
+        </div>
+        <div class="code-block-body-wrapper">
+          <div class="code-block-body" id="code-body-${copyId}">${codeHtml}</div>
+        </div>
+      </div>`;
     html = html.replace(block.id, codeBlockHtml);
   });
 

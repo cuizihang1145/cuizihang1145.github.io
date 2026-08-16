@@ -316,11 +316,11 @@
             <div class="modal-desc" id="modalDesc"></div>
             <div class="modal-url" id="modalUrl"></div>
             <a href="#" target="_blank" rel="noopener" class="modal-visit-btn" id="modalVisitBtn"><i class="fas fa-arrow-right"></i> 访问</a>
-            <hr class="modal-divider" />
-            <div class="modal-articles-title"><i class="fas fa-rss"></i> 订阅文章</div>
+            <hr class="modal-divider" id="modalDivider" />
+            <div class="modal-articles-title" id="modalArticlesTitle"><i class="fas fa-rss"></i> 订阅文章</div>
         </div>
 
-        <div class="modal-articles-scroll">
+        <div class="modal-articles-scroll" id="modalArticlesScroll">
             <ul class="modal-articles-list" id="modalArticlesList">
                 <li class="loading-item">加载中...</li>
             </ul>
@@ -408,6 +408,9 @@
     const modalVisitBtn = document.getElementById('modalVisitBtn');
     const modalArticlesList = document.getElementById('modalArticlesList');
     const modalCloseBtn = document.getElementById('modalCloseBtn');
+    const modalDivider = document.getElementById('modalDivider');
+    const modalArticlesTitle = document.getElementById('modalArticlesTitle');
+    const modalArticlesScroll = document.getElementById('modalArticlesScroll');
 
     function openModal(index){
         const friend = friendsData[index];
@@ -429,6 +432,10 @@
         modalStatus.style.display = 'none';
         modalArticlesList.innerHTML = '<li class="loading-item">加载中...</li>';
 
+        modalDivider.style.display = 'block';
+        modalArticlesTitle.style.display = 'block';
+        modalArticlesScroll.style.display = 'block';
+
         modalOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
 
@@ -439,7 +446,9 @@
         if(friend.feed && friend.feed.trim()!==''){
             fetchFeedArticles(friend.feed.trim());
         } else {
-            modalArticlesList.innerHTML = '<li class="no-feed">暂无订阅源</li>';
+            modalDivider.style.display = 'none';
+            modalArticlesTitle.style.display = 'none';
+            modalArticlesScroll.style.display = 'none';
         }
     }
 

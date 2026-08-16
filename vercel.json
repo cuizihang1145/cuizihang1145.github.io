@@ -4,6 +4,5 @@
     { "source": "/rss.xml", "destination": "/api/rss" },
     { "source": "/feed.json", "destination": "/api/feed" },
     { "source": "/atom.xml", "destination": "/api/atom" }
-  ],
-  "outputDirectory": "."
+  ]
 }

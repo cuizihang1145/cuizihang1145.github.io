@@ -76,12 +76,49 @@
         .theme-toggle:hover { transform:scale(1.05) rotate(8deg); background:rgba(255,255,255,.85); box-shadow:0 10px 28px rgba(80,60,160,.18); }
         body.dark .theme-toggle:hover { background:rgba(50,45,80,.8); }
 
+        /* 新增：评论按钮 */
+        .comment-btn {
+            width:48px; height:48px; border:none; border-radius:60px;
+            background:rgba(255,255,255,.6); backdrop-filter:blur(12px);
+            border:1px solid rgba(255,255,255,.8); color:#4F4F78; font-size:1.4rem;
+            cursor:pointer; transition:.3s ease; box-shadow:0 6px 20px rgba(80,60,160,.10);
+            display:flex; align-items:center; justify-content:center;
+            -webkit-tap-highlight-color:transparent!important; outline:none!important;
+            opacity:1; visibility:visible;
+        }
+        body.dark .comment-btn { background:rgba(30,28,50,.7); border-color:rgba(255,255,255,.08); color:#D0CAF0; box-shadow:0 6px 20px rgba(0,0,0,.3); }
+        .comment-btn:hover { transform:scale(1.05); background:rgba(255,255,255,.85); box-shadow:0 10px 28px rgba(80,60,160,.18); }
+        body.dark .comment-btn:hover { background:rgba(50,45,80,.8); }
+        .comment-btn.hide {
+            opacity:0;
+            pointer-events:none;
+            visibility:hidden;
+            transition:opacity .3s ease, visibility .3s ease;
+        }
+
+        /* 新增：回到顶部按钮 */
+        .back-to-top-btn {
+            width:48px; height:48px; border:none; border-radius:60px;
+            background:rgba(255,255,255,.6); backdrop-filter:blur(12px);
+            border:1px solid rgba(255,255,255,.8); color:#4F4F78; font-size:1.2rem;
+            cursor:pointer; transition:opacity .3s ease, transform .3s ease, background .3s ease, box-shadow .3s ease;
+            box-shadow:0 6px 20px rgba(80,60,160,.10);
+            display:flex; align-items:center; justify-content:center;
+            opacity:0; pointer-events:none; visibility:hidden;
+            -webkit-tap-highlight-color:transparent!important; outline:none!important;
+        }
+        body.dark .back-to-top-btn { background:rgba(30,28,50,.7); border-color:rgba(255,255,255,.08); color:#D0CAF0; box-shadow:0 6px 20px rgba(0,0,0,.3); }
+        .back-to-top-btn.show { opacity:1; pointer-events:auto; visibility:visible; }
+        .back-to-top-btn:hover { transform:scale(1.05); background:rgba(255,255,255,.85); box-shadow:0 10px 28px rgba(80,60,160,.18); }
+        body.dark .back-to-top-btn:hover { background:rgba(50,45,80,.8); }
+
         @media (max-width:560px) {
             .container { padding:5rem 1.2rem 1.5rem; }
             .top-bar { top:14px; left:14px; right:14px; }
             .back-btn { padding:.4rem 1rem .4rem .8rem; font-size:.75rem; }
             .back-btn i { font-size:.8rem; }
-            .theme-toggle { width:42px; height:42px; font-size:1.2rem; }
+            .theme-toggle, .comment-btn, .back-to-top-btn { width:42px; height:42px; font-size:1.2rem; }
+            .comment-btn i, .back-to-top-btn i { font-size:1rem; }
         }
 
         .friends-grid {
@@ -277,8 +314,12 @@
 <div class="glow-soft-2"></div>
 
 <div class="top-bar">
-    <div class="left"><a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> 返回</a></div>
+    <div class="left">
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> 返回</a>
+        <button class="comment-btn" id="commentBtn" aria-label="跳转到评论区"><i class="fas fa-comment"></i></button>
+    </div>
     <div class="right">
+        <button class="back-to-top-btn" id="backToTopBtn" aria-label="回到顶部"><i class="fas fa-arrow-up"></i></button>
         <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
             <i class="fas fa-moon" id="themeIcon"></i>
         </button>
@@ -361,6 +402,71 @@
     setTheme(currentTheme);
     themeToggle.addEventListener('click', function(){
         setTheme(currentTheme==='dark' ? 'light' : 'dark');
+    });
+
+    // 评论按钮：平滑滚动到评论区
+    const commentBtn = document.getElementById('commentBtn');
+    commentBtn.addEventListener('click', function(){
+        const commentsEl = document.getElementById('waline-comments');
+        if(commentsEl){
+            commentsEl.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+    });
+
+    // 回到顶部按钮
+    const backToTopBtn = document.getElementById('backToTopBtn');
+    let isScrollingToTop = false;
+
+    window.addEventListener('scroll', function(){
+        const scrollY = window.scrollY || window.pageYOffset;
+        // 回到顶部按钮显示
+        if (scrollY > 300 && !isScrollingToTop) {
+            backToTopBtn.classList.add('show');
+        } else if (!isScrollingToTop) {
+            backToTopBtn.classList.remove('show');
+        }
+
+        // 评论按钮隐藏：评论区已经出现在视口内
+        const commentsEl = document.getElementById('waline-comments');
+        if(commentsEl){
+            const rect = commentsEl.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            if(rect.top < viewportHeight && rect.bottom > 0){
+                commentBtn.classList.add('hide');
+            } else {
+                commentBtn.classList.remove('hide');
+            }
+        }
+    });
+
+    function fastScrollToTop(){
+        const startY = window.scrollY || window.pageYOffset;
+        if(startY === 0) return;
+        const duration = 300;
+        const startTime = performance.now();
+
+        function step(currentTime){
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const ease = 1 - Math.pow(1 - progress, 3);
+            window.scrollTo(0, startY * (1 - ease));
+            if(progress < 1){
+                requestAnimationFrame(step);
+            } else {
+                window.scrollTo(0, 0);
+                isScrollingToTop = false;
+                backToTopBtn.classList.remove('show');
+            }
+        }
+        requestAnimationFrame(step);
+    }
+
+    backToTopBtn.addEventListener('click', function(){
+        if(isScrollingToTop) return;
+        const scrollY = window.scrollY || window.pageYOffset;
+        if(scrollY === 0) return;
+        isScrollingToTop = true;
+        fastScrollToTop();
     });
 
     const demoSite = {

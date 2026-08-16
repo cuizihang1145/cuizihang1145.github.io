@@ -7,21 +7,19 @@ export default async function handler(req, res) {
   const userAgent = req.headers['user-agent'] || '';
   const isCrawler = /googlebot|bingbot|baiduspider|yandex|facebookexternalhit|twitterbot|slackbot|discordbot|telegrambot|whatsapp/i.test(userAgent);
 
-  // 解析 ?id=xxx
   const url = new URL(req.url, 'https://cuizi.top');
   const idParam = url.searchParams.get('id');
   const articleId = parseInt(idParam);
 
-  // ============ 普通用户：返回 SPA 入口 ============
+  // ============ 普通用户：返回 SPA 入口（无重定向） ============
   if (!isCrawler) {
-    // 读取 index.html（放在项目根目录）
     const indexPath = path.join(process.cwd(), 'index.html');
     try {
       const html = fs.readFileSync(indexPath, 'utf-8');
       res.setHeader('Content-Type', 'text/html');
-      return res.status(200).send(html);   // 状态码 200，无重定向
+      return res.status(200).send(html);  // ✅ 状态码 200，不跳转
     } catch (err) {
-      // 如果文件不存在，返回一个最小骨架
+      // 如果 index.html 不存在，返回最小骨架
       return res.status(200).send(`
         <!DOCTYPE html>
         <html><head><title>ks</title></head><body>
@@ -32,13 +30,12 @@ export default async function handler(req, res) {
     }
   }
 
-  // ============ 爬虫：预渲染完整文章页 ============
+  // ============ 爬虫：预渲染完整文章 ============
   if (isNaN(articleId) || articleId < 0) {
     return res.status(404).send('<h1>文章不存在</h1>');
   }
 
   try {
-    // 获取文章数据（支持本地读取或远程 fetch，这里用 fetch 更灵活）
     const dataRes = await fetch('https://cuizi.top/wenzhang.json');
     if (!dataRes.ok) throw new Error('无法获取文章数据');
     const data = await dataRes.json();
@@ -53,10 +50,9 @@ export default async function handler(req, res) {
     const date = article.date || '';
     const content = article.content || '';
 
-    // 渲染 Markdown → HTML
     const renderedHtml = renderMarkdown(content);
 
-    // 生成纯文本描述（供 meta description）
+    // 生成纯文本描述
     const plainText = content
       .replace(/```[\s\S]*?```/g, '')
       .replace(/`([^`]+)`/g, '$1')
@@ -71,7 +67,6 @@ export default async function handler(req, res) {
       .trim()
       .slice(0, 150);
 
-    // 构造完整 HTML（包含文章内容）
     const html = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -80,9 +75,7 @@ export default async function handler(req, res) {
   <title>${title} · ks</title>
   <meta name="description" content="${plainText}">
   <link rel="icon" href="/favicon.ico">
-  <!-- Open Graph / Twitter Card 可加 -->
   <style>
-    /* 精简样式（与你的站点保持一致） */
     body { font-family: 'Inter', sans-serif; background: #FAFAFE; color: #1A1A2E; line-height: 1.8; padding: 2.8rem 1.8rem; max-width: 700px; margin: 0 auto; }
     .detail-title { font-size: 2rem; font-weight: 700; margin-bottom: 0.3rem; }
     .detail-date { font-size: 0.85rem; color: #8A8AB5; display: block; margin-bottom: 0.6rem; }
@@ -108,11 +101,11 @@ export default async function handler(req, res) {
 
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate');
-    return res.status(200).send(html);
+    return res.status(200).send(html);  // ✅ 直接返回，不跳转
 
   } catch (error) {
     console.error('预渲染失败:', error);
-    // 降级：返回 SPA 入口（用户可能会看到动态加载，但至少不会报错）
+    // 降级：返回 SPA 入口
     const indexPath = path.join(process.cwd(), 'index.html');
     try {
       const fallbackHtml = fs.readFileSync(indexPath, 'utf-8');
@@ -121,4 +114,4 @@ export default async function handler(req, res) {
       return res.status(500).send('服务器错误，请稍后重试');
     }
   }
-  }
+}

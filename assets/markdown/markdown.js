@@ -152,7 +152,6 @@
       return html;
     }
 
-    // ========== renderBlock（已重写 blockquote 处理） ==========
     function renderBlock(content) {
       if (!content) return '';
       const lines = content.split('\n');
@@ -209,74 +208,47 @@
           continue;
         }
 
-        // =======  blockquote 处理（栈式重写） =======
         const blockquoteMatch = line.match(/^(>+)\s?(.*)/);
         if (blockquoteMatch) {
           flushList();
           flushParagraph();
-
-          // 收集所有连续相关行（包括空行，空行继承上一级的 level）
           const quoteLines = [];
           let j = i;
-          let lastLevel = 0;
           while (j < lines.length) {
             const qm = lines[j].match(/^((?:>\s*)+)(.*)/);
             if (qm) {
-              const level = (qm[1].match(/>/g) || []).length;
-              quoteLines.push({ level, content: qm[2] });
-              lastLevel = level;
+              quoteLines.push({ level: (qm[1].match(/>/g) || []).length, content: qm[2] });
               j++;
-            } else if (lines[j].trim() === '') {
-              // 空行继承上一个 level
-              quoteLines.push({ level: lastLevel, content: '' });
-              j++;
-            } else {
-              break;
-            }
+            } else if (lines[j].trim() === '') break;
+            else break;
           }
           i = j - 1;
 
-          // 用栈构建嵌套 blockquote
-          const stack = [];
-          let html = '';
-          let currentLevel = 0;
-
-          for (let k = 0; k < quoteLines.length; k++) {
-            const item = quoteLines[k];
-            const targetLevel = item.level;
-
-            // 如果目标层级大于当前层级，开启新 blockquote
-            while (targetLevel > currentLevel) {
-              html += '<blockquote>';
-              stack.push('<blockquote>');
-              currentLevel++;
+          function buildLevel(startIdx, currentLevel) {
+            let html = '';
+            let k = startIdx;
+            while (k < quoteLines.length) {
+              if (quoteLines[k].level < currentLevel) break;
+              if (quoteLines[k].level === currentLevel) {
+                const parts = [];
+                while (k < quoteLines.length && quoteLines[k].level === currentLevel) {
+                  parts.push(renderInline(quoteLines[k].content));
+                  k++;
+                }
+                html += parts.join('<br>');
+              } else if (quoteLines[k].level > currentLevel) {
+                const nested = buildLevel(k, quoteLines[k].level);
+                html += nested.html;
+                k = nested.newIndex;
+              }
             }
-            // 如果目标层级小于当前层级，关闭多余的 blockquote
-            while (targetLevel < currentLevel) {
-              html += '</blockquote>';
-              stack.pop();
-              currentLevel--;
-            }
-
-            // 处理内容
-            if (item.content.trim() !== '') {
-              html += renderInline(item.content);
-            } else {
-              // 空行用 <br> 占位，保持层级连续
-              html += '<br>';
-            }
+            return { html: '<blockquote>' + html + '</blockquote>', newIndex: k };
           }
 
-          // 关闭所有剩余的 blockquote
-          while (stack.length > 0) {
-            html += '</blockquote>';
-            stack.pop();
-          }
-
-          result += html + '\n';
+          const minLevel = Math.min(...quoteLines.map(q => q.level));
+          result += buildLevel(0, minLevel).html + '\n';
           continue;
         }
-        // =======  blockquote 结束 =======
 
         const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
         if (headingMatch) {
@@ -343,8 +315,7 @@
           const taskContent = isTask ? isTask[2] : listContent;
           const isOrdered = /^\d+\.$/.test(marker);
           const listType = isOrdered ? 'ol' : (isTask ? 'task' : 'ul');
-          // 修复奇数缩进问题
-          const currentLevel = Math.floor((indent + 1) / 2);
+          const currentLevel = Math.floor(indent / 2);
 
           if (!inList) {
             inList = true;
@@ -417,7 +388,6 @@
       return result;
     }
 
-    // 以下代码块处理、脚注等均保持不变
     const codeBlockRegex = /^(\s*)```(\w*)\s*\n([\s\S]*?)\1```/gm;
     const codeBlocks = [];
     let codeIndex = 0;
@@ -482,7 +452,6 @@
     return html.replace(/\n{3,}/g, '\n\n');
   }
 
-  // 以下交互函数（图片懒加载、视频、灯箱等）保持不变
   function initImageLazyLoad(container) {
     container.querySelectorAll('.img-placeholder').forEach(function (wrapper) {
       const img = wrapper.querySelector('img');

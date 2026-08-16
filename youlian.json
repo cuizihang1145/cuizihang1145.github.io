@@ -8,7 +8,6 @@
   },
   {
     "name": "示例友链",
-    "feed": "https://example.com/feed.xml",
     "logo": "fas fa-globe",
     "desc": "这是一个示例友链，替换成你的内容即可。",
     "url": "https://example.com/"

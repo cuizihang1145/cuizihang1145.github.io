@@ -1,40 +1,33 @@
 // middleware.js
 import { NextResponse } from 'next/server';
-
-// 直接复制你提供的 renderMarkdown 函数（略，你需要在文件顶部 import 或内联）
-// 这里假设你已经有 assets/markdown/markdown-node.js
 import { renderMarkdown } from './assets/markdown/markdown-node.js';
 
+export const runtime = 'nodejs';
+
 export default async function middleware(req) {
-  const url = new URL(req.url);
-  
-  // 只处理 /article 路径
-  if (url.pathname !== '/article') {
-    return NextResponse.next();
-  }
-
-  const userAgent = req.headers.get('user-agent') || '';
-  const isCrawler = /googlebot|bingbot|baiduspider|yandex|facebookexternalhit|twitterbot|slackbot|discordbot|telegrambot|whatsapp/i.test(userAgent);
-
-  // 普通用户：直接放行，Vercel 会返回静态的 article.html
-  if (!isCrawler) {
-    return NextResponse.next();
-  }
-
-  // ===== 爬虫：预渲染文章 =====
-  const idParam = url.searchParams.get('id');
-  const articleId = parseInt(idParam);
-
-  if (!idParam || isNaN(articleId) || articleId < 0) {
-    return new Response('文章不存在', { status: 200, headers: { 'Content-Type': 'text/html' } });
-  }
-
   try {
+    const url = new URL(req.url);
+    if (url.pathname !== '/article') {
+      return NextResponse.next();
+    }
+
+    const userAgent = req.headers.get('user-agent') || '';
+    const isCrawler = /googlebot|bingbot|baiduspider|yandex|facebookexternalhit|twitterbot|slackbot|discordbot|telegrambot|whatsapp/i.test(userAgent);
+
+    if (!isCrawler) {
+      return NextResponse.next();
+    }
+
+    const idParam = url.searchParams.get('id');
+    const articleId = parseInt(idParam);
+    if (!idParam || isNaN(articleId) || articleId < 0) {
+      return new Response('文章不存在', { status: 200, headers: { 'Content-Type': 'text/html' } });
+    }
+
     const dataRes = await fetch('https://cuizi.top/wenzhang.json');
     if (!dataRes.ok) throw new Error('无法获取文章数据');
     const data = await dataRes.json();
     const articles = data.announcements || [];
-
     if (articleId >= articles.length || articles[articleId].delete) {
       return new Response('文章不存在或已删除', { status: 200, headers: { 'Content-Type': 'text/html' } });
     }
@@ -44,10 +37,8 @@ export default async function middleware(req) {
     const date = article.date || '';
     const content = article.content || '';
 
-    // 渲染 Markdown
     const renderedHtml = renderMarkdown(content);
 
-    // 生成描述
     const plainText = content
       .replace(/```[\s\S]*?```/g, '')
       .replace(/`([^`]+)`/g, '$1')
@@ -96,20 +87,15 @@ export default async function middleware(req) {
 
     return new Response(html, {
       status: 200,
-      headers: {
-        'Content-Type': 'text/html',
-        'Cache-Control': 's-maxage=86400',
-      },
+      headers: { 'Content-Type': 'text/html', 'Cache-Control': 's-maxage=86400' },
     });
 
   } catch (error) {
-    console.error('预渲染失败:', error);
-    // 降级：返回文章页的静态版本（如果有 article.html）
+    console.error('Middleware error:', error);
     return NextResponse.next();
   }
 }
 
-// 只匹配 /article 路径
 export const config = {
   matcher: '/article',
 };

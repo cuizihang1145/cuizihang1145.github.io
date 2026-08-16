@@ -214,13 +214,23 @@
           flushParagraph();
           const quoteLines = [];
           let j = i;
+          // 【关键修复】收集所有引用行，包括中间的空行（空行继承上一级level）
           while (j < lines.length) {
             const qm = lines[j].match(/^((?:>\s*)+)(.*)/);
             if (qm) {
-              quoteLines.push({ level: (qm[1].match(/>/g) || []).length, content: qm[2] });
+              quoteLines.push({ 
+                level: (qm[1].match(/>/g) || []).length, 
+                content: qm[2] 
+              });
               j++;
-            } else if (lines[j].trim() === '') break;
-            else break;
+            } else if (lines[j].trim() === '') {
+              // 空行：继承上一个引用行的level，内容为空
+              const prevLevel = quoteLines.length > 0 ? quoteLines[quoteLines.length - 1].level : 0;
+              quoteLines.push({ level: prevLevel, content: '' });
+              j++;
+            } else {
+              break;
+            }
           }
           i = j - 1;
 
@@ -315,7 +325,6 @@
           const taskContent = isTask ? isTask[2] : listContent;
           const isOrdered = /^\d+\.$/.test(marker);
           const listType = isOrdered ? 'ol' : (isTask ? 'task' : 'ul');
-          // 【唯一修复】解决奇数缩进（3空格、5空格）导致的层级漂移
           const currentLevel = Math.floor((indent + 1) / 2);
 
           if (!inList) {

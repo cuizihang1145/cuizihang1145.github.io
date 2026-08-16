@@ -11,38 +11,36 @@ export default async function handler(req, res) {
   const idParam = url.searchParams.get('id');
   const articleId = parseInt(idParam);
 
-  // ============ 普通用户：返回 SPA 入口（无重定向） ============
+  // ============ 所有情况都直接返回，绝不重定向 ============
+
+  // 1. 普通用户：返回 index.html
   if (!isCrawler) {
-    const indexPath = path.join(process.cwd(), 'index.html');
     try {
+      const indexPath = path.join(process.cwd(), 'index.html');
       const html = fs.readFileSync(indexPath, 'utf-8');
       res.setHeader('Content-Type', 'text/html');
-      return res.status(200).send(html);  // ✅ 状态码 200，不跳转
+      return res.status(200).send(html);
     } catch (err) {
-      // 如果 index.html 不存在，返回最小骨架
-      return res.status(200).send(`
-        <!DOCTYPE html>
-        <html><head><title>ks</title></head><body>
-          <div id="app">加载中...</div>
-          <script src="/assets/app.js"></script>
-        </body></html>
-      `);
+      return res.status(200).send('<html><body>加载中...</body></html>');
     }
   }
 
-  // ============ 爬虫：预渲染完整文章 ============
+  // 2. 爬虫：检查 id 是否有效
   if (isNaN(articleId) || articleId < 0) {
-    return res.status(404).send('<h1>文章不存在</h1>');
+    return res.status(200).send('<html><body>文章不存在</body></html>');
   }
 
   try {
+    // 获取文章数据
     const dataRes = await fetch('https://cuizi.top/wenzhang.json');
-    if (!dataRes.ok) throw new Error('无法获取文章数据');
+    if (!dataRes.ok) {
+      return res.status(200).send('<html><body>数据加载失败</body></html>');
+    }
     const data = await dataRes.json();
     const articles = data.announcements || [];
 
     if (articleId >= articles.length || articles[articleId].delete) {
-      return res.status(404).send('<h1>文章不存在或已删除</h1>');
+      return res.status(200).send('<html><body>文章不存在或已删除</body></html>');
     }
 
     const article = articles[articleId];
@@ -50,9 +48,10 @@ export default async function handler(req, res) {
     const date = article.date || '';
     const content = article.content || '';
 
+    // 渲染 Markdown
     const renderedHtml = renderMarkdown(content);
 
-    // 生成纯文本描述
+    // 生成描述
     const plainText = content
       .replace(/```[\s\S]*?```/g, '')
       .replace(/`([^`]+)`/g, '$1')
@@ -100,18 +99,18 @@ export default async function handler(req, res) {
 </html>`;
 
     res.setHeader('Content-Type', 'text/html');
-    res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate');
-    return res.status(200).send(html);  // ✅ 直接返回，不跳转
+    res.setHeader('Cache-Control', 's-maxage=86400');
+    return res.status(200).send(html);
 
   } catch (error) {
     console.error('预渲染失败:', error);
-    // 降级：返回 SPA 入口
-    const indexPath = path.join(process.cwd(), 'index.html');
+    // 降级返回 index.html
     try {
+      const indexPath = path.join(process.cwd(), 'index.html');
       const fallbackHtml = fs.readFileSync(indexPath, 'utf-8');
       return res.status(200).send(fallbackHtml);
     } catch {
-      return res.status(500).send('服务器错误，请稍后重试');
+      return res.status(200).send('<html><body>服务器错误，请稍后重试</body></html>');
     }
   }
 }

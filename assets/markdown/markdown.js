@@ -219,13 +219,8 @@
             if (qm) {
               quoteLines.push({ level: (qm[1].match(/>/g) || []).length, content: qm[2] });
               j++;
-            } else if (lines[j].trim() === '') {
-              // 【修复】保留引用内的空行，继承上一层级，防止嵌套断裂（测试5）
-              const prevLevel = quoteLines.length > 0 ? quoteLines[quoteLines.length - 1].level : 0;
-              quoteLines.push({ level: prevLevel, content: '' });
-              j++;
-              continue;
-            } else break;
+            } else if (lines[j].trim() === '') break;
+            else break;
           }
           i = j - 1;
 
@@ -320,7 +315,7 @@
           const taskContent = isTask ? isTask[2] : listContent;
           const isOrdered = /^\d+\.$/.test(marker);
           const listType = isOrdered ? 'ol' : (isTask ? 'task' : 'ul');
-          // 【修复】解决奇数缩进（3空格、5空格）导致的层级漂移（测试1）
+          // 【唯一修复】解决奇数缩进（3空格、5空格）导致的层级漂移
           const currentLevel = Math.floor((indent + 1) / 2);
 
           if (!inList) {

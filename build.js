@@ -5,9 +5,9 @@ import { renderMarkdown } from './assets/markdown/markdown-node.js';
 const jsonData = JSON.parse(fs.readFileSync('wenzhang.json', 'utf-8'));
 const articles = jsonData.announcements || [];
 
-let template = fs.readFileSync('post.html', 'utf-8');
+const template = fs.readFileSync('post.html', 'utf-8');
 
-const outDir = 'dist/articles';
+const outDir = 'articles';
 if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
 articles.forEach((article, index) => {

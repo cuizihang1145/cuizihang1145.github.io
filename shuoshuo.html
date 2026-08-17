@@ -542,7 +542,7 @@
             font-size: 1rem;
         }
 
-        /* 底部：标签 + 操作按钮（分享、评论） */
+        /* 底部：标签 + 操作按钮（分享、点赞、评论） */
         .shuoshuo-footer {
             display: flex;
             flex-wrap: wrap;
@@ -619,9 +619,11 @@
         .shuoshuo-action-btn i {
             font-size: 1rem;
         }
-        /* 评论按钮只留图标，不加文字 */
-        .shuoshuo-action-btn.comment-toggle {
-            /* 无额外样式 */;
+        /* 点赞按钮特殊样式（可自定义） */
+        .shuoshuo-action-btn.like-toggle .like-count {
+            font-weight: 600;
+            min-width: 0.6rem;
+            text-align: center;
         }
 
         .shuoshuo-comment-box {
@@ -1366,13 +1368,106 @@
                 return result;
             }
 
-            // ===== 数据 =====
+            // ============================================================
+            // 新增：点赞相关变量和函数
+            // ============================================================
+            var API_KEY = '';                // 从 /api/config 获取
             var allShuoshuo = [];
             var currentFilter = 'newest';
             var currentKeyword = '';
             var urlIdHandled = false;
 
-            // ===== 高亮定位 =====
+            // 获取 API Key
+            function fetchApiKey() {
+                return fetch('/api/config')
+                    .then(function(res) {
+                        if (!res.ok) throw new Error('获取配置失败');
+                        return res.json();
+                    })
+                    .then(function(data) {
+                        if (!data.key) throw new Error('未获取到 API Key');
+                        API_KEY = data.key;
+                    });
+            }
+
+            // 获取所有点赞数
+            function fetchLikes() {
+                if (!API_KEY) return Promise.reject('API Key 未初始化');
+                return fetch('/api/likes', {
+                    headers: { 'X-API-Key': API_KEY }
+                })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('获取点赞数失败');
+                    return res.json();
+                })
+                .then(function(data) {
+                    // 校验返回的 key
+                    if (data.key !== API_KEY) {
+                        throw new Error('密钥不匹配');
+                    }
+                    if (!data.success) {
+                        throw new Error(data.error || '获取失败');
+                    }
+                    var likes = data.data || {};
+                    Object.keys(likes).forEach(function(id) {
+                        var el = document.getElementById('like-count-' + id);
+                        if (el) el.textContent = likes[id];
+                    });
+                })
+                .catch(function(err) {
+                    console.warn('加载点赞数失败:', err);
+                });
+            }
+
+            // 点赞 / 取消点赞
+            function toggleLike(id, action) {
+                var countEl = document.getElementById('like-count-' + id);
+                if (!countEl) return;
+
+                var btn = countEl.closest('.like-toggle');
+                if (btn && btn.dataset.loading === 'true') return;
+                if (btn) btn.dataset.loading = 'true';
+
+                // 乐观更新
+                var current = parseInt(countEl.textContent, 10) || 0;
+                var optimisticCount = action === 'like' ? current + 1 : Math.max(0, current - 1);
+                countEl.textContent = optimisticCount;
+
+                fetch('/api/likes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': API_KEY
+                    },
+                    body: JSON.stringify({ id: id, action: action })
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (btn) btn.dataset.loading = 'false';
+                    // 校验返回密钥
+                    if (data.key !== API_KEY) {
+                        countEl.textContent = current;
+                        showToast('数据异常', 'fa-exclamation-circle');
+                        return;
+                    }
+                    if (data.success) {
+                        countEl.textContent = data.likes;
+                    } else {
+                        countEl.textContent = current;
+                        showToast(data.error || '操作失败', 'fa-exclamation-circle');
+                    }
+                })
+                .catch(function() {
+                    if (btn) btn.dataset.loading = 'false';
+                    countEl.textContent = current;
+                    showToast('网络错误', 'fa-exclamation-circle');
+                });
+            }
+
+            // ============================================================
+            // 原有数据与渲染逻辑（修改了渲染模板，添加了点赞按钮）
+            // ============================================================
+
             function handleUrlId() {
                 if (urlIdHandled) return;
                 var urlParams = new URLSearchParams(window.location.search);
@@ -1388,7 +1483,6 @@
                 urlIdHandled = true;
             }
 
-            // ===== 渲染列表 =====
             function renderShuoshuoList() {
                 var filtered = allShuoshuo.slice();
                 if (currentKeyword.trim()) {
@@ -1471,12 +1565,15 @@
                     // 内容
                     html += '<div class="shuoshuo-content markdown-body">' + rendered + '</div>';
 
-                    // 底部：标签 + 操作按钮（分享 + 评论）
+                    // 底部：标签 + 操作按钮（分享 + 点赞 + 评论）
                     html += '<div class="shuoshuo-footer">';
                     if (tagsHtml) html += tagsHtml;
                     html += '<div class="shuoshuo-actions">';
                     html += '<button class="shuoshuo-action-btn share-toggle" data-index="' + item._originIndex +
                         '" title="分享"><i class="fas fa-share-alt"></i></button>';
+                    html += '<button class="shuoshuo-action-btn like-toggle" data-index="' + item._originIndex +
+                        '" title="点赞"><i class="fas fa-heart"></i> <span class="like-count" id="like-count-' + item._originIndex +
+                        '">0</span></button>';
                     html += '<button class="shuoshuo-action-btn comment-toggle" data-index="' + item._originIndex +
                         '" title="评论"><i class="fas fa-comments"></i></button>';
                     html += '</div>';
@@ -1524,22 +1621,12 @@
             // ===== 事件委托（解决动态渲染后事件失效） =====
             var listEl = document.getElementById('shuoshuoList');
 
-            // 评论点击（委托）
+            // 统一处理点击（分享、点赞、评论）
             listEl.addEventListener('click', function(e) {
-                var target = e.target.closest('.comment-toggle');
-                if (target) {
-                    var idx = target.dataset.index;
-                    var box = document.getElementById('waline-box-' + idx);
-                    if (!box) return;
-                    box.classList.toggle('show');
-                    if (box.classList.contains('show')) initWalineForIndex(idx);
-                    e.preventDefault();
-                }
-            });
+                var target;
 
-            // 分享点击（委托）
-            listEl.addEventListener('click', function(e) {
-                var target = e.target.closest('.share-toggle');
+                // ---- 分享 ----
+                target = e.target.closest('.share-toggle');
                 if (target) {
                     var idx = parseInt(target.dataset.index, 10);
                     var item = allShuoshuo.find(function(a) { return a._originIndex === idx; });
@@ -1548,7 +1635,6 @@
                         return;
                     }
                     currentShareItem = item;
-                    // 生成分享图
                     generateShareImageForShuoshuo(item).then(function() {
                         document.getElementById('shareModal').classList.add('active');
                         document.body.style.overflow = 'hidden';
@@ -1556,6 +1642,33 @@
                         showToast('生成分享图失败', 'fa-exclamation-circle');
                     });
                     e.preventDefault();
+                    return;
+                }
+
+                // ---- 点赞 ----
+                target = e.target.closest('.like-toggle');
+                if (target) {
+                    var idx = target.dataset.index;
+                    var countEl = document.getElementById('like-count-' + idx);
+                    if (!countEl) return;
+                    var current = parseInt(countEl.textContent, 10) || 0;
+                    // 如果当前数字 > 0 则取消点赞，否则点赞
+                    var action = current > 0 ? 'unlike' : 'like';
+                    toggleLike(idx, action);
+                    e.preventDefault();
+                    return;
+                }
+
+                // ---- 评论 ----
+                target = e.target.closest('.comment-toggle');
+                if (target) {
+                    var idx = target.dataset.index;
+                    var box = document.getElementById('waline-box-' + idx);
+                    if (!box) return;
+                    box.classList.toggle('show');
+                    if (box.classList.contains('show')) initWalineForIndex(idx);
+                    e.preventDefault();
+                    return;
                 }
             });
 
@@ -1639,9 +1752,9 @@
                 showToast('已保存', 'fa-check-circle');
             });
 
-            // ===== 加载数据 =====
+            // ===== 加载说说数据 =====
             function fetchShuoshuo() {
-                fetch('shuoshuo.json', { cache: 'no-cache' })
+                return fetch('shuoshuo.json', { cache: 'no-cache' })
                     .then(function(response) {
                         if (!response.ok) throw new Error('文件不存在');
                         return response.json();
@@ -1669,12 +1782,16 @@
                 currentKeyword = this.value;
                 updateClearBtn();
                 renderShuoshuoList();
+                // 重新获取点赞数（因为重新渲染了，但数据没变，可不重新获取，但为了安全可重新获取）
+                // 如果重新获取，需要先确保 API_KEY 已获取
+                if (API_KEY) fetchLikes().catch(function() {});
             });
             searchClearBtn.addEventListener('click', function() {
                 searchInput.value = '';
                 currentKeyword = '';
                 updateClearBtn();
                 renderShuoshuoList();
+                if (API_KEY) fetchLikes().catch(function() {});
                 searchInput.focus();
             });
 
@@ -1683,16 +1800,30 @@
                 document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
                 this.classList.add('active');
                 renderShuoshuoList();
+                if (API_KEY) fetchLikes().catch(function() {});
             });
             document.getElementById('filterOldest').addEventListener('click', function() {
                 currentFilter = 'oldest';
                 document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
                 this.classList.add('active');
                 renderShuoshuoList();
+                if (API_KEY) fetchLikes().catch(function() {});
             });
 
-            // ===== 启动 =====
-            fetchShuoshuo();
+            // ===== 启动：先获取 API Key，再加载说说，最后获取点赞数 =====
+            fetchApiKey()
+                .then(function() {
+                    return fetchShuoshuo();
+                })
+                .then(function() {
+                    // 渲染完成后获取点赞数
+                    return fetchLikes();
+                })
+                .catch(function(err) {
+                    console.warn('初始化失败:', err);
+                    // 即使失败也加载说说（点赞功能不可用）
+                    fetchShuoshuo();
+                });
 
         })();
     </script>

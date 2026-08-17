@@ -1680,12 +1680,42 @@
                     } else {
                         // 多张图：移除所有 .img-placeholder，保留其他内容，然后追加拼图
                         var placeholders = tempContainer.querySelectorAll('.img-placeholder');
+
                         placeholders.forEach(function(el) {
+                            var parent = el.parentElement;
+
+                            // 先移除占位符
                             el.remove();
+
+                            // 如果父元素是 <p> 且删除后变成完全空白（只有空格、换行或 <br>），直接移除整个 <p>
+                            if (parent && parent.tagName === 'P') {
+                                var hasContent = false;
+                                parent.childNodes.forEach(function(node) {
+                                    if (node.nodeType === 3 && node.textContent.trim() !== '') {
+                                        hasContent = true;
+                                    }
+                                    if (node.nodeType === 1) {
+                                        var tag = node.tagName.toLowerCase();
+                                        if (tag !== 'br' && !(node.classList && node.classList.contains('img-placeholder'))) {
+                                            hasContent = true;
+                                        }
+                                    }
+                                });
+                                if (!hasContent) {
+                                    parent.remove();
+                                }
+                            }
                         });
+
+                        // 再全面清理一次可能存在的空段落（防止漏网之鱼）
+                        tempContainer.querySelectorAll('p').forEach(function(p) {
+                            var hasImgOrOther = p.querySelector('img, video, iframe, pre, blockquote, table, ul, ol, .img-placeholder');
+                            if (!hasImgOrOther && p.textContent.trim() === '') {
+                                p.remove();
+                            }
+                        });
+
                         var contentWithoutImages = tempContainer.innerHTML;
-                        // 清理多余空段落
-                        contentWithoutImages = contentWithoutImages.replace(/<p>\s*<\/p>/g, '');
                         var collageHtml = renderCollage(imgSrcs, imgAlts);
                         finalContent = contentWithoutImages + collageHtml;
                     }

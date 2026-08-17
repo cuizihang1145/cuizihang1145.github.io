@@ -540,10 +540,10 @@
             gap: 0.35rem;
             margin: 0.95rem 0 0;
             width: 100%;
-            max-width: 24rem;  /* 原 33rem，缩小整体宽度 */
+            max-width: 24rem;
         }
         .memos-images--1 {
-            grid-template-columns: minmax(0, 12rem); /* 原 18rem，单图更小 */
+            grid-template-columns: minmax(0, 12rem);
             width: fit-content;
             max-width: 100%;
         }
@@ -552,7 +552,7 @@
         }
         .memos-images--4 {
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            max-width: 20rem; /* 原 25rem */
+            max-width: 20rem;
         }
         .memos-images--many {
             grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -564,7 +564,7 @@
             display: block;
             width: 100%;
             height: 0;
-            padding-bottom: 100%; /* 1:1 比例 */
+            padding-bottom: 100%;
             overflow: hidden;
             border-radius: 12px;
             background: transparent;
@@ -590,7 +590,7 @@
         .memos-images--1 .memos-image img {
             position: static;
             height: auto;
-            max-height: 16rem; /* 原 24rem，限制最大高度 */
+            max-height: 16rem;
             object-fit: contain;
             background: transparent;
         }
@@ -685,10 +685,17 @@
         .shuoshuo-action-btn i {
             font-size: 1rem;
         }
-        .shuoshuo-action-btn.like-toggle .like-count {
+        .shuoshuo-action-btn.like-toggle .like-count,
+        .shuoshuo-action-btn .comment-count {
             font-weight: 600;
             min-width: 0.6rem;
             text-align: center;
+        }
+        .shuoshuo-action-btn.comment-toggle:hover .comment-count {
+            color: #4A3DB8;
+        }
+        body.dark .shuoshuo-action-btn.comment-toggle:hover .comment-count {
+            color: #60A5FA;
         }
 
         .shuoshuo-comment-box {
@@ -1672,11 +1679,9 @@
                     var tags = item.tags || [];
                     var content = item.content || '';
 
-                    // 用 mountMarkdown 渲染到临时容器
                     var tempContainer = document.createElement('div');
                     window.KSMarkdown.mountMarkdown(tempContainer, content);
 
-                    // 处理连续相邻图片：识别连续纯图片节点，将多图组合并为拼图，单图保留原样
                     function isPureImageNode(node) {
                         if (node.nodeType !== 1) return false;
                         var placeholders = node.querySelectorAll('.img-placeholder');
@@ -1733,7 +1738,6 @@
 
                     var finalContent = tempContainer.innerHTML;
 
-                    // 标签
                     var tagsHtml = '';
                     if (tags.length) {
                         tagsHtml = '<div class="shuoshuo-tags">';
@@ -1784,7 +1788,7 @@
                         '</span>';
                     html += '</button>';
                     html += '<button class="shuoshuo-action-btn comment-toggle" data-index="' + item._originIndex +
-                        '" title="评论"><i class="fas fa-comments"></i></button>';
+                        '" title="评论"><i class="fas fa-comments"></i> <span class="comment-count" id="comment-count-' + item._originIndex + '">0</span></button>';
                     html += '</div>';
                     html += '</div>';
 
@@ -1794,6 +1798,28 @@
                 });
 
                 listEl.innerHTML = html;
+
+                // ========== 获取评论数 ==========
+                var commentImportPromise = import('https://unpkg.com/@waline/client@v3/dist/comment.js')
+                    .then(function(module) { return module.commentCount; })
+                    .catch(function() { return null; });
+
+                commentImportPromise.then(function(commentCount) {
+                    if (!commentCount) return;
+
+                    document.querySelectorAll('.shuoshuo-item .comment-toggle').forEach(function(btn) {
+                        var index = btn.dataset.index;
+                        var countEl = document.getElementById('comment-count-' + index);
+                        if (!countEl) return;
+
+                        commentCount({
+                            serverURL: 'https://comment.cuizi.top',
+                            path: '/shuoshuo/' + index,
+                            selector: '#comment-count-' + index
+                        });
+                    });
+                });
+                // ========== 获取评论数结束 ==========
 
                 // 修复图片加载图标不消失的问题
                 document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
@@ -1808,22 +1834,19 @@
                         loading.style.display = 'none';
                     }
 
-                    // 如果图片已经加载完成，立即隐藏加载图标
                     if (img.complete && img.naturalWidth !== 0) {
                         done();
                     } else {
-                        // 监听加载完成和错误事件（避免重复监听）
                         img.addEventListener('load', done, { once: true });
                         img.addEventListener('error', done, { once: true });
 
-                        // 设置超时兜底，防止某些情况下事件不触发
                         setTimeout(function() {
                             if (!wrapper.classList.contains('loaded')) {
                                 loading.style.display = 'none';
                                 wrapper.classList.add('loaded');
                                 img.classList.add('loaded');
                             }
-                        }, 8000); // 8秒后强制隐藏加载图标
+                        }, 8000);
                     }
                 });
 

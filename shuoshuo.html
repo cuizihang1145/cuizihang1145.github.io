@@ -991,7 +991,10 @@
         <div class="share-modal-box">
             <div class="share-modal-title"><i class="fas fa-share-alt"></i> 分享</div>
             <div id="sharePreviewWrap">
-                <img id="sharePreviewImg" src="" alt="分享图预览">
+                <img id="sharePreviewImg" src="" alt="分享图预览" style="display:none;">
+                <div id="shareLoading" style="display:none; text-align:center; padding:2rem; color:#888;">
+                    <i class="fas fa-spinner fa-spin"></i> 生成中...
+                </div>
             </div>
             <div class="share-modal-actions">
                 <button class="btn-text" id="shareCopyBtn"><i class="fas fa-copy"></i> 复制文字</button>
@@ -1871,7 +1874,7 @@
                         '</span>';
                     html += '</button>';
                     html += '<button class="shuoshuo-action-btn comment-toggle" data-index="' + item._originIndex +
-                        '" title="评论"><i class="fas fa-comments"></i> <span class="comment-count" id="comment-count-' + item._originIndex + '">-</span></button>';
+                        '" title="评论"><i class="far fa-comments"></i> <span class="comment-count" id="comment-count-' + item._originIndex + '">-</span></button>';
                     html += '</div>';
                     html += '</div>';
 
@@ -2017,12 +2020,39 @@
                         return;
                     }
                     currentShareItem = item;
+
+                    var shareModal = document.getElementById('shareModal');
+                    var previewImg = document.getElementById('sharePreviewImg');
+                    var loadingEl = document.getElementById('shareLoading');
+                    var saveBtn = document.getElementById('shareSaveBtn');
+
+                    // 立即打开模态框，显示加载动画
+                    shareModal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                    previewImg.style.display = 'none';
+                    loadingEl.style.display = 'block';
+
+                    // 禁用保存按钮，防止生成中误点
+                    saveBtn.disabled = true;
+                    saveBtn.style.opacity = '0.5';
+                    saveBtn.style.cursor = 'not-allowed';
+
+                    // 异步生成分享图
                     generateShareImageForShuoshuo(item).then(function() {
-                        document.getElementById('shareModal').classList.add('active');
-                        document.body.style.overflow = 'hidden';
+                        loadingEl.style.display = 'none';
+                        previewImg.style.display = 'block';
+                        saveBtn.disabled = false;
+                        saveBtn.style.opacity = '1';
+                        saveBtn.style.cursor = 'pointer';
                     }).catch(function() {
+                        shareModal.classList.remove('active');
+                        document.body.style.overflow = '';
+                        saveBtn.disabled = false;
+                        saveBtn.style.opacity = '1';
+                        saveBtn.style.cursor = 'pointer';
                         showToast('生成分享图失败', 'fa-exclamation-circle');
                     });
+
                     e.preventDefault();
                     return;
                 }
@@ -2047,6 +2077,13 @@
                     if (!box) return;
                     box.classList.toggle('show');
                     if (box.classList.contains('show')) initWalineForIndex(idx);
+
+                    // 切换评论图标实心/空心
+                    var icon = target.querySelector('i');
+                    if (icon) {
+                        icon.className = box.classList.contains('show') ? 'fas fa-comments' : 'far fa-comments';
+                    }
+
                     e.preventDefault();
                     return;
                 }
@@ -2059,11 +2096,19 @@
             document.getElementById('shareCloseBtn').addEventListener('click', function() {
                 shareModal.classList.remove('active');
                 document.body.style.overflow = '';
+                var saveBtn = document.getElementById('shareSaveBtn');
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = '1';
+                saveBtn.style.cursor = 'pointer';
             });
             shareModal.addEventListener('click', function(e) {
                 if (e.target === this) {
                     shareModal.classList.remove('active');
                     document.body.style.overflow = '';
+                    var saveBtn = document.getElementById('shareSaveBtn');
+                    saveBtn.disabled = false;
+                    saveBtn.style.opacity = '1';
+                    saveBtn.style.cursor = 'pointer';
                 }
             });
 

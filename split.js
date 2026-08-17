@@ -35,12 +35,12 @@ if (articles.length === 0) {
     process.exit(0);
 }
 
-// ★★★ 关键修改：按日期降序（最新在前）★★★
-// 与 index.html 的排序保持一致
+// ★★★ 关键修改：按日期升序（最旧在前，最新在后）★★★
+// 与 index.html 的 "最早" 按钮排序保持一致
 const sortedArticles = articles.slice().sort((a, b) => {
     const dateA = a.date || '1970-01-01';
     const dateB = b.date || '1970-01-01';
-    return dateB.localeCompare(dateA); // 降序，新在前
+    return dateA.localeCompare(dateB); // 升序，旧在前，新在后
 });
 
 const total = sortedArticles.length;
@@ -80,4 +80,4 @@ fs.writeFileSync(
 );
 console.log(`✅ 生成 meta.json (总页数 ${totalPages})`);
 
-console.log(`🎉 拆分完成！共 ${total} 篇文章，${totalPages} 页，按日期降序排列（最新在前）`);
+console.log(`🎉 拆分完成！共 ${total} 篇文章，${totalPages} 页，按日期升序排列（最旧在前）`);

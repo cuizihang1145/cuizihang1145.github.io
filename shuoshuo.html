@@ -428,7 +428,7 @@
             .shuoshuo-sticky-bar .filter-btn.active i { color: #fff; }
         }
 
-        /* ===== 说说列表 — 分割线布局 ===== */
+        /* ===== 说说列表 ===== */
         .shuoshuo-list {
             display: flex;
             flex-direction: column;
@@ -448,7 +448,6 @@
             border-bottom-color: rgba(255,255,255,0.06);
         }
 
-        /* 高亮 — 只让上下分割线变金色 */
         .shuoshuo-item.highlight {
             border-top-color: #FFD700 !important;
             border-bottom-color: #FFD700 !important;
@@ -462,7 +461,7 @@
             box-shadow: 0 -3px 0 #FFD700, 0 3px 0 #FFD700;
         }
 
-        /* 头部：头像 + 名称/日期 */
+        /* 头部 */
         .shuoshuo-header {
             display: flex;
             align-items: flex-start;
@@ -582,7 +581,7 @@
             display: block;
             overflow: hidden;
             aspect-ratio: 1;
-            border-radius: 6px;
+            border-radius: 12px;
             background: #f0edf5;
             text-decoration: none;
             cursor: pointer;
@@ -597,57 +596,12 @@
             object-fit: cover;
         }
 
-        /* ===== 单张图片样式（由 markdown.js 生成） ===== */
+        /* 单张图用 markdown.css 的 .img-placeholder，这里只做补充 */
         .img-placeholder {
-            position: relative;
-            border-radius: 8px;
-            overflow: hidden;
-            background: #f0edf5;
-            margin: 0.5rem 0;
-            min-height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        body.dark .img-placeholder {
-            background: #2a2740;
-        }
-        .img-placeholder img {
-            width: 100%;
-            display: block;
-            border-radius: 0;
-        }
-        .img-placeholder .img-loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #8A8AB5;
-            font-size: 1.5rem;
-            z-index: 1;
-        }
-        body.dark .img-placeholder .img-loading {
-            color: #7A7AA0;
-        }
-        .img-placeholder img {
-            position: relative;
-            z-index: 2;
-        }
-        .img-placeholder .img-alt-text {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 0.4rem 0.8rem;
-            background: rgba(0,0,0,0.5);
-            color: #fff;
-            font-size: 0.8rem;
-            text-align: center;
-            z-index: 3;
-            backdrop-filter: blur(4px);
+            border-radius: 12px !important;
         }
 
-        /* ===== 底部：标签 + 操作按钮 ===== */
+        /* ===== 底部 ===== */
         .shuoshuo-footer {
             display: flex;
             flex-wrap: wrap;
@@ -739,7 +693,6 @@
             display: block;
         }
 
-        /* 空状态 */
         .shuoshuo-empty {
             text-align: center;
             padding: 2rem 1rem;
@@ -749,7 +702,7 @@
             color: #8A8AB5;
         }
 
-        /* ===== Toast（底部） ===== */
+        /* ===== Toast ===== */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -969,7 +922,6 @@
             .share-modal-actions button { font-size:0.8rem; padding:0.6rem 1rem; }
         }
 
-        /* 复制文本模态框 */
         #textModal .share-text-box {
             background: rgba(0,0,0,0.04);
             border-radius: 12px;
@@ -1000,7 +952,6 @@
     <div class="glow-soft"></div>
     <div class="glow-soft-2"></div>
 
-    <!-- 顶部按钮 -->
     <div class="top-buttons">
         <div class="left"><a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> 返回</a></div>
         <div class="right">
@@ -1010,7 +961,6 @@
     </div>
 
     <div class="container">
-        <!-- 搜索 & 筛选栏 -->
         <div class="shuoshuo-sticky-bar" id="shuoshuoStickyBar">
             <span class="count-label"><i class="fas fa-comment"></i> <span id="totalCount">0</span> 篇</span>
             <div class="search-wrap">
@@ -1024,13 +974,12 @@
             </div>
         </div>
 
-        <!-- 说说列表 -->
         <div class="shuoshuo-list" id="shuoshuoList">
             <div class="shuoshuo-empty"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>
         </div>
     </div>
 
-    <!-- ===== 分享模态框（主） ===== -->
+    <!-- ===== 分享模态框 ===== -->
     <div class="share-modal-overlay" id="shareModal">
         <div class="share-modal-box">
             <div class="share-modal-title"><i class="fas fa-share-alt"></i> 分享</div>
@@ -1045,7 +994,6 @@
         </div>
     </div>
 
-    <!-- ===== 复制文本模态框 ===== -->
     <div class="share-modal-overlay" id="textModal" style="z-index:1000;">
         <div class="share-modal-box" style="max-width:420px;">
             <div class="share-modal-title"><i class="fas fa-copy"></i> 复制内容</div>
@@ -1160,7 +1108,7 @@
                 fastScrollToTop();
             });
 
-            // ===== Toast（底部） =====
+            // ===== Toast =====
             function showToast(message, icon) {
                 icon = icon || 'fa-info-circle';
                 var toast = document.getElementById('toast');
@@ -1277,7 +1225,7 @@
                 else walinePreloadPromise.then(doInit).catch(function() { walineInitializedInstances[index] = false; });
             }
 
-            // ===== 工具函数：生成纯文本摘要 =====
+            // ===== 工具函数 =====
             function markdownToPlainText(md) {
                 if (!md) return '';
                 var text = md;
@@ -1308,7 +1256,7 @@
                 return chars.slice(0, maxLength).join('') + '…';
             }
 
-            // ===== 生成二维码 Canvas =====
+            // ===== 生成二维码 =====
             function generateQRCanvas(text, size) {
                 return new Promise(function(resolve, reject) {
                     var img = new Image();
@@ -1466,7 +1414,7 @@
             }
 
             // ============================================================
-            // 图片拼图（仿小十博客）
+            // 拼图
             // ============================================================
             function renderCollage(images, alts) {
                 var count = images.length;
@@ -1490,7 +1438,7 @@
             }
 
             // ============================================================
-            // 点赞相关
+            // 点赞
             // ============================================================
             var API_KEY = '';
             var allShuoshuo = [];
@@ -1682,7 +1630,7 @@
             }
 
             // ============================================================
-            // 渲染说说列表
+            // 渲染
             // ============================================================
 
             function handleUrlId() {
@@ -1736,12 +1684,13 @@
                     var tags = item.tags || [];
                     var content = item.content || '';
 
-                    // 用 mountMarkdown 渲染内容（自动处理图片、alt、灯箱）
-                    var tempContainer = document.createElement('div');
-                    window.KSMarkdown.mountMarkdown(tempContainer, content);
+                    // 1. 用 renderMarkdown 渲染内容
+                    var rendered = window.KSMarkdown.renderMarkdown(content);
 
-                    // 提取所有图片信息
-                    var imgElements = tempContainer.querySelectorAll('.img-placeholder img');
+                    // 2. 提取所有图片信息
+                    var tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = rendered;
+                    var imgElements = tempDiv.querySelectorAll('img');
                     var imgSrcs = [];
                     var imgAlts = [];
                     imgElements.forEach(function(img) {
@@ -1749,16 +1698,24 @@
                         imgAlts.push(img.getAttribute('alt') || '');
                     });
 
-                    var renderedContent = tempContainer.innerHTML;
+                    // 3. 完全移除所有图片，保留非图片内容
+                    var contentWithoutImages = rendered.replace(/<img[^>]*>/gi, '').replace(/<p><\/p>/g, '');
 
-                    // 多张图：替换为拼图
-                    if (imgSrcs.length > 1) {
-                        var collageHtml = renderCollage(imgSrcs, imgAlts);
-                        // 移除所有 img-placeholder
-                        var contentWithoutImages = renderedContent.replace(/<div class="img-placeholder">.*?<\/div>/gs, '');
-                        renderedContent = contentWithoutImages + collageHtml;
+                    // 4. 根据图片数量生成对应的展示
+                    var imageHtml = '';
+                    if (imgSrcs.length === 1) {
+                        // 单张图：用 markdown.css 的 img-placeholder
+                        var alt = imgAlts[0] || '';
+                        var altHtml = alt ? '<span class="img-alt-text">' + escapeHtml(alt) + '</span>' : '';
+                        imageHtml = '<div class="img-placeholder"><span class="img-loading"><i class="fas fa-spinner fa-spin"></i></span><img src="' +
+                            imgSrcs[0] + '" alt="' + escapeHtml(alt) + '" loading="lazy">' + altHtml + '</div>';
+                    } else if (imgSrcs.length > 1) {
+                        // 多张图：拼图
+                        imageHtml = renderCollage(imgSrcs, imgAlts);
                     }
-                    // 单张图：保持 img-placeholder 不变（alt 显示、灯箱已绑定）
+
+                    // 5. 组装最终内容
+                    var finalContent = contentWithoutImages + imageHtml;
 
                     // 标签
                     var tagsHtml = '';
@@ -1771,7 +1728,6 @@
                         tagsHtml += '</div>';
                     }
 
-                    // 日期 + 位置
                     var dateLocationHtml = '';
                     if (date) {
                         dateLocationHtml += '<span>' + escapeHtml(date) + '</span>';
@@ -1798,7 +1754,7 @@
                     html += '</div>';
                     html += '</div>';
 
-                    html += '<div class="shuoshuo-content markdown-body">' + renderedContent + '</div>';
+                    html += '<div class="shuoshuo-content markdown-body">' + finalContent + '</div>';
 
                     html += '<div class="shuoshuo-footer">';
                     if (tagsHtml) html += tagsHtml;
@@ -1828,8 +1784,8 @@
                     try { hljs.highlightElement(el); } catch (e) {}
                 });
 
-                // 重新绑定灯箱（mountMarkdown 在临时容器里绑定了，但 DOM 被替换了）
-                // 单张图：重新绑定 img-placeholder
+                // ===== 灯箱绑定 =====
+                // 单张图：.img-placeholder img
                 document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
                     img.style.cursor = 'pointer';
                     var parent = img.closest('.shuoshuo-item');
@@ -1850,7 +1806,7 @@
                     });
                 });
 
-                // 拼图：绑定 memos-image
+                // 拼图：.memos-image
                 document.querySelectorAll('.shuoshuo-item .memos-image').forEach(function(link) {
                     var parentItem = link.closest('.shuoshuo-item');
                     var allLinks = parentItem ? parentItem.querySelectorAll('.memos-image') : [];
@@ -1893,7 +1849,7 @@
             listEl.addEventListener('click', function(e) {
                 var target;
 
-                // ---- 分享 ----
+                // 分享
                 target = e.target.closest('.share-toggle');
                 if (target) {
                     var idx = parseInt(target.dataset.index, 10);
@@ -1913,7 +1869,7 @@
                     return;
                 }
 
-                // ---- 点赞 ----
+                // 点赞
                 target = e.target.closest('.like-toggle');
                 if (target) {
                     var idx = target.dataset.index;
@@ -1927,7 +1883,7 @@
                     return;
                 }
 
-                // ---- 评论 ----
+                // 评论
                 target = e.target.closest('.comment-toggle');
                 if (target) {
                     var idx = target.dataset.index;

@@ -2679,45 +2679,55 @@
             });
             setTimeout(updateClearBtn, 50);
             loadedCount = 0;
-            fetch('wenzhang.json', { cache: 'no-cache' })
+            fetch('articles/meta.json', { cache: 'no-cache' })
                 .then(function(response) {
-                    if (!response.ok) throw new Error('文件不存在');
+                    if (!response.ok) throw new Error('meta.json 不存在');
                     return response.json();
                 })
-                .then(function(data) {
-                    allArticles = (data.announcements || []).filter(function(a) {
-                        return a.delete !== true;
-                    });
-                    if (allArticles.length === 0) {
-                        list.innerHTML = '<div class="no-result">还没有文章！</div>';
-                        return;
-                    }
-                    allArticles.forEach(function(article) {
-                        article._wordCount = countWords(article.content || '');
-                    });
-                    var kw = currentKeyword || '';
-                    var filtered = allArticles.slice();
-                    if (kw) {
-                        filtered = filtered.filter(function(item) {
-                            var title = (item.title || '').toLowerCase();
-                            var plainContent = markdownToPlainText(item.content || '').toLowerCase();
-                            return title.indexOf(kw) !== -1 || plainContent.indexOf(kw) !== -1;
-                        });
-                    }
-                    filtered.sort(function(a, b) {
-                        var dateA = a.date || '1970-01-01';
-                        var dateB = b.date || '1970-01-01';
-                        if (currentFilter === 'newest') {
-                            return dateB.localeCompare(dateA);
-                        } else {
-                            return dateA.localeCompare(dateB);
-                        }
-                    });
+                .then(function(meta) {
+                    var total = meta.total || 0;
+                    var totalPages = meta.totalPages || 1;
                     var savedPage = parseInt(sessionStorage.getItem('articlePage')) || 1;
-                    var totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
                     var pageToLoad = Math.min(savedPage, totalPages);
-                    renderArticleList(filtered, kw, pageToLoad);
-                })['catch'](function() {
+                    if (pageToLoad < 1) pageToLoad = 1;
+                    return fetch('articles/page-' + pageToLoad + '.json', { cache: 'no-cache' })
+                        .then(function(res) {
+                            if (!res.ok) throw new Error('page-' + pageToLoad + '.json 不存在');
+                            return res.json();
+                        })
+                        .then(function(data) {
+                            allArticles = data.list || [];
+                            if (allArticles.length === 0) {
+                                list.innerHTML = '<div class="no-result">还没有文章！</div>';
+                                return;
+                            }
+                            allArticles.forEach(function(article) {
+                                article._wordCount = countWords(article.content || '');
+                            });
+                            var kw = currentKeyword || '';
+                            var filtered = allArticles.slice();
+                            if (kw) {
+                                filtered = filtered.filter(function(item) {
+                                    var title = (item.title || '').toLowerCase();
+                                    var plainContent = markdownToPlainText(item.content || '').toLowerCase();
+                                    return title.indexOf(kw) !== -1 || plainContent.indexOf(kw) !== -1;
+                                });
+                            }
+                            filtered.sort(function(a, b) {
+                                var dateA = a.date || '1970-01-01';
+                                var dateB = b.date || '1970-01-01';
+                                if (currentFilter === 'newest') {
+                                    return dateB.localeCompare(dateA);
+                                } else {
+                                    return dateA.localeCompare(dateB);
+                                }
+                            });
+                            renderArticleList(filtered, kw, 1);
+                            currentPage = 1;
+                            saveArticleState();
+                        });
+                })['catch'](function(err) {
+                    console.error('加载文章失败:', err);
                     list.innerHTML =
                         '<div class="no-result"><i class="far fa-frown"></i> 加载文章数据失败<br><span style="font-size:0.8rem;">请稍后再试或刷新网页…</span></div>';
                 });
@@ -2853,15 +2863,13 @@
                 document.getElementById('archiveList').innerHTML = '';
                 bindArchiveEvents();
             } else {
-                fetch('wenzhang.json', { cache: 'no-cache' })
+                fetch('articles/all.json', { cache: 'no-cache' })
                     .then(function(response) {
-                        if (!response.ok) throw new Error('文件不存在');
+                        if (!response.ok) throw new Error('all.json 不存在');
                         return response.json();
                     })
                     .then(function(data) {
-                        var allArticlesData = (data.announcements || []).filter(function(a) {
-                            return a.delete !== true;
-                        });
+                        var allArticlesData = data.list || [];
                         var badge = document.getElementById('articleCountBadge');
                         if (badge) badge.textContent = allArticlesData.length;
                         var tagMap = {};
@@ -3043,7 +3051,7 @@
                 articleCount + ' 篇</span></div><div class="stat-item"><i class="fas fa-font"></i><span>文章字数</span><span style="margin-left:auto;font-weight:500;">' +
                 totalWordCount + ' 字</span></div><hr class="divider"><div class="stat-item"><i class="fas fa-comment"></i><span>说说数量</span><span style="margin-left:auto;font-weight:500;">' +
                 shuoshuoCount + ' 篇</span></div><div class="stat-item"><i class="fas fa-font"></i><span>说说字数</span><span style="margin-left:auto;font-weight:500;">' +
-                shuoshuoWordCount + ' 字</span></div><hr class="divider"><div class="stat-item"><i class="fas fa-clock"></i><span>网站最后更新</span><span style="margin-left:auto;color:#6B5ACF;font-weight:500;">2026年8月16日</span></div></div><div class="progress-card"><div id="progressContainer"><div class="progress-item"><span class="progress-label">今年进度</span><div class="progress-track"><div class="progress-fill" id="yearProgress" style="width:0%"></div></div><span class="progress-percent" id="yearPercent">0%</span><span class="progress-detail" id="yearDetail">还剩 -- 天</span></div><div class="progress-item"><span class="progress-label">本月进度</span><div class="progress-track"><div class="progress-fill" id="monthProgress" style="width:0%"></div></div><span class="progress-percent" id="monthPercent">0%</span><span class="progress-detail" id="monthDetail">还剩 -- 天</span></div><div class="progress-item"><span class="progress-label">本周进度</span><div class="progress-track"><div class="progress-fill" id="weekProgress" style="width:0%"></div></div><span class="progress-percent" id="weekPercent">0%</span><span class="progress-detail" id="weekDetail">还剩 -- 天</span></div><div class="holiday-box" id="holidayBox">加载中...</div></div></div><div class="weather-card" id="weatherCard"><div id="weatherContent"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i> 获取天气中...</div></div></div></div>';
+                shuoshuoWordCount + ' 字</span></div><hr class="divider"><div class="stat-item"><i class="fas fa-clock"></i><span>网站最后更新</span><span style="margin-left:auto;color:#6B5ACF;font-weight:500;">2026年8月17日</span></div></div><div class="progress-card"><div id="progressContainer"><div class="progress-item"><span class="progress-label">今年进度</span><div class="progress-track"><div class="progress-fill" id="yearProgress" style="width:0%"></div></div><span class="progress-percent" id="yearPercent">0%</span><span class="progress-detail" id="yearDetail">还剩 -- 天</span></div><div class="progress-item"><span class="progress-label">本月进度</span><div class="progress-track"><div class="progress-fill" id="monthProgress" style="width:0%"></div></div><span class="progress-percent" id="monthPercent">0%</span><span class="progress-detail" id="monthDetail">还剩 -- 天</span></div><div class="progress-item"><span class="progress-label">本周进度</span><div class="progress-track"><div class="progress-fill" id="weekProgress" style="width:0%"></div></div><span class="progress-percent" id="weekPercent">0%</span><span class="progress-detail" id="weekDetail">还剩 -- 天</span></div><div class="holiday-box" id="holidayBox">加载中...</div></div></div><div class="weather-card" id="weatherCard"><div id="weatherContent"><div class="weather-loading"><i class="fas fa-spinner fa-spin"></i> 获取天气中...</div></div></div></div>';
             document.getElementById('copyDomainBtn').addEventListener('click', function() {
                 var btn = this;
                 var url = 'https://cuizi.top/';
@@ -3109,15 +3117,13 @@
                 sameDisplay
             );
 
-            fetch('wenzhang.json', { cache: 'no-cache' })
+            fetch('articles/all.json', { cache: 'no-cache' })
                 .then(function(response) {
-                    if (!response.ok) throw new Error('文件不存在');
+                    if (!response.ok) throw new Error('all.json 不存在');
                     return response.json();
                 })
                 .then(function(data) {
-                    var articles = (data.announcements || []).filter(function(a) {
-                        return a.delete !== true;
-                    });
+                    var articles = data.list || [];
                     var articleCount = articles.length;
                     var totalWordCount = 0;
                     articles.forEach(function(item) {

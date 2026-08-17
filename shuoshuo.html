@@ -597,7 +597,7 @@
             object-fit: cover;
         }
 
-        /* ===== 单张图片兼容旧样式 ===== */
+        /* ===== 单张图片样式（由 markdown.js 生成） ===== */
         .img-placeholder {
             position: relative;
             border-radius: 8px;
@@ -1472,23 +1472,19 @@
                 var count = images.length;
                 if (count === 0) return '';
 
-                // 确定 grid class
                 var gridClass = '';
                 if (count === 1) gridClass = 'memos-images--1';
                 else if (count === 2) gridClass = 'memos-images--2';
                 else if (count === 4) gridClass = 'memos-images--4';
                 else if (count > 4) gridClass = 'memos-images--many';
-                // count === 3 或 count === 5+ 用默认（3列）
 
                 var html = '<div class="memos-images ' + gridClass + '">';
-
                 for (var i = 0; i < count; i++) {
                     var alt = (alts && alts[i]) || '';
                     html += '<a class="memos-image" href="' + images[i] + '" data-index="' + i + '">';
                     html += '<img src="' + images[i] + '" alt="' + escapeHtml(alt) + '" loading="lazy">';
                     html += '</a>';
                 }
-
                 html += '</div>';
                 return html;
             }
@@ -1732,21 +1728,20 @@
                 }
 
                 var likedIds = getLikedIds();
-
                 var html = '';
+
                 filtered.forEach(function(item) {
                     var date = item.date || '';
                     var location = item.location || '';
                     var tags = item.tags || [];
                     var content = item.content || '';
 
-                    // 先用 KSMarkdown 渲染，获取完整的 HTML
-                    var fullRendered = window.KSMarkdown.renderMarkdown(content);
+                    // 用 mountMarkdown 渲染内容（自动处理图片、alt、灯箱）
+                    var tempContainer = document.createElement('div');
+                    window.KSMarkdown.mountMarkdown(tempContainer, content);
 
-                    // 提取所有图片
-                    var tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = fullRendered;
-                    var imgElements = tempDiv.querySelectorAll('img');
+                    // 提取所有图片信息
+                    var imgElements = tempContainer.querySelectorAll('.img-placeholder img');
                     var imgSrcs = [];
                     var imgAlts = [];
                     imgElements.forEach(function(img) {
@@ -1754,29 +1749,16 @@
                         imgAlts.push(img.getAttribute('alt') || '');
                     });
 
-                    // 如果有图片，用拼图替换所有 img 标签
-                    var rendered = fullRendered;
-                    if (imgSrcs.length > 0) {
+                    var renderedContent = tempContainer.innerHTML;
+
+                    // 多张图：替换为拼图
+                    if (imgSrcs.length > 1) {
                         var collageHtml = renderCollage(imgSrcs, imgAlts);
-                        // 收集所有 img 标签的 outerHTML
-                        var imgTags = [];
-                        var tempDiv2 = document.createElement('div');
-                        tempDiv2.innerHTML = fullRendered;
-                        var allImgs = tempDiv2.querySelectorAll('img');
-                        allImgs.forEach(function(img) {
-                            imgTags.push(img.outerHTML);
-                        });
-                        // 从后往前替换，保留第一个 img 位置替换为拼图，删除其他 img
-                        var resultHtml = fullRendered;
-                        for (var i = imgTags.length - 1; i >= 0; i--) {
-                            if (i === 0) {
-                                resultHtml = resultHtml.replace(imgTags[i], collageHtml);
-                            } else {
-                                resultHtml = resultHtml.replace(imgTags[i], '');
-                            }
-                        }
-                        rendered = resultHtml;
+                        // 移除所有 img-placeholder
+                        var contentWithoutImages = renderedContent.replace(/<div class="img-placeholder">.*?<\/div>/gs, '');
+                        renderedContent = contentWithoutImages + collageHtml;
                     }
+                    // 单张图：保持 img-placeholder 不变（alt 显示、灯箱已绑定）
 
                     // 标签
                     var tagsHtml = '';
@@ -1816,7 +1798,7 @@
                     html += '</div>';
                     html += '</div>';
 
-                    html += '<div class="shuoshuo-content markdown-body">' + rendered + '</div>';
+                    html += '<div class="shuoshuo-content markdown-body">' + renderedContent + '</div>';
 
                     html += '<div class="shuoshuo-footer">';
                     if (tagsHtml) html += tagsHtml;
@@ -1846,12 +1828,29 @@
                     try { hljs.highlightElement(el); } catch (e) {}
                 });
 
-                // 图片懒加载 & 灯箱绑定（用 KSMarkdown 的）
-                window.KSMarkdown.initImageLazyLoad(document);
-                window.KSMarkdown.initVideoLazyLoad(document);
+                // 重新绑定灯箱（mountMarkdown 在临时容器里绑定了，但 DOM 被替换了）
+                // 单张图：重新绑定 img-placeholder
+                document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
+                    img.style.cursor = 'pointer';
+                    var parent = img.closest('.shuoshuo-item');
+                    var images = parent ? parent.querySelectorAll('.img-placeholder img') : [];
+                    var imageList = [];
+                    images.forEach(function(im) {
+                        imageList.push({
+                            src: im.getAttribute('src'),
+                            alt: im.getAttribute('alt') || ''
+                        });
+                    });
+                    img.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        var idx = Array.from(images).indexOf(this);
+                        if (window.KSMarkdown && window.KSMarkdown.openLightbox) {
+                            window.KSMarkdown.openLightbox(imageList, idx >= 0 ? idx : 0);
+                        }
+                    });
+                });
 
-                // ---- 绑定拼图点击事件（使用 KSMarkdown.openLightbox） ----
-                // 1. 拼图图片：收集该说说内所有 memos-image
+                // 拼图：绑定 memos-image
                 document.querySelectorAll('.shuoshuo-item .memos-image').forEach(function(link) {
                     var parentItem = link.closest('.shuoshuo-item');
                     var allLinks = parentItem ? parentItem.querySelectorAll('.memos-image') : [];
@@ -1878,27 +1877,6 @@
                             window.KSMarkdown.openLightbox(images, idx);
                         } else {
                             showToast('灯箱加载失败', 'fa-exclamation-circle');
-                        }
-                    });
-                });
-
-                // 2. 单张图片（img-placeholder）
-                document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
-                    img.style.cursor = 'pointer';
-                    var parent = img.closest('.shuoshuo-item');
-                    var images = parent ? parent.querySelectorAll('.img-placeholder img') : [];
-                    var imageList = [];
-                    images.forEach(function(im) {
-                        imageList.push({
-                            src: im.getAttribute('src'),
-                            alt: im.getAttribute('alt') || ''
-                        });
-                    });
-                    img.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        var idx = Array.from(images).indexOf(this);
-                        if (window.KSMarkdown && window.KSMarkdown.openLightbox) {
-                            window.KSMarkdown.openLightbox(imageList, idx >= 0 ? idx : 0);
                         }
                     });
                 });

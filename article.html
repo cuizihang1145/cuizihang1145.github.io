@@ -11,14 +11,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.1/css/all.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-    <!-- 外部 Markdown 样式 -->
     <link rel="stylesheet" href="/assets/markdown/markdown.css">
     <link rel="stylesheet" href="/assets/waline-custom.css">
     <link rel="icon" href="/favicon.ico" sizes="32x32">
     <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
-        /* 保留原页面 UI 样式（与 Markdown 无关的部分） */
         * {
             margin: 0;
             padding: 0;
@@ -883,7 +881,6 @@
     <div class="toast" id="toast"></div>
     <div id="qrTemp"></div>
 
-    <!-- 外部 Markdown JS -->
     <script src="/assets/markdown/markdown.js"></script>
     <script>
         function getParam(name) {
@@ -891,7 +888,6 @@
             return url.searchParams.get(name);
         }
 
-        // ↓↓↓ 之前漏掉的两个函数 ↓↓↓
         function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');
@@ -906,11 +902,14 @@
                     var img = new Image();
                     img.onload = function() {
                         var canvas = document.createElement('canvas');
-                        var w = img.width, h = img.height;
+                        var w = img.width,
+                            h = img.height;
                         if (w > h) {
-                            if (w > maxSize) { h = h * maxSize / w; w = maxSize; }
+                            if (w > maxSize) { h = h * maxSize / w;
+                                w = maxSize; }
                         } else {
-                            if (h > maxSize) { w = w * maxSize / h; h = maxSize; }
+                            if (h > maxSize) { w = w * maxSize / h;
+                                h = maxSize; }
                         }
                         canvas.width = w;
                         canvas.height = h;
@@ -927,7 +926,6 @@
                 reader.readAsDataURL(file);
             });
         }
-        // ↑↑↑ 补丁结束 ↑↑↑
 
         function showToast(message, icon) {
             icon = icon || 'fa-info-circle';
@@ -1277,13 +1275,14 @@
                 `;
                 return;
             }
-            fetch('wenzhang.json', { cache: 'no-cache' })
+            // 改用 articles/all.json
+            fetch('articles/all.json', { cache: 'no-cache' })
                 .then(function(response) {
-                    if (!response.ok) throw new Error('文件不存在');
+                    if (!response.ok) throw new Error('all.json 不存在');
                     return response.json();
                 })
                 .then(function(data) {
-                    var articles = data.announcements || [];
+                    var articles = data.list || [];
                     var idx = parseInt(id);
                     if (isNaN(idx) || idx < 0 || idx >= articles.length) {
                         appContent.innerHTML = `

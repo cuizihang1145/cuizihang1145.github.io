@@ -542,7 +542,62 @@
             font-size: 1rem;
         }
 
-        /* ===== 单张图片样式 ===== */
+        /* ===== 图片网格（仿小十博客） ===== */
+        .memos-images {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.45rem;
+            margin: 0.95rem 0 0;
+            width: 100%;
+            max-width: 33rem;
+        }
+        .memos-images--1 {
+            grid-template-columns: minmax(0, 18rem);
+            width: fit-content;
+            max-width: 100%;
+        }
+        .memos-images--1 .memos-image {
+            aspect-ratio: auto;
+        }
+        .memos-images--1 .memos-image img {
+            height: auto;
+            max-height: 24rem;
+            object-fit: contain;
+            background: #f0edf5;
+        }
+        body.dark .memos-images--1 .memos-image img {
+            background: #2a2740;
+        }
+        .memos-images--2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .memos-images--4 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            max-width: 25rem;
+        }
+        .memos-images--many {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+        .memos-image {
+            display: block;
+            overflow: hidden;
+            aspect-ratio: 1;
+            border-radius: 6px;
+            background: #f0edf5;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        body.dark .memos-image {
+            background: #2a2740;
+        }
+        .memos-image img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* ===== 单张图片兼容旧样式 ===== */
         .img-placeholder {
             position: relative;
             border-radius: 8px;
@@ -590,43 +645,6 @@
             text-align: center;
             z-index: 3;
             backdrop-filter: blur(4px);
-        }
-
-        /* ===== 拼图样式 ===== */
-        .collage-grid {
-            display: grid;
-            gap: 4px;
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 0.5rem 0;
-            background: #f0edf5;
-        }
-        body.dark .collage-grid {
-            background: #2a2740;
-        }
-        .collage-cell {
-            aspect-ratio: 1/1;
-            overflow: hidden;
-            background: #e8e5f0;
-            position: relative;
-            cursor: pointer;
-        }
-        body.dark .collage-cell {
-            background: #3a3750;
-        }
-        .collage-cell img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            transition: transform 0.2s ease;
-        }
-        .collage-cell:hover img {
-            transform: scale(1.02);
-        }
-        .collage-empty {
-            aspect-ratio: 1/1;
-            background: transparent;
         }
 
         /* ===== 底部：标签 + 操作按钮 ===== */
@@ -785,14 +803,14 @@
             .shuoshuo-item { padding:1rem 0 0.8rem; }
             .container { padding:2rem 1rem 1.2rem; }
             .shuoshuo-sticky-bar { padding:0.4rem 0.6rem; gap:0.4rem; }
-            .collage-grid { gap:3px; }
+            .memos-images { gap:0.35rem; }
         }
         @media (max-width:380px) {
             .shuoshuo-avatar { width:34px; height:34px; }
             .shuoshuo-header { gap:0.5rem; }
             .shuoshuo-name { font-size:0.8rem; }
             .shuoshuo-date-location { font-size:0.65rem; }
-            .collage-grid { gap:2px; }
+            .memos-images { gap:0.25rem; }
         }
 
         /* ===== 分享模态框 ===== */
@@ -1448,69 +1466,31 @@
             }
 
             // ============================================================
-            // 图片拼图 + 灯箱
+            // 图片拼图（仿小十博客）
             // ============================================================
-
-            // 生成拼图 HTML
-            function renderCollage(images, altTexts) {
+            function renderCollage(images, alts) {
                 var count = images.length;
                 if (count === 0) return '';
-                if (count === 1) {
-                    var alt = (altTexts && altTexts[0]) || '';
-                    var altHtml = alt ? '<span class="img-alt-text">' + escapeHtml(alt) + '</span>' : '';
-                    return '<div class="img-placeholder"><span class="img-loading"><i class="fas fa-spinner fa-spin"></i></span><img src="' +
-                        images[0] + '" alt="' + escapeHtml(alt) + '" loading="lazy">' + altHtml + '</div>';
-                }
 
-                // 计算行列布局
-                var cols = 3;
-                if (count === 2) cols = 2;
-                else if (count === 3) cols = 3;
-                else if (count === 4) cols = 2;
-                else if (count === 5) cols = 3;
-                else if (count === 6) cols = 3;
-                else if (count === 7) cols = 3;
-                else if (count === 8) cols = 3;
-                else if (count === 9) cols = 3;
+                // 确定 grid class
+                var gridClass = '';
+                if (count === 1) gridClass = 'memos-images--1';
+                else if (count === 2) gridClass = 'memos-images--2';
+                else if (count === 4) gridClass = 'memos-images--4';
+                else if (count > 4) gridClass = 'memos-images--many';
+                // count === 3 或 count === 5+ 用默认（3列）
 
-                var rows = Math.ceil(count / cols);
-
-                // 特殊处理：最后一行不足时补空位
-                var html = '<div class="collage-grid" style="grid-template-columns: repeat(' + cols + ', 1fr);">';
+                var html = '<div class="memos-images ' + gridClass + '">';
 
                 for (var i = 0; i < count; i++) {
-                    html += '<div class="collage-cell" data-index="' + i + '">';
-                    html += '<img src="' + images[i] + '" alt="' + escapeHtml((altTexts && altTexts[i]) || '') +
-                        '" loading="lazy">';
-                    html += '</div>';
-                }
-
-                // 补空位
-                var remaining = cols - (count % cols);
-                if (remaining > 0 && remaining < cols) {
-                    for (var j = 0; j < remaining; j++) {
-                        html += '<div class="collage-empty"></div>';
-                    }
+                    var alt = (alts && alts[i]) || '';
+                    html += '<a class="memos-image" href="' + images[i] + '" data-index="' + i + '">';
+                    html += '<img src="' + images[i] + '" alt="' + escapeHtml(alt) + '" loading="lazy">';
+                    html += '</a>';
                 }
 
                 html += '</div>';
                 return html;
-            }
-
-            // ===== 灯箱 =====
-            var lightboxImages = [];
-            var lightboxIndex = 0;
-
-            function openLightbox(images, index) {
-                lightboxImages = images;
-                lightboxIndex = index;
-                // 调用 KSMarkdown 的灯箱
-                if (window.KSMarkdown && window.KSMarkdown.openLightbox) {
-                    window.KSMarkdown.openLightbox(images, index);
-                } else {
-                    // 兜底：手动创建灯箱
-                    showToast('灯箱加载失败', 'fa-exclamation-circle');
-                }
             }
 
             // ============================================================
@@ -1760,44 +1740,25 @@
                     var tags = item.tags || [];
                     var content = item.content || '';
 
-                    // 先渲染 Markdown，提取所有图片
-                    var rendered = window.KSMarkdown.renderMarkdown(content);
+                    // 先用 KSMarkdown 渲染，获取完整的 HTML
+                    var fullRendered = window.KSMarkdown.renderMarkdown(content);
 
-                    // 提取图片
-                    var imgRegex = /<img\b[^>]*src=["']([^"']*)["'][^>]*>/gi;
-                    var altRegex = /alt=["']([^"']*)["']/i;
-                    var images = [];
-                    var alts = [];
-                    var match;
+                    // 提取所有图片
                     var tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = rendered;
+                    tempDiv.innerHTML = fullRendered;
                     var imgElements = tempDiv.querySelectorAll('img');
+                    var imgSrcs = [];
+                    var imgAlts = [];
                     imgElements.forEach(function(img) {
-                        images.push(img.getAttribute('src'));
-                        alts.push(img.getAttribute('alt') || '');
+                        imgSrcs.push(img.getAttribute('src'));
+                        imgAlts.push(img.getAttribute('alt') || '');
                     });
 
-                    // 如果有图片，用拼图替换
-                    if (images.length > 0) {
-                        // 构建图片列表和 alt 列表
-                        var imgList = [];
-                        var altList = [];
-                        imgElements.forEach(function(img) {
-                            imgList.push(img.getAttribute('src'));
-                            altList.push(img.getAttribute('alt') || '');
-                        });
-                        rendered = renderCollage(imgList, altList);
-                    }
-
-                    // 其他 Markdown 内容（非图片部分）保持原样
-                    // 但渲染时已经包含了所有内容，我们替换了图片部分，需要保留文字内容
-                    // 重新构建：提取非图片内容 + 拼图
-                    // 简单方式：直接用 rendered，但需要把图片占位替换掉
-                    // 我们重新构建：先渲染内容，再替换图片
-                    var fullRendered = window.KSMarkdown.renderMarkdown(content);
-                    // 替换图片部分为拼图
-                    if (images.length > 0) {
-                        // 用正则替换所有 img 标签为拼图 HTML
+                    // 如果有图片，用拼图替换所有 img 标签
+                    var rendered = fullRendered;
+                    if (imgSrcs.length > 0) {
+                        var collageHtml = renderCollage(imgSrcs, imgAlts);
+                        // 收集所有 img 标签的 outerHTML
                         var imgTags = [];
                         var tempDiv2 = document.createElement('div');
                         tempDiv2.innerHTML = fullRendered;
@@ -1805,10 +1766,8 @@
                         allImgs.forEach(function(img) {
                             imgTags.push(img.outerHTML);
                         });
-                        var collageHtml = renderCollage(images, alts);
-                        // 替换第一个 img 为拼图，删除其他的
+                        // 从后往前替换，保留第一个 img 位置替换为拼图，删除其他 img
                         var resultHtml = fullRendered;
-                        // 从后往前替换，避免索引错乱
                         for (var i = imgTags.length - 1; i >= 0; i--) {
                             if (i === 0) {
                                 resultHtml = resultHtml.replace(imgTags[i], collageHtml);
@@ -1887,55 +1846,53 @@
                     try { hljs.highlightElement(el); } catch (e) {}
                 });
 
-                // 图片懒加载 & 灯箱绑定
+                // 图片懒加载 & 灯箱绑定（用 KSMarkdown 的）
                 window.KSMarkdown.initImageLazyLoad(document);
                 window.KSMarkdown.initVideoLazyLoad(document);
 
-                // 绑定拼图点击事件
-                document.querySelectorAll('.collage-cell').forEach(function(cell) {
-                    var img = cell.querySelector('img');
-                    if (!img) return;
-                    // 收集该说说内所有图片
-                    var itemEl = cell.closest('.shuoshuo-item');
-                    var allCells = itemEl ? itemEl.querySelectorAll('.collage-cell img') : [];
-                    var allImages = [];
-                    allCells.forEach(function(im) {
-                        allImages.push({
-                            src: im.getAttribute('src'),
-                            alt: im.getAttribute('alt') || ''
-                        });
+                // ---- 绑定拼图点击事件（使用 KSMarkdown.openLightbox） ----
+                // 1. 拼图图片：收集该说说内所有 memos-image
+                document.querySelectorAll('.shuoshuo-item .memos-image').forEach(function(link) {
+                    var parentItem = link.closest('.shuoshuo-item');
+                    var allLinks = parentItem ? parentItem.querySelectorAll('.memos-image') : [];
+                    var images = [];
+                    allLinks.forEach(function(l) {
+                        var img = l.querySelector('img');
+                        if (img) {
+                            images.push({
+                                src: img.getAttribute('src'),
+                                alt: img.getAttribute('alt') || ''
+                            });
+                        }
                     });
-                    // 如果没有其他图片，只有当前这一张
-                    if (allImages.length === 0) {
-                        allImages.push({
-                            src: img.getAttribute('src'),
-                            alt: img.getAttribute('alt') || ''
-                        });
-                    }
-                    // 当前索引
-                    var currentIdx = 0;
-                    allCells.forEach(function(im, idx) {
-                        if (im === img) currentIdx = idx;
-                    });
+                    if (images.length === 0) return;
 
-                    cell.addEventListener('click', function(e) {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
                         e.stopPropagation();
+                        var idx = 0;
+                        allLinks.forEach(function(l, i) {
+                            if (l === link) idx = i;
+                        });
                         if (window.KSMarkdown && window.KSMarkdown.openLightbox) {
-                            window.KSMarkdown.openLightbox(allImages, currentIdx);
+                            window.KSMarkdown.openLightbox(images, idx);
                         } else {
                             showToast('灯箱加载失败', 'fa-exclamation-circle');
                         }
                     });
                 });
 
-                // 绑定单张图片点击
+                // 2. 单张图片（img-placeholder）
                 document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
                     img.style.cursor = 'pointer';
                     var parent = img.closest('.shuoshuo-item');
                     var images = parent ? parent.querySelectorAll('.img-placeholder img') : [];
                     var imageList = [];
                     images.forEach(function(im) {
-                        imageList.push({ src: im.getAttribute('src'), alt: im.getAttribute('alt') || '' });
+                        imageList.push({
+                            src: im.getAttribute('src'),
+                            alt: im.getAttribute('alt') || ''
+                        });
                     });
                     img.addEventListener('click', function(e) {
                         e.stopPropagation();

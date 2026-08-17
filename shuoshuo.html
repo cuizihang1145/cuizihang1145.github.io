@@ -1676,62 +1676,62 @@
                     var tempContainer = document.createElement('div');
                     window.KSMarkdown.mountMarkdown(tempContainer, content);
 
-                    // 提取所有图片
-                    var imgElements = tempContainer.querySelectorAll('.img-placeholder img');
-                    var imgSrcs = [];
-                    var imgAlts = [];
-                    imgElements.forEach(function(img) {
-                        imgSrcs.push(img.getAttribute('src'));
-                        imgAlts.push(img.getAttribute('alt') || '');
-                    });
-
-                    var finalContent = '';
-
-                    if (imgSrcs.length <= 1) {
-                        // 0或1张图：直接使用 mountMarkdown 的结果（单张图的 loading 和 alt 由 mountMarkdown 处理）
-                        finalContent = tempContainer.innerHTML;
-                    } else {
-                        // 多张图：移除所有 .img-placeholder，保留其他内容，然后追加拼图
-                        var placeholders = tempContainer.querySelectorAll('.img-placeholder');
-
-                        placeholders.forEach(function(el) {
-                            var parent = el.parentElement;
-
-                            // 先移除占位符
-                            el.remove();
-
-                            // 如果父元素是 <p> 且删除后变成完全空白（只有空格、换行或 <br>），直接移除整个 <p>
-                            if (parent && parent.tagName === 'P') {
-                                var hasContent = false;
-                                parent.childNodes.forEach(function(node) {
-                                    if (node.nodeType === 3 && node.textContent.trim() !== '') {
-                                        hasContent = true;
-                                    }
-                                    if (node.nodeType === 1) {
-                                        var tag = node.tagName.toLowerCase();
-                                        if (tag !== 'br' && !(node.classList && node.classList.contains('img-placeholder'))) {
-                                            hasContent = true;
-                                        }
-                                    }
-                                });
-                                if (!hasContent) {
-                                    parent.remove();
+                    // 处理连续相邻图片：识别连续纯图片节点，将多图组合并为拼图，单图保留原样
+                    function isPureImageNode(node) {
+                        if (node.nodeType !== 1) return false;
+                        var placeholders = node.querySelectorAll('.img-placeholder');
+                        if (placeholders.length !== 1) return false;
+                        var childNodes = node.childNodes;
+                        for (var i = 0; i < childNodes.length; i++) {
+                            var child = childNodes[i];
+                            if (child.nodeType === 3) {
+                                if (child.textContent.trim() !== '') return false;
+                            } else if (child.nodeType === 1) {
+                                if (!child.classList || !child.classList.contains('img-placeholder')) {
+                                    return false;
                                 }
                             }
-                        });
-
-                        // 再全面清理一次可能存在的空段落（防止漏网之鱼）
-                        tempContainer.querySelectorAll('p').forEach(function(p) {
-                            var hasImgOrOther = p.querySelector('img, video, iframe, pre, blockquote, table, ul, ol, .img-placeholder');
-                            if (!hasImgOrOther && p.textContent.trim() === '') {
-                                p.remove();
-                            }
-                        });
-
-                        var contentWithoutImages = tempContainer.innerHTML;
-                        var collageHtml = renderCollage(imgSrcs, imgAlts);
-                        finalContent = contentWithoutImages + collageHtml;
+                        }
+                        return true;
                     }
+
+                    var childNodes = Array.from(tempContainer.childNodes);
+                    var imageGroups = [];
+                    var currentGroup = [];
+                    childNodes.forEach(function(node) {
+                        if (isPureImageNode(node)) {
+                            currentGroup.push(node);
+                        } else {
+                            if (currentGroup.length > 0) {
+                                imageGroups.push(currentGroup);
+                                currentGroup = [];
+                            }
+                        }
+                    });
+                    if (currentGroup.length > 0) imageGroups.push(currentGroup);
+
+                    imageGroups.forEach(function(group) {
+                        if (group.length > 1) {
+                            var imgSrcs = [];
+                            var imgAlts = [];
+                            group.forEach(function(node) {
+                                var img = node.querySelector('.img-placeholder img');
+                                if (img) {
+                                    imgSrcs.push(img.getAttribute('src'));
+                                    imgAlts.push(img.getAttribute('alt') || '');
+                                }
+                            });
+                            var collageHtml = renderCollage(imgSrcs, imgAlts);
+                            var tempDiv = document.createElement('div');
+                            tempDiv.innerHTML = collageHtml;
+                            var collageNode = tempDiv.firstChild;
+                            var firstNode = group[0];
+                            firstNode.parentNode.insertBefore(collageNode, firstNode);
+                            group.forEach(function(node) { node.remove(); });
+                        }
+                    });
+
+                    var finalContent = tempContainer.innerHTML;
 
                     // 标签
                     var tagsHtml = '';

@@ -1795,24 +1795,34 @@
 
                 listEl.innerHTML = html;
 
-                // ========== 获取评论数 ==========
-                var commentImportPromise = import('https://unpkg.com/@waline/client@v3/dist/comment.js')
+                // ========== 获取评论数（使用正确的导入路径） ==========
+                var commentImportPromise = import('https://unpkg.com/@waline/client@v3/dist/waline.js')
                     .then(function(module) { return module.commentCount; })
                     .catch(function() { return null; });
 
                 commentImportPromise.then(function(commentCount) {
                     if (!commentCount) return;
 
+                    // 取消上一次未完成的更新
+                    if (window._commentAbortFuncs && window._commentAbortFuncs.length) {
+                        window._commentAbortFuncs.forEach(function(abort) { try { abort(); } catch(e) {} });
+                    }
+                    window._commentAbortFuncs = [];
+
+                    // 为每个评论按钮单独调用 commentCount，并保存取消函数
                     document.querySelectorAll('.shuoshuo-item .comment-toggle').forEach(function(btn) {
                         var index = btn.dataset.index;
                         var countEl = document.getElementById('comment-count-' + index);
                         if (!countEl) return;
 
-                        commentCount({
+                        var abort = commentCount({
                             serverURL: 'https://comment.cuizi.top',
                             path: '/shuoshuo/' + index,
                             selector: '#comment-count-' + index
                         });
+                        if (typeof abort === 'function') {
+                            window._commentAbortFuncs.push(abort);
+                        }
                     });
                 });
                 // ========== 获取评论数结束 ==========

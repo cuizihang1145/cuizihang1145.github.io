@@ -1369,6 +1369,7 @@
 
             // ============================================================
             // 点赞：使用 localStorage 记录用户点过哪些 id
+            // 心形状态 100% 由 localStorage 控制，数字由服务器控制
             // ============================================================
             var API_KEY = '';
             var allShuoshuo = [];
@@ -1376,10 +1377,8 @@
             var currentKeyword = '';
             var urlIdHandled = false;
 
-            // localStorage 键名
             var LIKED_IDS_KEY = 'ks_liked_ids';
 
-            // 获取当前用户点赞过的 id 列表
             function getLikedIds() {
                 try {
                     var data = localStorage.getItem(LIKED_IDS_KEY);
@@ -1391,20 +1390,17 @@
                 return [];
             }
 
-            // 保存 liked_ids
             function setLikedIds(ids) {
                 try {
                     localStorage.setItem(LIKED_IDS_KEY, JSON.stringify(ids));
                 } catch (e) {}
             }
 
-            // 检查某个 id 是否已被当前用户点赞
             function isLiked(id) {
                 var ids = getLikedIds();
                 return ids.indexOf(String(id)) !== -1;
             }
 
-            // 添加点赞记录
             function addLikedId(id) {
                 var ids = getLikedIds();
                 var strId = String(id);
@@ -1414,7 +1410,6 @@
                 }
             }
 
-            // 移除点赞记录
             function removeLikedId(id) {
                 var ids = getLikedIds();
                 var strId = String(id);
@@ -1425,7 +1420,28 @@
                 }
             }
 
-            // 获取 API Key
+            // 根据 localStorage 更新单个按钮的心形图标
+            function updateHeartIcon(id) {
+                var btn = document.querySelector('.like-toggle[data-index="' + id + '"]');
+                if (!btn) return;
+                var icon = btn.querySelector('i');
+                if (!icon) return;
+                var liked = isLiked(id);
+                icon.className = liked ? 'fas fa-heart' : 'far fa-heart';
+            }
+
+            // 根据 localStorage 更新所有按钮的心形图标
+            function updateAllHeartIcons() {
+                var likedIds = getLikedIds();
+                document.querySelectorAll('.like-toggle').forEach(function(btn) {
+                    var id = btn.dataset.index;
+                    var icon = btn.querySelector('i');
+                    if (icon) {
+                        icon.className = likedIds.indexOf(id) !== -1 ? 'fas fa-heart' : 'far fa-heart';
+                    }
+                });
+            }
+
             function fetchApiKey() {
                 return fetch('/api/config')
                     .then(function(res) {
@@ -1438,7 +1454,6 @@
                     });
             }
 
-            // 获取所有点赞数，并更新显示
             function fetchLikes() {
                 if (!API_KEY) return Promise.reject('API Key 未初始化');
                 return fetch('/api/likes', {
@@ -1456,8 +1471,8 @@
                         throw new Error(data.error || '获取失败');
                     }
                     var likes = data.data || {};
-                    var likedIds = getLikedIds();
 
+                    // 更新数字
                     Object.keys(likes).forEach(function(id) {
                         var el = document.getElementById('like-count-' + id);
                         if (el) {
@@ -1465,32 +1480,14 @@
                         }
                     });
 
-                    // 根据 localStorage 设置心形状态
-                    likedIds.forEach(function(id) {
-                        var btn = document.querySelector('.like-toggle[data-index="' + id + '"]');
-                        if (btn) {
-                            var icon = btn.querySelector('i');
-                            if (icon) {
-                                icon.className = 'fas fa-heart';
-                            }
-                        }
-                    });
-
-                    // 对于不在 likedIds 里的，确保是空心
-                    document.querySelectorAll('.like-toggle').forEach(function(btn) {
-                        var id = btn.dataset.index;
-                        var icon = btn.querySelector('i');
-                        if (icon && likedIds.indexOf(id) === -1) {
-                            icon.className = 'far fa-heart';
-                        }
-                    });
+                    // 心形状态完全由 localStorage 决定，不依赖数字
+                    updateAllHeartIcons();
                 })
                 .catch(function(err) {
                     console.warn('加载点赞数失败:', err);
                 });
             }
 
-            // 点赞 / 取消点赞
             function toggleLike(id, action) {
                 var countEl = document.getElementById('like-count-' + id);
                 if (!countEl) return;
@@ -1507,7 +1504,7 @@
                 var optimisticCount = action === 'like' ? current + 1 : Math.max(0, current - 1);
                 countEl.textContent = optimisticCount;
 
-                // 乐观更新心形（根据 action 切换）
+                // 乐观更新心形
                 if (btn) {
                     var icon = btn.querySelector('i');
                     if (icon) {
@@ -1537,51 +1534,33 @@
                     if (data.key !== API_KEY) {
                         // 密钥不匹配，回滚
                         countEl.textContent = currentText;
-                        if (btn) {
-                            var icon = btn.querySelector('i');
-                            if (icon) {
-                                icon.className = isLiked(id) ? 'fas fa-heart' : 'far fa-heart';
-                            }
-                        }
-                        // 回滚 localStorage
+                        // 回滚 localStorage 和心形
                         if (action === 'like') removeLikedId(id);
                         else addLikedId(id);
+                        updateHeartIcon(id);
                         showToast('数据异常', 'fa-exclamation-circle');
                         return;
                     }
 
                     if (data.success) {
-                        // 用服务器返回的准确数字更新
                         countEl.textContent = data.likes;
-                        // 心形状态由 localStorage 决定，已经在上面的乐观更新里改好了
-                        // 但万一服务器返回失败，我们需要保证状态一致
-                        // 这里正常情况已经正确
+                        // 心形状态由 localStorage 决定，重新从 localStorage 读取
+                        updateHeartIcon(id);
                     } else {
                         // 服务器返回失败，回滚
                         countEl.textContent = currentText;
-                        if (btn) {
-                            var icon = btn.querySelector('i');
-                            if (icon) {
-                                icon.className = isLiked(id) ? 'fas fa-heart' : 'far fa-heart';
-                            }
-                        }
                         if (action === 'like') removeLikedId(id);
                         else addLikedId(id);
+                        updateHeartIcon(id);
                         showToast(data.error || '操作失败', 'fa-exclamation-circle');
                     }
                 })
                 .catch(function() {
                     if (btn) btn.dataset.loading = 'false';
-                    // 网络错误，回滚
                     countEl.textContent = currentText;
-                    if (btn) {
-                        var icon = btn.querySelector('i');
-                        if (icon) {
-                            icon.className = isLiked(id) ? 'fas fa-heart' : 'far fa-heart';
-                        }
-                    }
                     if (action === 'like') removeLikedId(id);
                     else addLikedId(id);
+                    updateHeartIcon(id);
                     showToast('网络错误', 'fa-exclamation-circle');
                 });
             }
@@ -1641,7 +1620,6 @@
                     var tags = item.tags || [];
                     var content = item.content || '';
 
-                    // 渲染 markdown
                     var rendered = window.KSMarkdown.renderMarkdown(content);
                     rendered = rendered.replace(/<img\b[^>]*>/gi, function(match) {
                         var srcMatch = match.match(/src=["']([^"']*)["']/);
@@ -1653,7 +1631,6 @@
                             src + '" alt="' + alt + '" loading="lazy">' + altHtml + '</div>';
                     });
 
-                    // 标签
                     var tagsHtml = '';
                     if (tags.length) {
                         tagsHtml = '<div class="shuoshuo-tags">';
@@ -1664,7 +1641,6 @@
                         tagsHtml += '</div>';
                     }
 
-                    // 日期 + 位置
                     var dateLocationHtml = '';
                     if (date) {
                         dateLocationHtml += '<span>' + escapeHtml(date) + '</span>';
@@ -1681,7 +1657,6 @@
 
                     html += '<div class="shuoshuo-item" data-origin-index="' + item._originIndex + '">';
 
-                    // 头部：头像 + 名称/日期
                     html += '<div class="shuoshuo-header">';
                     html += '<img class="shuoshuo-avatar" src="https://www.cuizi.top/logo.png" alt="ks" loading="lazy" onerror="this.onerror=null;this.src=\'logo.png\'">';
                     html += '<div class="shuoshuo-header-info">';
@@ -1690,10 +1665,8 @@
                     html += '</div>';
                     html += '</div>';
 
-                    // 内容
                     html += '<div class="shuoshuo-content markdown-body">' + rendered + '</div>';
 
-                    // 底部：标签 + 操作按钮（分享 + 点赞 + 评论）
                     html += '<div class="shuoshuo-footer">';
                     if (tagsHtml) html += tagsHtml;
                     html += '<div class="shuoshuo-actions">';
@@ -1709,7 +1682,6 @@
                     html += '</div>';
                     html += '</div>';
 
-                    // 评论框
                     html += '<div class="shuoshuo-comment-box" id="waline-box-' + item._originIndex + '"></div>';
 
                     html += '</div>';
@@ -1717,12 +1689,10 @@
 
                 listEl.innerHTML = html;
 
-                // 高亮代码
                 document.querySelectorAll('.code-line .hljs').forEach(function(el) {
                     try { hljs.highlightElement(el); } catch (e) {}
                 });
 
-                // 图片懒加载 & 灯箱
                 window.KSMarkdown.initImageLazyLoad(document);
                 window.KSMarkdown.initVideoLazyLoad(document);
 
@@ -1741,20 +1711,19 @@
                     });
                 });
 
-                // 高亮定位（延迟执行）
                 setTimeout(function() {
                     if (!urlIdHandled) handleUrlId();
                     updateReadingProgress();
                 }, 100);
             }
 
-            // ===== 事件委托（解决动态渲染后事件失效） =====
+            // ===== 事件委托 =====
             var listEl = document.getElementById('shuoshuoList');
 
             listEl.addEventListener('click', function(e) {
                 var target;
 
-                // ---- 分享 ----
+                // 分享
                 target = e.target.closest('.share-toggle');
                 if (target) {
                     var idx = parseInt(target.dataset.index, 10);
@@ -1774,14 +1743,13 @@
                     return;
                 }
 
-                // ---- 点赞 ----
+                // 点赞
                 target = e.target.closest('.like-toggle');
                 if (target) {
                     var idx = target.dataset.index;
                     var countEl = document.getElementById('like-count-' + idx);
                     if (!countEl) return;
 
-                    // 根据 localStorage 判断当前是否已点赞
                     var liked = isLiked(idx);
                     var action = liked ? 'unlike' : 'like';
                     toggleLike(idx, action);
@@ -1789,7 +1757,7 @@
                     return;
                 }
 
-                // ---- 评论 ----
+                // 评论
                 target = e.target.closest('.comment-toggle');
                 if (target) {
                     var idx = target.dataset.index;
@@ -1817,7 +1785,6 @@
                 }
             });
 
-            // 复制文字
             var shareTextDisplay = document.getElementById('shareTextDisplay');
             var textModal = document.getElementById('textModal');
             document.getElementById('shareCopyBtn').addEventListener('click', function() {
@@ -1861,7 +1828,6 @@
                 });
             });
 
-            // 保存图片
             document.getElementById('shareSaveBtn').addEventListener('click', function() {
                 if (!currentShareImageDataUrl) {
                     showToast('图片未生成', 'fa-exclamation-circle');

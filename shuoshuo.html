@@ -550,7 +550,7 @@
             border-top: 1px solid rgba(0, 0, 0, 0.06);
             border-bottom: 1px solid rgba(0, 0, 0, 0.06);
             margin-top: -1px;
-            transition: border-color 0.4s ease, background 0.3s ease;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
             background: transparent;
         }
 
@@ -559,19 +559,20 @@
             border-bottom-color: rgba(255, 255, 255, 0.06);
         }
 
-        /* 高亮 — 上下分割线变金色 */
+        /* 高亮 — 严格只让上下分割线变成金色，绝对不作用在卡片背景上 */
         .shuoshuo-item.highlight {
-            border-top-color: #FFD700;
-            border-bottom-color: #FFD700;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.15), inset 0 0 20px rgba(255, 215, 0, 0.03);
+            border-top-color: #FFD700 !important;
+            border-bottom-color: #FFD700 !important;
+            /* 只加阴影在分割线位置，不作用于卡片背景 */
+            box-shadow: 0 -3px 0 #FFD700, 0 3px 0 #FFD700;
             position: relative;
             z-index: 2;
         }
 
         body.dark .shuoshuo-item.highlight {
-            border-top-color: #FFD700;
-            border-bottom-color: #FFD700;
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.12), inset 0 0 30px rgba(255, 215, 0, 0.03);
+            border-top-color: #FFD700 !important;
+            border-bottom-color: #FFD700 !important;
+            box-shadow: 0 -3px 0 #FFD700, 0 3px 0 #FFD700;
         }
 
         /* 头部：头像 + 名称/日期 */
@@ -589,7 +590,7 @@
             flex-shrink: 0;
             object-fit: cover;
             display: block;
-            background: #ddd; /* fallback 背景 */
+            background: #ddd;
             box-shadow: 0 4px 12px rgba(90, 70, 170, 0.20);
             transition: box-shadow 0.3s ease;
         }
@@ -616,13 +617,6 @@
 
         body.dark .shuoshuo-name {
             color: #E8E6F0;
-        }
-
-        .shuoshuo-name small {
-            font-weight: 400;
-            font-size: 0.75rem;
-            color: #8A8AB5;
-            margin-left: 0.3rem;
         }
 
         .shuoshuo-date-location {
@@ -1223,11 +1217,12 @@
 
                     html += '<div class="shuoshuo-item" data-origin-index="' + item._originIndex + '">';
 
-                    // 头部：头像（使用 logo.png）+ 名称/日期
+                    // 头部：头像 + 名称/日期
                     html += '<div class="shuoshuo-header">';
                     html += '<img class="shuoshuo-avatar" src="https://www.cuizi.top/logo.png" alt="ks" loading="lazy" onerror="this.onerror=null;this.src=\'logo.png\'">';
                     html += '<div class="shuoshuo-header-info">';
-                    html += '<div class="shuoshuo-name">ks <small>· 说说</small></div>';
+                    // 只保留 "ks"，不加任何多余后缀
+                    html += '<div class="shuoshuo-name">ks</div>';
                     html += '<div class="shuoshuo-date-location">' + dateLocationHtml + '</div>';
                     html += '</div>';
                     html += '</div>';

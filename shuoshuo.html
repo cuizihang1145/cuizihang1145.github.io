@@ -1155,7 +1155,7 @@
             }
 
             var walineModule = null;
-            var walinePreloadPromise = import('https://unpkg.com/@waline/client@v3/dist/waline.js')
+            var walinePreloadPromise = import('/assets/waline.js')
                 .then(function(module) { walineModule = module; })
                 .catch(function() {});
             var walineInitializedInstances = {};

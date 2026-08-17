@@ -662,7 +662,7 @@
     function initWaline(){
         const el = document.getElementById('waline-comments');
         if(!el) return;
-        import('https://unpkg.com/@waline/client@v3/dist/waline.js')
+        import('/assets/waline.js')
             .then(mod=>{
                 mod.init({
                     el:'#waline-comments',

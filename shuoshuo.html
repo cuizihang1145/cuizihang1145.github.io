@@ -619,7 +619,6 @@
         .shuoshuo-action-btn i {
             font-size: 1rem;
         }
-        /* 点赞按钮特殊样式（可自定义） */
         .shuoshuo-action-btn.like-toggle .like-count {
             font-weight: 600;
             min-width: 0.6rem;
@@ -1390,7 +1389,7 @@
                     });
             }
 
-            // 获取所有点赞数
+            // 获取所有点赞数，并更新显示
             function fetchLikes() {
                 if (!API_KEY) return Promise.reject('API Key 未初始化');
                 return fetch('/api/likes', {
@@ -1401,7 +1400,6 @@
                     return res.json();
                 })
                 .then(function(data) {
-                    // 校验返回的 key
                     if (data.key !== API_KEY) {
                         throw new Error('密钥不匹配');
                     }
@@ -1411,8 +1409,24 @@
                     var likes = data.data || {};
                     Object.keys(likes).forEach(function(id) {
                         var el = document.getElementById('like-count-' + id);
-                        if (el) el.textContent = likes[id];
+                        if (el) {
+                            var count = likes[id];
+                            el.textContent = count;
+                            // 根据点赞数切换心形实心/空心
+                            var btn = el.closest('.like-toggle');
+                            if (btn) {
+                                var icon = btn.querySelector('i');
+                                if (icon) {
+                                    if (count > 0) {
+                                        icon.className = 'fas fa-heart';
+                                    } else {
+                                        icon.className = 'far fa-heart';
+                                    }
+                                }
+                            }
+                        }
                     });
+                    // 对于没有收到数据的说说，保持 '-' 不变（说明没被点过赞）
                 })
                 .catch(function(err) {
                     console.warn('加载点赞数失败:', err);
@@ -1428,10 +1442,21 @@
                 if (btn && btn.dataset.loading === 'true') return;
                 if (btn) btn.dataset.loading = 'true';
 
+                // 当前显示的值（可能是 '-' 或数字）
+                var currentText = countEl.textContent;
+                var current = parseInt(currentText, 10);
+                if (isNaN(current)) current = 0;
+
                 // 乐观更新
-                var current = parseInt(countEl.textContent, 10) || 0;
                 var optimisticCount = action === 'like' ? current + 1 : Math.max(0, current - 1);
                 countEl.textContent = optimisticCount;
+                // 乐观更新图标
+                if (btn) {
+                    var icon = btn.querySelector('i');
+                    if (icon) {
+                        icon.className = optimisticCount > 0 ? 'fas fa-heart' : 'far fa-heart';
+                    }
+                }
 
                 fetch('/api/likes', {
                     method: 'POST',
@@ -1444,28 +1469,51 @@
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     if (btn) btn.dataset.loading = 'false';
-                    // 校验返回密钥
                     if (data.key !== API_KEY) {
-                        countEl.textContent = current;
+                        countEl.textContent = currentText;
+                        if (btn) {
+                            var icon = btn.querySelector('i');
+                            if (icon) {
+                                icon.className = current > 0 ? 'fas fa-heart' : 'far fa-heart';
+                            }
+                        }
                         showToast('数据异常', 'fa-exclamation-circle');
                         return;
                     }
                     if (data.success) {
                         countEl.textContent = data.likes;
+                        if (btn) {
+                            var icon = btn.querySelector('i');
+                            if (icon) {
+                                icon.className = data.likes > 0 ? 'fas fa-heart' : 'far fa-heart';
+                            }
+                        }
                     } else {
-                        countEl.textContent = current;
+                        countEl.textContent = currentText;
+                        if (btn) {
+                            var icon = btn.querySelector('i');
+                            if (icon) {
+                                icon.className = current > 0 ? 'fas fa-heart' : 'far fa-heart';
+                            }
+                        }
                         showToast(data.error || '操作失败', 'fa-exclamation-circle');
                     }
                 })
                 .catch(function() {
                     if (btn) btn.dataset.loading = 'false';
-                    countEl.textContent = current;
+                    countEl.textContent = currentText;
+                    if (btn) {
+                        var icon = btn.querySelector('i');
+                        if (icon) {
+                            icon.className = current > 0 ? 'fas fa-heart' : 'far fa-heart';
+                        }
+                    }
                     showToast('网络错误', 'fa-exclamation-circle');
                 });
             }
 
             // ============================================================
-            // 原有数据与渲染逻辑（修改了渲染模板，添加了点赞按钮）
+            // 原有数据与渲染逻辑
             // ============================================================
 
             function handleUrlId() {
@@ -1571,9 +1619,12 @@
                     html += '<div class="shuoshuo-actions">';
                     html += '<button class="shuoshuo-action-btn share-toggle" data-index="' + item._originIndex +
                         '" title="分享"><i class="fas fa-share-alt"></i></button>';
+                    // 点赞按钮：初始显示 '-'，空心心形
                     html += '<button class="shuoshuo-action-btn like-toggle" data-index="' + item._originIndex +
-                        '" title="点赞"><i class="fas fa-heart"></i> <span class="like-count" id="like-count-' + item._originIndex +
-                        '">0</span></button>';
+                        '" title="点赞">';
+                    html += '<i class="far fa-heart"></i> ';
+                    html += '<span class="like-count" id="like-count-' + item._originIndex + '">-</span>';
+                    html += '</button>';
                     html += '<button class="shuoshuo-action-btn comment-toggle" data-index="' + item._originIndex +
                         '" title="评论"><i class="fas fa-comments"></i></button>';
                     html += '</div>';
@@ -1651,7 +1702,9 @@
                     var idx = target.dataset.index;
                     var countEl = document.getElementById('like-count-' + idx);
                     if (!countEl) return;
-                    var current = parseInt(countEl.textContent, 10) || 0;
+                    var currentText = countEl.textContent;
+                    var current = parseInt(currentText, 10);
+                    if (isNaN(current)) current = 0;
                     // 如果当前数字 > 0 则取消点赞，否则点赞
                     var action = current > 0 ? 'unlike' : 'like';
                     toggleLike(idx, action);
@@ -1782,8 +1835,6 @@
                 currentKeyword = this.value;
                 updateClearBtn();
                 renderShuoshuoList();
-                // 重新获取点赞数（因为重新渲染了，但数据没变，可不重新获取，但为了安全可重新获取）
-                // 如果重新获取，需要先确保 API_KEY 已获取
                 if (API_KEY) fetchLikes().catch(function() {});
             });
             searchClearBtn.addEventListener('click', function() {

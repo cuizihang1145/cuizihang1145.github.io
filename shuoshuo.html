@@ -1359,14 +1359,15 @@
             }
 
             // ============================================================
-            // 点赞：使用 localStorage 记录用户点过哪些 id
-            // 心形状态 100% 由 localStorage 控制，数字由服务器控制
+            // 点赞：使用 localStorage + 内存缓存
+            // 心形状态 100% 由 localStorage 控制，数字由内存缓存控制
             // ============================================================
             var API_KEY = '';
             var allShuoshuo = [];
             var currentFilter = 'newest';
             var currentKeyword = '';
             var urlIdHandled = false;
+            var likesCache = {};   // 内存缓存 { "0": 5, "1": 3, ... }
 
             var LIKED_IDS_KEY = 'ks_liked_ids';
 
@@ -1431,6 +1432,23 @@
                 });
             }
 
+            // 从缓存更新所有点赞数字
+            function updateAllLikeNumbers() {
+                Object.keys(likesCache).forEach(function(id) {
+                    var el = document.getElementById('like-count-' + id);
+                    if (el) {
+                        el.textContent = likesCache[id];
+                    }
+                });
+                // 那些没有在缓存中的 id，保持 '-' 不变
+            }
+
+            // 完整 UI 刷新（数字 + 心形）
+            function refreshLikeUI() {
+                updateAllLikeNumbers();
+                updateAllHeartIcons();
+            }
+
             function fetchApiKey() {
                 return fetch('/api/config')
                     .then(function(res) {
@@ -1443,6 +1461,7 @@
                     });
             }
 
+            // 获取点赞数据（只调用一次，存入缓存）
             function fetchLikes() {
                 if (!API_KEY) return Promise.reject('API Key 未初始化');
                 return fetch('/api/likes', {
@@ -1459,14 +1478,8 @@
                     if (!data.success) {
                         throw new Error(data.error || '获取失败');
                     }
-                    var likes = data.data || {};
-                    Object.keys(likes).forEach(function(id) {
-                        var el = document.getElementById('like-count-' + id);
-                        if (el) {
-                            el.textContent = likes[id];
-                        }
-                    });
-                    updateAllHeartIcons();
+                    likesCache = data.data || {};
+                    refreshLikeUI();
                 })
                 .catch(function(err) {
                     console.warn('加载点赞数失败:', err);
@@ -1513,6 +1526,7 @@
                 .then(function(data) {
                     if (btn) btn.dataset.loading = 'false';
                     if (data.key !== API_KEY) {
+                        // 回滚
                         countEl.textContent = currentText;
                         if (action === 'like') removeLikedId(id);
                         else addLikedId(id);
@@ -1521,9 +1535,12 @@
                         return;
                     }
                     if (data.success) {
+                        // 更新缓存和单个元素
+                        likesCache[id] = data.likes;
                         countEl.textContent = data.likes;
                         updateHeartIcon(id);
                     } else {
+                        // 回滚
                         countEl.textContent = currentText;
                         if (action === 'like') removeLikedId(id);
                         else addLikedId(id);
@@ -1631,6 +1648,10 @@
                     var liked = likedIds.indexOf(strId) !== -1;
                     var heartClass = liked ? 'fas fa-heart' : 'far fa-heart';
 
+                    // 从缓存读取点赞数，没有则显示 '-'
+                    var likeCount = likesCache[item._originIndex];
+                    if (likeCount === undefined) likeCount = '-';
+
                     html += '<div class="shuoshuo-item" data-origin-index="' + item._originIndex + '">';
 
                     html += '<div class="shuoshuo-header">';
@@ -1651,7 +1672,8 @@
                     html += '<button class="shuoshuo-action-btn like-toggle" data-index="' + item._originIndex +
                         '" title="点赞">';
                     html += '<i class="' + heartClass + '"></i> ';
-                    html += '<span class="like-count" id="like-count-' + item._originIndex + '">-</span>';
+                    html += '<span class="like-count" id="like-count-' + item._originIndex + '">' + likeCount +
+                    '</span>';
                     html += '</button>';
                     html += '<button class="shuoshuo-action-btn comment-toggle" data-index="' + item._originIndex +
                         '" title="评论"><i class="fas fa-comments"></i></button>';
@@ -1842,7 +1864,7 @@
                     });
             }
 
-            // ===== 搜索 & 筛选 =====
+            // ===== 搜索 & 筛选（只重新渲染，不请求 API） =====
             var searchInput = document.getElementById('shuoshuoSearchInput');
             var searchClearBtn = document.getElementById('searchClearBtn');
 
@@ -1854,14 +1876,12 @@
                 currentKeyword = this.value;
                 updateClearBtn();
                 renderShuoshuoList();
-                if (API_KEY) fetchLikes().catch(function() {});
             });
             searchClearBtn.addEventListener('click', function() {
                 searchInput.value = '';
                 currentKeyword = '';
                 updateClearBtn();
                 renderShuoshuoList();
-                if (API_KEY) fetchLikes().catch(function() {});
                 searchInput.focus();
             });
 
@@ -1870,14 +1890,12 @@
                 document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
                 this.classList.add('active');
                 renderShuoshuoList();
-                if (API_KEY) fetchLikes().catch(function() {});
             });
             document.getElementById('filterOldest').addEventListener('click', function() {
                 currentFilter = 'oldest';
                 document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
                 this.classList.add('active');
                 renderShuoshuoList();
-                if (API_KEY) fetchLikes().catch(function() {});
             });
 
             // ===== 启动 =====

@@ -15,7 +15,6 @@
     <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
-        /* ===== 全局重置 ===== */
         * {
             margin: 0;
             padding: 0;
@@ -37,7 +36,6 @@
             color: #E8E6F0;
         }
 
-        /* ===== 进度条 ===== */
         .reading-progress {
             position: fixed;
             top: 0;
@@ -64,7 +62,6 @@
             background: #60A5FA;
         }
 
-        /* ===== 背景光晕 ===== */
         .bg-glow {
             position: fixed;
             top: 0;
@@ -129,7 +126,6 @@
             position: relative;
         }
 
-        /* ===== 顶部按钮 ===== */
         .top-buttons {
             position: fixed;
             top: 20px;
@@ -275,7 +271,6 @@
             .reading-progress { height:2px; }
         }
 
-        /* ===== 搜索栏 ===== */
         .shuoshuo-sticky-bar {
             display: flex;
             align-items: center;
@@ -428,7 +423,6 @@
             .shuoshuo-sticky-bar .filter-btn.active i { color: #fff; }
         }
 
-        /* ===== 说说列表 ===== */
         .shuoshuo-list {
             display: flex;
             flex-direction: column;
@@ -461,7 +455,6 @@
             box-shadow: 0 -3px 0 #FFD700, 0 3px 0 #FFD700;
         }
 
-        /* 头部 */
         .shuoshuo-header {
             display: flex;
             align-items: flex-start;
@@ -524,7 +517,6 @@
             margin-right: 0.1rem;
         }
 
-        /* 内容 */
         .shuoshuo-content {
             font-size: 1rem;
             line-height: 1.9;
@@ -562,10 +554,7 @@
             height: auto;
             max-height: 24rem;
             object-fit: contain;
-            background: #f0edf5;
-        }
-        body.dark .memos-images--1 .memos-image img {
-            background: #2a2740;
+            background: transparent;
         }
         .memos-images--2 {
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -582,12 +571,9 @@
             overflow: hidden;
             aspect-ratio: 1;
             border-radius: 12px;
-            background: #f0edf5;
+            background: transparent;
             text-decoration: none;
             cursor: pointer;
-        }
-        body.dark .memos-image {
-            background: #2a2740;
         }
         .memos-image img {
             display: block;
@@ -596,12 +582,20 @@
             object-fit: cover;
         }
 
-        /* 单张图用 markdown.css 的 .img-placeholder，这里只做补充 */
+        /* 单张图用 markdown.css 的 .img-placeholder，这里做样式覆盖 */
         .img-placeholder {
             border-radius: 12px !important;
+            background: transparent !important;
+            min-height: 120px;
+        }
+        .img-placeholder img {
+            border-radius: 12px !important;
+            min-height: 120px;
+        }
+        body.dark .img-placeholder {
+            background: transparent !important;
         }
 
-        /* ===== 底部 ===== */
         .shuoshuo-footer {
             display: flex;
             flex-wrap: wrap;
@@ -702,7 +696,6 @@
             color: #8A8AB5;
         }
 
-        /* ===== Toast ===== */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -766,7 +759,6 @@
             .memos-images { gap:0.25rem; }
         }
 
-        /* ===== 分享模态框 ===== */
         .share-modal-overlay {
             position: fixed;
             top: 0;
@@ -979,7 +971,6 @@
         </div>
     </div>
 
-    <!-- ===== 分享模态框 ===== -->
     <div class="share-modal-overlay" id="shareModal">
         <div class="share-modal-box">
             <div class="share-modal-title"><i class="fas fa-share-alt"></i> 分享</div>
@@ -1013,7 +1004,6 @@
         (function() {
             'use strict';
 
-            // ===== 进度条 =====
             var progressWrap = document.getElementById('readingProgress');
             var progressBar = document.getElementById('progressBar');
             var lastProgress = 0;
@@ -1053,7 +1043,6 @@
             window.addEventListener('resize', updateReadingProgress);
             window.addEventListener('load', updateReadingProgress);
 
-            // ===== 深色模式 =====
             var themeToggle = document.getElementById('themeToggle');
             var themeIcon = document.getElementById('themeIcon');
             var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1068,7 +1057,6 @@
             setTheme(currentTheme);
             themeToggle.addEventListener('click', function() { setTheme(currentTheme === 'dark' ? 'light' : 'dark'); });
 
-            // ===== 回到顶部 =====
             var backToTopBtn = document.getElementById('backToTopBtn');
             var isScrollingToTop = false;
             window.addEventListener('scroll', function() {
@@ -1108,7 +1096,6 @@
                 fastScrollToTop();
             });
 
-            // ===== Toast =====
             function showToast(message, icon) {
                 icon = icon || 'fa-info-circle';
                 var toast = document.getElementById('toast');
@@ -1125,7 +1112,6 @@
                 return div.innerHTML;
             }
 
-            // ===== 图片压缩（Waline 用） =====
             function compressImage(file, maxSize, quality) {
                 return new Promise(function(resolve) {
                     var reader = new FileReader();
@@ -1152,7 +1138,6 @@
                 });
             }
 
-            // ===== Waline =====
             var walineModule = null;
             var walinePreloadPromise = import('https://unpkg.com/@waline/client@v3/dist/waline.js')
                 .then(function(module) { walineModule = module; })
@@ -1225,7 +1210,6 @@
                 else walinePreloadPromise.then(doInit).catch(function() { walineInitializedInstances[index] = false; });
             }
 
-            // ===== 工具函数 =====
             function markdownToPlainText(md) {
                 if (!md) return '';
                 var text = md;
@@ -1256,7 +1240,6 @@
                 return chars.slice(0, maxLength).join('') + '…';
             }
 
-            // ===== 生成二维码 =====
             function generateQRCanvas(text, size) {
                 return new Promise(function(resolve, reject) {
                     var img = new Image();
@@ -1277,7 +1260,6 @@
                 });
             }
 
-            // ===== 分享相关 =====
             var currentShareItem = null;
             var currentShareImageDataUrl = '';
 
@@ -1413,9 +1395,7 @@
                 return result;
             }
 
-            // ============================================================
-            // 拼图
-            // ============================================================
+            // ===== 拼图 =====
             function renderCollage(images, alts) {
                 var count = images.length;
                 if (count === 0) return '';
@@ -1437,9 +1417,7 @@
                 return html;
             }
 
-            // ============================================================
-            // 点赞
-            // ============================================================
+            // ===== 点赞 =====
             var API_KEY = '';
             var allShuoshuo = [];
             var currentFilter = 'newest';
@@ -1629,10 +1607,7 @@
                 });
             }
 
-            // ============================================================
-            // 渲染
-            // ============================================================
-
+            // ===== 渲染 =====
             function handleUrlId() {
                 if (urlIdHandled) return;
                 var urlParams = new URLSearchParams(window.location.search);
@@ -1684,13 +1659,12 @@
                     var tags = item.tags || [];
                     var content = item.content || '';
 
-                    // 1. 用 renderMarkdown 渲染内容
-                    var rendered = window.KSMarkdown.renderMarkdown(content);
+                    // 用 mountMarkdown 渲染到临时容器
+                    var tempContainer = document.createElement('div');
+                    window.KSMarkdown.mountMarkdown(tempContainer, content);
 
-                    // 2. 提取所有图片信息
-                    var tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = rendered;
-                    var imgElements = tempDiv.querySelectorAll('img');
+                    // 提取所有图片
+                    var imgElements = tempContainer.querySelectorAll('.img-placeholder img');
                     var imgSrcs = [];
                     var imgAlts = [];
                     imgElements.forEach(function(img) {
@@ -1698,24 +1672,23 @@
                         imgAlts.push(img.getAttribute('alt') || '');
                     });
 
-                    // 3. 完全移除所有图片，保留非图片内容
-                    var contentWithoutImages = rendered.replace(/<img[^>]*>/gi, '').replace(/<p><\/p>/g, '');
+                    var finalContent = '';
 
-                    // 4. 根据图片数量生成对应的展示
-                    var imageHtml = '';
-                    if (imgSrcs.length === 1) {
-                        // 单张图：用 markdown.css 的 img-placeholder
-                        var alt = imgAlts[0] || '';
-                        var altHtml = alt ? '<span class="img-alt-text">' + escapeHtml(alt) + '</span>' : '';
-                        imageHtml = '<div class="img-placeholder"><span class="img-loading"><i class="fas fa-spinner fa-spin"></i></span><img src="' +
-                            imgSrcs[0] + '" alt="' + escapeHtml(alt) + '" loading="lazy">' + altHtml + '</div>';
-                    } else if (imgSrcs.length > 1) {
-                        // 多张图：拼图
-                        imageHtml = renderCollage(imgSrcs, imgAlts);
+                    if (imgSrcs.length <= 1) {
+                        // 0或1张图：直接使用 mountMarkdown 的结果（单张图的 loading 和 alt 由 mountMarkdown 处理）
+                        finalContent = tempContainer.innerHTML;
+                    } else {
+                        // 多张图：移除所有 .img-placeholder，保留其他内容，然后追加拼图
+                        var placeholders = tempContainer.querySelectorAll('.img-placeholder');
+                        placeholders.forEach(function(el) {
+                            el.remove();
+                        });
+                        var contentWithoutImages = tempContainer.innerHTML;
+                        // 清理多余空段落
+                        contentWithoutImages = contentWithoutImages.replace(/<p>\s*<\/p>/g, '');
+                        var collageHtml = renderCollage(imgSrcs, imgAlts);
+                        finalContent = contentWithoutImages + collageHtml;
                     }
-
-                    // 5. 组装最终内容
-                    var finalContent = contentWithoutImages + imageHtml;
 
                     // 标签
                     var tagsHtml = '';
@@ -1784,7 +1757,7 @@
                     try { hljs.highlightElement(el); } catch (e) {}
                 });
 
-                // ===== 灯箱绑定 =====
+                // 重新绑定灯箱
                 // 单张图：.img-placeholder img
                 document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
                     img.style.cursor = 'pointer';
@@ -1849,7 +1822,6 @@
             listEl.addEventListener('click', function(e) {
                 var target;
 
-                // 分享
                 target = e.target.closest('.share-toggle');
                 if (target) {
                     var idx = parseInt(target.dataset.index, 10);
@@ -1869,7 +1841,6 @@
                     return;
                 }
 
-                // 点赞
                 target = e.target.closest('.like-toggle');
                 if (target) {
                     var idx = target.dataset.index;
@@ -1883,7 +1854,6 @@
                     return;
                 }
 
-                // 评论
                 target = e.target.closest('.comment-toggle');
                 if (target) {
                     var idx = target.dataset.index;
@@ -1992,7 +1962,6 @@
                     });
             }
 
-            // ===== 搜索 & 筛选 =====
             var searchInput = document.getElementById('shuoshuoSearchInput');
             var searchClearBtn = document.getElementById('searchClearBtn');
 

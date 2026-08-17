@@ -1547,11 +1547,33 @@
                         throw new Error(data.error || '获取失败');
                     }
                     likesCache = data.data || {};
+                    // 新增：校正本地点赞状态与服务端数据
+                    syncLikedIdsWithCounts();
                     refreshLikeUI();
                 })
                 .catch(function(err) {
                     console.warn('加载点赞数失败:', err);
                 });
+            }
+
+            // 新增：同步本地点赞状态与服务端点赞数，避免“已点赞但总数为0”的问题
+            function syncLikedIdsWithCounts() {
+                var likedIds = getLikedIds();
+                var changed = false;
+                likedIds.forEach(function(id) {
+                    var count = likesCache[id];
+                    if (count !== undefined && count !== null && count !== '-') {
+                        var num = parseInt(count, 10);
+                        if (!isNaN(num) && num <= 0) {
+                            removeLikedId(id);
+                            changed = true;
+                        }
+                    }
+                });
+                // 注意：不需要手动更新图标，因为随后 refreshLikeUI 会统一处理
+                if (changed) {
+                    // 可以先更新存储，图标刷新交给 refreshLikeUI
+                }
             }
 
             function toggleLike(id, action) {

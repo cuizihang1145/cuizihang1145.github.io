@@ -1191,7 +1191,7 @@
             var commentEl = document.getElementById('waline-comments');
             if (!commentEl) return;
             walineInitialized = true;
-            import('https://unpkg.com/@waline/client@v3/dist/waline.js')
+            import('/assets/waline.js')
                 .then(function(module) {
                     var init = module.init;
                     init({

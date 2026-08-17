@@ -1368,13 +1368,62 @@
             }
 
             // ============================================================
-            // 新增：点赞相关变量和函数
+            // 点赞：使用 localStorage 记录用户点过哪些 id
             // ============================================================
-            var API_KEY = '';                // 从 /api/config 获取
+            var API_KEY = '';
             var allShuoshuo = [];
             var currentFilter = 'newest';
             var currentKeyword = '';
             var urlIdHandled = false;
+
+            // localStorage 键名
+            var LIKED_IDS_KEY = 'ks_liked_ids';
+
+            // 获取当前用户点赞过的 id 列表
+            function getLikedIds() {
+                try {
+                    var data = localStorage.getItem(LIKED_IDS_KEY);
+                    if (data) {
+                        var parsed = JSON.parse(data);
+                        if (Array.isArray(parsed)) return parsed;
+                    }
+                } catch (e) {}
+                return [];
+            }
+
+            // 保存 liked_ids
+            function setLikedIds(ids) {
+                try {
+                    localStorage.setItem(LIKED_IDS_KEY, JSON.stringify(ids));
+                } catch (e) {}
+            }
+
+            // 检查某个 id 是否已被当前用户点赞
+            function isLiked(id) {
+                var ids = getLikedIds();
+                return ids.indexOf(String(id)) !== -1;
+            }
+
+            // 添加点赞记录
+            function addLikedId(id) {
+                var ids = getLikedIds();
+                var strId = String(id);
+                if (ids.indexOf(strId) === -1) {
+                    ids.push(strId);
+                    setLikedIds(ids);
+                }
+            }
+
+            // 移除点赞记录
+            function removeLikedId(id) {
+                var ids = getLikedIds();
+                var strId = String(id);
+                var idx = ids.indexOf(strId);
+                if (idx !== -1) {
+                    ids.splice(idx, 1);
+                    setLikedIds(ids);
+                }
+            }
 
             // 获取 API Key
             function fetchApiKey() {
@@ -1407,26 +1456,34 @@
                         throw new Error(data.error || '获取失败');
                     }
                     var likes = data.data || {};
+                    var likedIds = getLikedIds();
+
                     Object.keys(likes).forEach(function(id) {
                         var el = document.getElementById('like-count-' + id);
                         if (el) {
-                            var count = likes[id];
-                            el.textContent = count;
-                            // 根据点赞数切换心形实心/空心
-                            var btn = el.closest('.like-toggle');
-                            if (btn) {
-                                var icon = btn.querySelector('i');
-                                if (icon) {
-                                    if (count > 0) {
-                                        icon.className = 'fas fa-heart';
-                                    } else {
-                                        icon.className = 'far fa-heart';
-                                    }
-                                }
+                            el.textContent = likes[id];
+                        }
+                    });
+
+                    // 根据 localStorage 设置心形状态
+                    likedIds.forEach(function(id) {
+                        var btn = document.querySelector('.like-toggle[data-index="' + id + '"]');
+                        if (btn) {
+                            var icon = btn.querySelector('i');
+                            if (icon) {
+                                icon.className = 'fas fa-heart';
                             }
                         }
                     });
-                    // 对于没有收到数据的说说，保持 '-' 不变（说明没被点过赞）
+
+                    // 对于不在 likedIds 里的，确保是空心
+                    document.querySelectorAll('.like-toggle').forEach(function(btn) {
+                        var id = btn.dataset.index;
+                        var icon = btn.querySelector('i');
+                        if (icon && likedIds.indexOf(id) === -1) {
+                            icon.className = 'far fa-heart';
+                        }
+                    });
                 })
                 .catch(function(err) {
                     console.warn('加载点赞数失败:', err);
@@ -1442,20 +1499,27 @@
                 if (btn && btn.dataset.loading === 'true') return;
                 if (btn) btn.dataset.loading = 'true';
 
-                // 当前显示的值（可能是 '-' 或数字）
                 var currentText = countEl.textContent;
                 var current = parseInt(currentText, 10);
                 if (isNaN(current)) current = 0;
 
-                // 乐观更新
+                // 乐观更新数字
                 var optimisticCount = action === 'like' ? current + 1 : Math.max(0, current - 1);
                 countEl.textContent = optimisticCount;
-                // 乐观更新图标
+
+                // 乐观更新心形（根据 action 切换）
                 if (btn) {
                     var icon = btn.querySelector('i');
                     if (icon) {
-                        icon.className = optimisticCount > 0 ? 'fas fa-heart' : 'far fa-heart';
+                        icon.className = action === 'like' ? 'fas fa-heart' : 'far fa-heart';
                     }
+                }
+
+                // 乐观更新 localStorage
+                if (action === 'like') {
+                    addLikedId(id);
+                } else {
+                    removeLikedId(id);
                 }
 
                 fetch('/api/likes', {
@@ -1469,45 +1533,55 @@
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     if (btn) btn.dataset.loading = 'false';
+
                     if (data.key !== API_KEY) {
+                        // 密钥不匹配，回滚
                         countEl.textContent = currentText;
                         if (btn) {
                             var icon = btn.querySelector('i');
                             if (icon) {
-                                icon.className = current > 0 ? 'fas fa-heart' : 'far fa-heart';
+                                icon.className = isLiked(id) ? 'fas fa-heart' : 'far fa-heart';
                             }
                         }
+                        // 回滚 localStorage
+                        if (action === 'like') removeLikedId(id);
+                        else addLikedId(id);
                         showToast('数据异常', 'fa-exclamation-circle');
                         return;
                     }
+
                     if (data.success) {
+                        // 用服务器返回的准确数字更新
                         countEl.textContent = data.likes;
-                        if (btn) {
-                            var icon = btn.querySelector('i');
-                            if (icon) {
-                                icon.className = data.likes > 0 ? 'fas fa-heart' : 'far fa-heart';
-                            }
-                        }
+                        // 心形状态由 localStorage 决定，已经在上面的乐观更新里改好了
+                        // 但万一服务器返回失败，我们需要保证状态一致
+                        // 这里正常情况已经正确
                     } else {
+                        // 服务器返回失败，回滚
                         countEl.textContent = currentText;
                         if (btn) {
                             var icon = btn.querySelector('i');
                             if (icon) {
-                                icon.className = current > 0 ? 'fas fa-heart' : 'far fa-heart';
+                                icon.className = isLiked(id) ? 'fas fa-heart' : 'far fa-heart';
                             }
                         }
+                        if (action === 'like') removeLikedId(id);
+                        else addLikedId(id);
                         showToast(data.error || '操作失败', 'fa-exclamation-circle');
                     }
                 })
                 .catch(function() {
                     if (btn) btn.dataset.loading = 'false';
+                    // 网络错误，回滚
                     countEl.textContent = currentText;
                     if (btn) {
                         var icon = btn.querySelector('i');
                         if (icon) {
-                            icon.className = current > 0 ? 'fas fa-heart' : 'far fa-heart';
+                            icon.className = isLiked(id) ? 'fas fa-heart' : 'far fa-heart';
                         }
                     }
+                    if (action === 'like') removeLikedId(id);
+                    else addLikedId(id);
                     showToast('网络错误', 'fa-exclamation-circle');
                 });
             }
@@ -1558,6 +1632,8 @@
                     return;
                 }
 
+                var likedIds = getLikedIds();
+
                 var html = '';
                 filtered.forEach(function(item) {
                     var date = item.date || '';
@@ -1599,6 +1675,10 @@
                             '</span>';
                     }
 
+                    var strId = String(item._originIndex);
+                    var liked = likedIds.indexOf(strId) !== -1;
+                    var heartClass = liked ? 'fas fa-heart' : 'far fa-heart';
+
                     html += '<div class="shuoshuo-item" data-origin-index="' + item._originIndex + '">';
 
                     // 头部：头像 + 名称/日期
@@ -1619,10 +1699,9 @@
                     html += '<div class="shuoshuo-actions">';
                     html += '<button class="shuoshuo-action-btn share-toggle" data-index="' + item._originIndex +
                         '" title="分享"><i class="fas fa-share-alt"></i></button>';
-                    // 点赞按钮：初始显示 '-'，空心心形
                     html += '<button class="shuoshuo-action-btn like-toggle" data-index="' + item._originIndex +
                         '" title="点赞">';
-                    html += '<i class="far fa-heart"></i> ';
+                    html += '<i class="' + heartClass + '"></i> ';
                     html += '<span class="like-count" id="like-count-' + item._originIndex + '">-</span>';
                     html += '</button>';
                     html += '<button class="shuoshuo-action-btn comment-toggle" data-index="' + item._originIndex +
@@ -1672,7 +1751,6 @@
             // ===== 事件委托（解决动态渲染后事件失效） =====
             var listEl = document.getElementById('shuoshuoList');
 
-            // 统一处理点击（分享、点赞、评论）
             listEl.addEventListener('click', function(e) {
                 var target;
 
@@ -1702,11 +1780,10 @@
                     var idx = target.dataset.index;
                     var countEl = document.getElementById('like-count-' + idx);
                     if (!countEl) return;
-                    var currentText = countEl.textContent;
-                    var current = parseInt(currentText, 10);
-                    if (isNaN(current)) current = 0;
-                    // 如果当前数字 > 0 则取消点赞，否则点赞
-                    var action = current > 0 ? 'unlike' : 'like';
+
+                    // 根据 localStorage 判断当前是否已点赞
+                    var liked = isLiked(idx);
+                    var action = liked ? 'unlike' : 'like';
                     toggleLike(idx, action);
                     e.preventDefault();
                     return;
@@ -1861,18 +1938,16 @@
                 if (API_KEY) fetchLikes().catch(function() {});
             });
 
-            // ===== 启动：先获取 API Key，再加载说说，最后获取点赞数 =====
+            // ===== 启动 =====
             fetchApiKey()
                 .then(function() {
                     return fetchShuoshuo();
                 })
                 .then(function() {
-                    // 渲染完成后获取点赞数
                     return fetchLikes();
                 })
                 .catch(function(err) {
                     console.warn('初始化失败:', err);
-                    // 即使失败也加载说说（点赞功能不可用）
                     fetchShuoshuo();
                 });
 

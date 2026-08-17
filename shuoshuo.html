@@ -558,7 +558,6 @@
             grid-template-columns: repeat(3, minmax(0, 1fr));
         }
 
-        /* 单个图片容器：强制 1:1 正方形 */
         .memos-image {
             position: relative;
             display: block;
@@ -572,7 +571,6 @@
             cursor: pointer;
         }
 
-        /* 图片绝对定位填满容器 */
         .memos-image img {
             position: absolute;
             top: 0;
@@ -582,7 +580,6 @@
             object-fit: cover;
         }
 
-        /* 单张图特殊处理：恢复自然高度，不要正方形 */
         .memos-images--1 .memos-image {
             height: auto;
             padding-bottom: 0;
@@ -595,7 +592,6 @@
             background: transparent;
         }
 
-        /* 单张图用 markdown.css 的 .img-placeholder，这里做样式覆盖 */
         .img-placeholder {
             border-radius: 12px !important;
             background: transparent !important;
@@ -1788,7 +1784,7 @@
                         '</span>';
                     html += '</button>';
                     html += '<button class="shuoshuo-action-btn comment-toggle" data-index="' + item._originIndex +
-                        '" title="评论"><i class="fas fa-comments"></i> <span class="comment-count" id="comment-count-' + item._originIndex + '">0</span></button>';
+                        '" title="评论"><i class="fas fa-comments"></i> <span class="comment-count" id="comment-count-' + item._originIndex + '">-</span></button>';
                     html += '</div>';
                     html += '</div>';
 

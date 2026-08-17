@@ -1795,6 +1795,38 @@
 
                 listEl.innerHTML = html;
 
+                // 修复图片加载图标不消失的问题
+                document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
+                    var wrapper = img.closest('.img-placeholder');
+                    if (!wrapper) return;
+                    var loading = wrapper.querySelector('.img-loading');
+                    if (!loading) return;
+
+                    function done() {
+                        wrapper.classList.add('loaded');
+                        img.classList.add('loaded');
+                        loading.style.display = 'none';
+                    }
+
+                    // 如果图片已经加载完成，立即隐藏加载图标
+                    if (img.complete && img.naturalWidth !== 0) {
+                        done();
+                    } else {
+                        // 监听加载完成和错误事件（避免重复监听）
+                        img.addEventListener('load', done, { once: true });
+                        img.addEventListener('error', done, { once: true });
+
+                        // 设置超时兜底，防止某些情况下事件不触发
+                        setTimeout(function() {
+                            if (!wrapper.classList.contains('loaded')) {
+                                loading.style.display = 'none';
+                                wrapper.classList.add('loaded');
+                                img.classList.add('loaded');
+                            }
+                        }, 8000); // 8秒后强制隐藏加载图标
+                    }
+                });
+
                 // 高亮代码
                 document.querySelectorAll('.code-line .hljs').forEach(function(el) {
                     try { hljs.highlightElement(el); } catch (e) {}

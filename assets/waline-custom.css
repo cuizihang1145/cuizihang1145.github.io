@@ -16,3 +16,26 @@
 .wl-card .wl-quote{margin:.1rem 0!important;padding:.1rem .4rem!important;border-inline-start-width:2px!important}
 .wl-card .wl-quote .wl-user{--avatar-size:1.6rem!important}
 .wl-reply,.wl-like,.wl-edit,.wl-rss,.wl-delete{background:transparent!important}
+[data-waline] * {
+    box-sizing: border-box !important;
+}
+.wl-comment {
+    flex-wrap: wrap !important;
+}
+.wl-panel {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    width: auto !important;
+    margin: 0.5em 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+}
+.wl-avatar {
+    flex-shrink: 0 !important;
+}
+.wl-card .wl-content pre,
+.wl-card .wl-content pre[class*=language-] {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    white-space: pre !important;
+}

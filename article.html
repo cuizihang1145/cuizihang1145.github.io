@@ -515,6 +515,19 @@
             border-top-color: rgba(255, 255, 255, 0.06)
         }
 
+        .fade-up {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+                        transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            will-change: opacity, transform;
+        }
+
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         .not-found {
             display: flex;
             flex-direction: column;
@@ -1069,6 +1082,49 @@
         let currentShareText = '';
         let walineInitialized = false;
 
+        const ANIMATION_CONFIG = {
+            duration: 0.6,
+            easing: 'cubic-bezier(0.23, 1, 0.32, 1)',
+            translateY: 24,
+            headerDelays: {
+                title: 0.05,
+                date: 0.10,
+                tags: 0.15,
+                divider: 0.20
+            },
+            bodyDelay: {
+                first: 0.12,
+                step: 0.07
+            },
+            triggerDelay: 50,
+            headerSelector: '.detail-title, .detail-date, .detail-tags, .detail-divider',
+            contentContainerId: 'detailContent'
+        };
+
+        function initArticleAnimations() {
+            const headerEls = document.querySelectorAll(ANIMATION_CONFIG.headerSelector);
+            const headerDelays = Object.values(ANIMATION_CONFIG.headerDelays);
+            headerEls.forEach((el, index) => {
+                el.classList.add('fade-up');
+                el.style.transitionDelay = (headerDelays[index] || 0) + 's';
+            });
+
+            const contentEl = document.getElementById(ANIMATION_CONFIG.contentContainerId);
+            if (contentEl) {
+                Array.from(contentEl.children).forEach((child, index) => {
+                    child.classList.add('fade-up');
+                    const delay = ANIMATION_CONFIG.bodyDelay.first + index * ANIMATION_CONFIG.bodyDelay.step;
+                    child.style.transitionDelay = delay + 's';
+                });
+            }
+
+            setTimeout(() => {
+                document.querySelectorAll('.fade-up').forEach(el => {
+                    el.classList.add('visible');
+                });
+            }, ANIMATION_CONFIG.triggerDelay);
+        }
+
         function countWords(markdown) {
             if (!markdown) return 0;
             let text = markdown
@@ -1275,7 +1331,6 @@
                 `;
                 return;
             }
-            // 直接从独立的 JSON 文件加载文章数据
             fetch('articles/article-' + id + '.json', { cache: 'no-cache' })
                 .then(function(response) {
                     if (!response.ok) {
@@ -1284,7 +1339,6 @@
                     return response.json();
                 })
                 .then(function(article) {
-                    // 如果文章被标记为删除（理论上不会生成文件，但以防万一）
                     if (article.delete === true) {
                         appContent.innerHTML = `
                             <div class="not-found">
@@ -1339,6 +1393,7 @@
                     }
 
                     setTimeout(updateReadingProgress, 100);
+                    setTimeout(initArticleAnimations, 0);
                     generateShareImage();
                     initWaline(id);
                 })

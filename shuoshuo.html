@@ -1973,8 +1973,7 @@
                     if (tags.length) {
                         tagsHtml = '<div class="shuoshuo-tags">';
                         tags.forEach(function(t) {
-                            tagsHtml += '<span class="tag"><i class="fas fa-tag"></i> ' + escapeHtml(t) +
-                                '</span>';
+                            tagsHtml += '<span class="tag" data-tag="' + escapeHtml(t) + '"><i class="fas fa-tag"></i> ' + escapeHtml(t) + '</span>';
                         });
                         tagsHtml += '</div>';
                     }
@@ -2142,6 +2141,22 @@
 
             listEl.addEventListener('click', function(e) {
                 var target;
+
+                // 标签点击筛选
+                target = e.target.closest('.tag');
+                if (target) {
+                    e.preventDefault();
+                    var tagName = target.getAttribute('data-tag');
+                    if (tagName) {
+                        var searchInput = document.getElementById('shuoshuoSearchInput');
+                        searchInput.value = tagName;
+                        currentKeyword = tagName;
+                        updateClearBtn();
+                        renderShuoshuoList();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                    return;
+                }
 
                 target = e.target.closest('.share-toggle');
                 if (target) {

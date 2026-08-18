@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.1/css/all.css" />
     <link rel="stylesheet" href="/assets/waline-custom.css" />
+    <link rel="stylesheet" href="/assets/footer.css" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192" />
     <style>
@@ -76,7 +77,6 @@
         .theme-toggle:hover { transform:scale(1.05) rotate(8deg); background:rgba(255,255,255,.85); box-shadow:0 10px 28px rgba(80,60,160,.18); }
         body.dark .theme-toggle:hover { background:rgba(50,45,80,.8); }
 
-        /* 新增：评论按钮 */
         .comment-btn {
             width:48px; height:48px; border:none; border-radius:60px;
             background:rgba(255,255,255,.6); backdrop-filter:blur(12px);
@@ -96,7 +96,6 @@
             transition:opacity .3s ease, visibility .3s ease;
         }
 
-        /* 新增：回到顶部按钮 */
         .back-to-top-btn {
             width:48px; height:48px; border:none; border-radius:60px;
             background:rgba(255,255,255,.6); backdrop-filter:blur(12px);
@@ -191,13 +190,6 @@
         body.dark #waline-comments { border-top-color:rgba(255,255,255,.06); }
         #waline-comments * { font-family:'Inter',-apple-system,"PingFang SC","Microsoft YaHei",sans-serif!important; }
         #waline-comments .wl-content a { word-break:break-all; overflow-wrap:break-word; max-width:100%; }
-
-        .footer {
-            margin-top:2.5rem; text-align:center; font-size:.7rem; color:#A8A8CE;
-            border-top:1px solid rgba(0,0,0,.03); padding-top:1.2rem;
-            transition:color .3s,border-color .3s;
-        }
-        body.dark .footer { color:#6A6A8A; border-top-color:rgba(255,255,255,.04); }
 
         .toast {
             position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px);
@@ -358,7 +350,7 @@
 
     <div id="waline-comments"></div>
 
-    <footer class="footer">© ks · 个人博客 · 2026</footer>
+    <div id="footer-root"></div>
 </div>
 
 <div class="modal-overlay" id="friendModal">
@@ -680,6 +672,18 @@
     }
     setTimeout(initWaline, 500);
 })();
+</script>
+
+<script>
+    fetch('/assets/footer.html')
+        .then(function(res) {
+            if (!res.ok) throw new Error('加载失败');
+            return res.text();
+        })
+        .then(function(html) {
+            document.getElementById('footer-root').innerHTML = html;
+        })
+        .catch(function() {});
 </script>
 
 </body>

@@ -1,4 +1,12 @@
 import { kv } from '@vercel/kv';
+import { Ratelimit } from '@upstash/ratelimit';
+
+// 限流器：10秒内最多5次
+const ratelimit = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(5, '10 s'), // 改这里：3 → 5
+  analytics: true,
+});
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -7,29 +15,42 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // 密钥校验（保留，如果你不用可删）
+  // ========== Key 校验 ==========
   const API_KEY = process.env.LIKE_API_KEY;
   const clientKey = req.headers['x-api-key'];
   if (API_KEY && (!clientKey || clientKey !== API_KEY)) {
     return res.status(403).json({ success: false, error: 'Invalid API Key' });
   }
 
-  // GET：获取所有说说点赞数
+  // ========== IP 限流 ==========
+  const ip = req.headers['x-forwarded-for']?.split(',')[0] || 
+             req.socket.remoteAddress || 
+             'unknown';
+
+  const { success, limit, reset, remaining } = await ratelimit.limit(ip);
+
+  if (!success) {
+    res.setHeader('X-RateLimit-Limit', limit);
+    res.setHeader('X-RateLimit-Remaining', remaining);
+    res.setHeader('X-RateLimit-Reset', new Date(reset).toISOString());
+    const waitSeconds = Math.ceil((reset - Date.now()) / 1000);
+    return res.status(429).json({
+      success: false,
+      error: `操作过于频繁，请 ${waitSeconds} 秒后再试`
+    });
+  }
+
+  // ========== 业务逻辑 ==========
   if (req.method === 'GET') {
     try {
       const counts = await kv.hgetall('likes:counts') || {};
-      return res.status(200).json({
-        success: true,
-        data: counts,
-        key: API_KEY || ''
-      });
+      return res.status(200).json({ success: true, data: counts });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ success: false, error: 'Internal error' });
     }
   }
 
-  // POST：点赞/取消点赞
   if (req.method === 'POST') {
     const { id, action } = req.body || {};
     if (!id || !action) {
@@ -42,15 +63,9 @@ export default async function handler(req, res) {
     try {
       const key = 'likes:counts';
       const current = await kv.hget(key, id) || 0;
-      let newVal = action === 'like' ? current + 1 : Math.max(0, current - 1);
+      const newVal = action === 'like' ? current + 1 : Math.max(0, current - 1);
       await kv.hset(key, { [id]: newVal });
-
-      return res.status(200).json({
-        success: true,
-        id: id,
-        likes: newVal,
-        key: API_KEY || ''
-      });
+      return res.status(200).json({ success: true, id, likes: newVal });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ success: false, error: 'Internal error' });

@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://unpkg.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <!-- 新增：Luckiest Guy 字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.1/css/all.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <link rel="stylesheet" href="/assets/markdown/markdown.css">
@@ -515,19 +517,6 @@
             border-top-color: rgba(255, 255, 255, 0.06)
         }
 
-        .fade-up {
-            opacity: 0;
-            transform: translateY(24px);
-            transition: opacity 0.6s cubic-bezier(0.23, 1, 0.32, 1),
-                        transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-            will-change: opacity, transform;
-        }
-
-        .fade-up.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
         .not-found {
             display: flex;
             flex-direction: column;
@@ -830,6 +819,221 @@
             overflow-wrap: break-word;
             max-width: 100%
         }
+
+        /* ========== 新增：上下文导航栏样式 ========== */
+        .article-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: stretch;
+            margin: 2rem 0 1rem;
+        }
+
+        .nav-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            padding: 1.2rem 1.4rem;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 1.2rem;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            cursor: pointer;
+            font-family: inherit;
+            text-align: left;
+            color: #1A1A2E;
+            box-shadow: 0 4px 16px rgba(80, 60, 160, 0.06);
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+            text-decoration: none;
+            transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+                        box-shadow 0.25s ease,
+                        background 0.25s ease,
+                        border-color 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn:hover:not(.disabled) {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(80, 60, 160, 0.15);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .nav-btn:active:not(.disabled) {
+            transform: translateY(-1px) scale(0.98);
+            box-shadow: 0 4px 12px rgba(80, 60, 160, 0.1);
+        }
+
+        .nav-btn.disabled {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        .nav-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            width: 100%;
+        }
+
+        .nav-label {
+            font-size: 0.75rem;
+            color: #8A8AB5;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .nav-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            word-break: break-word;
+        }
+
+        .nav-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem 0.8rem;
+            font-size: 0.72rem;
+            color: #6A6A92;
+        }
+
+        .nav-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .nav-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+        }
+
+        .nav-tag {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.65rem;
+            font-weight: 500;
+            line-height: 1;
+            padding: 0.15rem 0.5rem;
+            border-radius: 40px;
+            background: rgba(107, 90, 207, 0.12);
+            color: #6B5ACF;
+            white-space: nowrap;
+        }
+
+        .nav-bg-text {
+            position: absolute;
+            font-family: 'Luckiest Guy', cursive;
+            font-size: 4.5rem;
+            line-height: 1;
+            color: rgba(0, 0, 0, 0.07);
+            pointer-events: none;
+            z-index: 0;
+            user-select: none;
+            white-space: nowrap;
+            transition: color 0.3s ease;
+            letter-spacing: 0.02em;
+        }
+
+        .prev-btn .nav-bg-text {
+            top: 2rem;
+            right: 0.8rem;
+            text-align: right;
+            transform: rotate(5deg);
+        }
+
+        .next-btn .nav-bg-text {
+            top: 2rem;
+            left: 0.8rem;
+            text-align: left;
+            transform: rotate(-5deg);
+        }
+
+        .prev-btn {
+            align-items: flex-start;
+        }
+        .prev-btn .nav-label, .prev-btn .nav-meta, .prev-btn .nav-tags {
+            justify-content: flex-start;
+        }
+
+        .next-btn {
+            text-align: right;
+            align-items: flex-end;
+        }
+        .next-btn .nav-label, .next-btn .nav-meta, .next-btn .nav-tags {
+            justify-content: flex-end;
+        }
+        .next-btn .nav-label {
+            justify-content: flex-end;
+        }
+
+        .nav-divider {
+            width: 1px;
+            background: rgba(0, 0, 0, 0.06);
+            transition: background 0.3s;
+        }
+
+        /* 深色模式下导航样式 */
+        body.dark .nav-btn {
+            background: rgba(30, 28, 50, 0.7);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: #D0CAF0;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+        body.dark .nav-btn:hover:not(.disabled) {
+            background: rgba(50, 45, 80, 0.8);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+        }
+        body.dark .nav-label, body.dark .nav-meta {
+            color: #9A96B8;
+        }
+        body.dark .nav-tag {
+            background: rgba(136, 204, 255, 0.18);
+            color: #88ccff;
+        }
+        body.dark .nav-bg-text {
+            color: rgba(255, 255, 255, 0.10);
+        }
+        body.dark .nav-divider {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* 移动端导航 */
+        @media (max-width: 560px) {
+            .article-nav {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+            .nav-divider {
+                display: none;
+            }
+            .nav-btn {
+                padding: 0.9rem 1rem;
+            }
+            .nav-bg-text {
+                font-size: 3rem;
+            }
+            .prev-btn .nav-bg-text {
+                top: 1.2rem;
+                right: 0.5rem;
+            }
+            .next-btn .nav-bg-text {
+                top: 1.2rem;
+                left: 0.5rem;
+            }
+        }
+        /* ========== 导航样式结束 ========== */
     </style>
 </head>
 
@@ -1082,52 +1286,6 @@
         let currentShareText = '';
         let walineInitialized = false;
 
-        const ANIMATION_CONFIG = {
-            duration: 0.6,
-            easing: 'cubic-bezier(0.23, 1, 0.32, 1)',
-            translateY: 24,
-            headerDelays: {
-                title: 0.05,
-                date: 0.10,
-                tags: 0.15,
-                divider: 0.20
-            },
-            bodyDelay: {
-                first: 0.12,
-                step: 0.07
-            },
-            triggerDelay: 20,
-            headerSelector: '.detail-title, .detail-date, .detail-tags, .detail-divider',
-            contentContainerId: 'detailContent'
-        };
-
-        function initArticleAnimations() {
-            const headerEls = document.querySelectorAll(ANIMATION_CONFIG.headerSelector);
-            const headerDelays = Object.values(ANIMATION_CONFIG.headerDelays);
-            headerEls.forEach((el, index) => {
-                el.classList.add('fade-up');
-                el.style.transitionDelay = (headerDelays[index] || 0) + 's';
-            });
-
-            const contentEl = document.getElementById(ANIMATION_CONFIG.contentContainerId);
-            if (contentEl) {
-                Array.from(contentEl.children).forEach((child, index) => {
-                    child.classList.add('fade-up');
-                    const delay = ANIMATION_CONFIG.bodyDelay.first + index * ANIMATION_CONFIG.bodyDelay.step;
-                    child.style.transitionDelay = delay + 's';
-                });
-            }
-
-            // 强制浏览器计算初始样式，保证过渡动画生效
-            void document.body.offsetHeight;
-
-            setTimeout(() => {
-                document.querySelectorAll('.fade-up').forEach(el => {
-                    el.classList.add('visible');
-                });
-            }, ANIMATION_CONFIG.triggerDelay);
-        }
-
         function countWords(markdown) {
             if (!markdown) return 0;
             let text = markdown
@@ -1322,6 +1480,120 @@
                 });
         }
 
+        // ========== 新增：导航相关全局变量 ==========
+        let archiveList = [];
+        let archiveLoaded = false;
+
+        function loadArchive() {
+            return fetch('articles/archive.json', { cache: 'no-cache' })
+                .then(resp => {
+                    if (!resp.ok) throw new Error('archive.json 加载失败');
+                    return resp.json();
+                })
+                .then(data => {
+                    archiveList = data.list || [];
+                    archiveLoaded = true;
+                })
+                .catch(err => {
+                    console.warn('加载 archive.json 失败:', err);
+                    archiveList = [];
+                    archiveLoaded = true;
+                });
+        }
+
+        function renderNav() {
+            const navEl = document.getElementById('articleNav');
+            if (!navEl) return;
+            const currentId = getParam('id');
+            if (!currentId || archiveList.length === 0) {
+                navEl.style.display = 'none';
+                return;
+            }
+            const index = archiveList.findIndex(a => String(a.id) === String(currentId));
+            if (index === -1) {
+                navEl.style.display = 'none';
+                return;
+            }
+            const prevMeta = index > 0 ? archiveList[index - 1] : null;
+            const nextMeta = index < archiveList.length - 1 ? archiveList[index + 1] : null;
+
+            // 并行获取相邻文章全文以计算字数
+            const fetchPromises = [];
+            if (prevMeta) {
+                fetchPromises.push(
+                    fetch(`articles/article-${prevMeta.id}.json`, { cache: 'no-cache' })
+                        .then(r => r.json())
+                        .then(article => ({ ...prevMeta, content: article.content }))
+                        .catch(() => null) // 如果加载失败，忽略该篇文章
+                );
+            }
+            if (nextMeta) {
+                fetchPromises.push(
+                    fetch(`articles/article-${nextMeta.id}.json`, { cache: 'no-cache' })
+                        .then(r => r.json())
+                        .then(article => ({ ...nextMeta, content: article.content }))
+                        .catch(() => null)
+                );
+            }
+
+            Promise.all(fetchPromises).then(results => {
+                const prevArticle = prevMeta ? results.find(a => a && String(a.id) === String(prevMeta.id)) : null;
+                const nextArticle = nextMeta ? results.find(a => a && String(a.id) === String(nextMeta.id)) : null;
+
+                function buildButton(article, type) {
+                    if (!article) {
+                        const label = type === 'prev' ? '上一篇' : '下一篇';
+                        const icon = type === 'prev' ? '<i class="fas fa-arrow-left"></i>' : '<i class="fas fa-arrow-right"></i>';
+                        return `<a class="nav-btn ${type}-btn disabled" href="javascript:void(0)"><div class="nav-content"><span class="nav-label">${icon} ${label}</span><div class="nav-title">没有${label}了</div></div></a>`;
+                    }
+                    const icon = type === 'prev' ? '<i class="fas fa-arrow-left"></i>' : '<i class="fas fa-arrow-right"></i>';
+                    const label = type === 'prev' ? '上一篇' : '下一篇';
+                    const bgText = type === 'prev' ? 'Last one' : 'Next one';
+                    const wordCount = countWords(article.content || '');
+                    const readMinutes = calculateReadTime(wordCount);
+                    const displayWord = formatWordCount(wordCount);
+                    const displayTime = formatReadTime(readMinutes);
+                    const maxTags = 5;
+                    const tags = article.tags || [];
+                    let tagsHtml = '';
+                    if (tags.length > 0) {
+                        const visibleTags = tags.slice(0, maxTags);
+                        tagsHtml = visibleTags.map(tag => `<span class="nav-tag"><i class="fas fa-tag"></i> ${tag}</span>`).join('');
+                        if (tags.length > maxTags) {
+                            tagsHtml += `<span class="nav-tag"><i class="fas fa-tag"></i> …</span>`;
+                        }
+                    }
+                    const metaHtml = `
+                        <span><i class="far fa-calendar-alt"></i> ${article.date}</span>
+                        <span><i class="far fa-clock"></i> ${displayTime}</span>
+                        <span><i class="far fa-file-alt"></i> ${displayWord}</span>
+                    `;
+                    return `
+                        <a class="nav-btn ${type}-btn" href="article.html?id=${article.id}">
+                            <span class="nav-bg-text">${bgText}</span>
+                            <div class="nav-content">
+                                <span class="nav-label">${icon} ${label}</span>
+                                <div class="nav-title">${escapeHtml(article.title)}</div>
+                                <div class="nav-meta">${metaHtml}</div>
+                                <div class="nav-tags">${tagsHtml}</div>
+                            </div>
+                        </a>
+                    `;
+                }
+
+                navEl.innerHTML = `
+                    ${buildButton(prevArticle, 'prev')}
+                    <div class="nav-divider"></div>
+                    ${buildButton(nextArticle, 'next')}
+                `;
+                navEl.style.display = 'flex';
+            }).catch(err => {
+                console.error('加载相邻文章失败:', err);
+                navEl.style.display = 'none';
+            });
+        }
+        // ========== 导航逻辑结束 ==========
+
         function renderArticle() {
             var id = getParam('id');
             if (id === null || id === '') {
@@ -1334,6 +1606,7 @@
                 `;
                 return;
             }
+            // 直接从独立的 JSON 文件加载文章数据
             fetch('articles/article-' + id + '.json', { cache: 'no-cache' })
                 .then(function(response) {
                     if (!response.ok) {
@@ -1385,6 +1658,7 @@
                             ${tagsHtml}
                             <hr class="detail-divider">
                             <div class="detail-content" id="detailContent"></div>
+                            <div class="article-nav" id="articleNav"></div>
                         </div>
                     `;
 
@@ -1396,10 +1670,13 @@
                     }
 
                     setTimeout(updateReadingProgress, 100);
-                    // 延迟触发动画，等待 Markdown 渲染完成
-                    setTimeout(initArticleAnimations, 150);
                     generateShareImage();
                     initWaline(id);
+
+                    // 加载 archive.json 并渲染导航
+                    loadArchive().then(function() {
+                        renderNav();
+                    });
                 })
                 .catch(function() {
                     appContent.innerHTML = `

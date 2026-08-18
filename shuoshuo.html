@@ -474,6 +474,12 @@
             border-top-color: rgba(255,255,255,0.06);
             border-bottom-color: rgba(255,255,255,0.06);
         }
+        .shuoshuo-item:last-child {
+            border-bottom: none;
+        }
+        body.dark .shuoshuo-item:last-child {
+            border-bottom: none;
+        }
 
         .shuoshuo-item.highlight {
             border-top-color: #FFD700 !important;
@@ -849,7 +855,6 @@
             .memos-images { gap:0.25rem; }
         }
 
-        /* 设置面板 */
         .settings-modal-overlay {
             position: fixed;
             top: 0;
@@ -1159,7 +1164,6 @@
         <div id="footer-root" class="footer--no-border"></div>
     </div>
 
-    <!-- 设置面板 -->
     <div class="settings-modal-overlay" id="settingsModal">
         <div class="settings-modal-box">
             <div class="settings-modal-title">设置</div>

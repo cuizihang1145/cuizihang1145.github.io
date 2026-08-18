@@ -1617,21 +1617,35 @@
 
                     walineClientModule.commentCount({
                         serverURL: 'https://comment.cuizi.top',
-                        path: '/shuoshuo/' + id
-                    }).then(function(count) {
-                        commentCountsCache[id] = count;
-                        delete commentCountsRequested[id];
-                        var el = document.getElementById('comment-count-' + id);
-                        if (el) {
-                            el.textContent = count;
-                        }
-                    }).catch(function() {
-                        delete commentCountsRequested[id];
-                        var el = document.getElementById('comment-count-' + id);
-                        if (el) {
-                            el.textContent = '-';
-                        }
+                        path: '/shuoshuo/' + id,
+                        selector: '#comment-count-' + id
                     });
+
+                    setTimeout(function() {
+                        var el = document.getElementById('comment-count-' + id);
+                        if (el) {
+                            var text = el.textContent.trim();
+                            if (text && text !== '-') {
+                                commentCountsCache[id] = text;
+                                delete commentCountsRequested[id];
+                            } else {
+                                setTimeout(function() {
+                                    var el2 = document.getElementById('comment-count-' + id);
+                                    if (el2) {
+                                        var text2 = el2.textContent.trim();
+                                        if (text2 && text2 !== '-') {
+                                            commentCountsCache[id] = text2;
+                                        }
+                                        delete commentCountsRequested[id];
+                                    } else {
+                                        delete commentCountsRequested[id];
+                                    }
+                                }, 1000);
+                            }
+                        } else {
+                            delete commentCountsRequested[id];
+                        }
+                    }, 500);
                 }
 
                 if (walineClientModule) {

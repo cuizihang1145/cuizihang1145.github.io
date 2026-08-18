@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <link rel="stylesheet" href="/assets/markdown/markdown.css">
     <link rel="stylesheet" href="/assets/waline-custom.css">
+    <link rel="stylesheet" href="/assets/footer.css">
     <link rel="icon" href="/favicon.ico" sizes="32x32">
     <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
@@ -1150,6 +1151,8 @@
         <div class="shuoshuo-list" id="shuoshuoList">
             <div class="shuoshuo-empty"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>
         </div>
+
+        <div id="footer-root"></div>
     </div>
 
     <!-- 设置面板 -->
@@ -2628,6 +2631,18 @@
                 });
 
         })();
+    </script>
+
+    <script>
+        fetch('/assets/footer.html')
+            .then(function(res) {
+                if (!res.ok) throw new Error('加载失败');
+                return res.text();
+            })
+            .then(function(html) {
+                document.getElementById('footer-root').innerHTML = html;
+            })
+            .catch(function() {});
     </script>
 </body>
 </html>

@@ -1096,7 +1096,7 @@
                 first: 0.12,
                 step: 0.07
             },
-            triggerDelay: 50,
+            triggerDelay: 20,
             headerSelector: '.detail-title, .detail-date, .detail-tags, .detail-divider',
             contentContainerId: 'detailContent'
         };
@@ -1117,6 +1117,9 @@
                     child.style.transitionDelay = delay + 's';
                 });
             }
+
+            // 强制浏览器计算初始样式，保证过渡动画生效
+            void document.body.offsetHeight;
 
             setTimeout(() => {
                 document.querySelectorAll('.fade-up').forEach(el => {
@@ -1393,7 +1396,8 @@
                     }
 
                     setTimeout(updateReadingProgress, 100);
-                    setTimeout(initArticleAnimations, 0);
+                    // 延迟触发动画，等待 Markdown 渲染完成
+                    setTimeout(initArticleAnimations, 150);
                     generateShareImage();
                     initWaline(id);
                 })

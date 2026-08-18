@@ -939,6 +939,181 @@
             cursor: default;
             margin-left: 0;
         }
+
+        .share-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            z-index: 999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, background 0.3s ease, backdrop-filter 0.3s ease, visibility 0.3s ease;
+        }
+        .share-modal-overlay.active {
+            display: flex;
+            opacity: 1;
+            visibility: visible;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .share-modal-overlay .share-modal-box {
+            max-width: 480px;
+            width: 100%;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(24px);
+            border-radius: 2rem;
+            padding: 2rem 1.8rem 1.8rem;
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 24px 60px rgba(0,0,0,0.15);
+            text-align: center;
+            animation: modalFadeIn 0.3s ease;
+            transition: background 0.4s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        body.dark .share-modal-overlay .share-modal-box {
+            background: rgba(30,28,50,0.92);
+            border-color: rgba(255,255,255,0.08);
+            box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+        }
+        @keyframes modalFadeIn {
+            0% { opacity:0; transform:scale(0.92) translateY(20px); }
+            100% { opacity:1; transform:scale(1) translateY(0); }
+        }
+        .share-modal-overlay .share-modal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.3px;
+            text-align: center;
+        }
+        body.dark .share-modal-overlay .share-modal-title {
+            color: #fff;
+        }
+        .share-modal-overlay .share-modal-title i {
+            margin-right: 0.5rem;
+            color: #624ed0;
+        }
+        body.dark .share-modal-overlay .share-modal-title i {
+            color: #88ccff;
+        }
+        #sharePreviewWrap {
+            border-radius: 0.8rem;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.06);
+            margin-bottom: 0.8rem;
+        }
+        #sharePreviewWrap img {
+            width: 100%;
+            display: block;
+        }
+        .share-modal-actions {
+            display: flex;
+            gap: 0.6rem;
+        }
+        .share-modal-actions button {
+            flex: 1;
+            padding: 0.7rem 1.2rem;
+            border-radius: 60px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s ease;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+        .share-modal-actions .btn-text {
+            background: rgba(0,0,0,0.06);
+            color: #6a6a92;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .share-modal-actions .btn-text:hover {
+            background: rgba(0,0,0,0.1);
+        }
+        body.dark .share-modal-actions .btn-text {
+            background: rgba(255,255,255,0.08);
+            color: #9a96b8;
+            border-color: rgba(255,255,255,0.06);
+        }
+        body.dark .share-modal-actions .btn-text:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        .share-modal-actions .btn-image {
+            background: linear-gradient(145deg, #7A6BCF, #624ED0);
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(90,70,170,0.2);
+        }
+        .share-modal-actions .btn-image:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 32px rgba(90,70,170,0.3);
+        }
+        body.dark .share-modal-actions .btn-image {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+        body.dark .share-modal-actions .btn-image:hover {
+            box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+        }
+        .share-modal-actions .btn-image i {
+            font-size: 0.9rem;
+        }
+        .share-close-btn {
+            margin-top: 0.6rem;
+            padding: 0.5rem;
+            background: none;
+            border: none;
+            color: #8a8ab5;
+            font-size: 0.85rem;
+            cursor: pointer;
+            width: 100%;
+            font-family: 'Inter', sans-serif;
+            transition: 0.2s ease;
+        }
+        .share-close-btn:hover {
+            color: #4a4a6e;
+        }
+        body.dark .share-close-btn:hover {
+            color: #d0caf0;
+        }
+        @media (max-width:480px) {
+            .share-modal-overlay .share-modal-box { padding:1.6rem 1.4rem 1.4rem; }
+            .share-modal-actions button { font-size:0.8rem; padding:0.6rem 1rem; }
+        }
+        #textModal .share-text-box {
+            background: rgba(0,0,0,0.04);
+            border-radius: 12px;
+            padding: 0.8rem 1rem;
+            text-align: left;
+            font-size: 0.82rem;
+            line-height: 1.8;
+            color: #4a4a6e;
+            word-break: break-all;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(0,0,0,0.04);
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Inter', sans-serif;
+        }
+        body.dark #textModal .share-text-box {
+            background: rgba(255,255,255,0.06);
+            color: #c8c0e0;
+            border-color: rgba(255,255,255,0.06);
+        }
     </style>
 </head>
 <body>

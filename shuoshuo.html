@@ -1115,6 +1115,10 @@
             color: #c8c0e0;
             border-color: rgba(255,255,255,0.06);
         }
+
+        .footer--no-border {
+            border-top: none !important;
+        }
     </style>
 </head>
 <body>
@@ -1152,7 +1156,7 @@
             <div class="shuoshuo-empty"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>
         </div>
 
-        <div id="footer-root"></div>
+        <div id="footer-root" class="footer--no-border"></div>
     </div>
 
     <!-- 设置面板 -->
@@ -1199,7 +1203,6 @@
         (function() {
             'use strict';
 
-            // ========== IndexedDB 封装（点赞ID存储） ==========
             var DB_NAME = 'ks_shuoshuo_db';
             var STORE_NAME = 'settings';
             var LIKED_IDS_KEY = 'liked_ids';
@@ -1318,7 +1321,6 @@
                 });
             }
 
-            // ========== 阅读进度 ==========
             var progressWrap = document.getElementById('readingProgress');
             var progressBar = document.getElementById('progressBar');
             var lastProgress = 0;
@@ -1358,7 +1360,6 @@
             window.addEventListener('resize', updateReadingProgress);
             window.addEventListener('load', updateReadingProgress);
 
-            // ========== 主题切换 ==========
             var themeToggle = document.getElementById('themeToggle');
             var themeIcon = document.getElementById('themeIcon');
             var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1373,7 +1374,6 @@
             setTheme(currentTheme);
             themeToggle.addEventListener('click', function() { setTheme(currentTheme === 'dark' ? 'light' : 'dark'); });
 
-            // ========== 回到顶部 ==========
             var backToTopBtn = document.getElementById('backToTopBtn');
             var isScrollingToTop = false;
             window.addEventListener('scroll', function() {
@@ -1492,7 +1492,6 @@
                 });
             }
 
-            // ========== Waline 评论初始化 ==========
             var walineModule = null;
             var walinePreloadPromise = import('/assets/waline.js')
                 .then(function(module) { walineModule = module; })
@@ -1750,7 +1749,6 @@
                 return result;
             }
 
-            // ===== 拼图 =====
             function renderCollage(images, alts) {
                 var count = images.length;
                 if (count === 0) return '';
@@ -1772,7 +1770,6 @@
                 return html;
             }
 
-            // ===== 点赞 =====
             var API_KEY = '';
             var allShuoshuo = [];
             var currentFilter = 'newest';
@@ -1780,7 +1777,6 @@
             var urlIdHandled = false;
             var likesCache = {};
 
-            // ===== 评论数缓存 =====
             var commentCountsCache = {};
             var commentCountsRequested = {};
             var walineClientModule = null;
@@ -2033,7 +2029,6 @@
                 });
             }
 
-            // ===== 渲染 =====
             function handleUrlId() {
                 if (urlIdHandled) return;
                 var urlParams = new URLSearchParams(window.location.search);
@@ -2050,7 +2045,7 @@
             }
 
             function renderShuoshuoList() {
-            walineInitializedInstances = {};
+                walineInitializedInstances = {};
                 var filtered = allShuoshuo.slice();
                 if (currentKeyword.trim()) {
                     var kw = currentKeyword.trim().toLowerCase();
@@ -2077,7 +2072,6 @@
                     return;
                 }
 
-                // 计算应该显示 NEW 标签的说说 ID（全局最新一条且在 7 天内）
                 var newBadgeId = null;
                 if (allShuoshuo.length) {
                     var latestItem = allShuoshuo.reduce(function(prev, curr) {
@@ -2091,7 +2085,6 @@
                     }
                 }
 
-                // 如果已读ID存在且与当前NEW ID不一致，表示出了新说说，自动清除旧记录
                 if (readNewId && newBadgeId !== null && String(newBadgeId) !== readNewId) {
                     readNewId = null;
                     saveReadNewIdToDB(null);
@@ -2197,7 +2190,6 @@
                     if (relativeTime) {
                         nameHtml += '<span class="name-relative-time"><span class="dot">·</span> ' + escapeHtml(relativeTime) + '</span>';
                     }
-                    // NEW 标签：仅当是 newBadgeId 且未被标记已读
                     if (item._originIndex === newBadgeId && String(item._originIndex) !== readNewId) {
                         nameHtml += '<span class="new-badge" data-index="' + item._originIndex + '">NEW</span>';
                     }
@@ -2332,13 +2324,11 @@
                 }, 100);
             }
 
-            // ===== 事件委托 =====
             var listEl = document.getElementById('shuoshuoList');
 
             listEl.addEventListener('click', function(e) {
                 var target;
 
-                // NEW 标签已读点击
                 target = e.target.closest('.new-badge');
                 if (target && !target.classList.contains('static-badge')) {
                     e.preventDefault();
@@ -2356,7 +2346,6 @@
                     return;
                 }
 
-                // 标签点击筛选
                 target = e.target.closest('.tag');
                 if (target) {
                     e.preventDefault();
@@ -2446,7 +2435,6 @@
                 }
             });
 
-            // ===== 设置面板 =====
             var settingsModal = document.getElementById('settingsModal');
             var settingsBtn = document.getElementById('settingsBtn');
             var resetNewBtn = document.getElementById('resetNewBtn');
@@ -2472,7 +2460,6 @@
                 showToast('已重置NEW标记', 'fa-check-circle');
             });
 
-            // ===== 分享模态框 =====
             var shareModal = document.getElementById('shareModal');
             var sharePreviewImg = document.getElementById('sharePreviewImg');
 
@@ -2558,7 +2545,6 @@
                 showToast('已保存', 'fa-check-circle');
             });
 
-            // ===== 加载数据 =====
             function fetchShuoshuo() {
                 return fetch('shuoshuo.json', { cache: 'no-cache' })
                     .then(function(response) {
@@ -2609,7 +2595,6 @@
                 renderShuoshuoList();
             });
 
-            // ===== 启动 =====
             loadLikedIdsFromDB()
                 .then(function() {
                     return fetchApiKey();

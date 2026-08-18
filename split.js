@@ -25,14 +25,20 @@ try {
     process.exit(1);
 }
 
-let articles = (data.announcements || []).filter(a => a.delete !== true);
+// 读取原始数组，并给每个文章打上原始索引作为 id
+let rawArticles = (data.announcements || []).map((article, index) => {
+    return { ...article, id: index };
+});
+
+// 过滤 delete: true 的文章
+let articles = rawArticles.filter(a => a.delete !== true);
 
 if (articles.length === 0) {
     console.log('没有文章，跳过拆分');
     process.exit(0);
 }
 
-// 按日期升序排列（旧→新），与归档页面“最早”排序一致
+// 按日期升序排序（旧→新）
 const sorted = articles.slice().sort((a, b) => {
     const da = a.date || '1970-01-01';
     const db = b.date || '1970-01-01';
@@ -42,7 +48,7 @@ const sorted = articles.slice().sort((a, b) => {
 const total = sorted.length;
 const totalPages = Math.ceil(total / PAGE_SIZE);
 
-// 分页文件：每页 PAGE_SIZE 篇，包含完整正文
+// 生成分页文件
 for (let i = 0; i < totalPages; i++) {
     const start = i * PAGE_SIZE;
     const end = Math.min(start + PAGE_SIZE, total);
@@ -59,15 +65,16 @@ for (let i = 0; i < totalPages; i++) {
     console.log(`生成 page-${i + 1}.json (${end - start} 篇)`);
 }
 
-// 全部数据：用于文章详情页通过 id 索引取单篇
+// 生成 all.json（完整数据，包含 id）
 fs.writeFileSync(
     path.join(outputDir, 'all.json'),
     JSON.stringify({ total, list: sorted }, null, 2)
 );
 console.log(`生成 all.json (${total} 篇)`);
 
-// 归档用轻量数据：只含标题、日期、标签，不含正文
+// 生成 archive.json（轻量数据，不含正文，但保留 id）
 const archiveList = sorted.map(a => ({
+    id: a.id,
     title: a.title || '无标题',
     date: a.date || '1970-01-01',
     tags: a.tags || []
@@ -78,16 +85,16 @@ fs.writeFileSync(
 );
 console.log(`生成 archive.json (${total} 篇，无正文)`);
 
-// 单篇文章独立文件：供 article.html 按需加载，避免全量拉取
-sorted.forEach((article, index) => {
+// 生成单篇文章文件，文件名使用原始 id
+sorted.forEach(article => {
     fs.writeFileSync(
-        path.join(outputDir, `article-${index}.json`),
+        path.join(outputDir, `article-${article.id}.json`),
         JSON.stringify(article, null, 2)
     );
 });
 console.log(`生成 ${total} 个独立文章文件`);
 
-// 元数据：总文章数、总页数，供列表页快速判断
+// 元数据
 fs.writeFileSync(
     path.join(outputDir, 'meta.json'),
     JSON.stringify({ total, totalPages }, null, 2)

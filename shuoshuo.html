@@ -521,6 +521,12 @@
             box-shadow: 0 2px 6px rgba(255, 90, 54, 0.35);
             white-space: nowrap;
             margin-left: 0.3rem;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+        .new-badge.fade-out {
+            opacity: 0;
+            pointer-events: none;
         }
         .shuoshuo-date-location {
             font-size: 0.78rem;
@@ -1057,7 +1063,9 @@
             var DB_NAME = 'ks_shuoshuo_db';
             var STORE_NAME = 'settings';
             var LIKED_IDS_KEY = 'liked_ids';
+            var READ_NEW_IDS_KEY = 'read_new_ids';   // 新增：已读 NEW 的说说 ID
             var likedIdsCache = [];
+            var readNewId = null;   // 存储已读的最新说说 ID，字符串
 
             function openDB() {
                 return new Promise(function(resolve, reject) {
@@ -1086,26 +1094,46 @@
                     return new Promise(function(resolve, reject) {
                         var tx = db.transaction(STORE_NAME, 'readonly');
                         var store = tx.objectStore(STORE_NAME);
-                        var getRequest = store.get(LIKED_IDS_KEY);
-                        getRequest.onsuccess = function() {
-                            var data = getRequest.result;
+                        var likedReq = store.get(LIKED_IDS_KEY);
+                        var readNewReq = store.get(READ_NEW_IDS_KEY);
+
+                        likedReq.onsuccess = function() {
+                            var data = likedReq.result;
                             if (data && data.value && Array.isArray(data.value)) {
                                 likedIdsCache = data.value.slice();
                             } else {
                                 likedIdsCache = [];
                             }
-                            resolve(likedIdsCache);
                         };
-                        getRequest.onerror = function() {
-                            reject(getRequest.error);
+                        likedReq.onerror = function() {
+                            reject(likedReq.error);
                         };
+
+                        readNewReq.onsuccess = function() {
+                            var data = readNewReq.result;
+                            if (data && data.value !== undefined && data.value !== null) {
+                                readNewId = String(data.value);
+                            } else {
+                                readNewId = null;
+                            }
+                        };
+                        readNewReq.onerror = function() {
+                            reject(readNewReq.error);
+                        };
+
                         tx.oncomplete = function() {
                             db.close();
+                            resolve(likedIdsCache);
+                        };
+                        tx.onerror = function() {
+                            db.close();
+                            reject(tx.error);
                         };
                     });
                 }).catch(function(err) {
-                    console.warn('无法从 IndexedDB 加载点赞ID，使用空数组', err);
+                    console.warn('无法从 IndexedDB 加载数据，使用默认值', err);
                     likedIdsCache = [];
+                    readNewId = null;
                     return [];
                 });
             }
@@ -1127,6 +1155,26 @@
                     });
                 }).catch(function(err) {
                     console.warn('保存点赞ID到 IndexedDB 失败', err);
+                });
+            }
+
+            function saveReadNewIdToDB(id) {
+                return openDB().then(function(db) {
+                    return new Promise(function(resolve, reject) {
+                        var tx = db.transaction(STORE_NAME, 'readwrite');
+                        var store = tx.objectStore(STORE_NAME);
+                        store.put({ key: READ_NEW_IDS_KEY, value: String(id) });
+                        tx.oncomplete = function() {
+                            db.close();
+                            resolve();
+                        };
+                        tx.onerror = function() {
+                            db.close();
+                            reject(tx.error);
+                        };
+                    });
+                }).catch(function(err) {
+                    console.warn('保存已读NEW ID到 IndexedDB 失败', err);
                 });
             }
 
@@ -1902,6 +1950,12 @@
                     }
                 }
 
+                // 如果已读ID存在且与当前NEW ID不一致，表示出了新说说，自动清除旧记录
+                if (readNewId && newBadgeId !== null && String(newBadgeId) !== readNewId) {
+                    readNewId = null;
+                    saveReadNewIdToDB(null); // 或者直接清除记录
+                }
+
                 var html = '';
 
                 filtered.forEach(function(item) {
@@ -2002,8 +2056,9 @@
                     if (relativeTime) {
                         nameHtml += '<span class="name-relative-time"><span class="dot">·</span> ' + escapeHtml(relativeTime) + '</span>';
                     }
-                    if (item._originIndex === newBadgeId) {
-                        nameHtml += '<span class="new-badge">NEW</span>';
+                    // NEW 标签：仅当是 newBadgeId 且未被标记已读
+                    if (item._originIndex === newBadgeId && String(item._originIndex) !== readNewId) {
+                        nameHtml += '<span class="new-badge" data-index="' + item._originIndex + '">NEW</span>';
                     }
 
                     html += '<div class="shuoshuo-item" data-origin-index="' + item._originIndex + '">';
@@ -2141,6 +2196,26 @@
 
             listEl.addEventListener('click', function(e) {
                 var target;
+
+                // NEW 标签已读点击
+                target = e.target.closest('.new-badge');
+                if (target) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var id = target.getAttribute('data-index');
+                    if (id) {
+                        // 记录已读
+                        readNewId = String(id);
+                        saveReadNewIdToDB(readNewId);
+                        // 淡出
+                        target.classList.add('fade-out');
+                        setTimeout(function() {
+                            if (target.parentNode) target.remove();
+                        }, 300);
+                        showToast('已标记为已读', 'fa-check-circle');
+                    }
+                    return;
+                }
 
                 // 标签点击筛选
                 target = e.target.closest('.tag');

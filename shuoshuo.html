@@ -2047,6 +2047,7 @@
             }
 
             function renderShuoshuoList() {
+            walineInitializedInstances = {};
                 var filtered = allShuoshuo.slice();
                 if (currentKeyword.trim()) {
                     var kw = currentKeyword.trim().toLowerCase();

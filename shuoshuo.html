@@ -1524,9 +1524,28 @@
             var urlIdHandled = false;
             var likesCache = {};
 
-            // 新增：评论数缓存（跟 likesCache 一样的结构）
+            // ===== 评论数缓存 =====
             var commentCountsCache = {};
-            var commentsFetched = false;
+            var commentCountsLoading = {};
+
+            function fetchCommentCount(id) {
+                if (commentCountsCache.hasOwnProperty(id) || commentCountsLoading[id]) return;
+                commentCountsLoading[id] = true;
+                fetch('https://comment.cuizi.top/api/comment?type=count&url=' + encodeURIComponent('/shuoshuo/' + id))
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) {
+                        var count = data.count || 0;
+                        commentCountsCache[id] = count;
+                        delete commentCountsLoading[id];
+                        var el = document.getElementById('comment-count-' + id);
+                        if (el) el.textContent = count;
+                    })
+                    .catch(function() {
+                        delete commentCountsLoading[id];
+                        var el = document.getElementById('comment-count-' + id);
+                        if (el) el.textContent = '-';
+                    });
+            }
 
             function isLiked(id) {
                 return likedIdsCache.indexOf(String(id)) !== -1;
@@ -1619,42 +1638,6 @@
                 });
             }
 
-            // 新增：获取所有评论数（跟 fetchLikes 逻辑完全一致）
-            function fetchAllCommentCounts() {
-                if (commentsFetched) return;
-                commentsFetched = true;
-
-                import('https://unpkg.com/@waline/client@v3/dist/waline.js')
-                    .then(function(module) {
-                        var commentCount = module.commentCount;
-                        allShuoshuo.forEach(function(item) {
-                            var index = item._originIndex;
-                            var countEl = document.getElementById('comment-count-' + index);
-                            if (!countEl) return;
-
-                            commentCount({
-                                serverURL: 'https://comment.cuizi.top',
-                                path: '/shuoshuo/' + index,
-                                selector: '#comment-count-' + index
-                            }).then(function() {
-                                var el = document.getElementById('comment-count-' + index);
-                                if (el) {
-                                    var val = parseInt(el.textContent, 10);
-                                    if (!isNaN(val)) {
-                                        commentCountsCache[index] = val;
-                                    }
-                                }
-                            }).catch(function() {
-                                commentCountsCache[index] = '?';
-                            });
-                        });
-                    })
-                    .catch(function() {
-                        console.warn('加载评论数失败');
-                    });
-            }
-
-            // 校正本地点赞状态与服务端点赞数
             function syncLikedIdsWithCounts() {
                 var changed = false;
                 likedIdsCache.forEach(function(id) {
@@ -1886,9 +1869,9 @@
                     var likeCount = likesCache[item._originIndex];
                     if (likeCount === undefined) likeCount = '-';
 
-                    // 从缓存读取评论数（跟点赞一样）
-                    var cachedCommentCount = commentCountsCache[item._originIndex];
-                    var commentDisplay = (cachedCommentCount !== undefined && cachedCommentCount !== null) ? cachedCommentCount : '-';
+                    // 评论数使用缓存，没有缓存显示 '-'
+                    var commentCountText = commentCountsCache.hasOwnProperty(item._originIndex) ?
+                        commentCountsCache[item._originIndex] : '-';
 
                     html += '<div class="shuoshuo-item" data-origin-index="' + item._originIndex + '">';
 
@@ -1914,7 +1897,7 @@
                         '</span>';
                     html += '</button>';
                     html += '<button class="shuoshuo-action-btn comment-toggle" data-index="' + item._originIndex +
-                        '" title="评论"><i class="far fa-comments"></i> <span class="comment-count" id="comment-count-' + item._originIndex + '">' + commentDisplay + '</span></button>';
+                        '" title="评论"><i class="far fa-comments"></i> <span class="comment-count" id="comment-count-' + item._originIndex + '">' + commentCountText + '</span></button>';
                     html += '</div>';
                     html += '</div>';
 
@@ -1924,6 +1907,14 @@
                 });
 
                 listEl.innerHTML = html;
+
+                // 只请求未缓存的评论数
+                document.querySelectorAll('.shuoshuo-item .comment-toggle').forEach(function(btn) {
+                    var index = btn.dataset.index;
+                    if (!commentCountsCache.hasOwnProperty(index) && !commentCountsLoading[index]) {
+                        fetchCommentCount(index);
+                    }
+                });
 
                 // 修复图片加载图标不消失的问题
                 document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
@@ -2193,7 +2184,6 @@
                         allShuoshuo = (data || []).filter(function(item) { return item.delete !== true; })
                             .map(function(item, idx) { item._originIndex = idx; return item; });
                         renderShuoshuoList();
-                        // 加载完说说之后，再拉评论数（跟 fetchLikes 一样在外部调用）
                     })
                     .catch(function() {
                         document.getElementById('shuoshuoList').innerHTML =
@@ -2245,18 +2235,11 @@
                 .then(function() {
                     return fetchLikes();
                 })
-                .then(function() {
-                    // 点赞数加载完成后，再拉评论数（跟 fetchLikes 平级）
-                    fetchAllCommentCounts();
-                })
                 .catch(function(err) {
                     console.warn('初始化失败:', err);
                     fetchApiKey()
                         .then(fetchShuoshuo)
                         .then(fetchLikes)
-                        .then(function() {
-                            fetchAllCommentCounts();
-                        })
                         .catch(function(err2) {
                             console.warn('备用初始化失败:', err2);
                         });

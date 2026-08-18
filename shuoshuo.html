@@ -491,6 +491,20 @@
         body.dark .shuoshuo-name {
             color: #E8E6F0;
         }
+        .shuoshuo-name .name-relative-time {
+            font-size: 0.75rem;
+            color: #8A8AB5;
+            font-weight: 500;
+            margin-left: 0.3rem;
+            white-space: nowrap;
+        }
+        .shuoshuo-name .dot {
+            opacity: 0.5;
+            margin-right: 0.2rem;
+        }
+        body.dark .shuoshuo-name .name-relative-time {
+            color: #7A7AA0;
+        }
         .shuoshuo-date-location {
             font-size: 0.78rem;
             color: #8A8AB5;
@@ -1210,6 +1224,25 @@
                 return div.innerHTML;
             }
 
+            function getRelativeTime(dateStr) {
+                if (!dateStr) return '';
+                var parts = dateStr.split('-');
+                if (parts.length !== 3) return '';
+                var year = Number(parts[0]);
+                var month = Number(parts[1]) - 1;
+                var day = Number(parts[2]);
+                if (isNaN(year) || isNaN(month) || isNaN(day)) return '';
+
+                var dateObj = new Date(year, month, day);
+                var today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                var diffDays = Math.floor((today - dateObj) / 86400000);
+                if (diffDays < 0 || diffDays > 30) return '';
+                if (diffDays === 0) return '今天';
+                return diffDays + '天前';
+            }
+
             function compressImage(file, maxSize, quality) {
                 return new Promise(function(resolve) {
                     var reader = new FileReader();
@@ -1916,12 +1949,18 @@
                     var commentCountText = commentCountsCache.hasOwnProperty(item._originIndex) ?
                         commentCountsCache[item._originIndex] : '-';
 
+                    var relativeTime = getRelativeTime(date);
+                    var nameHtml = 'ks';
+                    if (relativeTime) {
+                        nameHtml += '<span class="name-relative-time"><span class="dot">·</span> ' + escapeHtml(relativeTime) + '</span>';
+                    }
+
                     html += '<div class="shuoshuo-item" data-origin-index="' + item._originIndex + '">';
 
                     html += '<div class="shuoshuo-header">';
                     html += '<img class="shuoshuo-avatar" src="https://www.cuizi.top/logo.png" alt="ks" loading="lazy" onerror="this.onerror=null;this.src=\'logo.png\'">';
                     html += '<div class="shuoshuo-header-info">';
-                    html += '<div class="shuoshuo-name">ks</div>';
+                    html += '<div class="shuoshuo-name">' + nameHtml + '</div>';
                     html += '<div class="shuoshuo-date-location">' + dateLocationHtml + '</div>';
                     html += '</div>';
                     html += '</div>';

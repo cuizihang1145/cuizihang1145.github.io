@@ -1526,25 +1526,69 @@
 
             // ===== 评论数缓存 =====
             var commentCountsCache = {};
-            var commentCountsLoading = {};
+            var commentCountsRequested = {};
+            var walineClientModule = null;
+            var walineClientPromise = import('https://unpkg.com/@waline/client@v3/dist/waline.js')
+                .then(function(module) { walineClientModule = module; })
+                .catch(function() { console.warn('Waline 客户端库加载失败'); });
 
-            function fetchCommentCount(id) {
-                if (commentCountsCache.hasOwnProperty(id) || commentCountsLoading[id]) return;
-                commentCountsLoading[id] = true;
-                fetch('https://comment.cuizi.top/api/comment?type=count&url=' + encodeURIComponent('/shuoshuo/' + id))
-                    .then(function(res) { return res.json(); })
-                    .then(function(data) {
-                        var count = data.count || 0;
-                        commentCountsCache[id] = count;
-                        delete commentCountsLoading[id];
-                        var el = document.getElementById('comment-count-' + id);
-                        if (el) el.textContent = count;
-                    })
-                    .catch(function() {
-                        delete commentCountsLoading[id];
-                        var el = document.getElementById('comment-count-' + id);
-                        if (el) el.textContent = '-';
+            function requestCommentCount(id) {
+                if (commentCountsCache.hasOwnProperty(id) || commentCountsRequested[id]) return;
+                commentCountsRequested[id] = true;
+
+                function doRequest() {
+                    if (!walineClientModule || !walineClientModule.commentCount) {
+                        setTimeout(function() {
+                            if (!commentCountsCache.hasOwnProperty(id)) {
+                                delete commentCountsRequested[id];
+                                requestCommentCount(id);
+                            }
+                        }, 500);
+                        return;
+                    }
+
+                    walineClientModule.commentCount({
+                        serverURL: 'https://comment.cuizi.top',
+                        path: '/shuoshuo/' + id,
+                        selector: '#comment-count-' + id
                     });
+
+                    setTimeout(function() {
+                        var el = document.getElementById('comment-count-' + id);
+                        if (el) {
+                            var text = el.textContent.trim();
+                            if (text && text !== '-') {
+                                commentCountsCache[id] = text;
+                                delete commentCountsRequested[id];
+                            } else {
+                                setTimeout(function() {
+                                    var el2 = document.getElementById('comment-count-' + id);
+                                    if (el2) {
+                                        var text2 = el2.textContent.trim();
+                                        if (text2 && text2 !== '-') {
+                                            commentCountsCache[id] = text2;
+                                        }
+                                        delete commentCountsRequested[id];
+                                    } else {
+                                        delete commentCountsRequested[id];
+                                    }
+                                }, 1000);
+                            }
+                        } else {
+                            delete commentCountsRequested[id];
+                        }
+                    }, 500);
+                }
+
+                if (walineClientModule) {
+                    doRequest();
+                } else {
+                    walineClientPromise.then(function() {
+                        doRequest();
+                    }).catch(function() {
+                        delete commentCountsRequested[id];
+                    });
+                }
             }
 
             function isLiked(id) {
@@ -1869,7 +1913,6 @@
                     var likeCount = likesCache[item._originIndex];
                     if (likeCount === undefined) likeCount = '-';
 
-                    // 评论数使用缓存，没有缓存显示 '-'
                     var commentCountText = commentCountsCache.hasOwnProperty(item._originIndex) ?
                         commentCountsCache[item._originIndex] : '-';
 
@@ -1908,15 +1951,13 @@
 
                 listEl.innerHTML = html;
 
-                // 只请求未缓存的评论数
                 document.querySelectorAll('.shuoshuo-item .comment-toggle').forEach(function(btn) {
                     var index = btn.dataset.index;
-                    if (!commentCountsCache.hasOwnProperty(index) && !commentCountsLoading[index]) {
-                        fetchCommentCount(index);
+                    if (!commentCountsCache.hasOwnProperty(index) && !commentCountsRequested[index]) {
+                        requestCommentCount(index);
                     }
                 });
 
-                // 修复图片加载图标不消失的问题
                 document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
                     var wrapper = img.closest('.img-placeholder');
                     if (!wrapper) return;
@@ -1945,12 +1986,10 @@
                     }
                 });
 
-                // 高亮代码
                 document.querySelectorAll('.code-line .hljs').forEach(function(el) {
                     try { hljs.highlightElement(el); } catch (e) {}
                 });
 
-                // 绑定灯箱
                 document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
                     img.style.cursor = 'pointer';
                     var parent = img.closest('.shuoshuo-item');

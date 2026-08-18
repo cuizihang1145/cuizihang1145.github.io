@@ -40,9 +40,10 @@ export default async function handler(req, res) {
       const id = `${baseUrl}/article.html?id=${index}`;
       const title = escapeXml(item.title || '无标题');
       const updated = new Date(item.date).toISOString();
-      // 关键改动：转义HTML后将所有换行符替换为字面量 \n
+      
+      // 🔥 关键改动：渲染 HTML，然后转义 XML 特殊字符，保留换行符
       const rawHtml = renderMarkdown(item.content || '');
-      const htmlContent = escapeXml(rawHtml).replace(/\n/g, '\\n');
+      const htmlContent = escapeXml(rawHtml);
 
       entriesXml += `
   <entry>

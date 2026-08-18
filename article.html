@@ -1265,7 +1265,7 @@
 
         function renderArticle() {
             var id = getParam('id');
-            if (id === null) {
+            if (id === null || id === '') {
                 appContent.innerHTML = `
                     <div class="not-found">
                         <i class="far fa-frown"></i>
@@ -1275,26 +1275,16 @@
                 `;
                 return;
             }
-            // 改用 articles/all.json
-            fetch('articles/all.json', { cache: 'no-cache' })
+            // 直接从独立的 JSON 文件加载文章数据
+            fetch('articles/article-' + id + '.json', { cache: 'no-cache' })
                 .then(function(response) {
-                    if (!response.ok) throw new Error('all.json 不存在');
+                    if (!response.ok) {
+                        throw new Error('文章不存在或已被删除');
+                    }
                     return response.json();
                 })
-                .then(function(data) {
-                    var articles = data.list || [];
-                    var idx = parseInt(id);
-                    if (isNaN(idx) || idx < 0 || idx >= articles.length) {
-                        appContent.innerHTML = `
-                            <div class="not-found">
-                                <i class="far fa-frown"></i>
-                                <p>文章不存在</p>
-                                <p style="font-size:0.85rem; margin-top:0.5rem;">可能已被删除</p>
-                            </div>
-                        `;
-                        return;
-                    }
-                    var article = articles[idx];
+                .then(function(article) {
+                    // 如果文章被标记为删除（理论上不会生成文件，但以防万一）
                     if (article.delete === true) {
                         appContent.innerHTML = `
                             <div class="not-found">
@@ -1317,7 +1307,7 @@
                     var displayWord = formatWordCount(wordCount);
                     var displayTime = formatReadTime(readTime);
                     var preview = getPlainPreview(content, 80);
-                    var articleUrl = window.location.origin + window.location.pathname + '?id=' + idx;
+                    var articleUrl = window.location.origin + window.location.pathname + '?id=' + id;
                     currentShareText = title + '：' + preview + '\n查看完整内容？请访问：' + articleUrl;
 
                     var tagsHtml = '';
@@ -1356,8 +1346,8 @@
                     appContent.innerHTML = `
                         <div class="not-found">
                             <i class="far fa-frown"></i>
-                            <p>加载文章数据失败</p>
-                            <p style="font-size:0.85rem; margin-top:0.5rem;">emmm…可能是博主在测试结果给搞崩了！可以刷新网页或稍后再试！</p>
+                            <p>加载文章失败</p>
+                            <p style="font-size:0.85rem; margin-top:0.5rem;">文章不存在或已被删除，也可能是网络问题。</p>
                         </div>
                     `;
                 });

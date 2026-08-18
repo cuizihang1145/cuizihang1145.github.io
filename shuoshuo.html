@@ -6,7 +6,7 @@
     <title>说说 · ks</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Audiowide&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.1/css/all.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <link rel="stylesheet" href="/assets/markdown/markdown.css">
@@ -504,6 +504,23 @@
         }
         body.dark .shuoshuo-name .name-relative-time {
             color: #7A7AA0;
+        }
+        .new-badge {
+            display: inline-flex;
+            align-items: center;
+            background: #FF5A36;
+            color: #ffffff;
+            font-family: 'Audiowide', cursive;
+            font-weight: 400;
+            font-size: 9px;
+            letter-spacing: 0.3px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            line-height: 1;
+            text-transform: uppercase;
+            box-shadow: 0 2px 6px rgba(255, 90, 54, 0.35);
+            white-space: nowrap;
+            margin-left: 0.3rem;
         }
         .shuoshuo-date-location {
             font-size: 0.78rem;
@@ -1243,6 +1260,24 @@
                 return diffDays + '天前';
             }
 
+            function getDaysDiff(dateStr) {
+                if (!dateStr) return null;
+                var parts = dateStr.split('-');
+                if (parts.length !== 3) return null;
+                var year = Number(parts[0]);
+                var month = Number(parts[1]) - 1;
+                var day = Number(parts[2]);
+                if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+
+                var dateObj = new Date(year, month, day);
+                var today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                var diffDays = Math.floor((today - dateObj) / 86400000);
+                if (diffDays < 0) return null;
+                return diffDays;
+            }
+
             function compressImage(file, maxSize, quality) {
                 return new Promise(function(resolve) {
                     var reader = new FileReader();
@@ -1853,6 +1888,20 @@
                     return;
                 }
 
+                // 计算应该显示 NEW 标签的说说 ID（全局最新一条且在 7 天内）
+                var newBadgeId = null;
+                if (allShuoshuo.length) {
+                    var latestItem = allShuoshuo.reduce(function(prev, curr) {
+                        var prevDate = prev.date || '';
+                        var currDate = curr.date || '';
+                        return (currDate > prevDate) ? curr : prev;
+                    });
+                    var diff = getDaysDiff(latestItem.date);
+                    if (diff !== null && diff <= 7) {
+                        newBadgeId = latestItem._originIndex;
+                    }
+                }
+
                 var html = '';
 
                 filtered.forEach(function(item) {
@@ -1953,6 +2002,9 @@
                     var nameHtml = 'ks';
                     if (relativeTime) {
                         nameHtml += '<span class="name-relative-time"><span class="dot">·</span> ' + escapeHtml(relativeTime) + '</span>';
+                    }
+                    if (item._originIndex === newBadgeId) {
+                        nameHtml += '<span class="new-badge">NEW</span>';
                     }
 
                     html += '<div class="shuoshuo-item" data-origin-index="' + item._originIndex + '">';

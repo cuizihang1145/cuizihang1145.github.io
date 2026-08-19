@@ -2776,8 +2776,8 @@
                             renderArticleList(filtered, kw, 1);
                             currentPage = 1;
                             saveArticleState();
-                            updateBannerNewTag();
                             bindBannerClick();
+                            updateBannerNewTag();
                         });
                 })['catch'](function(err) {
                     console.error('加载文章失败:', err);

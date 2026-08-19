@@ -3433,9 +3433,11 @@
                         closest = link;
                     }
                 });
+                // 关闭自动滑动切换，只保留手动点击
                 if (closest && !closest.classList.contains('active')) {
-                    var page = closest.getAttribute('data-page');
-                    switchPage(page, closest);
+                    // 注释掉自动切换，防止"关于夺舍"
+                    // var page = closest.getAttribute('data-page');
+                    // switchPage(page, closest);
                 }
             }, 80);
         });

@@ -2033,6 +2033,73 @@
                 padding: 0.6rem 1rem;
             }
         }
+        .skeleton-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .skeleton-item {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 1.2rem;
+            padding: 1rem 1.4rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: box-shadow 0.2s;
+        }
+        body.dark .skeleton-item {
+            background: rgba(40, 38, 65, 0.5);
+            border-color: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .skeleton-line {
+            height: 16px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #e0dceb 25%, #f0ecf7 50%, #e0dceb 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.8s infinite;
+            margin-bottom: 0.5rem;
+        }
+        body.dark .skeleton-line {
+            background: linear-gradient(90deg, #3a3560 25%, #4f4a7a 50%, #3a3560 75%);
+            background-size: 200% 100%;
+        }
+        .skeleton-title {
+            height: 22px;
+            width: 70%;
+        }
+        .skeleton-desc {
+            height: 14px;
+            width: 100%;
+        }
+        .skeleton-desc.short {
+            width: 60%;
+        }
+        .skeleton-tags {
+            display: flex;
+            gap: 0.3rem;
+            margin-top: 0.3rem;
+        }
+        .skeleton-tag {
+            display: inline-block;
+            height: 18px;
+            width: 50px;
+            border-radius: 40px;
+            background: linear-gradient(90deg, #e0dceb 25%, #f0ecf7 50%, #e0dceb 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.8s infinite;
+        }
+        body.dark .skeleton-tag {
+            background: linear-gradient(90deg, #3a3560 25%, #4f4a7a 50%, #3a3560 75%);
+            background-size: 200% 100%;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .skeleton-item:first-child {
+            margin-top: 0.2rem;
+        }
     </style>
 </head>
 <body>
@@ -2584,7 +2651,13 @@
                 escapeHtml(currentKeyword) +
                 '"><button class="search-clear" id="searchClearBtn" aria-label="清空搜索">✕</button></div><div class="filter-wrap"><button class="filter-btn ' +
                 (currentFilter === 'newest' ? 'active' : '') + '" data-filter="newest">最新</button><button class="filter-btn ' +
-                (currentFilter === 'oldest' ? 'active' : '') + '" data-filter="oldest">最早</button></div><span class="result-count"></span></div><div class="articles-list" id="articlesList"><div style="text-align:center;padding:2rem;color:#8A8AB5;"><i class="fas fa-spinner fa-spin"></i> 加载中...</div></div><div class="pagination" id="pagination"></div></div></div>';
+                (currentFilter === 'oldest' ? 'active' : '') + '" data-filter="oldest">最早</button></div><span class="result-count"></span></div><div class="articles-list" id="articlesList">' +
+                '<div class="skeleton-list">' +
+                [1, 2, 3, 4, 5].map(function() {
+                    return '<div class="skeleton-item"><div class="skeleton-line skeleton-title"></div><div class="skeleton-line skeleton-desc"></div><div class="skeleton-line skeleton-desc short"></div><div class="skeleton-tags"><span class="skeleton-tag"></span><span class="skeleton-tag"></span><span class="skeleton-tag"></span></div></div>';
+                }).join('') +
+                '</div>' +
+                '</div><div class="pagination" id="pagination"></div></div></div>';
             var searchInput = container.querySelector('.articles-search-input');
             var searchClearBtn = document.getElementById('searchClearBtn');
             var filterBtns = container.querySelectorAll('.filter-btn');

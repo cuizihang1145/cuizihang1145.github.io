@@ -5,5 +5,12 @@
     "url": "https://blog.imshimao.com",
     "logo": "https://img.cdn1.vip/i/6a811517810a6_1786844439.jpg",
     "feed": "https://blog.imshimao.com/feed.xml"
+  },
+  {
+    "name": "示例博客",
+    "url": "https://example.com",
+    "desc": "示例友链内容",
+    "logo": "",
+    "feed": ""
   }
 ]

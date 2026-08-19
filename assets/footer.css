@@ -53,8 +53,9 @@ body.dark .ipv6-badge i {
     color: #A89FD0
 }
 
-/* ===== 新增智能分隔符 ===== */
+/* ===== 智能分隔符核心代码 ===== */
 .footer-wrapper {
+    display: inline-block;
     overflow: hidden;
     width: 100%;
 }
@@ -80,7 +81,6 @@ body.dark .ipv6-badge i {
 body.dark .footer-item::before {
     color: #6A6A8A;
 }
-/* 徽章不需要分隔符，去掉它的伪元素 */
 .ipv6-badge::before {
     content: none !important;
     display: none !important;

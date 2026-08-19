@@ -52,36 +52,21 @@ body.dark .ipv6-badge {
 body.dark .ipv6-badge i {
     color: #A89FD0
 }
-
-/* ===== 智能分隔符核心代码 ===== */
-.footer-wrapper {
-    display: inline-block;
-    overflow: hidden;
-    width: 100%;
-}
-#footerItems {
+.footer p {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
+    gap: 0;
     margin: 0;
-    margin-left: -10px;
     padding: 0;
 }
 .footer-item {
     white-space: nowrap;
-    margin-left: 10px;
 }
-.footer-item::before {
-    content: "|";
-    display: inline-block;
-    margin-right: 10px;
+.footer-sep {
     color: #A8A8CE;
 }
-body.dark .footer-item::before {
+body.dark .footer-sep {
     color: #6A6A8A;
-}
-.ipv6-badge::before {
-    content: none !important;
-    display: none !important;
 }

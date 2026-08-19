@@ -1,10 +1,49 @@
-<div class="footer-wrapper">
-    <footer class="footer">
-        <p id="footerItems">
-            <span class="footer-item">© ks · 个人博客 · 2026</span>
-            <a href="https://icp.gov.moe/?keyword=20269004" target="_blank" class="footer-item">萌ICP备20269004号</a>
-            <a href="https://icp.redcha.cn/beian/ICP-2026080382.html" target="_blank" class="footer-item">茶ICP备2026080382号</a>
-            <span class="footer-item ipv6-badge"><i class="fas fa-circle-nodes"></i> IPv6</span>
-        </p>
-    </footer>
-</div>
+<footer class="footer">
+    <p id="footerItems">
+        <span class="footer-item">© ks · 个人博客 · 2026</span>
+        <span class="footer-sep">|</span>
+        <a href="https://icp.gov.moe/?keyword=20269004" target="_blank" class="footer-item">萌ICP备20269004号</a>
+        <span class="footer-sep">|</span>
+        <a href="https://icp.redcha.cn/beian/ICP-2026080382.html" target="_blank" class="footer-item">茶ICP备2026080382号</a>
+        <span class="footer-sep">|</span>
+        <span class="footer-item ipv6-badge"><i class="fas fa-circle-nodes"></i> IPv6</span>
+    </p>
+</footer>
+<script>
+    (function() {
+        function fixSeparators() {
+            var container = document.getElementById('footerItems');
+            if (!container) return;
+            var items = container.children;
+            for (var i = 0; i < items.length; i++) {
+                var el = items[i];
+                if (!el.classList || !el.classList.contains('footer-sep')) continue;
+                var next = items[i + 1];
+                if (!next) {
+                    el.style.display = 'none';
+                    continue;
+                }
+                var rect1 = el.getBoundingClientRect();
+                var rect2 = next.getBoundingClientRect();
+                if (rect1.top === rect2.top && rect1.left < rect2.left) {
+                    el.style.display = 'inline';
+                } else {
+                    el.style.display = 'none';
+                }
+            }
+        }
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            fixSeparators();
+        } else {
+            document.addEventListener('DOMContentLoaded', fixSeparators);
+        }
+        var timer;
+        window.addEventListener('resize', function() {
+            clearTimeout(timer);
+            timer = setTimeout(fixSeparators, 100);
+        });
+        window.addEventListener('load', function() {
+            setTimeout(fixSeparators, 200);
+        });
+    })();
+</script>

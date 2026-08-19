@@ -52,21 +52,15 @@ body.dark .ipv6-badge {
 body.dark .ipv6-badge i {
     color: #A89FD0
 }
-.footer p {
+#footerItems {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    gap: 0;
+    gap: 0 0.3rem;
     margin: 0;
     padding: 0;
 }
 .footer-item {
     white-space: nowrap;
-}
-.footer-sep {
-    color: #A8A8CE;
-}
-body.dark .footer-sep {
-    color: #6A6A8A;
 }

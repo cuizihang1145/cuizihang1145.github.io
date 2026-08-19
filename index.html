@@ -8,6 +8,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" onload="this.rel='stylesheet'" />
     <link rel="preload" as="style" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.1/css/all.css" onload="this.rel='stylesheet'" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet" />
     <noscript>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" />
         <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.1/css/all.css" />
@@ -1062,6 +1065,8 @@
             margin: 0 auto;
         }
         .shuoshuo-banner {
+            position: relative;
+            overflow: visible;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -1138,6 +1143,29 @@
                 font-size: 0.9rem;
             }
         }
+
+        .new-badge {
+            position: absolute;
+            top: -8px;
+            right: -6px;
+            font-family: 'Audiowide', cursive;
+            font-weight: 400;
+            font-size: 9px;
+            letter-spacing: 0.3px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            line-height: 1;
+            text-transform: uppercase;
+            background: #FF5A36;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(255, 90, 54, 0.4);
+            z-index: 2;
+            white-space: nowrap;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+        }
+
         .articles-toolbar {
             display: flex;
             flex-wrap: wrap;
@@ -2498,8 +2526,7 @@
                 return;
             }
             var html = '';
-            pageItems.forEach(function(item, index) {
-                var realIndex = allArticles.indexOf(item);
+            pageItems.forEach(function(item) {
                 var title = item.title || '无标题';
                 var date = item.date || '';
                 var content = item.content || '';
@@ -2526,7 +2553,7 @@
                     });
                     tagsHtml += '</span>';
                 }
-                html += '<div class="article-item" data-index="' + realIndex + '"><div class="item-header"><span class="item-title">' +
+                html += '<div class="article-item" data-id="' + item.id + '"><div class="item-header"><span class="item-title">' +
                     titleHtml + '</span><span class="item-meta">' + readTimeDisplay + ' · ' + wordDisplay +
                     '</span></div><div class="item-summary">' +
                     previewHighlighted + '</div><div class="item-footer">' + tagsHtml + '<span class="item-date">' + date +
@@ -2535,9 +2562,9 @@
             list.innerHTML = html;
             list.querySelectorAll('.article-item').forEach(function(el) {
                 el.addEventListener('click', function() {
-                    var idx = this.dataset.index;
+                    var id = this.dataset.id;
                     saveArticleState();
-                    window.location.href = 'article.html?id=' + idx + '&page=' + currentPage;
+                    window.location.href = 'article.html?id=' + id + '&page=' + currentPage;
                 });
             });
             if (countEl) {
@@ -2621,7 +2648,10 @@
 
         function applySearch(keyword) {
             var kw = keyword.trim().toLowerCase();
-            var filtered = allArticles.slice();
+            var searchPool = (window._allArticlesForSearch && window._allArticlesForSearch.length > 0)
+                ? window._allArticlesForSearch
+                : allArticles;
+            var filtered = searchPool.slice();
             if (kw) {
                 filtered = filtered.filter(function(item) {
                     var title = (item.title || '').toLowerCase();
@@ -2647,7 +2677,7 @@
         function renderArticles() {
             var container = document.getElementById('appContent');
             container.innerHTML =
-                '<div class="content-placeholder" style="justify-content:flex-start;padding-top:0.2rem;width:100%;"><div class="articles-container"><a href="shuoshuo.html" class="shuoshuo-banner"><span class="banner-left"><i class="fas fa-comment-dots"></i><span>来看看说说吧～</span></span><span class="banner-arrow"><i class="fas fa-arrow-right"></i></span></a><div class="articles-toolbar"><div class="search-wrap"><i class="fas fa-search"></i><input class="articles-search-input" type="text" placeholder="搜索文章..." autocomplete="off" value="' +
+                '<div class="content-placeholder" style="justify-content:flex-start;padding-top:0.2rem;width:100%;"><div class="articles-container"><a href="shuoshuo.html" class="shuoshuo-banner" id="shuoshuoBanner"><span class="banner-left"><i class="fas fa-comment-dots"></i><span>来看看说说吧～</span></span><span class="banner-arrow"><i class="fas fa-arrow-right"></i></span></a><div class="articles-toolbar"><div class="search-wrap"><i class="fas fa-search"></i><input class="articles-search-input" type="text" placeholder="搜索文章..." autocomplete="off" value="' +
                 escapeHtml(currentKeyword) +
                 '"><button class="search-clear" id="searchClearBtn" aria-label="清空搜索">✕</button></div><div class="filter-wrap"><button class="filter-btn ' +
                 (currentFilter === 'newest' ? 'active' : '') + '" data-filter="newest">最新</button><button class="filter-btn ' +
@@ -2658,6 +2688,7 @@
                 }).join('') +
                 '</div>' +
                 '</div><div class="pagination" id="pagination"></div></div></div>';
+
             var searchInput = container.querySelector('.articles-search-input');
             var searchClearBtn = document.getElementById('searchClearBtn');
             var filterBtns = container.querySelectorAll('.filter-btn');
@@ -2703,6 +2734,20 @@
                         })
                         .then(function(data) {
                             allArticles = data.list || [];
+                            fetch('articles/all.json', { cache: 'no-cache' })
+                                .then(function(res) {
+                                    if (!res.ok) throw new Error('all.json 不存在');
+                                    return res.json();
+                                })
+                                .then(function(data) {
+                                    window._allArticlesForSearch = data.list || [];
+                                    var currentKw = document.querySelector('.articles-search-input');
+                                    if (currentKw && currentKw.value.trim()) {
+                                        applySearch(currentKw.value);
+                                    }
+                                })['catch'](function() {
+                                    window._allArticlesForSearch = null;
+                                });
                             if (allArticles.length === 0) {
                                 list.innerHTML = '<div class="no-result">还没有文章！</div>';
                                 return;
@@ -2731,12 +2776,15 @@
                             renderArticleList(filtered, kw, 1);
                             currentPage = 1;
                             saveArticleState();
+                            updateBannerNewTag();
+                            bindBannerClick();
                         });
                 })['catch'](function(err) {
                     console.error('加载文章失败:', err);
                     list.innerHTML =
                         '<div class="no-result"><i class="far fa-frown"></i> 加载文章数据失败<br><span style="font-size:0.8rem;">请稍后再试或刷新网页…</span></div>';
                 });
+
             searchInput.addEventListener('input', function() {
                 applySearch(this.value);
                 updateClearBtn();
@@ -2779,6 +2827,128 @@
                     setTimeout(updateClearBtn, 200);
                 });
             }
+        }
+
+        // ========== IndexedDB 工具函数（首页独立） ==========
+        function openHomeDB() {
+            return new Promise(function(resolve, reject) {
+                var req = indexedDB.open('ks_blog_home', 1);
+                req.onupgradeneeded = function(e) {
+                    var db = e.target.result;
+                    if (!db.objectStoreNames.contains('state')) {
+                        db.createObjectStore('state', { keyPath: 'key' });
+                    }
+                };
+                req.onsuccess = function() { resolve(req.result); };
+                req.onerror = function() { reject(req.error); };
+            });
+        }
+
+        function getHomeState(key) {
+            return openHomeDB().then(function(db) {
+                return new Promise(function(resolve, reject) {
+                    var tx = db.transaction('state', 'readonly');
+                    var store = tx.objectStore('state');
+                    var req = store.get(key);
+                    req.onsuccess = function() { resolve(req.result ? req.result.value : null); };
+                    req.onerror = function() { reject(req.error); };
+                });
+            });
+        }
+
+        function setHomeState(key, value) {
+            return openHomeDB().then(function(db) {
+                return new Promise(function(resolve, reject) {
+                    var tx = db.transaction('state', 'readwrite');
+                    var store = tx.objectStore('state');
+                    store.put({ key: key, value: value });
+                    tx.oncomplete = function() { resolve(); };
+                    tx.onerror = function() { reject(tx.error); };
+                });
+            });
+        }
+
+        function getDaysDiffForBanner(dateStr) {
+            if (!dateStr) return null;
+            var parts = dateStr.split('-');
+            if (parts.length !== 3) return null;
+            var year = Number(parts[0]);
+            var month = Number(parts[1]) - 1;
+            var day = Number(parts[2]);
+            if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+            var dateObj = new Date(year, month, day);
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+            var diffDays = Math.floor((today - dateObj) / 86400000);
+            if (diffDays < 0) return null;
+            return diffDays;
+        }
+
+        function getLatestShuoshuo() {
+            return fetch('shuoshuo.json', { cache: 'no-cache' })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('shuoshuo.json 加载失败');
+                    return res.json();
+                })
+                .then(function(data) {
+                    var filtered = data.filter(function(item) { return item.delete !== true; });
+                    if (filtered.length === 0) return null;
+                    filtered.forEach(function(item, idx) {
+                        item._originIndex = idx;
+                    });
+                    filtered.sort(function(a, b) {
+                        var da = a.date || '1970-01-01';
+                        var db = b.date || '1970-01-01';
+                        return db.localeCompare(da);
+                    });
+                    return filtered[0];
+                })
+                .catch(function() {
+                    return null;
+                });
+        }
+
+        function updateBannerNewTag() {
+            var banner = document.getElementById('shuoshuoBanner');
+            if (!banner) return;
+
+            getLatestShuoshuo().then(function(latest) {
+                if (!latest) return;
+                var diff = getDaysDiffForBanner(latest.date);
+                if (diff === null || diff < 0 || diff > 7) return;
+
+                return getHomeState('banner_read_id').then(function(readId) {
+                    var latestId = String(latest._originIndex);
+                    if (readId !== latestId) {
+                        var badge = document.createElement('span');
+                        badge.className = 'new-badge';
+                        badge.textContent = 'NEW';
+                        banner.appendChild(badge);
+                    }
+                });
+            }).catch(function() {});
+        }
+
+        function bindBannerClick() {
+            var banner = document.getElementById('shuoshuoBanner');
+            if (!banner) return;
+
+            var newBanner = banner.cloneNode(true);
+            banner.parentNode.replaceChild(newBanner, banner);
+
+            newBanner.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                getLatestShuoshuo().then(function(latest) {
+                    if (latest) {
+                        return setHomeState('banner_read_id', String(latest._originIndex));
+                    }
+                }).then(function() {
+                    window.location.href = 'shuoshuo.html';
+                }).catch(function() {
+                    window.location.href = 'shuoshuo.html';
+                });
+            });
         }
 
         var _archiveCache = null;
@@ -2946,7 +3116,7 @@
                 return;
             }
             var yearGroups = {};
-            articles.forEach(function(item, index) {
+            articles.forEach(function(item) {
                 var date = item.date || '1970-01-01';
                 var parts = date.split('-');
                 var year = parts[0] || '1970';
@@ -2957,12 +3127,7 @@
                 if (!yearGroups[year][month]) {
                     yearGroups[year][month] = [];
                 }
-                yearGroups[year][month].push({
-                    index: index,
-                    title: item.title,
-                    date: item.date,
-                    tags: item.tags || []
-                });
+                yearGroups[year][month].push(item);
             });
             var sortedYears = Object.keys(yearGroups).sort(function(a, b) {
                 return b.localeCompare(a);
@@ -3004,8 +3169,7 @@
                             });
                             tagsHtml += '</span>';
                         }
-                        html += '<div class="archive-item" data-index="' + item.index +
-                            '"><span class="archive-day">' + day + '</span><span class="archive-title-text">' +
+                        html += '<div class="archive-item" data-id="' + item.id + '"><span class="archive-day">' + day + '</span><span class="archive-title-text">' +
                             title +
                             '</span>' + tagsHtml + '</div>';
                     });
@@ -3016,11 +3180,8 @@
             listEl.innerHTML = html;
             listEl.querySelectorAll('.archive-item').forEach(function(el) {
                 el.addEventListener('click', function() {
-                    var idx = this.dataset.index;
-                    var articlesData = window._archiveArticles || [];
-                    if (idx !== undefined && articlesData[idx]) {
-                        window.location.href = 'article.html?id=' + idx + '&from=archive&folder=articles';
-                    }
+                    var id = this.dataset.id;
+                    window.location.href = 'article.html?id=' + id + '&from=archive&folder=articles';
                 });
             });
             listEl.querySelectorAll('.archive-tag').forEach(function(el) {

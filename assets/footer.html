@@ -1,11 +1,76 @@
 <footer class="footer">
-  <p>
-    <span>© ks · 个人博客 · 2026</span>
-    <span>|</span>
-    <a href="https://icp.gov.moe/?keyword=20269004" target="_blank">萌ICP备20269004号</a>
-    <span>|</span>
-    <a href="https://icp.redcha.cn/beian/ICP-2026080382.html" target="_blank">茶ICP备2026080382号</a>
-    <span style="flex-basis:100%;height:0;"></span>
-    <span class="ipv6-badge"><i class="fas fa-circle-nodes"></i> IPv6</span>
-  </p>
+    <p id="footerItems">
+        <span class="footer-item">© ks · 个人博客 · 2026</span>
+        <span class="footer-sep">|</span>
+        <a href="https://icp.gov.moe/?keyword=20269004" target="_blank" class="footer-item">萌ICP备20269004号</a>
+        <span class="footer-sep">|</span>
+        <a href="https://icp.redcha.cn/beian/ICP-2026080382.html" target="_blank" class="footer-item">茶ICP备2026080382号</a>
+        <span class="footer-sep">|</span>
+        <span class="footer-item ipv6-badge"><i class="fas fa-circle-nodes"></i> IPv6</span>
+    </p>
 </footer>
+
+<script>
+    (function() {
+        function tidySeparators() {
+            var container = document.getElementById('footerItems');
+            if (!container) return;
+            var items = container.children;
+            var seps = [];
+
+            // 先收集所有分隔符
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].classList && items[i].classList.contains('footer-sep')) {
+                    seps.push({
+                        el: items[i],
+                        next: items[i + 1] || null
+                    });
+                }
+            }
+
+            // 先全部显示（恢复可见，避免之前隐藏影响布局）
+            seps.forEach(function(item) {
+                item.el.style.visibility = 'visible';
+            });
+
+            // 强制回流，确保位置准确
+            void container.offsetHeight;
+
+            // 重新判断每个分隔符
+            seps.forEach(function(item) {
+                var next = item.next;
+                if (!next) {
+                    item.el.style.visibility = 'hidden';
+                    return;
+                }
+                var rect1 = item.el.getBoundingClientRect();
+                var rect2 = next.getBoundingClientRect();
+                // 同一行：top 相同（允许 1px 误差）
+                if (Math.abs(rect1.top - rect2.top) < 1) {
+                    item.el.style.visibility = 'visible';
+                } else {
+                    item.el.style.visibility = 'hidden';
+                }
+            });
+        }
+
+        // 首次执行
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            tidySeparators();
+        } else {
+            document.addEventListener('DOMContentLoaded', tidySeparators);
+        }
+
+        // resize 防抖
+        var timer;
+        window.addEventListener('resize', function() {
+            clearTimeout(timer);
+            timer = setTimeout(tidySeparators, 100);
+        });
+
+        // 字体/图片加载完再整理一次
+        window.addEventListener('load', function() {
+            setTimeout(tidySeparators, 200);
+        });
+    })();
+</script>

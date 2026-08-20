@@ -614,7 +614,7 @@
             font-size: 1rem;
         }
 
-        /* ===== 新的网格样式（只改这里） ===== */
+        /* ===== 网格样式（修复3张图） ===== */
         .memos-images {
             display: grid;
             gap: 0.35rem;
@@ -622,7 +622,6 @@
             width: 100%;
         }
 
-        /* 1张图：居中限制高度 */
         .memos-images--1 .memos-image {
             height: auto;
             padding-bottom: 0;
@@ -637,7 +636,6 @@
             background: transparent;
         }
 
-        /* 2张图：并排各半 */
         .memos-images--2 {
             grid-template-columns: 1fr 1fr;
         }
@@ -645,7 +643,6 @@
             padding-bottom: 100%;
         }
 
-        /* 3张图：一行三列 */
         .memos-images--3 {
             grid-template-columns: repeat(3, 1fr);
         }
@@ -653,7 +650,6 @@
             padding-bottom: 100%;
         }
 
-        /* 4张图：2行×2列（完美正方形） */
         .memos-images--4 {
             grid-template-columns: repeat(2, 1fr);
         }
@@ -661,14 +657,12 @@
             padding-bottom: 100%;
         }
 
-        /* 5张及以上：自适应列数 */
         .memos-images--multi {
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         }
         .memos-images--multi .memos-image {
             padding-bottom: 100%;
         }
-        /* ===== 网格样式结束 ===== */
 
         .memos-image {
             position: relative;
@@ -680,7 +674,6 @@
             text-decoration: none;
             cursor: pointer;
         }
-
         .memos-image img {
             position: absolute;
             top: 0;
@@ -689,6 +682,7 @@
             height: 100%;
             object-fit: cover;
         }
+        /* ===== 网格样式结束 ===== */
 
         .img-placeholder {
             border-radius: 12px !important;
@@ -707,7 +701,7 @@
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
             margin-top: 0.8rem;
             gap: 0.5rem 0.8rem;
         }
@@ -751,6 +745,7 @@
             align-items: center;
             gap: 1rem;
             flex-shrink: 0;
+            margin-left: auto;
         }
         .shuoshuo-action-btn {
             display: inline-flex;
@@ -1771,7 +1766,14 @@
                 return result;
             }
 
-            // ===== 新的 renderCollage（智能列数） =====
+            // ===== 修复：放宽 isPureImageNode 判断，使连续的图片被合并 ====
+            function isPureImageNode(node) {
+                if (node.nodeType !== 1) return false;
+                if (!node.classList) return false;
+                return node.classList.contains('img-placeholder');
+            }
+
+            // ===== 新的 renderCollage（支持 3 张、4 张、多张） =====
             function renderCollage(images, alts) {
                 var count = images.length;
                 if (count === 0) return '';
@@ -2125,24 +2127,7 @@
                     var tempContainer = document.createElement('div');
                     window.KSMarkdown.mountMarkdown(tempContainer, content);
 
-                    function isPureImageNode(node) {
-                        if (node.nodeType !== 1) return false;
-                        var placeholders = node.querySelectorAll('.img-placeholder');
-                        if (placeholders.length !== 1) return false;
-                        var childNodes = node.childNodes;
-                        for (var i = 0; i < childNodes.length; i++) {
-                            var child = childNodes[i];
-                            if (child.nodeType === 3) {
-                                if (child.textContent.trim() !== '') return false;
-                            } else if (child.nodeType === 1) {
-                                if (!child.classList || !child.classList.contains('img-placeholder')) {
-                                    return false;
-                                }
-                            }
-                        }
-                        return true;
-                    }
-
+                    // 新的图片分组逻辑：只要连续出现 img-placeholder 就合并
                     var childNodes = Array.from(tempContainer.childNodes);
                     var imageGroups = [];
                     var currentGroup = [];
@@ -2159,7 +2144,7 @@
                     if (currentGroup.length > 0) imageGroups.push(currentGroup);
 
                     imageGroups.forEach(function(group) {
-                        if (group.length > 1) {
+                        if (group.length > 0) {
                             var imgSrcs = [];
                             var imgAlts = [];
                             group.forEach(function(node) {
@@ -2169,6 +2154,11 @@
                                     imgAlts.push(img.getAttribute('alt') || '');
                                 }
                             });
+                            // 如果只有1张图，不需要替换，直接保留原来的 img-placeholder
+                            if (imgSrcs.length <= 1) {
+                                // 保留原有节点，不做处理
+                                return;
+                            }
                             var collageHtml = renderCollage(imgSrcs, imgAlts);
                             var tempDiv = document.createElement('div');
                             tempDiv.innerHTML = collageHtml;

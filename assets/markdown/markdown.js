@@ -61,7 +61,7 @@
       return key;
     });
 
-    const safeTags = ['u', 'kbd', 'mark', 's', 'sub', 'sup', 'ins', 'del', 'b', 'i', 'em', 'strong', 'code', 'span', 'br', 'hr'];
+    const safeTags = [];
     const footnotes = {};
     let footnoteCounter = 0;
     const footnoteIdMap = {};

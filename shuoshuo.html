@@ -684,14 +684,18 @@
         }
         /* ===== 网格样式结束 ===== */
 
+        /* ===== 单张图片样式（修改为 190px 靠左） ===== */
         .img-placeholder {
             border-radius: 12px !important;
             background: transparent !important;
-            min-height: 120px;
+            max-width: 190px;
+            margin: 0;
         }
         .img-placeholder img {
             border-radius: 12px !important;
-            min-height: 120px;
+            width: 100%;
+            height: auto;
+            display: block;
         }
         body.dark .img-placeholder {
             background: transparent !important;
@@ -1766,32 +1770,27 @@
                 return result;
             }
 
-            // ====================== 新增：图片拼图预处理 ======================
+            // ====================== 图片拼图预处理 ======================
             function preprocessMarkdownForCollage(md) {
                 if (!md) return { markdown: md, collages: [] };
                 const collages = [];
                 let index = 0;
-                // 匹配连续的图片语法（可能被换行、空格分隔）
                 const imageRegex = /!\[([^\]]*)\]\(([^)]*?)(?:\s+"[^"]*")?(?:\s+=\s*\d*(?:x\d+)?)?\)/g;
-                // 将整个 Markdown 按行拆分，检测连续图片行
                 const lines = md.split('\n');
                 const resultLines = [];
                 let i = 0;
                 while (i < lines.length) {
                     const line = lines[i].trim();
-                    // 检查是否是纯图片行（可能包含多个图片语法，我们只处理单个图片行）
                     const imgMatches = line.match(imageRegex);
                     if (imgMatches && imgMatches.length === 1 && !line.replace(imageRegex, '').trim()) {
-                        // 尝试收集连续的图片行
                         const collageImages = [];
                         let j = i;
                         while (j < lines.length) {
                             const currentLine = lines[j].trim();
                             const currentMatch = currentLine.match(imageRegex);
                             if (currentMatch && currentMatch.length === 1 && !currentLine.replace(imageRegex, '').trim()) {
-                                // 提取图片信息
                                 const match = imageRegex.exec(currentLine);
-                                imageRegex.lastIndex = 0; // 重置正则
+                                imageRegex.lastIndex = 0;
                                 const alt = match[1] || '';
                                 const src = match[2] || '';
                                 collageImages.push({ src, alt });
@@ -1808,7 +1807,6 @@
                             i = j;
                             continue;
                         } else {
-                            // 只有一张图片，保持原样
                             resultLines.push(lines[i]);
                             i++;
                         }
@@ -1840,7 +1838,7 @@
                 html += '</div>';
                 return html;
             }
-            // ====================== 新增结束 ======================
+            // ====================== 图片拼图预处理结束 ======================
 
             var API_KEY = '';
             var allShuoshuo = [];
@@ -2170,7 +2168,6 @@
                     var tags = item.tags || [];
                     var content = item.content || '';
 
-                    // 使用新的预处理逻辑合并连续图片
                     var preprocessed = preprocessMarkdownForCollage(content);
                     var markdown = preprocessed.markdown;
                     var collages = preprocessed.collages;
@@ -2178,14 +2175,12 @@
                     var tempContainer = document.createElement('div');
                     window.KSMarkdown.mountMarkdown(tempContainer, markdown);
 
-                    // 替换占位符为拼图 HTML
                     collages.forEach(function(collage, idx) {
                         var placeholder = `@@COLLAGE_${idx}@@`;
                         var collageHtml = renderCollage(
                             collage.images.map(function(img) { return img.src; }),
                             collage.images.map(function(img) { return img.alt; })
                         );
-                        // 在 HTML 字符串中替换占位符
                         tempContainer.innerHTML = tempContainer.innerHTML.split(placeholder).join(collageHtml);
                     });
 
@@ -2297,7 +2292,6 @@
                     try { hljs.highlightElement(el); } catch (e) {}
                 });
 
-                // 为单张图片（非拼图）绑定灯箱事件
                 document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
                     img.style.cursor = 'pointer';
                     var parent = img.closest('.shuoshuo-item');
@@ -2318,7 +2312,6 @@
                     });
                 });
 
-                // 为拼图图片绑定灯箱事件
                 document.querySelectorAll('.shuoshuo-item .memos-image').forEach(function(link) {
                     var parentItem = link.closest('.shuoshuo-item');
                     var allLinks = parentItem ? parentItem.querySelectorAll('.memos-image') : [];

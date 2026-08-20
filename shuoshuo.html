@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.1/css/all.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <link rel="stylesheet" href="/assets/markdown/markdown.css">
-    <link rel="stylesheet" href="/assets/fancyBox-6.1.css">
     <link rel="stylesheet" href="/assets/waline-custom.css">
     <link rel="stylesheet" href="/assets/footer.css">
     <link rel="icon" href="/favicon.ico" sizes="32x32">
@@ -618,6 +617,7 @@
             font-size: 1rem;
         }
 
+        /* ===== 网格样式（修复3张图） ===== */
         .memos-images {
             display: grid;
             gap: 0.35rem;
@@ -700,7 +700,9 @@
         .memos-image img.loaded {
             opacity: 1;
         }
+        /* ===== 网格样式结束 ===== */
 
+        /* ===== 单张图片样式（190px 靠左） ===== */
         .img-placeholder {
             border-radius: 12px !important;
             background: transparent !important;
@@ -1235,7 +1237,6 @@
     <div class="toast" id="toast"></div>
     <div id="qrTemp"></div>
 
-    <script src="/assets/fancybox-6.1.js"></script>
     <script src="/assets/markdown/markdown.js"></script>
     <script>
         (function() {
@@ -1787,6 +1788,7 @@
                 return result;
             }
 
+            // ====================== 图片拼图预处理 ======================
             function preprocessMarkdownForCollage(md) {
                 if (!md) return { markdown: md, collages: [] };
                 const collages = [];
@@ -1855,6 +1857,7 @@
                 html += '</div>';
                 return html;
             }
+            // ====================== 图片拼图预处理结束 ======================
 
             var API_KEY = '';
             var allShuoshuo = [];
@@ -2191,6 +2194,7 @@
                     var tempContainer = document.createElement('div');
                     window.KSMarkdown.mountMarkdown(tempContainer, markdown);
 
+                    // 替换拼图占位符：移除外层<p>标签
                     collages.forEach(function(collage, idx) {
                         var placeholder = `@@COLLAGE_${idx}@@`;
                         var collageHtml = renderCollage(
@@ -2287,14 +2291,91 @@
 
                 listEl.innerHTML = html;
 
-                // 重新绑定图片点击事件（关键修复）
-                listEl.querySelectorAll('.shuoshuo-item .markdown-body').forEach(function(mdContainer) {
-                    if (window.KSMarkdown && window.KSMarkdown.bindImageLightbox) {
-                        window.KSMarkdown.bindImageLightbox(mdContainer);
+                // 为拼图图片绑定加载动画完成事件
+                document.querySelectorAll('.shuoshuo-item .memos-image img').forEach(function(img) {
+                    var wrapper = img.closest('.memos-image');
+                    var loading = wrapper ? wrapper.querySelector('.memos-image-loading') : null;
+
+                    function done() {
+                        img.classList.add('loaded');
+                        if (loading) loading.style.display = 'none';
+                    }
+
+                    if (img.complete && img.naturalWidth !== 0) {
+                        done();
+                    } else {
+                        img.addEventListener('load', done, { once: true });
+                        img.addEventListener('error', function() {
+                            done();
+                        }, { once: true });
+                        setTimeout(function() {
+                            if (!img.classList.contains('loaded')) {
+                                done();
+                            }
+                        }, 8000);
                     }
                 });
 
-                listEl.querySelectorAll('.shuoshuo-item .memos-image').forEach(function(link) {
+                document.querySelectorAll('.shuoshuo-item .comment-toggle').forEach(function(btn) {
+                    var index = btn.dataset.index;
+                    if (!commentCountsCache.hasOwnProperty(index) && !commentCountsRequested[index]) {
+                        requestCommentCount(index);
+                    }
+                });
+
+                document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
+                    var wrapper = img.closest('.img-placeholder');
+                    if (!wrapper) return;
+                    var loading = wrapper.querySelector('.img-loading');
+                    if (!loading) return;
+
+                    function done() {
+                        wrapper.classList.add('loaded');
+                        img.classList.add('loaded');
+                        loading.style.display = 'none';
+                    }
+
+                    if (img.complete && img.naturalWidth !== 0) {
+                        done();
+                    } else {
+                        img.addEventListener('load', done, { once: true });
+                        img.addEventListener('error', done, { once: true });
+
+                        setTimeout(function() {
+                            if (!wrapper.classList.contains('loaded')) {
+                                loading.style.display = 'none';
+                                wrapper.classList.add('loaded');
+                                img.classList.add('loaded');
+                            }
+                        }, 8000);
+                    }
+                });
+
+                document.querySelectorAll('.code-line .hljs').forEach(function(el) {
+                    try { hljs.highlightElement(el); } catch (e) {}
+                });
+
+                document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
+                    img.style.cursor = 'pointer';
+                    var parent = img.closest('.shuoshuo-item');
+                    var images = parent ? parent.querySelectorAll('.img-placeholder img') : [];
+                    var imageList = [];
+                    images.forEach(function(im) {
+                        imageList.push({
+                            src: im.getAttribute('src'),
+                            alt: im.getAttribute('alt') || ''
+                        });
+                    });
+                    img.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        var idx = Array.from(images).indexOf(this);
+                        if (window.KSMarkdown && window.KSMarkdown.openLightbox) {
+                            window.KSMarkdown.openLightbox(imageList, idx >= 0 ? idx : 0);
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.shuoshuo-item .memos-image').forEach(function(link) {
                     var parentItem = link.closest('.shuoshuo-item');
                     var allLinks = parentItem ? parentItem.querySelectorAll('.memos-image') : [];
                     var images = [];
@@ -2322,60 +2403,6 @@
                             showToast('灯箱加载失败', 'fa-exclamation-circle');
                         }
                     });
-                });
-
-                document.querySelectorAll('.shuoshuo-item .memos-image img').forEach(function(img) {
-                    var wrapper = img.closest('.memos-image');
-                    var loading = wrapper ? wrapper.querySelector('.memos-image-loading') : null;
-                    function done() {
-                        img.classList.add('loaded');
-                        if (loading) loading.style.display = 'none';
-                    }
-                    if (img.complete && img.naturalWidth !== 0) {
-                        done();
-                    } else {
-                        img.addEventListener('load', done, { once: true });
-                        img.addEventListener('error', function() { done(); }, { once: true });
-                        setTimeout(function() {
-                            if (!img.classList.contains('loaded')) { done(); }
-                        }, 8000);
-                    }
-                });
-
-                document.querySelectorAll('.shuoshuo-item .comment-toggle').forEach(function(btn) {
-                    var index = btn.dataset.index;
-                    if (!commentCountsCache.hasOwnProperty(index) && !commentCountsRequested[index]) {
-                        requestCommentCount(index);
-                    }
-                });
-
-                document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
-                    var wrapper = img.closest('.img-placeholder');
-                    if (!wrapper) return;
-                    var loading = wrapper.querySelector('.img-loading');
-                    if (!loading) return;
-                    function done() {
-                        wrapper.classList.add('loaded');
-                        img.classList.add('loaded');
-                        loading.style.display = 'none';
-                    }
-                    if (img.complete && img.naturalWidth !== 0) {
-                        done();
-                    } else {
-                        img.addEventListener('load', done, { once: true });
-                        img.addEventListener('error', done, { once: true });
-                        setTimeout(function() {
-                            if (!wrapper.classList.contains('loaded')) {
-                                loading.style.display = 'none';
-                                wrapper.classList.add('loaded');
-                                img.classList.add('loaded');
-                            }
-                        }, 8000);
-                    }
-                });
-
-                document.querySelectorAll('.code-line .hljs').forEach(function(el) {
-                    try { hljs.highlightElement(el); } catch (e) {}
                 });
 
                 setTimeout(function() {

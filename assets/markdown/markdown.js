@@ -512,60 +512,283 @@
     });
   }
 
-  // ========= 修改点：使用 Fancybox 替换原有灯箱 =========
-  function bindImageLightbox(container) {
-    // 收集当前容器内所有图片数据
-    const images = [];
-    container.querySelectorAll('.img-placeholder img').forEach(img => {
-      const src = img.getAttribute('src');
-      if (src) {
-        images.push({
-          src: src,
-          alt: img.getAttribute('alt') || ''
-        });
+  let lbIsOpen = false;
+
+  function openLightbox(images, index) {
+    if (!images || images.length === 0 || lbIsOpen) return;
+    lbIsOpen = true;
+    let currentIndex = index || 0;
+
+    const progressEl = document.createElement('div');
+    progressEl.className = 'lightbox-progress';
+    progressEl.innerHTML = '<div class="lb-progress-bar"></div>';
+    document.body.appendChild(progressEl);
+    const progressBarEl = progressEl.querySelector('.lb-progress-bar');
+
+    const existing = document.querySelector('.lightbox-overlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'lightbox-overlay';
+    overlay.innerHTML = `
+      <button class="lightbox-close">&times;</button>
+      <button class="lightbox-nav prev"><i class="fas fa-chevron-left"></i></button>
+      <button class="lightbox-nav next"><i class="fas fa-chevron-right"></i></button>
+      <button class="lightbox-play"><i class="fas fa-play"></i></button>
+      <div class="lightbox-container">
+        <div class="lightbox-img-wrapper"><img src="" alt="" /></div>
+        <div class="lightbox-alt"></div>
+      </div>
+      <div class="lightbox-counter"></div>
+    `;
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+
+    const imgWrapper = overlay.querySelector('.lightbox-img-wrapper');
+    const img = overlay.querySelector('img');
+    const altEl = overlay.querySelector('.lightbox-alt');
+    const counterEl = overlay.querySelector('.lightbox-counter');
+    const prevBtn = overlay.querySelector('.lightbox-nav.prev');
+    const nextBtn = overlay.querySelector('.lightbox-nav.next');
+    const playBtn = overlay.querySelector('.lightbox-play');
+    const closeBtn = overlay.querySelector('.lightbox-close');
+
+    let scale = 1;
+    let translateX = 0;
+    let translateY = 0;
+    let isDragging = false;
+    let mouseDown = false;
+    let mouseStartX = 0, mouseStartY = 0, mouseLastX = 0, mouseLastY = 0;
+    let touchStartDist = 0, touchStartScale = 1, touchStartX = 0, touchStartY = 0, touchLastX = 0, touchLastY = 0;
+    let playIntervalId = null;
+    let progressAnimId = null;
+    let isPlaying = false;
+    const PLAY_DELAY = 3000;
+
+    function updateLightbox() {
+      const data = images[currentIndex];
+      if (!data) return;
+      img.src = data.src;
+      img.alt = data.alt || '';
+      altEl.textContent = data.alt || '';
+      counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
+      prevBtn.disabled = images.length <= 1 || isPlaying;
+      nextBtn.disabled = images.length <= 1 || isPlaying;
+      scale = 1;
+      translateX = 0;
+      translateY = 0;
+      img.style.transition = 'none';
+      img.style.transform = 'scale(1) translate(0px, 0px)';
+      progressBarEl.style.width = '0%';
+      progressEl.classList.toggle('active', isPlaying);
+      updatePlayButtonState();
+    }
+
+    function updatePlayButtonState() {
+      if (images.length <= 1) {
+        playBtn.disabled = true;
+        playBtn.innerHTML = '<i class="fas fa-play"></i>';
+        return;
       }
-    });
+      if (currentIndex === images.length - 1 && !isPlaying) {
+        playBtn.disabled = true;
+        playBtn.innerHTML = '<i class="fas fa-play"></i>';
+        return;
+      }
+      playBtn.disabled = false;
+      playBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+    }
 
-    if (images.length === 0) return;
+    function stopPlayback() {
+      isPlaying = false;
+      if (playIntervalId) { clearInterval(playIntervalId); playIntervalId = null; }
+      if (progressAnimId) { cancelAnimationFrame(progressAnimId); progressAnimId = null; }
+      prevBtn.disabled = images.length <= 1;
+      nextBtn.disabled = images.length <= 1;
+      progressEl.classList.remove('active');
+      progressBarEl.style.width = '0%';
+      updatePlayButtonState();
+    }
 
-    // 为每个图片绑定点击事件
-    container.querySelectorAll('.img-placeholder img').forEach((img, index) => {
-      img.style.cursor = 'pointer';
-      // 移除原有事件避免重复绑定
-      img.removeEventListener('click', handleClick);
-      img.addEventListener('click', handleClick);
+    function startProgressAnimation() {
+      if (progressAnimId) cancelAnimationFrame(progressAnimId);
+      progressBarEl.style.width = '0%';
+      const startTime = performance.now();
+      function updateProgress(now) {
+        if (!isPlaying) return;
+        const progress = Math.min(((now - startTime) / PLAY_DELAY) * 100, 100);
+        progressBarEl.style.width = progress + '%';
+        if (progress < 100) progressAnimId = requestAnimationFrame(updateProgress);
+      }
+      progressAnimId = requestAnimationFrame(updateProgress);
+    }
 
-      function handleClick(e) {
-        e.stopPropagation();
-
-        // 检查 Fancybox 是否可用
-        if (typeof window.Fancybox === 'undefined') {
-          console.warn('Fancybox is not loaded');
-          return;
+    function startPlayback() {
+      if (isPlaying || images.length <= 1 || currentIndex === images.length - 1) return;
+      isPlaying = true;
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+      progressEl.classList.add('active');
+      updatePlayButtonState();
+      startProgressAnimation();
+      playIntervalId = setInterval(() => {
+        if (!isPlaying) return;
+        if (currentIndex < images.length - 1) {
+          currentIndex++;
+          updateLightbox();
+          startProgressAnimation();
+        } else {
+          stopPlayback();
         }
+      }, PLAY_DELAY);
+    }
 
-        // 构造 Fancybox 需要的 slides 数据，保留 alt 作为 caption
-        const slides = images.map(({ src, alt }) => ({
-          src: src,
-          caption: alt || '',   // Fancybox 会显示在底部
-          alt: alt || ''        // 保留 alt 属性备用
-        }));
+    function togglePlay() {
+      if (images.length <= 1) return;
+      if (isPlaying) stopPlayback();
+      else startPlayback();
+    }
 
-        // 调用 Fancybox
-        window.Fancybox.show(slides, {
-          startIndex: index,
-          // 可选：自定义 caption 渲染（默认已使用 slide.caption）
-          caption: (fancybox, slide) => slide.caption || '',
-          // 保持与原来类似的行为
-          mainClass: 'fancybox-theme-custom',
-          // 可根据需要开启缩略图、自动播放等
-          // Thumbs: { autoStart: false },
-          // Autoplay: { timeout: 3000 },
-        });
+    function closeLightbox() {
+      if (!lbIsOpen) return;
+      lbIsOpen = false;
+      isPlaying = false;
+      if (playIntervalId) { clearInterval(playIntervalId); playIntervalId = null; }
+      if (progressAnimId) { cancelAnimationFrame(progressAnimId); progressAnimId = null; }
+      if (progressEl.parentNode) progressEl.remove();
+      overlay.classList.remove('active');
+      setTimeout(() => {
+        if (overlay.parentNode) overlay.remove();
+        document.body.style.overflow = '';
+        document.removeEventListener('keydown', escHandler);
+      }, 350);
+    }
+
+    function escHandler(e) {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft' && !isPlaying && images.length > 1) {
+        e.preventDefault();
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        updateLightbox();
+      }
+      if (e.key === 'ArrowRight' && !isPlaying && images.length > 1) {
+        e.preventDefault();
+        currentIndex = (currentIndex + 1) % images.length;
+        updateLightbox();
+      }
+    }
+
+    img.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      const newScale = Math.min(Math.max(0.5, scale + delta), 5);
+      const rect = img.getBoundingClientRect();
+      const ratioX = (e.clientX - rect.left) / rect.width;
+      const ratioY = (e.clientY - rect.top) / rect.height;
+      const oldScale = scale;
+      scale = newScale;
+      translateX += (1 - newScale / oldScale) * (rect.width / 2 - rect.width * ratioX);
+      translateY += (1 - newScale / oldScale) * (rect.height / 2 - rect.height * ratioY);
+      img.style.transition = 'none';
+      img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
+    }, { passive: false });
+
+    imgWrapper.addEventListener('touchstart', function (e) {
+      if (e.touches.length === 2) {
+        const t = e.touches;
+        touchStartDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+        touchStartScale = scale;
+      } else if (e.touches.length === 1) {
+        isDragging = true;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchLastX = translateX;
+        touchLastY = translateY;
+        imgWrapper.style.cursor = 'grabbing';
+      }
+    }, { passive: true });
+
+    imgWrapper.addEventListener('touchmove', function (e) {
+      if (e.touches.length === 2) {
+        const t = e.touches;
+        const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+        scale = Math.min(Math.max(0.5, touchStartScale * (dist / touchStartDist)), 5);
+      } else if (e.touches.length === 1 && isDragging) {
+        translateX = touchLastX + (e.touches[0].clientX - touchStartX);
+        translateY = touchLastY + (e.touches[0].clientY - touchStartY);
+      }
+      img.style.transition = 'none';
+      img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
+    }, { passive: true });
+
+    imgWrapper.addEventListener('touchend', function () {
+      isDragging = false;
+      imgWrapper.style.cursor = 'grab';
+      if (scale < 1) { scale = 1; translateX = 0; translateY = 0; }
+      if (scale > 3) { scale = 3; }
+      if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) { translateX = 0; translateY = 0; }
+      img.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
+    });
+
+    imgWrapper.addEventListener('mousedown', function (e) {
+      mouseDown = true;
+      mouseStartX = e.clientX;
+      mouseStartY = e.clientY;
+      mouseLastX = translateX;
+      mouseLastY = translateY;
+      imgWrapper.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', function (e) {
+      if (!mouseDown) return;
+      translateX = mouseLastX + (e.clientX - mouseStartX);
+      translateY = mouseLastY + (e.clientY - mouseStartY);
+      img.style.transition = 'none';
+      img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
+    });
+
+    document.addEventListener('mouseup', function () {
+      if (!mouseDown) return;
+      mouseDown = false;
+      imgWrapper.style.cursor = 'grab';
+      if (scale < 1) { scale = 1; translateX = 0; translateY = 0; }
+      if (scale > 3) { scale = 3; }
+      if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) { translateX = 0; translateY = 0; }
+      img.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
+    });
+
+    closeBtn.addEventListener('click', closeLightbox);
+    overlay.addEventListener('click', function (e) {
+      if (e.target === this) closeLightbox();
+    });
+    prevBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (isPlaying) stopPlayback();
+      if (images.length > 1) {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        updateLightbox();
       }
     });
+    nextBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (isPlaying) stopPlayback();
+      if (images.length > 1) {
+        currentIndex = (currentIndex + 1) % images.length;
+        updateLightbox();
+      }
+    });
+    playBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      togglePlay();
+    });
+
+    document.addEventListener('keydown', escHandler);
+    updateLightbox();
+    requestAnimationFrame(() => overlay.classList.add('active'));
   }
-  // ========= 修改结束 =========
 
   function mountMarkdown(container, markdownText) {
     if (!container) return;
@@ -579,22 +802,41 @@
     return container;
   }
 
-  // 保留原 openLightbox 函数（备而不用，但保留以防其他代码调用）
-  // 如果不希望保留，可以注释或删除
-  let lbIsOpen = false;
-  function openLightbox(images, index) {
-    // 这个函数现在不再被 bindImageLightbox 调用
-    // 但保留以兼容可能的外部调用
-    if (typeof window.Fancybox !== 'undefined') {
-      const slides = images.map(img => ({ src: img.src, caption: img.alt || '' }));
-      window.Fancybox.show(slides, { startIndex: index || 0 });
-    } else {
-      console.warn('Fancybox not available, fallback to nothing');
-    }
+  function bindImageLightbox(container) {
+    const images = [];
+    container.querySelectorAll('.img-placeholder img').forEach(img => {
+      const src = img.getAttribute('src');
+      if (src) {
+        images.push({ src, alt: img.getAttribute('alt') || '' });
+      }
+    });
+    container.querySelectorAll('.img-placeholder img').forEach((img, index) => {
+      img.style.cursor = 'pointer';
+      img.addEventListener('click', function (e) {
+        e.stopPropagation();
+        openLightbox(images, index);
+      });
+    });
   }
 
-  // 注意：原有的 lightbox-overlay 相关代码（如 openLightbox 中的 overlay 逻辑）已被移除，
-  // 但若你有其他依赖，可以保留。这里我们仅保留 openLightbox 作为兼容。
+  function scrollToFootnote(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const targetY = el.getBoundingClientRect().top + window.scrollY - 80;
+    const startY = window.scrollY || window.pageYOffset;
+    const distance = targetY - startY;
+    if (Math.abs(distance) < 5) return;
+    const duration = 350;
+    const startTime = performance.now();
+    function step(now) {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+      window.scrollTo(0, startY + distance * ease);
+      if (progress < 1) requestAnimationFrame(step);
+      else window.scrollTo(0, targetY);
+    }
+    requestAnimationFrame(step);
+  }
 
   document.addEventListener('click', function (e) {
     const footnoteRef = e.target.closest('[data-footnote-ref]');
@@ -679,32 +921,12 @@
     }
   });
 
-  // 保留 scrollToFootnote 辅助函数（可能被上面使用）
-  function scrollToFootnote(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const targetY = el.getBoundingClientRect().top + window.scrollY - 80;
-    const startY = window.scrollY || window.pageYOffset;
-    const distance = targetY - startY;
-    if (Math.abs(distance) < 5) return;
-    const duration = 350;
-    const startTime = performance.now();
-    function step(now) {
-      const progress = Math.min((now - startTime) / duration, 1);
-      const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-      window.scrollTo(0, startY + distance * ease);
-      if (progress < 1) requestAnimationFrame(step);
-      else window.scrollTo(0, targetY);
-    }
-    requestAnimationFrame(step);
-  }
-
   global.KSMarkdown = {
     renderMarkdown: renderMarkdown,
     mountMarkdown: mountMarkdown,
     markdownToPlainText: markdownToPlainText,
     countWords: countWords,
-    openLightbox: openLightbox,   // 保留出口，但实际内部可能用 Fancybox
+    openLightbox: openLightbox,
     initImageLazyLoad: initImageLazyLoad,
     initVideoLazyLoad: initVideoLazyLoad,
     initCodeHighlight: initCodeHighlight

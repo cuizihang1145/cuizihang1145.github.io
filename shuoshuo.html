@@ -2287,69 +2287,14 @@
 
                 listEl.innerHTML = html;
 
-                document.querySelectorAll('.shuoshuo-item .memos-image img').forEach(function(img) {
-                    var wrapper = img.closest('.memos-image');
-                    var loading = wrapper ? wrapper.querySelector('.memos-image-loading') : null;
-
-                    function done() {
-                        img.classList.add('loaded');
-                        if (loading) loading.style.display = 'none';
-                    }
-
-                    if (img.complete && img.naturalWidth !== 0) {
-                        done();
-                    } else {
-                        img.addEventListener('load', done, { once: true });
-                        img.addEventListener('error', function() {
-                            done();
-                        }, { once: true });
-                        setTimeout(function() {
-                            if (!img.classList.contains('loaded')) {
-                                done();
-                            }
-                        }, 8000);
+                // 重新绑定图片点击事件（关键修复）
+                listEl.querySelectorAll('.shuoshuo-item .markdown-body').forEach(function(mdContainer) {
+                    if (window.KSMarkdown && window.KSMarkdown.bindImageLightbox) {
+                        window.KSMarkdown.bindImageLightbox(mdContainer);
                     }
                 });
 
-                document.querySelectorAll('.shuoshuo-item .comment-toggle').forEach(function(btn) {
-                    var index = btn.dataset.index;
-                    if (!commentCountsCache.hasOwnProperty(index) && !commentCountsRequested[index]) {
-                        requestCommentCount(index);
-                    }
-                });
-
-                document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
-                    var wrapper = img.closest('.img-placeholder');
-                    if (!wrapper) return;
-                    var loading = wrapper.querySelector('.img-loading');
-                    if (!loading) return;
-
-                    function done() {
-                        wrapper.classList.add('loaded');
-                        img.classList.add('loaded');
-                        loading.style.display = 'none';
-                    }
-
-                    if (img.complete && img.naturalWidth !== 0) {
-                        done();
-                    } else {
-                        img.addEventListener('load', done, { once: true });
-                        img.addEventListener('error', done, { once: true });
-                        setTimeout(function() {
-                            if (!wrapper.classList.contains('loaded')) {
-                                loading.style.display = 'none';
-                                wrapper.classList.add('loaded');
-                                img.classList.add('loaded');
-                            }
-                        }, 8000);
-                    }
-                });
-
-                document.querySelectorAll('.code-line .hljs').forEach(function(el) {
-                    try { hljs.highlightElement(el); } catch (e) {}
-                });
-
-                document.querySelectorAll('.shuoshuo-item .memos-image').forEach(function(link) {
+                listEl.querySelectorAll('.shuoshuo-item .memos-image').forEach(function(link) {
                     var parentItem = link.closest('.shuoshuo-item');
                     var allLinks = parentItem ? parentItem.querySelectorAll('.memos-image') : [];
                     var images = [];
@@ -2377,6 +2322,60 @@
                             showToast('灯箱加载失败', 'fa-exclamation-circle');
                         }
                     });
+                });
+
+                document.querySelectorAll('.shuoshuo-item .memos-image img').forEach(function(img) {
+                    var wrapper = img.closest('.memos-image');
+                    var loading = wrapper ? wrapper.querySelector('.memos-image-loading') : null;
+                    function done() {
+                        img.classList.add('loaded');
+                        if (loading) loading.style.display = 'none';
+                    }
+                    if (img.complete && img.naturalWidth !== 0) {
+                        done();
+                    } else {
+                        img.addEventListener('load', done, { once: true });
+                        img.addEventListener('error', function() { done(); }, { once: true });
+                        setTimeout(function() {
+                            if (!img.classList.contains('loaded')) { done(); }
+                        }, 8000);
+                    }
+                });
+
+                document.querySelectorAll('.shuoshuo-item .comment-toggle').forEach(function(btn) {
+                    var index = btn.dataset.index;
+                    if (!commentCountsCache.hasOwnProperty(index) && !commentCountsRequested[index]) {
+                        requestCommentCount(index);
+                    }
+                });
+
+                document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
+                    var wrapper = img.closest('.img-placeholder');
+                    if (!wrapper) return;
+                    var loading = wrapper.querySelector('.img-loading');
+                    if (!loading) return;
+                    function done() {
+                        wrapper.classList.add('loaded');
+                        img.classList.add('loaded');
+                        loading.style.display = 'none';
+                    }
+                    if (img.complete && img.naturalWidth !== 0) {
+                        done();
+                    } else {
+                        img.addEventListener('load', done, { once: true });
+                        img.addEventListener('error', done, { once: true });
+                        setTimeout(function() {
+                            if (!wrapper.classList.contains('loaded')) {
+                                loading.style.display = 'none';
+                                wrapper.classList.add('loaded');
+                                img.classList.add('loaded');
+                            }
+                        }, 8000);
+                    }
+                });
+
+                document.querySelectorAll('.code-line .hljs').forEach(function(el) {
+                    try { hljs.highlightElement(el); } catch (e) {}
                 });
 
                 setTimeout(function() {

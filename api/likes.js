@@ -1,8 +1,7 @@
 import { kv } from '@vercel/kv';
 
 const ALLOWED_ORIGINS = ['https://www.cuizi.top'];
-const RATE_LIMIT_SECONDS = 5;
-const DAILY_LIMIT = 50;
+const RATE_LIMIT_MS = 300;
 const API_KEY = process.env.LIKE_API_KEY;
 
 function getClientIP(req) {
@@ -31,17 +30,10 @@ async function checkRateLimit(ip, id) {
   const now = Date.now();
   const shortKey = `rate:short:${ip}:${id}`;
   const last = await kv.get(shortKey);
-  if (last && (now - Number(last)) < RATE_LIMIT_SECONDS * 1000) {
-    return { allowed: false, reason: `请等待 ${RATE_LIMIT_SECONDS} 秒后再试` };
+  if (last && (now - Number(last)) < RATE_LIMIT_MS) {
+    return { allowed: false, reason: '操作过快，请稍后再试' };
   }
-  const dayKey = `rate:day:${ip}`;
-  const today = new Date().toISOString().slice(0, 10);
-  const dayCount = await kv.hget(dayKey, today) || 0;
-  if (dayCount >= DAILY_LIMIT) {
-    return { allowed: false, reason: `今日操作已达上限（${DAILY_LIMIT}次）` };
-  }
-  await kv.set(shortKey, String(now), { ex: RATE_LIMIT_SECONDS });
-  await kv.hset(dayKey, { [today]: dayCount + 1 });
+  await kv.set(shortKey, String(now), { px: RATE_LIMIT_MS });
   return { allowed: true };
 }
 
@@ -51,7 +43,6 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // ---- 安全校验 ----
   if (!isAllowedOrigin(req)) {
     return res.status(403).json({ success: false, error: 'Forbidden: Invalid Referer' });
   }
@@ -64,7 +55,6 @@ export default async function handler(req, res) {
     return res.status(403).json({ success: false, error: 'Invalid API Key' });
   }
 
-  // GET
   if (req.method === 'GET') {
     try {
       const counts = await kv.hgetall('likes:counts') || {};
@@ -75,7 +65,6 @@ export default async function handler(req, res) {
     }
   }
 
-  // POST
   if (req.method === 'POST') {
     const { id, action } = req.body || {};
     if (!id || !action) {
@@ -106,4 +95,4 @@ export default async function handler(req, res) {
   }
 
   return res.status(405).json({ success: false, error: 'Method Not Allowed' });
-    }
+}

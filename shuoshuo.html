@@ -618,7 +618,7 @@
         .memos-images {
             display: grid;
             gap: 0.35rem;
-            margin: 0.3rem 0 0;   /* 缩小与上方文字的间距 */
+            margin: 0.3rem 0 0;   /* 缩小与上方文字的间距，但实际间距由外层<p>决定，这里保留一点 */
             width: 100%;
         }
 
@@ -2191,13 +2191,35 @@
                     var tempContainer = document.createElement('div');
                     window.KSMarkdown.mountMarkdown(tempContainer, markdown);
 
+                    // 替换拼图占位符：移除外层<p>标签
                     collages.forEach(function(collage, idx) {
                         var placeholder = `@@COLLAGE_${idx}@@`;
                         var collageHtml = renderCollage(
                             collage.images.map(function(img) { return img.src; }),
                             collage.images.map(function(img) { return img.alt; })
                         );
-                        tempContainer.innerHTML = tempContainer.innerHTML.split(placeholder).join(collageHtml);
+                        // 使用 TreeWalker 找到包含占位符的文本节点
+                        var walker = document.createTreeWalker(tempContainer, NodeFilter.SHOW_TEXT);
+                        var node;
+                        while (node = walker.nextNode()) {
+                            if (node.nodeValue.indexOf(placeholder) !== -1) {
+                                var parent = node.parentNode;
+                                if (parent && parent.nodeName === 'P' && parent.textContent.trim() === placeholder) {
+                                    // 父节点是<p>且只包含占位符，直接替换整个<p>
+                                    var tempDiv = document.createElement('div');
+                                    tempDiv.innerHTML = collageHtml;
+                                    var collageNode = tempDiv.firstChild;
+                                    parent.parentNode.replaceChild(collageNode, parent);
+                                } else {
+                                    // 兜底：替换文本节点本身
+                                    var textTemp = document.createElement('div');
+                                    textTemp.innerHTML = collageHtml;
+                                    var newNode = textTemp.firstChild;
+                                    node.parentNode.replaceChild(newNode, node);
+                                }
+                                break; // 每个占位符只替换一次
+                            }
+                        }
                     });
 
                     var finalContent = tempContainer.innerHTML;

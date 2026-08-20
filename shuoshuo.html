@@ -618,7 +618,7 @@
         .memos-images {
             display: grid;
             gap: 0.35rem;
-            margin: 0.95rem 0 0;
+            margin: 0.3rem 0 0;   /* 缩小与上方文字的间距 */
             width: 100%;
         }
 
@@ -674,6 +674,16 @@
             text-decoration: none;
             cursor: pointer;
         }
+        .memos-image-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #aaa;
+            font-size: 1.2rem;
+            z-index: 1;
+            pointer-events: none;
+        }
         .memos-image img {
             position: absolute;
             top: 0;
@@ -681,10 +691,15 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .memos-image img.loaded {
+            opacity: 1;
         }
         /* ===== 网格样式结束 ===== */
 
-        /* ===== 单张图片样式（修改为 190px 靠左） ===== */
+        /* ===== 单张图片样式（190px 靠左） ===== */
         .img-placeholder {
             border-radius: 12px !important;
             background: transparent !important;
@@ -1832,6 +1847,7 @@
                 for (var i = 0; i < count; i++) {
                     var alt = (alts && alts[i]) || '';
                     html += '<a class="memos-image" href="' + images[i] + '" data-index="' + i + '">';
+                    html += '<span class="memos-image-loading"><i class="fas fa-spinner fa-spin"></i></span>';
                     html += '<img src="' + images[i] + '" alt="' + escapeHtml(alt) + '" loading="lazy">';
                     html += '</a>';
                 }
@@ -2252,6 +2268,31 @@
                 });
 
                 listEl.innerHTML = html;
+
+                // 为拼图图片绑定加载动画完成事件
+                document.querySelectorAll('.shuoshuo-item .memos-image img').forEach(function(img) {
+                    var wrapper = img.closest('.memos-image');
+                    var loading = wrapper ? wrapper.querySelector('.memos-image-loading') : null;
+
+                    function done() {
+                        img.classList.add('loaded');
+                        if (loading) loading.style.display = 'none';
+                    }
+
+                    if (img.complete && img.naturalWidth !== 0) {
+                        done();
+                    } else {
+                        img.addEventListener('load', done, { once: true });
+                        img.addEventListener('error', function() {
+                            done();
+                        }, { once: true });
+                        setTimeout(function() {
+                            if (!img.classList.contains('loaded')) {
+                                done();
+                            }
+                        }, 8000);
+                    }
+                });
 
                 document.querySelectorAll('.shuoshuo-item .comment-toggle').forEach(function(btn) {
                     var index = btn.dataset.index;

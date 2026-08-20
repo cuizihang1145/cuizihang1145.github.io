@@ -1766,39 +1766,63 @@
                 return result;
             }
 
-            // ===== 辅助函数：判断是否为空白文本节点 =====
-            function isBlankTextNode(node) {
-                return node.nodeType === 3 && node.textContent.trim() === '';
-            }
-
-            // ===== 辅助函数：判断节点是否为纯图片块 =====
-            function isImageBlockNode(node) {
-                if (node.nodeType !== 1) return false;
-                // 1. 节点本身是 img-placeholder
-                if (node.classList.contains('img-placeholder')) return true;
-                // 2. 节点内包含至少一个 img-placeholder，且没有其他实质内容
-                if (!node.querySelector('.img-placeholder')) return false;
-
-                // 检查直接子节点：只允许空白文本、<br>、和 .img-placeholder 元素
-                for (let i = 0; i < node.childNodes.length; i++) {
-                    const child = node.childNodes[i];
-                    if (child.nodeType === 3) {
-                        if (child.textContent.trim() !== '') return false;
-                    } else if (child.nodeType === 1) {
-                        if (child.tagName === 'BR') continue;
-                        if (child.classList && child.classList.contains('img-placeholder')) continue;
-                        // 其他任何元素都视为有内容，中断
-                        return false;
+            // ====================== 新增：图片拼图预处理 ======================
+            function preprocessMarkdownForCollage(md) {
+                if (!md) return { markdown: md, collages: [] };
+                const collages = [];
+                let index = 0;
+                // 匹配连续的图片语法（可能被换行、空格分隔）
+                const imageRegex = /!\[([^\]]*)\]\(([^)]*?)(?:\s+"[^"]*")?(?:\s+=\s*\d*(?:x\d+)?)?\)/g;
+                // 将整个 Markdown 按行拆分，检测连续图片行
+                const lines = md.split('\n');
+                const resultLines = [];
+                let i = 0;
+                while (i < lines.length) {
+                    const line = lines[i].trim();
+                    // 检查是否是纯图片行（可能包含多个图片语法，我们只处理单个图片行）
+                    const imgMatches = line.match(imageRegex);
+                    if (imgMatches && imgMatches.length === 1 && !line.replace(imageRegex, '').trim()) {
+                        // 尝试收集连续的图片行
+                        const collageImages = [];
+                        let j = i;
+                        while (j < lines.length) {
+                            const currentLine = lines[j].trim();
+                            const currentMatch = currentLine.match(imageRegex);
+                            if (currentMatch && currentMatch.length === 1 && !currentLine.replace(imageRegex, '').trim()) {
+                                // 提取图片信息
+                                const match = imageRegex.exec(currentLine);
+                                imageRegex.lastIndex = 0; // 重置正则
+                                const alt = match[1] || '';
+                                const src = match[2] || '';
+                                collageImages.push({ src, alt });
+                                j++;
+                            } else {
+                                break;
+                            }
+                        }
+                        if (collageImages.length >= 2) {
+                            const placeholder = `@@COLLAGE_${index}@@`;
+                            collages.push({ images: collageImages });
+                            resultLines.push(placeholder);
+                            index++;
+                            i = j;
+                            continue;
+                        } else {
+                            // 只有一张图片，保持原样
+                            resultLines.push(lines[i]);
+                            i++;
+                        }
+                    } else {
+                        resultLines.push(lines[i]);
+                        i++;
                     }
                 }
-                return true;
+                return { markdown: resultLines.join('\n'), collages: collages };
             }
 
-            // ===== 新的 renderCollage（支持 3 张、4 张、多张） =====
             function renderCollage(images, alts) {
                 var count = images.length;
                 if (count === 0) return '';
-
                 var gridClass = '';
                 if (count === 1) gridClass = 'memos-images--1';
                 else if (count === 2) gridClass = 'memos-images--2';
@@ -1816,6 +1840,7 @@
                 html += '</div>';
                 return html;
             }
+            // ====================== 新增结束 ======================
 
             var API_KEY = '';
             var allShuoshuo = [];
@@ -2145,57 +2170,23 @@
                     var tags = item.tags || [];
                     var content = item.content || '';
 
+                    // 使用新的预处理逻辑合并连续图片
+                    var preprocessed = preprocessMarkdownForCollage(content);
+                    var markdown = preprocessed.markdown;
+                    var collages = preprocessed.collages;
+
                     var tempContainer = document.createElement('div');
-                    window.KSMarkdown.mountMarkdown(tempContainer, content);
+                    window.KSMarkdown.mountMarkdown(tempContainer, markdown);
 
-                    // 使用新的图片分组逻辑
-                    var childNodes = Array.from(tempContainer.childNodes);
-                    var imageGroups = [];
-                    var currentGroup = [];
-
-                    childNodes.forEach(function(node) {
-                        // 空白文本节点不中断分组
-                        if (isBlankTextNode(node)) {
-                            return;
-                        }
-                        if (isImageBlockNode(node)) {
-                            currentGroup.push(node);
-                        } else {
-                            if (currentGroup.length > 0) {
-                                imageGroups.push(currentGroup);
-                                currentGroup = [];
-                            }
-                        }
-                    });
-                    if (currentGroup.length > 0) {
-                        imageGroups.push(currentGroup);
-                    }
-
-                    // 处理每个图片组
-                    imageGroups.forEach(function(group) {
-                        var imgSrcs = [];
-                        var imgAlts = [];
-                        group.forEach(function(node) {
-                            // 提取节点内所有图片（可能一个节点内有多个图片）
-                            var imgs = node.querySelectorAll('.img-placeholder img');
-                            imgs.forEach(function(img) {
-                                imgSrcs.push(img.getAttribute('src'));
-                                imgAlts.push(img.getAttribute('alt') || '');
-                            });
-                        });
-
-                        // 只有一张图片时保持原样
-                        if (imgSrcs.length <= 1) {
-                            return;
-                        }
-
-                        var collageHtml = renderCollage(imgSrcs, imgAlts);
-                        var tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = collageHtml;
-                        var collageNode = tempDiv.firstChild;
-                        var firstNode = group[0];
-                        firstNode.parentNode.insertBefore(collageNode, firstNode);
-                        group.forEach(function(node) { node.remove(); });
+                    // 替换占位符为拼图 HTML
+                    collages.forEach(function(collage, idx) {
+                        var placeholder = `@@COLLAGE_${idx}@@`;
+                        var collageHtml = renderCollage(
+                            collage.images.map(function(img) { return img.src; }),
+                            collage.images.map(function(img) { return img.alt; })
+                        );
+                        // 在 HTML 字符串中替换占位符
+                        tempContainer.innerHTML = tempContainer.innerHTML.split(placeholder).join(collageHtml);
                     });
 
                     var finalContent = tempContainer.innerHTML;

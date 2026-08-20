@@ -2829,7 +2829,6 @@
             }
         }
 
-        // ========== IndexedDB 工具函数（首页独立） ==========
         function openHomeDB() {
             return new Promise(function(resolve, reject) {
                 var req = indexedDB.open('ks_blog_home', 1);
@@ -3200,6 +3199,118 @@
             });
         }
 
+        function getCachedStats() {
+            try {
+                var raw = localStorage.getItem('ks_about_stats');
+                if (!raw) return null;
+                var data = JSON.parse(raw);
+                if (!data.timestamp || !data.stats) return null;
+                if (Date.now() - data.timestamp > 5 * 60 * 1000) return null;
+                return data.stats;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function setCachedStats(stats) {
+            try {
+                localStorage.setItem('ks_about_stats', JSON.stringify({
+                    timestamp: Date.now(),
+                    stats: stats
+                }));
+            } catch (e) {}
+        }
+
+        function fetchStatsAndUpdate(diffDays, carryDisplay, sameDisplay) {
+            Promise.all([
+                fetch('articles/all.json', { cache: 'no-cache' }).then(function(r) {
+                    if (!r.ok) throw new Error('all.json 不存在');
+                    return r.json();
+                }),
+                fetch('shuoshuo.json', { cache: 'no-cache' }).then(function(r) {
+                    if (!r.ok) throw new Error('shuoshuo.json 不存在');
+                    return r.json();
+                })
+            ]).then(function(results) {
+                if (currentPageId !== 'about') return;
+
+                var articlesData = results[0] || {};
+                var shuoshuoData = results[1] || [];
+                var articles = articlesData.list || [];
+                var articleCount = articles.length;
+                var totalWordCount = 0;
+                articles.forEach(function(item) {
+                    var content = item.content || '';
+                    var text = content.replace(/```[\s\S]*?```/g, '')
+                        .replace(/`[^`]+`/g, '')
+                        .replace(/!video\[[^\]]*\]\([^)]*\)/g, '')
+                        .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+                        .replace(/\*\*(.*?)\*\*/g, '$1')
+                        .replace(/\*([^*]+)\*/g, '$1')
+                        .replace(/~~(.*?)~~/g, '$1')
+                        .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+                        .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')
+                        .replace(/^#{1,6}\s+/gm, '')
+                        .replace(/^-\s+/gm, '')
+                        .replace(/^\d+\.\s+/gm, '')
+                        .replace(/^>\s+/gm, '')
+                        .replace(/^---$/gm, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                    totalWordCount += text.length;
+                });
+
+                var shuoshuo = shuoshuoData.filter(function(item) {
+                    return item.delete !== true;
+                });
+                var shuoshuoCount = shuoshuo.length;
+                var shuoshuoWordCount = 0;
+                shuoshuo.forEach(function(item) {
+                    var content = item.content || '';
+                    var text = content.replace(/```[\s\S]*?```/g, '')
+                        .replace(/`[^`]+`/g, '')
+                        .replace(/!video\[[^\]]*\]\([^)]*\)/g, '')
+                        .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+                        .replace(/\*\*(.*?)\*\*/g, '$1')
+                        .replace(/\*([^*]+)\*/g, '$1')
+                        .replace(/~~(.*?)~~/g, '$1')
+                        .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+                        .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')
+                        .replace(/^#{1,6}\s+/gm, '')
+                        .replace(/^-\s+/gm, '')
+                        .replace(/^\d+\.\s+/gm, '')
+                        .replace(/^>\s+/gm, '')
+                        .replace(/^---$/gm, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                    shuoshuoWordCount += text.length;
+                });
+
+                var stats = {
+                    articleCount: articleCount,
+                    totalWordCount: totalWordCount,
+                    shuoshuoCount: shuoshuoCount,
+                    shuoshuoWordCount: shuoshuoWordCount
+                };
+                setCachedStats(stats);
+
+                if (currentPageId !== 'about') return;
+                renderAboutContent(
+                    stats.articleCount,
+                    stats.totalWordCount,
+                    stats.shuoshuoCount,
+                    stats.shuoshuoWordCount,
+                    diffDays,
+                    carryDisplay,
+                    sameDisplay
+                );
+            }).catch(function() {
+                if (currentPageId === 'about') {
+                    renderAboutContent(0, 0, 0, 0, diffDays, carryDisplay, sameDisplay);
+                }
+            });
+        }
+
         function renderAboutContent(articleCount, totalWordCount, shuoshuoCount, shuoshuoWordCount, diffDays, carryDisplay,
             sameDisplay) {
             var container = document.getElementById('appContent');
@@ -3271,104 +3382,22 @@
             carryDisplay += days + ' 天';
             var sameDisplay = (diffDays + ' 天') === carryDisplay.trim();
 
-            var cachedStats = localStorage.getItem('ks_stats');
-            var stats = cachedStats ? JSON.parse(cachedStats) : null;
+            var cachedStats = getCachedStats();
+            if (cachedStats) {
+                renderAboutContent(
+                    cachedStats.articleCount,
+                    cachedStats.totalWordCount,
+                    cachedStats.shuoshuoCount,
+                    cachedStats.shuoshuoWordCount,
+                    diffDays,
+                    carryDisplay,
+                    sameDisplay
+                );
+                fetchStatsAndUpdate(diffDays, carryDisplay, sameDisplay);
+                return;
+            }
 
-            renderAboutContent(
-                stats ? stats.articleCount : 0,
-                stats ? stats.totalWordCount : 0,
-                stats ? stats.shuoshuoCount : 0,
-                stats ? stats.shuoshuoWordCount : 0,
-                diffDays,
-                carryDisplay,
-                sameDisplay
-            );
-
-            fetch('articles/all.json', { cache: 'no-cache' })
-                .then(function(response) {
-                    if (!response.ok) throw new Error('all.json 不存在');
-                    return response.json();
-                })
-                .then(function(data) {
-                    var articles = data.list || [];
-                    var articleCount = articles.length;
-                    var totalWordCount = 0;
-                    articles.forEach(function(item) {
-                        var content = item.content || '';
-                        var text = content.replace(/```[\s\S]*?```/g, '')
-                            .replace(/`[^`]+`/g, '')
-                            .replace(/!video\[[^\]]*\]\([^)]*\)/g, '')
-                            .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
-                            .replace(/\*\*(.*?)\*\*/g, '$1')
-                            .replace(/\*([^*]+)\*/g, '$1')
-                            .replace(/~~(.*?)~~/g, '$1')
-                            .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-                            .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')
-                            .replace(/^#{1,6}\s+/gm, '')
-                            .replace(/^-\s+/gm, '')
-                            .replace(/^\d+\.\s+/gm, '')
-                            .replace(/^>\s+/gm, '')
-                            .replace(/^---$/gm, '')
-                            .replace(/\s+/g, ' ')
-                            .trim();
-                        totalWordCount += text.length;
-                    });
-                    return { articleCount: articleCount, totalWordCount: totalWordCount };
-                })
-                .then(function(statsData) {
-                    return fetch('shuoshuo.json', { cache: 'no-cache' })
-                        .then(function(res) {
-                            if (!res.ok) throw new Error('shuoshuo.json不存在');
-                            return res.json();
-                        })
-                        .then(function(shuoshuoData) {
-                            var shuoshuo = shuoshuoData.filter(function(item) {
-                                return item.delete !== true;
-                            });
-                            var shuoshuoCount = shuoshuo.length;
-                            var shuoshuoWordCount = 0;
-                            shuoshuo.forEach(function(item) {
-                                var content = item.content || '';
-                                var text = content.replace(/```[\s\S]*?```/g, '')
-                                    .replace(/`[^`]+`/g, '')
-                                    .replace(/!video\[[^\]]*\]\([^)]*\)/g, '')
-                                    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
-                                    .replace(/\*\*(.*?)\*\*/g, '$1')
-                                    .replace(/\*([^*]+)\*/g, '$1')
-                                    .replace(/~~(.*?)~~/g, '$1')
-                                    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-                                    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')
-                                    .replace(/^#{1,6}\s+/gm, '')
-                                    .replace(/^-\s+/gm, '')
-                                    .replace(/^\d+\.\s+/gm, '')
-                                    .replace(/^>\s+/gm, '')
-                                    .replace(/^---$/gm, '')
-                                    .replace(/\s+/g, ' ')
-                                    .trim();
-                                shuoshuoWordCount += text.length;
-                            });
-                            var cacheData = {
-                                articleCount: statsData.articleCount,
-                                totalWordCount: statsData.totalWordCount,
-                                shuoshuoCount: shuoshuoCount,
-                                shuoshuoWordCount: shuoshuoWordCount
-                            };
-                            localStorage.setItem('ks_stats', JSON.stringify(cacheData));
-                            renderAboutContent(
-                                cacheData.articleCount,
-                                cacheData.totalWordCount,
-                                cacheData.shuoshuoCount,
-                                cacheData.shuoshuoWordCount,
-                                diffDays,
-                                carryDisplay,
-                                sameDisplay
-                            );
-                        });
-                })['catch'](function() {
-                    if (!stats) {
-                        renderAboutContent(0, 0, 0, 0, diffDays, carryDisplay, sameDisplay);
-                    }
-                });
+            fetchStatsAndUpdate(diffDays, carryDisplay, sameDisplay);
         }
 
         var appContent = document.getElementById('appContent');
@@ -3433,11 +3462,7 @@
                         closest = link;
                     }
                 });
-                // 关闭自动滑动切换，只保留手动点击
                 if (closest && !closest.classList.contains('active')) {
-                    // 注释掉自动切换，防止"关于夺舍"
-                    // var page = closest.getAttribute('data-page');
-                    // switchPage(page, closest);
                 }
             }, 80);
         });

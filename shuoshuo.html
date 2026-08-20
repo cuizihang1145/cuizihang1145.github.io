@@ -1766,11 +1766,32 @@
                 return result;
             }
 
-            // ===== 修复：放宽 isPureImageNode 判断，使连续的图片被合并 ====
-            function isPureImageNode(node) {
+            // ===== 辅助函数：判断是否为空白文本节点 =====
+            function isBlankTextNode(node) {
+                return node.nodeType === 3 && node.textContent.trim() === '';
+            }
+
+            // ===== 辅助函数：判断节点是否为纯图片块 =====
+            function isImageBlockNode(node) {
                 if (node.nodeType !== 1) return false;
-                if (!node.classList) return false;
-                return node.classList.contains('img-placeholder');
+                // 1. 节点本身是 img-placeholder
+                if (node.classList.contains('img-placeholder')) return true;
+                // 2. 节点内包含至少一个 img-placeholder，且没有其他实质内容
+                if (!node.querySelector('.img-placeholder')) return false;
+
+                // 检查直接子节点：只允许空白文本、<br>、和 .img-placeholder 元素
+                for (let i = 0; i < node.childNodes.length; i++) {
+                    const child = node.childNodes[i];
+                    if (child.nodeType === 3) {
+                        if (child.textContent.trim() !== '') return false;
+                    } else if (child.nodeType === 1) {
+                        if (child.tagName === 'BR') continue;
+                        if (child.classList && child.classList.contains('img-placeholder')) continue;
+                        // 其他任何元素都视为有内容，中断
+                        return false;
+                    }
+                }
+                return true;
             }
 
             // ===== 新的 renderCollage（支持 3 张、4 张、多张） =====
@@ -2127,12 +2148,17 @@
                     var tempContainer = document.createElement('div');
                     window.KSMarkdown.mountMarkdown(tempContainer, content);
 
-                    // 新的图片分组逻辑：只要连续出现 img-placeholder 就合并
+                    // 使用新的图片分组逻辑
                     var childNodes = Array.from(tempContainer.childNodes);
                     var imageGroups = [];
                     var currentGroup = [];
+
                     childNodes.forEach(function(node) {
-                        if (isPureImageNode(node)) {
+                        // 空白文本节点不中断分组
+                        if (isBlankTextNode(node)) {
+                            return;
+                        }
+                        if (isImageBlockNode(node)) {
                             currentGroup.push(node);
                         } else {
                             if (currentGroup.length > 0) {
@@ -2141,32 +2167,35 @@
                             }
                         }
                     });
-                    if (currentGroup.length > 0) imageGroups.push(currentGroup);
+                    if (currentGroup.length > 0) {
+                        imageGroups.push(currentGroup);
+                    }
 
+                    // 处理每个图片组
                     imageGroups.forEach(function(group) {
-                        if (group.length > 0) {
-                            var imgSrcs = [];
-                            var imgAlts = [];
-                            group.forEach(function(node) {
-                                var img = node.querySelector('.img-placeholder img');
-                                if (img) {
-                                    imgSrcs.push(img.getAttribute('src'));
-                                    imgAlts.push(img.getAttribute('alt') || '');
-                                }
+                        var imgSrcs = [];
+                        var imgAlts = [];
+                        group.forEach(function(node) {
+                            // 提取节点内所有图片（可能一个节点内有多个图片）
+                            var imgs = node.querySelectorAll('.img-placeholder img');
+                            imgs.forEach(function(img) {
+                                imgSrcs.push(img.getAttribute('src'));
+                                imgAlts.push(img.getAttribute('alt') || '');
                             });
-                            // 如果只有1张图，不需要替换，直接保留原来的 img-placeholder
-                            if (imgSrcs.length <= 1) {
-                                // 保留原有节点，不做处理
-                                return;
-                            }
-                            var collageHtml = renderCollage(imgSrcs, imgAlts);
-                            var tempDiv = document.createElement('div');
-                            tempDiv.innerHTML = collageHtml;
-                            var collageNode = tempDiv.firstChild;
-                            var firstNode = group[0];
-                            firstNode.parentNode.insertBefore(collageNode, firstNode);
-                            group.forEach(function(node) { node.remove(); });
+                        });
+
+                        // 只有一张图片时保持原样
+                        if (imgSrcs.length <= 1) {
+                            return;
                         }
+
+                        var collageHtml = renderCollage(imgSrcs, imgAlts);
+                        var tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = collageHtml;
+                        var collageNode = tempDiv.firstChild;
+                        var firstNode = group[0];
+                        firstNode.parentNode.insertBefore(collageNode, firstNode);
+                        group.forEach(function(node) { node.remove(); });
                     });
 
                     var finalContent = tempContainer.innerHTML;
@@ -2186,8 +2215,7 @@
                     }
                     if (location) {
                         if (date) dateLocationHtml += '<span class="sep">·</span>';
-                        dateLocationHtml += '<span><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(location) +
-                            '</span>';
+                        dateLocationHtml += '<span><i class="fas fa-map-marker-alt"></i> ' + escapeHtml(location) + '</span>';
                     }
 
                     var strId = String(item._originIndex);
@@ -2223,16 +2251,12 @@
                     html += '<div class="shuoshuo-footer">';
                     if (tagsHtml) html += tagsHtml;
                     html += '<div class="shuoshuo-actions">';
-                    html += '<button class="shuoshuo-action-btn share-toggle" data-index="' + item._originIndex +
-                        '" title="分享"><i class="fas fa-share-alt"></i></button>';
-                    html += '<button class="shuoshuo-action-btn like-toggle" data-index="' + item._originIndex +
-                        '" title="点赞">';
+                    html += '<button class="shuoshuo-action-btn share-toggle" data-index="' + item._originIndex + '" title="分享"><i class="fas fa-share-alt"></i></button>';
+                    html += '<button class="shuoshuo-action-btn like-toggle" data-index="' + item._originIndex + '" title="点赞">';
                     html += '<i class="' + heartClass + '"></i> ';
-                    html += '<span class="like-count" id="like-count-' + item._originIndex + '">' + likeCount +
-                        '</span>';
+                    html += '<span class="like-count" id="like-count-' + item._originIndex + '">' + likeCount + '</span>';
                     html += '</button>';
-                    html += '<button class="shuoshuo-action-btn comment-toggle" data-index="' + item._originIndex +
-                        '" title="评论"><i class="far fa-comments"></i> <span class="comment-count" id="comment-count-' + item._originIndex + '">' + commentCountText + '</span></button>';
+                    html += '<button class="shuoshuo-action-btn comment-toggle" data-index="' + item._originIndex + '" title="评论"><i class="far fa-comments"></i> <span class="comment-count" id="comment-count-' + item._originIndex + '">' + commentCountText + '</span></button>';
                     html += '</div>';
                     html += '</div>';
 
@@ -2282,6 +2306,7 @@
                     try { hljs.highlightElement(el); } catch (e) {}
                 });
 
+                // 为单张图片（非拼图）绑定灯箱事件
                 document.querySelectorAll('.shuoshuo-item .img-placeholder img').forEach(function(img) {
                     img.style.cursor = 'pointer';
                     var parent = img.closest('.shuoshuo-item');
@@ -2302,6 +2327,7 @@
                     });
                 });
 
+                // 为拼图图片绑定灯箱事件
                 document.querySelectorAll('.shuoshuo-item .memos-image').forEach(function(link) {
                     var parentItem = link.closest('.shuoshuo-item');
                     var allLinks = parentItem ? parentItem.querySelectorAll('.memos-image') : [];

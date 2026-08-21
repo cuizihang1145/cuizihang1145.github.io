@@ -4,6 +4,7 @@ import crypto from 'crypto';
 
 const ALLOWED_ORIGINS = ['https://www.cuizi.top'];
 const RATE_LIMIT_MS = 300;
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY;
 
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID,
@@ -85,7 +86,6 @@ export default async function handler(req, res) {
 
   const clientIP = getClientIP(req);
 
-  // 解析 Cookie，获取或生成会话 ID
   const cookies = parseCookies(req.headers.cookie || '');
   let sessionId = cookies.session_id;
 
@@ -105,7 +105,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { id, action } = req.body || {};
+    const { id, action, token } = req.body || {};
 
     if (!id || !action) {
       return res.status(400).json({ success: false, error: 'Missing id or action' });
@@ -113,6 +113,10 @@ export default async function handler(req, res) {
 
     if (action !== 'like' && action !== 'unlike') {
       return res.status(400).json({ success: false, error: 'Invalid action' });
+    }
+
+    if (!token) {
+      return res.status(400).json({ success: false, error: 'Missing Turnstile token' });
     }
 
     const ipRate = await checkRateLimit(clientIP, id);
@@ -126,6 +130,21 @@ export default async function handler(req, res) {
     }
 
     try {
+      const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          secret: TURNSTILE_SECRET,
+          response: token,
+          remoteip: clientIP,
+        }),
+      });
+      const verifyData = await verifyRes.json();
+
+      if (!verifyData.success) {
+        return res.status(403).json({ success: false, error: 'Turnstile verification failed' });
+      }
+
       const key = 'likes:counts';
       const current = await kv.hget(key, id) || 0;
       const newVal = action === 'like' ? current + 1 : Math.max(0, current - 1);

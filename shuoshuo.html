@@ -23,7 +23,6 @@
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
-
         body {
             font-family: 'Inter', -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
             background: #FAFAFE;
@@ -32,12 +31,10 @@
             min-height: 100vh;
             transition: background 0.4s ease, color 0.3s ease;
         }
-
         body.dark {
             background: #14131F;
             color: #E8E6F0;
         }
-
         .reading-progress {
             position: fixed;
             top: 0;
@@ -63,7 +60,6 @@
         body.dark .reading-progress .progress-bar {
             background: #60A5FA;
         }
-
         .bg-glow {
             position: fixed;
             top: 0;
@@ -117,7 +113,6 @@
             0% { transform: translate(0,0) scale(1); opacity: 0.2; }
             100% { transform: translate(-6%,-5%) scale(1.3); opacity: 0.6; }
         }
-
         .container {
             max-width: 700px;
             margin: 0 auto;
@@ -127,7 +122,6 @@
             min-height: 100vh;
             position: relative;
         }
-
         .top-buttons {
             position: fixed;
             top: 20px;
@@ -180,7 +174,6 @@
         .back-btn i {
             font-size: 0.9rem;
         }
-
         .settings-btn {
             background: rgba(255,255,255,0.6);
             backdrop-filter: blur(14px);
@@ -211,7 +204,6 @@
         body.dark .settings-btn:hover {
             background: rgba(50,45,80,0.8);
         }
-
         .back-to-top-btn {
             position: fixed;
             top: 20px;
@@ -258,7 +250,6 @@
         body.dark .back-to-top-btn:hover {
             background: rgba(50,45,80,0.8);
         }
-
         .theme-toggle {
             position: fixed;
             top: 20px;
@@ -294,7 +285,6 @@
         body.dark .theme-toggle:hover {
             background: rgba(50,45,80,0.8);
         }
-
         @media (max-width:560px) {
             .back-to-top-btn { top:14px; right:66px; width:42px; height:42px; font-size:1rem; }
             .theme-toggle { top:14px; right:16px; width:42px; height:42px; font-size:1.2rem; }
@@ -304,7 +294,6 @@
             .settings-btn { width:42px; height:42px; font-size:1.1rem; }
             .reading-progress { height:2px; }
         }
-
         .shuoshuo-sticky-bar {
             display: flex;
             align-items: center;
@@ -345,7 +334,6 @@
         body.dark .shuoshuo-sticky-bar .count-label i {
             color: #A89FD0;
         }
-
         .shuoshuo-sticky-bar .search-wrap {
             flex: 1;
             min-width: 80px;
@@ -413,7 +401,6 @@
         body.dark .shuoshuo-sticky-bar .search-clear:hover {
             color: #D0CAF0;
         }
-
         .shuoshuo-sticky-bar .filter-wrap {
             display: flex;
             gap: 0.2rem;
@@ -456,13 +443,11 @@
             .shuoshuo-sticky-bar .filter-btn i { display: inline; }
             .shuoshuo-sticky-bar .filter-btn.active i { color: #fff; }
         }
-
         .shuoshuo-list {
             display: flex;
             flex-direction: column;
             width: 100%;
         }
-
         .shuoshuo-item {
             padding: 1.4rem 0 1.2rem;
             border-top: 1px solid rgba(0,0,0,0.06);
@@ -481,7 +466,6 @@
         body.dark .shuoshuo-item:last-child {
             border-bottom: none;
         }
-
         .shuoshuo-item.highlight {
             border-top-color: #FFD700 !important;
             border-bottom-color: #FFD700 !important;
@@ -494,7 +478,6 @@
             border-bottom-color: #FFD700 !important;
             box-shadow: 0 -3px 0 #FFD700, 0 3px 0 #FFD700;
         }
-
         .shuoshuo-header {
             display: flex;
             align-items: flex-start;
@@ -598,7 +581,6 @@
             opacity: 0.6;
             margin-right: 0.1rem;
         }
-
         .shuoshuo-content {
             font-size: 1rem;
             line-height: 1.6;
@@ -617,14 +599,12 @@
         .shuoshuo-content .markdown-body {
             font-size: 1rem;
         }
-
         .memos-images {
             display: grid;
             gap: 0.35rem;
             margin: -0.5rem 0 0;
             width: 100%;
         }
-
         .memos-images--1 .memos-image {
             height: auto;
             padding-bottom: 0;
@@ -638,35 +618,30 @@
             object-fit: contain;
             background: transparent;
         }
-
         .memos-images--2 {
             grid-template-columns: 1fr 1fr;
         }
         .memos-images--2 .memos-image {
             padding-bottom: 100%;
         }
-
         .memos-images--3 {
             grid-template-columns: repeat(3, 1fr);
         }
         .memos-images--3 .memos-image {
             padding-bottom: 100%;
         }
-
         .memos-images--4 {
             grid-template-columns: repeat(2, 1fr);
         }
         .memos-images--4 .memos-image {
             padding-bottom: 100%;
         }
-
         .memos-images--multi {
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         }
         .memos-images--multi .memos-image {
             padding-bottom: 100%;
         }
-
         .memos-image {
             position: relative;
             display: block;
@@ -700,7 +675,6 @@
         .memos-image img.loaded {
             opacity: 1;
         }
-
         .img-placeholder {
             border-radius: 12px !important;
             background: transparent !important;
@@ -716,7 +690,6 @@
         body.dark .img-placeholder {
             background: transparent !important;
         }
-
         .shuoshuo-footer {
             display: flex;
             flex-wrap: wrap;
@@ -759,7 +732,6 @@
             font-size: 0.55rem;
             opacity: 0.7;
         }
-
         .shuoshuo-actions {
             display: flex;
             align-items: center;
@@ -806,7 +778,6 @@
         body.dark .shuoshuo-action-btn.comment-toggle:hover .comment-count {
             color: #60A5FA;
         }
-
         .shuoshuo-comment-box {
             margin-top: 0.8rem;
             display: none;
@@ -815,7 +786,6 @@
         .shuoshuo-comment-box.show {
             display: block;
         }
-
         .shuoshuo-empty {
             text-align: center;
             padding: 2rem 1rem;
@@ -824,7 +794,6 @@
         body.dark .shuoshuo-empty {
             color: #8A8AB5;
         }
-
         .toast {
             position: fixed;
             bottom: 30px;
@@ -863,7 +832,6 @@
         .toast .fa-check-circle { color: #4ade80; }
         .toast .fa-info-circle { color: #60a5fa; }
         .toast .fa-exclamation-circle { color: #fbbf24; }
-
         @media (max-width:480px) {
             .toast {
                 font-size: 0.8rem;
@@ -887,7 +855,6 @@
             .shuoshuo-date-location { font-size:0.65rem; }
             .memos-images { gap:0.25rem; }
         }
-
         .settings-modal-overlay {
             position: fixed;
             top: 0;
@@ -978,7 +945,6 @@
             cursor: default;
             margin-left: 0;
         }
-
         .share-modal-overlay {
             position: fixed;
             top: 0;
@@ -1153,7 +1119,6 @@
             color: #c8c0e0;
             border-color: rgba(255,255,255,0.06);
         }
-
         .footer--no-border {
             border-top: none !important;
         }
@@ -1311,7 +1276,6 @@
                         };
                     });
                 }).catch(function(err) {
-                    console.warn('无法从 IndexedDB 加载数据，使用默认值', err);
                     likedIdsCache = [];
                     readNewId = null;
                     return [];
@@ -1333,9 +1297,7 @@
                             reject(tx.error);
                         };
                     });
-                }).catch(function(err) {
-                    console.warn('保存点赞ID到 IndexedDB 失败', err);
-                });
+                }).catch(function(err) {});
             }
 
             function saveReadNewIdToDB(id) {
@@ -1353,9 +1315,7 @@
                             reject(tx.error);
                         };
                     });
-                }).catch(function(err) {
-                    console.warn('保存已读NEW ID到 IndexedDB 失败', err);
-                });
+                }).catch(function(err) {});
             }
 
             var progressWrap = document.getElementById('readingProgress');
@@ -1868,7 +1828,7 @@
             var walineClientModule = null;
             var walineClientPromise = import('https://unpkg.com/@waline/client@v3/dist/waline.js')
                 .then(function(module) { walineClientModule = module; })
-                .catch(function() { console.warn('Waline 客户端库加载失败'); });
+                .catch(function() {});
 
             function requestCommentCount(id) {
                 if (commentCountsCache.hasOwnProperty(id) || commentCountsRequested[id]) return;
@@ -2015,9 +1975,7 @@
                     syncLikedIdsWithCounts();
                     refreshLikeUI();
                 })
-                .catch(function(err) {
-                    console.warn('加载点赞数失败:', err);
-                });
+                .catch(function(err) {});
             }
 
             function syncLikedIdsWithCounts() {
@@ -2068,7 +2026,7 @@
                     removeLikedId(id);
                 }
 
-                window._lastLocalLikeId = id;
+                window._lastLocalLikeId = String(id);
                 window._lastLocalLikeTime = Date.now();
 
                 fetch('/api/likes', {
@@ -2119,24 +2077,38 @@
             }
 
             function initPusher() {
-                var pusher = new Pusher('011cb37208751f810834', {
-                    cluster: 'ap3',
-                    forceTLS: true
-                });
+                try {
+                    var pusher = new Pusher('011cb37208751f810834', {
+                        cluster: 'ap3',
+                        forceTLS: true
+                    });
 
-                var channel = pusher.subscribe('shuoshuo-channel');
-                channel.bind('like-event', function(data) {
-                    if (window._lastLocalLikeId === data.id && (Date.now() - window._lastLocalLikeTime) < 3000) {
-                        return;
-                    }
+                    var channel = pusher.subscribe('shuoshuo-channel');
+                    channel.bind('like-event', function(data) {
+                        try {
+                            var idStr = String(data.id);
 
-                    likesCache[data.id] = data.likes;
+                            if (window._lastLocalLikeId === idStr && (Date.now() - window._lastLocalLikeTime) < 3000) {
+                                return;
+                            }
 
-                    var countEl = document.getElementById('like-count-' + data.id);
-                    if (countEl) {
-                        countEl.textContent = data.likes;
-                    }
-                });
+                            likesCache[idStr] = data.likes;
+
+                            var countEl = document.getElementById('like-count-' + idStr);
+
+                            if (!countEl) {
+                                var toggle = document.querySelector('.like-toggle[data-index="' + idStr + '"]');
+                                if (toggle) {
+                                    countEl = toggle.querySelector('.like-count');
+                                }
+                            }
+
+                            if (countEl) {
+                                countEl.textContent = data.likes;
+                            }
+                        } catch (_) {}
+                    });
+                } catch (_) {}
             }
 
             function handleUrlId() {
@@ -2717,16 +2689,13 @@
                     initPusher();
                 })
                 .catch(function(err) {
-                    console.warn('初始化失败:', err);
                     fetchApiKey()
                         .then(fetchShuoshuo)
                         .then(fetchLikes)
                         .then(function() {
                             initPusher();
                         })
-                        .catch(function(err2) {
-                            console.warn('备用初始化失败:', err2);
-                        });
+                        .catch(function(err2) {});
                 });
 
         })();

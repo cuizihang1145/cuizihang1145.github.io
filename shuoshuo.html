@@ -16,6 +16,7 @@
     <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         * {
             margin: 0;
@@ -1200,6 +1201,8 @@
     <div class="toast" id="toast"></div>
     <div id="qrTemp"></div>
 
+    <div id="turnstile-container" style="display:none;"></div>
+
     <script src="/assets/markdown/markdown.js"></script>
     <script>
         (function() {
@@ -1979,6 +1982,34 @@
                 }
             }
 
+            function getTurnstileToken() {
+                return new Promise(function(resolve, reject) {
+                    var container = document.getElementById('turnstile-container');
+                    if (!container) {
+                        container = document.createElement('div');
+                        container.id = 'turnstile-container';
+                        container.style.display = 'none';
+                        document.body.appendChild(container);
+                    }
+                    if (typeof turnstile === 'undefined') {
+                        reject(new Error('Turnstile not loaded'));
+                        return;
+                    }
+                    turnstile.execute(container, {
+                        sitekey: '0x4AAAAAAEXkn1IF1TTx6GPk',
+                        callback: function(token) {
+                            resolve(token);
+                        },
+                        'expired-callback': function() {
+                            reject(new Error('Turnstile token expired'));
+                        },
+                        'error-callback': function() {
+                            reject(new Error('Turnstile error'));
+                        }
+                    });
+                });
+            }
+
             function toggleLike(id, action) {
                 var countEl = document.getElementById('like-count-' + id);
                 if (!countEl) return;
@@ -2010,42 +2041,53 @@
                 window._lastLocalLikeId = String(id);
                 window._lastLocalLikeTime = Date.now();
 
-                fetch('/api/likes', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ id: id, action: action })
-                })
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    if (btn) btn.dataset.loading = 'false';
-                    if (!data.success) {
+                getTurnstileToken()
+                    .then(function(token) {
+                        return fetch('/api/likes', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: id, action: action, token: token })
+                        });
+                    })
+                    .then(function(res) {
+                        if (!res.ok) {
+                            // 尝试解析错误信息
+                            return res.json().then(function(data) {
+                                throw new Error(data.error || '请求失败');
+                            }).catch(function() {
+                                throw new Error('请求失败');
+                            });
+                        }
+                        return res.json();
+                    })
+                    .then(function(data) {
+                        if (btn) btn.dataset.loading = 'false';
+                        if (!data.success) {
+                            countEl.textContent = currentText;
+                            if (action === 'like') removeLikedId(id);
+                            else addLikedId(id);
+                            updateHeartIcon(id);
+                            showToast(data.error || '操作失败', 'fa-exclamation-circle');
+                            return;
+                        }
+                        likesCache[id] = data.likes;
+                        countEl.textContent = data.likes;
+                        updateHeartIcon(id);
+                        var likeCount = parseInt(data.likes, 10);
+                        if (!isNaN(likeCount) && likeCount <= 0) {
+                            removeLikedId(id);
+                        } else if (action === 'like') {
+                            addLikedId(id);
+                        }
+                    })
+                    .catch(function(err) {
+                        if (btn) btn.dataset.loading = 'false';
                         countEl.textContent = currentText;
                         if (action === 'like') removeLikedId(id);
                         else addLikedId(id);
                         updateHeartIcon(id);
-                        showToast(data.error || '操作失败', 'fa-exclamation-circle');
-                        return;
-                    }
-                    likesCache[id] = data.likes;
-                    countEl.textContent = data.likes;
-                    updateHeartIcon(id);
-                    var likeCount = parseInt(data.likes, 10);
-                    if (!isNaN(likeCount) && likeCount <= 0) {
-                        removeLikedId(id);
-                    } else if (action === 'like') {
-                        addLikedId(id);
-                    }
-                })
-                .catch(function() {
-                    if (btn) btn.dataset.loading = 'false';
-                    countEl.textContent = currentText;
-                    if (action === 'like') removeLikedId(id);
-                    else addLikedId(id);
-                    updateHeartIcon(id);
-                    showToast('网络错误', 'fa-exclamation-circle');
-                });
+                        showToast(err.message || '网络错误', 'fa-exclamation-circle');
+                    });
             }
 
             function initPusher() {

@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>说说 · ks</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Audiowide&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.1/css/all.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-    <link rel="stylesheet" href="/assets/markdown/markdown.css">
-    <link rel="stylesheet" href="/assets/waline-custom.css">
-    <link rel="stylesheet" href="/assets/footer.css">
-    <link rel="icon" href="/favicon.ico" sizes="32x32">
-    <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Audiowide&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.1/css/all.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+    <link rel="stylesheet" href="/assets/markdown/markdown.css" />
+    <link rel="stylesheet" href="/assets/waline-custom.css" />
+    <link rel="stylesheet" href="/assets/footer.css" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
         * {
@@ -617,7 +617,6 @@
             font-size: 1rem;
         }
 
-        /* ===== 网格样式（修复3张图） ===== */
         .memos-images {
             display: grid;
             gap: 0.35rem;
@@ -700,9 +699,7 @@
         .memos-image img.loaded {
             opacity: 1;
         }
-        /* ===== 网格样式结束 ===== */
 
-        /* ===== 单张图片样式（190px 靠左） ===== */
         .img-placeholder {
             border-radius: 12px !important;
             background: transparent !important;
@@ -1609,6 +1606,7 @@
                 text = text.replace(/```[\s\S]*?```/g, '');
                 text = text.replace(/`([^`]+)`/g, '$1');
                 text = text.replace(/!video\[[^\]]*\]\([^)]*\)/g, '');
+                text = text.replace(/!audio\[[^\]]*\]\([^)]*\)/g, '');
                 text = text.replace(/!\[[^\]]*\]\([^)]*\)/g, '');
                 text = text.replace(/\*\*(.*?)\*\*/g, '$1');
                 text = text.replace(/\*([^*]+)\*/g, '$1');
@@ -1788,7 +1786,6 @@
                 return result;
             }
 
-            // ====================== 图片拼图预处理 ======================
             function preprocessMarkdownForCollage(md) {
                 if (!md) return { markdown: md, collages: [] };
                 const collages = [];
@@ -1857,7 +1854,6 @@
                 html += '</div>';
                 return html;
             }
-            // ====================== 图片拼图预处理结束 ======================
 
             var API_KEY = '';
             var allShuoshuo = [];
@@ -2139,10 +2135,12 @@
                 if (currentKeyword.trim()) {
                     var kw = currentKeyword.trim().toLowerCase();
                     filtered = filtered.filter(function(item) {
-                        var content = (item.content || '').toLowerCase();
+                        var plainContent = markdownToPlainText(item.content || '').toLowerCase();
                         var tags = (item.tags || []).join(' ').toLowerCase();
                         var location = (item.location || '').toLowerCase();
-                        return content.indexOf(kw) !== -1 || tags.indexOf(kw) !== -1 || location.indexOf(kw) !== -1;
+                        return plainContent.indexOf(kw) !== -1 ||
+                               tags.indexOf(kw) !== -1 ||
+                               location.indexOf(kw) !== -1;
                     });
                 }
                 filtered.sort(function(a, b) {
@@ -2194,7 +2192,6 @@
                     var tempContainer = document.createElement('div');
                     window.KSMarkdown.mountMarkdown(tempContainer, markdown);
 
-                    // 替换拼图占位符：移除外层<p>标签
                     collages.forEach(function(collage, idx) {
                         var placeholder = `@@COLLAGE_${idx}@@`;
                         var collageHtml = renderCollage(
@@ -2291,7 +2288,6 @@
 
                 listEl.innerHTML = html;
 
-                // 为拼图图片绑定加载动画完成事件
                 document.querySelectorAll('.shuoshuo-item .memos-image img').forEach(function(img) {
                     var wrapper = img.closest('.memos-image');
                     var loading = wrapper ? wrapper.querySelector('.memos-image-loading') : null;

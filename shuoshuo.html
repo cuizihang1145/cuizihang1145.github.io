@@ -15,6 +15,7 @@
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -2067,6 +2068,9 @@
                     removeLikedId(id);
                 }
 
+                window._lastLocalLikeId = id;
+                window._lastLocalLikeTime = Date.now();
+
                 fetch('/api/likes', {
                     method: 'POST',
                     headers: {
@@ -2111,6 +2115,27 @@
                     else addLikedId(id);
                     updateHeartIcon(id);
                     showToast('网络错误', 'fa-exclamation-circle');
+                });
+            }
+
+            function initPusher() {
+                var pusher = new Pusher('011cb37208751f810834', {
+                    cluster: 'ap3',
+                    forceTLS: true
+                });
+
+                var channel = pusher.subscribe('shuoshuo-channel');
+                channel.bind('like-event', function(data) {
+                    if (window._lastLocalLikeId === data.id && (Date.now() - window._lastLocalLikeTime) < 3000) {
+                        return;
+                    }
+
+                    likesCache[data.id] = data.likes;
+
+                    var countEl = document.getElementById('like-count-' + data.id);
+                    if (countEl) {
+                        countEl.textContent = data.likes;
+                    }
                 });
             }
 
@@ -2688,11 +2713,17 @@
                 .then(function() {
                     return fetchLikes();
                 })
+                .then(function() {
+                    initPusher();
+                })
                 .catch(function(err) {
                     console.warn('初始化失败:', err);
                     fetchApiKey()
                         .then(fetchShuoshuo)
                         .then(fetchLikes)
+                        .then(function() {
+                            initPusher();
+                        })
                         .catch(function(err2) {
                             console.warn('备用初始化失败:', err2);
                         });

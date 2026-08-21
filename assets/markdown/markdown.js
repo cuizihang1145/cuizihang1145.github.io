@@ -1,4 +1,4 @@
-(function(global) {
+(function (global) {
   'use strict';
 
   function escapeHtml(text) {
@@ -15,6 +15,7 @@
     text = text.replace(/`([^`]+)`/g, '$1');
     text = text.replace(/!video\[[^\]]*\]\([^)]*\)/g, '');
     text = text.replace(/!\[[^\]]*\]\([^)]*\)/g, '');
+    text = text.replace(/!audio\[[^\]]*\]\([^)]*\)/g, '');
     text = text.replace(/\*\*(.*?)\*\*/g, '$1');
     text = text.replace(/\*([^*]+)\*/g, '$1');
     text = text.replace(/~~(.*?)~~/g, '$1');
@@ -36,6 +37,7 @@
       .replace(/`[^`]+`/g, '')
       .replace(/!video\[[^\]]*\]\([^)]*\)/g, '')
       .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+      .replace(/!audio\[[^\]]*\]\([^)]*\)/g, '')
       .replace(/\*\*(.*?)\*\*/g, '$1')
       .replace(/\*([^*]+)\*/g, '$1')
       .replace(/~~(.*?)~~/g, '$1')
@@ -50,45 +52,12 @@
     return text.length;
   }
 
-  function renderAudioCard(title, src, cover) {
-    if (src.includes('music.163.com')) {
-      if (!src.includes('height=')) {
-        src = src + (src.includes('?') ? '&' : '?') + 'height=90';
-      }
-      return '<div class="netease-wrapper"><div class="embed-loading"><i class="fas fa-spinner fa-spin"></i></div><iframe src="' + src + '" scrolling="no" frameborder="0" onload="this.classList.add(\'loaded\');this.previousElementSibling.classList.add(\'hidden\');"></iframe></div>';
-    }
-
-    const sourceMap = {
-      'soundcloud.com': { icon: 'fa-soundcloud', label: 'SoundCloud', cls: 'source-soundcloud' },
-      'bandcamp.com': { icon: 'fa-bandcamp', label: 'Bandcamp', cls: 'source-bandcamp' },
-      'spotify.com': { icon: 'fa-spotify', label: 'Spotify', cls: 'source-spotify' },
-      'open.spotify.com': { icon: 'fa-spotify', label: 'Spotify', cls: 'source-spotify' },
-      'apple.com': { icon: 'fa-apple', label: 'Apple Music', cls: 'source-apple' },
-      'music.apple.com': { icon: 'fa-apple', label: 'Apple Music', cls: 'source-apple' }
-    };
-
-    let badge = '';
-    try {
-      const host = new URL(src).hostname.replace(/^www\./, '');
-      for (const [key, val] of Object.entries(sourceMap)) {
-        if (host === key || host.endsWith('.' + key)) {
-          badge = '<span class="audio-source-badge ' + val.cls + '"><i class="fab ' + val.icon + '"></i> ' + val.label + '</span>';
-          break;
-        }
-      }
-    } catch (e) {}
-
-    const coverHtml = cover ? '<img src="' + cover + '" alt="' + title + '" loading="lazy" />' : '<span class="fallback-icon"><i class="fas fa-music"></i></span>';
-
-    return '<div class="audio-card">' + badge + '<div class="audio-cover">' + coverHtml + '</div><div class="audio-info"><div class="audio-title">' + escapeHtml(title) + '</div></div><div class="audio-player"><audio controls src="' + src + '" preload="metadata"></audio></div></div>';
-  }
-
   function renderMarkdown(md) {
     if (!md) return '';
 
     const escMap = {};
     let escCounter = 0;
-    md = md.replace(/\\([\\`*_{}\[\]()#+\-.!|$])/g, function(match, char) {
+    md = md.replace(/\\([\\`*_{}\[\]()#+\-.!|$])/g, function (match, char) {
       const key = '\uE000' + (escCounter++) + '\uE001';
       escMap[key] = char;
       return key;
@@ -115,19 +84,58 @@
       return r;
     }
 
+    function renderAudioBadge(src) {
+      const map = [
+        { domain: 'soundcloud.com', icon: 'fa-soundcloud', label: 'SoundCloud', cls: 'source-soundcloud' },
+        { domain: 'bandcamp.com', icon: 'fa-bandcamp', label: 'Bandcamp', cls: 'source-bandcamp' },
+        { domain: 'spotify.com', icon: 'fa-spotify', label: 'Spotify', cls: 'source-spotify' },
+        { domain: 'apple.com', icon: 'fa-apple', label: 'Apple Music', cls: 'source-apple' },
+      ];
+      try {
+        const host = new URL(src).hostname.replace(/^www\./, '');
+        for (const item of map) {
+          if (host === item.domain || host.endsWith('.' + item.domain)) {
+            return '<span class="audio-source-badge ' + item.cls + '"><i class="fab ' + item.icon + '"></i> ' + item.label + '</span>';
+          }
+        }
+      } catch (e) {}
+      return '';
+    }
+
+    function renderAudio(title, src, cover) {
+      const escapedTitle = escapeHtml(title);
+      if (src.includes('music.163.com')) {
+        const loadingId = 'audio-loading-' + Math.random().toString(36).slice(2, 9);
+        return '<div class="netease-wrapper">' +
+          '<div class="embed-loading" id="' + loadingId + '"><i class="fas fa-spinner fa-spin"></i></div>' +
+          '<iframe src="' + src + '" scrolling="no" frameborder="0" onload="this.classList.add(\'loaded\'); document.getElementById(\'' + loadingId + '\').classList.add(\'hidden\');"></iframe>' +
+          '</div>';
+      }
+      const badge = renderAudioBadge(src);
+      const coverHtml = cover
+        ? '<img src="' + cover + '" alt="' + escapedTitle + '" loading="lazy" />'
+        : '<span class="fallback-icon"><i class="fas fa-music"></i></span>';
+      return '<div class="audio-card">' +
+        badge +
+        '<div class="audio-cover">' + coverHtml + '</div>' +
+        '<div class="audio-info"><div class="audio-title">' + escapedTitle + '</div></div>' +
+        '<div class="audio-player"><audio controls src="' + src + '" preload="metadata"></audio></div>' +
+        '</div>';
+    }
+
     function renderInline(text) {
       let html = text;
       html = html.replace(/<([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s<>]+)>/g, '<a href="$1">$1</a>');
 
       const tagMap = {};
       let tagIndex = 0;
-      html = html.replace(/<[^>]+>/g, function(match) {
+      html = html.replace(/<[^>]+>/g, function (match) {
         const key = '\uE002' + (tagIndex++) + '\uE003';
         tagMap[key] = match;
         return key;
       });
 
-      html = html.replace(/<([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)>(.*?)<\/\1>/gs, function(match, tag, attrs, content) {
+      html = html.replace(/<([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)>(.*?)<\/\1>/gs, function (match, tag, attrs, content) {
         if (safeTags.includes(tag.toLowerCase())) {
           return '<' + tag + attrs + '>' + renderInline(content) + '</' + tag + '>';
         }
@@ -140,47 +148,54 @@
       html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
       html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
 
-      html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, alt, src, title, w, h) {
-        let style = '';
-        if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
-        else if (w) style = ' style="width:' + w + 'px; height:auto;"';
-        else if (h) style = ' style="height:' + h + 'px; width:auto;"';
-        const titleAttr = title ? ' title="' + title + '"' : '';
-        return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + titleAttr + ' />';
-      });
+      html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,
+        function (match, alt, src, title, w, h) {
+          let style = '';
+          if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
+          else if (w) style = ' style="width:' + w + 'px; height:auto;"';
+          else if (h) style = ' style="height:' + h + 'px; width:auto;"';
+          const titleAttr = title ? ' title="' + title + '"' : '';
+          return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + titleAttr + ' />';
+        });
 
-      html = html.replace(/!video\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g, function(match, desc, src, title, w, h) {
-        let style = '';
-        if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
-        else if (w) style = ' style="width:' + w + 'px; height:auto;"';
-        else if (h) style = ' style="height:' + h + 'px; width:auto;"';
-        const descHtml = desc ? '<div class="video-alt-text">' + desc + '</div>' : '';
+      html = html.replace(
+        /!video\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,
+        function (match, desc, src, title, w, h) {
+          let style = '';
+          if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
+          else if (w) style = ' style="width:' + w + 'px; height:auto;"';
+          else if (h) style = ' style="height:' + h + 'px; width:auto;"';
+          const descHtml = desc ? '<div class="video-alt-text">' + desc + '</div>' : '';
 
-        const youtubeMatch = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-        if (youtubeMatch) {
-          return '<div class="video-placeholder"><span class="video-loading"><i class="fas fa-spinner fa-spin"></i></span><iframe src="https://www.youtube.com/embed/' + youtubeMatch[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
-        }
-        const bilibiliMatch = src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
-        if (bilibiliMatch) {
-          return '<div class="video-placeholder"><span class="video-loading"><i class="fas fa-spinner fa-spin"></i></span><iframe src="https://player.bilibili.com/player.html?bvid=' + bilibiliMatch[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
-        }
-        return '<div class="video-placeholder"><video src="' + src + '" controls' + style + '></video>' + descHtml + '</div>';
-      });
+          const youtubeMatch = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+          if (youtubeMatch) {
+            return '<div class="video-placeholder"><span class="video-loading"><i class="fas fa-spinner fa-spin"></i></span><iframe src="https://www.youtube.com/embed/' + youtubeMatch[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
+          }
+          const bilibiliMatch = src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
+          if (bilibiliMatch) {
+            return '<div class="video-placeholder"><span class="video-loading"><i class="fas fa-spinner fa-spin"></i></span><iframe src="https://player.bilibili.com/player.html?bvid=' + bilibiliMatch[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
+          }
+          return '<div class="video-placeholder"><video src="' + src + '" controls' + style + '></video>' + descHtml + '</div>';
+        });
 
-      html = html.replace(/!audio\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*([^)]+))?\)/g, function(match, title, src, cover, extra) {
-        const coverUrl = extra || null;
-        return renderAudioCard(title, src, coverUrl);
+      html = html.replace(/!audio\[([^\]]*)\]\(([^)]*)\)/g, function (match, title, srcAndCover) {
+        const parts = srcAndCover.split(/\s+=\s*/);
+        const src = parts[0].trim();
+        const cover = parts.length > 1 ? parts[1].trim() : '';
+        return renderAudio(title, src, cover);
       });
 
       html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-      html = html.replace(/\[\^([^\]]+)\]/g, function(match, key) {
+      html = html.replace(/\[\^([^\]]+)\]/g, function (match, key) {
         const id = getFootnoteId(key);
         return '<sup class="footnote-ref"><a data-footnote-ref="' + id + '">' + id + '</a></sup>';
       });
 
       html = restoreEscapes(html);
       for (const key in tagMap) {
-        html = html.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), tagMap[key]);
+        if (Object.prototype.hasOwnProperty.call(tagMap, key)) {
+          html = html.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), tagMap[key]);
+        }
       }
       return html;
     }
@@ -306,7 +321,8 @@
           let j = i;
           while (j < lines.length) {
             const tmatch = lines[j].match(/^\|(.+)\|$/);
-            if (tmatch) { tableRows.push(tmatch[1]); j++; } else break;
+            if (tmatch) { tableRows.push(tmatch[1]); j++; }
+            else break;
           }
           i = j - 1;
           if (tableRows.length >= 2) {
@@ -364,7 +380,9 @@
             }
           }
 
-          const itemHtml = isTask ? '<li data-checked="' + (taskChecked ? 'true' : 'false') + '">' + renderInline(taskContent) + '</li>' : '<li>' + renderInline(listContent) + '</li>';
+          const itemHtml = isTask
+            ? '<li data-checked="' + (taskChecked ? 'true' : 'false') + '">' + renderInline(taskContent) + '</li>'
+            : '<li>' + renderInline(listContent) + '</li>';
           listStack[listStack.length - 1].items.push(itemHtml);
 
           const subItems = [];
@@ -374,7 +392,9 @@
             if (nm && parseInt(nm[1].length) > indent) {
               const subContent = nm[3];
               const subTask = subContent.match(/^\[([ x])\]\s+(.*)/);
-              subItems.push(subTask ? '<li data-checked="' + (subTask[1] === 'x' ? 'true' : 'false') + '">' + renderInline(subTask[2]) + '</li>' : '<li>' + renderInline(subContent) + '</li>');
+              subItems.push(subTask
+                ? '<li data-checked="' + (subTask[1] === 'x' ? 'true' : 'false') + '">' + renderInline(subTask[2]) + '</li>'
+                : '<li>' + renderInline(subContent) + '</li>');
               k++;
             } else break;
           }
@@ -419,7 +439,7 @@
     const codeBlockRegex = /^(\s*)```(\w*)\s*\n([\s\S]*?)\1```/gm;
     const codeBlocks = [];
     let codeIndex = 0;
-    md = md.replace(codeBlockRegex, function(match, indent, lang, code) {
+    md = md.replace(codeBlockRegex, function (match, indent, lang, code) {
       const id = 'CODEBLOCK_' + (codeIndex++);
       codeBlocks.push({ id: id, lang: lang, code: code.replace(/^\n+|\n+$/g, '') });
       return id;
@@ -445,7 +465,20 @@
       });
 
       const statsHtml = '<span>' + lineCount + ' 行</span> · <span>' + maxLineLength + ' 列</span> · <span>' + totalChars + ' 字符</span>';
-      const codeBlockHtml = '<div class="code-block-wrapper" id="cbw-' + copyId + '"><div class="code-block-header"><span class="lang-label">' + escapeHtml(block.lang || 'text') + '</span><span class="code-stats">' + statsHtml + '</span><span class="header-actions"><button class="copy-btn" data-copy="' + copyId + '"><i class="fas fa-copy"></i> 复制</button><button class="collapse-btn" data-target="cbw-' + copyId + '"><i class="fas fa-chevron-up"></i></button></span></div><div class="code-block-body-wrapper"><div class="code-block-body" id="code-body-' + copyId + '">' + codeHtml + '</div></div></div>';
+      const codeBlockHtml = `
+        <div class="code-block-wrapper" id="cbw-${copyId}">
+          <div class="code-block-header">
+            <span class="lang-label">${escapeHtml(block.lang || 'text')}</span>
+            <span class="code-stats">${statsHtml}</span>
+            <span class="header-actions">
+              <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
+              <button class="collapse-btn" data-target="cbw-${copyId}"><i class="fas fa-chevron-up"></i></button>
+            </span>
+          </div>
+          <div class="code-block-body-wrapper">
+            <div class="code-block-body" id="code-body-${copyId}">${codeHtml}</div>
+          </div>
+        </div>`;
       html = html.replace(block.id, codeBlockHtml);
     });
 
@@ -468,10 +501,10 @@
   }
 
   function initImageLazyLoad(container) {
-    container.querySelectorAll('.img-placeholder').forEach(function(wrapper) {
+    container.querySelectorAll('.img-placeholder').forEach(function (wrapper) {
       const img = wrapper.querySelector('img');
       if (!img) return;
-      const done = function() {
+      const done = () => {
         wrapper.classList.add('loaded');
         img.classList.add('loaded');
         const loading = wrapper.querySelector('.img-loading');
@@ -487,16 +520,16 @@
   }
 
   function initVideoLazyLoad(container) {
-    container.querySelectorAll('.video-placeholder').forEach(function(wrapper) {
+    container.querySelectorAll('.video-placeholder').forEach(function (wrapper) {
       const iframe = wrapper.querySelector('iframe');
       if (!iframe) return;
       const loadingEl = wrapper.querySelector('.video-loading');
-      const done = function() {
+      const done = () => {
         wrapper.classList.add('loaded');
         if (loadingEl) loadingEl.style.display = 'none';
       };
       iframe.addEventListener('load', done);
-      setTimeout(function() {
+      setTimeout(() => {
         if (!wrapper.classList.contains('loaded')) done();
       }, 8000);
     });
@@ -504,13 +537,13 @@
 
   function initCodeHighlight(container) {
     if (!global.hljs) return;
-    container.querySelectorAll('.code-line .hljs').forEach(function(el) {
+    container.querySelectorAll('.code-line .hljs').forEach(el => {
       try { global.hljs.highlightElement(el); } catch (e) {}
     });
   }
 
   function wrapImagesInPlaceholders(container) {
-    container.querySelectorAll('img').forEach(function(img) {
+    container.querySelectorAll('img').forEach(img => {
       if (img.closest('.img-placeholder')) return;
       const wrapper = document.createElement('div');
       wrapper.className = 'img-placeholder';
@@ -545,7 +578,17 @@
 
     const overlay = document.createElement('div');
     overlay.className = 'lightbox-overlay';
-    overlay.innerHTML = '<button class="lightbox-close">&times;</button><button class="lightbox-nav prev"><i class="fas fa-chevron-left"></i></button><button class="lightbox-nav next"><i class="fas fa-chevron-right"></i></button><button class="lightbox-play"><i class="fas fa-play"></i></button><div class="lightbox-container"><div class="lightbox-img-wrapper"><img src="" alt="" /></div><div class="lightbox-alt"></div></div><div class="lightbox-counter"></div>';
+    overlay.innerHTML = `
+      <button class="lightbox-close">&times;</button>
+      <button class="lightbox-nav prev"><i class="fas fa-chevron-left"></i></button>
+      <button class="lightbox-nav next"><i class="fas fa-chevron-right"></i></button>
+      <button class="lightbox-play"><i class="fas fa-play"></i></button>
+      <div class="lightbox-container">
+        <div class="lightbox-img-wrapper"><img src="" alt="" /></div>
+        <div class="lightbox-alt"></div>
+      </div>
+      <div class="lightbox-counter"></div>
+    `;
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
 
@@ -563,16 +606,8 @@
     let translateY = 0;
     let isDragging = false;
     let mouseDown = false;
-    let mouseStartX = 0,
-      mouseStartY = 0,
-      mouseLastX = 0,
-      mouseLastY = 0;
-    let touchStartDist = 0,
-      touchStartScale = 1,
-      touchStartX = 0,
-      touchStartY = 0,
-      touchLastX = 0,
-      touchLastY = 0;
+    let mouseStartX = 0, mouseStartY = 0, mouseLastX = 0, mouseLastY = 0;
+    let touchStartDist = 0, touchStartScale = 1, touchStartX = 0, touchStartY = 0, touchLastX = 0, touchLastY = 0;
     let playIntervalId = null;
     let progressAnimId = null;
     let isPlaying = false;
@@ -614,10 +649,8 @@
 
     function stopPlayback() {
       isPlaying = false;
-      if (playIntervalId) { clearInterval(playIntervalId);
-        playIntervalId = null; }
-      if (progressAnimId) { cancelAnimationFrame(progressAnimId);
-        progressAnimId = null; }
+      if (playIntervalId) { clearInterval(playIntervalId); playIntervalId = null; }
+      if (progressAnimId) { cancelAnimationFrame(progressAnimId); progressAnimId = null; }
       prevBtn.disabled = images.length <= 1;
       nextBtn.disabled = images.length <= 1;
       progressEl.classList.remove('active');
@@ -629,7 +662,6 @@
       if (progressAnimId) cancelAnimationFrame(progressAnimId);
       progressBarEl.style.width = '0%';
       const startTime = performance.now();
-
       function updateProgress(now) {
         if (!isPlaying) return;
         const progress = Math.min(((now - startTime) / PLAY_DELAY) * 100, 100);
@@ -647,7 +679,7 @@
       progressEl.classList.add('active');
       updatePlayButtonState();
       startProgressAnimation();
-      playIntervalId = setInterval(function() {
+      playIntervalId = setInterval(() => {
         if (!isPlaying) return;
         if (currentIndex < images.length - 1) {
           currentIndex++;
@@ -669,13 +701,11 @@
       if (!lbIsOpen) return;
       lbIsOpen = false;
       isPlaying = false;
-      if (playIntervalId) { clearInterval(playIntervalId);
-        playIntervalId = null; }
-      if (progressAnimId) { cancelAnimationFrame(progressAnimId);
-        progressAnimId = null; }
+      if (playIntervalId) { clearInterval(playIntervalId); playIntervalId = null; }
+      if (progressAnimId) { cancelAnimationFrame(progressAnimId); progressAnimId = null; }
       if (progressEl.parentNode) progressEl.remove();
       overlay.classList.remove('active');
-      setTimeout(function() {
+      setTimeout(() => {
         if (overlay.parentNode) overlay.remove();
         document.body.style.overflow = '';
         document.removeEventListener('keydown', escHandler);
@@ -696,7 +726,7 @@
       }
     }
 
-    img.addEventListener('wheel', function(e) {
+    img.addEventListener('wheel', function (e) {
       e.preventDefault();
       const delta = e.deltaY > 0 ? -0.1 : 0.1;
       const newScale = Math.min(Math.max(0.5, scale + delta), 5);
@@ -711,7 +741,7 @@
       img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
     }, { passive: false });
 
-    imgWrapper.addEventListener('touchstart', function(e) {
+    imgWrapper.addEventListener('touchstart', function (e) {
       if (e.touches.length === 2) {
         const t = e.touches;
         touchStartDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
@@ -726,7 +756,7 @@
       }
     }, { passive: true });
 
-    imgWrapper.addEventListener('touchmove', function(e) {
+    imgWrapper.addEventListener('touchmove', function (e) {
       if (e.touches.length === 2) {
         const t = e.touches;
         const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
@@ -739,20 +769,17 @@
       img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
     }, { passive: true });
 
-    imgWrapper.addEventListener('touchend', function() {
+    imgWrapper.addEventListener('touchend', function () {
       isDragging = false;
       imgWrapper.style.cursor = 'grab';
-      if (scale < 1) { scale = 1;
-        translateX = 0;
-        translateY = 0; }
+      if (scale < 1) { scale = 1; translateX = 0; translateY = 0; }
       if (scale > 3) { scale = 3; }
-      if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) { translateX = 0;
-        translateY = 0; }
+      if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) { translateX = 0; translateY = 0; }
       img.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
       img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
     });
 
-    imgWrapper.addEventListener('mousedown', function(e) {
+    imgWrapper.addEventListener('mousedown', function (e) {
       mouseDown = true;
       mouseStartX = e.clientX;
       mouseStartY = e.clientY;
@@ -762,7 +789,7 @@
       e.preventDefault();
     });
 
-    document.addEventListener('mousemove', function(e) {
+    document.addEventListener('mousemove', function (e) {
       if (!mouseDown) return;
       translateX = mouseLastX + (e.clientX - mouseStartX);
       translateY = mouseLastY + (e.clientY - mouseStartY);
@@ -770,25 +797,22 @@
       img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
     });
 
-    document.addEventListener('mouseup', function() {
+    document.addEventListener('mouseup', function () {
       if (!mouseDown) return;
       mouseDown = false;
       imgWrapper.style.cursor = 'grab';
-      if (scale < 1) { scale = 1;
-        translateX = 0;
-        translateY = 0; }
+      if (scale < 1) { scale = 1; translateX = 0; translateY = 0; }
       if (scale > 3) { scale = 3; }
-      if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) { translateX = 0;
-        translateY = 0; }
+      if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) { translateX = 0; translateY = 0; }
       img.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
       img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
     });
 
     closeBtn.addEventListener('click', closeLightbox);
-    overlay.addEventListener('click', function(e) {
+    overlay.addEventListener('click', function (e) {
       if (e.target === this) closeLightbox();
     });
-    prevBtn.addEventListener('click', function(e) {
+    prevBtn.addEventListener('click', function (e) {
       e.stopPropagation();
       if (isPlaying) stopPlayback();
       if (images.length > 1) {
@@ -796,7 +820,7 @@
         updateLightbox();
       }
     });
-    nextBtn.addEventListener('click', function(e) {
+    nextBtn.addEventListener('click', function (e) {
       e.stopPropagation();
       if (isPlaying) stopPlayback();
       if (images.length > 1) {
@@ -804,14 +828,14 @@
         updateLightbox();
       }
     });
-    playBtn.addEventListener('click', function(e) {
+    playBtn.addEventListener('click', function (e) {
       e.stopPropagation();
       togglePlay();
     });
 
     document.addEventListener('keydown', escHandler);
     updateLightbox();
-    requestAnimationFrame(function() { overlay.classList.add('active'); });
+    requestAnimationFrame(() => overlay.classList.add('active'));
   }
 
   function mountMarkdown(container, markdownText) {
@@ -828,15 +852,15 @@
 
   function bindImageLightbox(container) {
     const images = [];
-    container.querySelectorAll('.img-placeholder img').forEach(function(img) {
+    container.querySelectorAll('.img-placeholder img').forEach(img => {
       const src = img.getAttribute('src');
       if (src) {
-        images.push({ src: src, alt: img.getAttribute('alt') || '' });
+        images.push({ src, alt: img.getAttribute('alt') || '' });
       }
     });
-    container.querySelectorAll('.img-placeholder img').forEach(function(img, index) {
+    container.querySelectorAll('.img-placeholder img').forEach((img, index) => {
       img.style.cursor = 'pointer';
-      img.addEventListener('click', function(e) {
+      img.addEventListener('click', function (e) {
         e.stopPropagation();
         openLightbox(images, index);
       });
@@ -852,7 +876,6 @@
     if (Math.abs(distance) < 5) return;
     const duration = 350;
     const startTime = performance.now();
-
     function step(now) {
       const progress = Math.min((now - startTime) / duration, 1);
       const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
@@ -863,7 +886,7 @@
     requestAnimationFrame(step);
   }
 
-  document.addEventListener('click', function(e) {
+  document.addEventListener('click', function (e) {
     const footnoteRef = e.target.closest('[data-footnote-ref]');
     if (footnoteRef) {
       e.preventDefault();
@@ -883,7 +906,6 @@
         if (Math.abs(distance) < 5) return;
         const duration = 350;
         const startTime = performance.now();
-
         function step(now) {
           const progress = Math.min((now - startTime) / duration, 1);
           const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
@@ -902,7 +924,7 @@
       const wrapper = document.getElementById('cbw-' + targetId);
       if (!wrapper) return;
       let text = '';
-      wrapper.querySelectorAll('.code-line').forEach(function(line) {
+      wrapper.querySelectorAll('.code-line').forEach(line => {
         const clone = line.cloneNode(true);
         const lineNum = clone.querySelector('.line-number');
         if (lineNum) lineNum.remove();
@@ -925,7 +947,7 @@
         if (success) {
           copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
           copyBtn.classList.add('copied');
-          setTimeout(function() {
+          setTimeout(() => {
             copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
             copyBtn.classList.remove('copied');
           }, 2000);

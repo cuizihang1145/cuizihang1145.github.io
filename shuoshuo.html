@@ -1816,7 +1816,6 @@
                 return html;
             }
 
-            var API_KEY = '';
             var allShuoshuo = [];
             var currentFilter = 'newest';
             var currentKeyword = '';
@@ -1943,39 +1942,21 @@
                 updateAllHeartIcons();
             }
 
-            function fetchApiKey() {
-                return fetch('/api/config')
+            function fetchLikes() {
+                return fetch('/api/likes')
                     .then(function(res) {
-                        if (!res.ok) throw new Error('获取配置失败');
+                        if (!res.ok) throw new Error('获取点赞数失败');
                         return res.json();
                     })
                     .then(function(data) {
-                        if (!data.key) throw new Error('未获取到 API Key');
-                        API_KEY = data.key;
-                    });
-            }
-
-            function fetchLikes() {
-                if (!API_KEY) return Promise.reject('API Key 未初始化');
-                return fetch('/api/likes', {
-                    headers: { 'X-API-Key': API_KEY }
-                })
-                .then(function(res) {
-                    if (!res.ok) throw new Error('获取点赞数失败');
-                    return res.json();
-                })
-                .then(function(data) {
-                    if (data.key !== API_KEY) {
-                        throw new Error('密钥不匹配');
-                    }
-                    if (!data.success) {
-                        throw new Error(data.error || '获取失败');
-                    }
-                    likesCache = data.data || {};
-                    syncLikedIdsWithCounts();
-                    refreshLikeUI();
-                })
-                .catch(function(err) {});
+                        if (!data.success) {
+                            throw new Error(data.error || '获取失败');
+                        }
+                        likesCache = data.data || {};
+                        syncLikedIdsWithCounts();
+                        refreshLikeUI();
+                    })
+                    .catch(function(err) {});
             }
 
             function syncLikedIdsWithCounts() {
@@ -2032,38 +2013,29 @@
                 fetch('/api/likes', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-API-Key': API_KEY
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ id: id, action: action })
                 })
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     if (btn) btn.dataset.loading = 'false';
-                    if (data.key !== API_KEY) {
-                        countEl.textContent = currentText;
-                        if (action === 'like') removeLikedId(id);
-                        else addLikedId(id);
-                        updateHeartIcon(id);
-                        showToast('数据异常', 'fa-exclamation-circle');
-                        return;
-                    }
-                    if (data.success) {
-                        likesCache[id] = data.likes;
-                        countEl.textContent = data.likes;
-                        updateHeartIcon(id);
-                        var likeCount = parseInt(data.likes, 10);
-                        if (!isNaN(likeCount) && likeCount <= 0) {
-                            removeLikedId(id);
-                        } else if (action === 'like') {
-                            addLikedId(id);
-                        }
-                    } else {
+                    if (!data.success) {
                         countEl.textContent = currentText;
                         if (action === 'like') removeLikedId(id);
                         else addLikedId(id);
                         updateHeartIcon(id);
                         showToast(data.error || '操作失败', 'fa-exclamation-circle');
+                        return;
+                    }
+                    likesCache[id] = data.likes;
+                    countEl.textContent = data.likes;
+                    updateHeartIcon(id);
+                    var likeCount = parseInt(data.likes, 10);
+                    if (!isNaN(likeCount) && likeCount <= 0) {
+                        removeLikedId(id);
+                    } else if (action === 'like') {
+                        addLikedId(id);
                     }
                 })
                 .catch(function() {
@@ -2677,9 +2649,6 @@
 
             loadLikedIdsFromDB()
                 .then(function() {
-                    return fetchApiKey();
-                })
-                .then(function() {
                     return fetchShuoshuo();
                 })
                 .then(function() {
@@ -2689,8 +2658,7 @@
                     initPusher();
                 })
                 .catch(function(err) {
-                    fetchApiKey()
-                        .then(fetchShuoshuo)
+                    fetchShuoshuo()
                         .then(fetchLikes)
                         .then(function() {
                             initPusher();

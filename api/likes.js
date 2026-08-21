@@ -68,6 +68,72 @@ async function checkSessionLimit(sessionId) {
   return { allowed: true };
 }
 
+// 存储数学题会话，key 为 IP，value 为 { answer, expires }
+const mathSessions = {};
+
+// 生成一道 10~99 的加减法数学题
+function generateMathQuestion() {
+  let a, b, answer, op, question;
+  const operators = ['+', '-'];
+
+  do {
+    a = Math.floor(Math.random() * 89) + 10;
+    b = Math.floor(Math.random() * 89) + 10;
+    op = operators[Math.floor(Math.random() * operators.length)];
+
+    if (op === '+') {
+      answer = a + b;
+      if (answer > 99) {
+        a = Math.floor(Math.random() * (99 - 10 - b)) + 10;
+        answer = a + b;
+      }
+      question = a + ' + ' + b + ' = ?';
+    } else {
+      if (a < b) {
+        const temp = a;
+        a = b;
+        b = temp;
+      }
+      if (a === b) {
+        b = a - Math.floor(Math.random() * 20) - 1;
+        if (b < 10) b = 10;
+        if (a <= b) { a = b + Math.floor(Math.random() * 20) + 5; }
+      }
+      answer = a - b;
+      question = a + ' - ' + b + ' = ?';
+    }
+  } while (answer < 10 || answer > 99 || a === b || b === 0 || a === 0);
+
+  return { question, answer };
+}
+
+// 根据前端采集的行为数据计算风险分数，0-100，越高越可疑
+function calculateRiskScore(behavior) {
+  if (!behavior) return 60;
+
+  let score = 0;
+
+  // 鼠标路径点太少（< 3）→ 可疑
+  if (!behavior.mousePoints || behavior.mousePoints < 3) score += 30;
+
+  // 点击位置太正中心（偏移 < 10px）→ 可疑
+  const dx = behavior.clickOffsetX || 0;
+  const dy = behavior.clickOffsetY || 0;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist < 10) score += 20;
+
+  // 页面停留时间小于 2 秒 → 可疑
+  if (behavior.stayTime && behavior.stayTime < 2000) score += 20;
+
+  // 未滚动过 → 可疑
+  if (!behavior.hasScrolled) score += 15;
+
+  // 硬件并发数 ≤ 2（常见于无头浏览器）→ 可疑
+  if (behavior.hardwareConcurrency && behavior.hardwareConcurrency <= 2) score += 15;
+
+  return Math.min(score, 100);
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -85,7 +151,6 @@ export default async function handler(req, res) {
 
   const clientIP = getClientIP(req);
 
-  // 解析 Cookie，获取或生成会话 ID
   const cookies = parseCookies(req.headers.cookie || '');
   let sessionId = cookies.session_id;
 
@@ -105,7 +170,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { id, action } = req.body || {};
+    const { id, action, behavior, mathAnswer } = req.body || {};
 
     if (!id || !action) {
       return res.status(400).json({ success: false, error: 'Missing id or action' });
@@ -125,6 +190,31 @@ export default async function handler(req, res) {
       return res.status(429).json({ success: false, error: sessionRate.reason });
     }
 
+    // 如果带了 mathAnswer，优先验证数学题
+    if (mathAnswer !== undefined && mathAnswer !== null) {
+      const session = mathSessions[clientIP];
+      if (!session || session.expires < Date.now() || session.answer !== mathAnswer) {
+        return res.status(400).json({ success: false, error: '答案错误或已过期' });
+      }
+      delete mathSessions[clientIP];
+    } else {
+      // 没带 mathAnswer，走行为检测
+      const riskScore = calculateRiskScore(behavior);
+      if (riskScore >= 50) {
+        const q = generateMathQuestion();
+        mathSessions[clientIP] = {
+          answer: q.answer,
+          expires: Date.now() + 5 * 60 * 1000
+        };
+        return res.status(403).json({
+          success: false,
+          needMath: true,
+          question: q.question
+        });
+      }
+    }
+
+    // 验证通过，执行点赞
     try {
       const key = 'likes:counts';
       const current = await kv.hget(key, id) || 0;

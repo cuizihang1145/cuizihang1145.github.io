@@ -1,11 +1,10 @@
 import { kv } from '@vercel/kv';
-import Pusher from 'pusher';  // ← 新增：引入 Pusher SDK
+import Pusher from 'pusher';
+import crypto from 'crypto';
 
 const ALLOWED_ORIGINS = ['https://www.cuizi.top'];
 const RATE_LIMIT_MS = 300;
-const API_KEY = process.env.LIKE_API_KEY;
 
-// ==================== Pusher 初始化 ====================
 const pusher = new Pusher({
   appId: process.env.PUSHER_APP_ID,
   key: process.env.PUSHER_KEY,
@@ -14,7 +13,6 @@ const pusher = new Pusher({
   useTLS: true,
 });
 
-// ==================== 工具函数 ====================
 function getClientIP(req) {
   const forwarded = req.headers['x-forwarded-for'];
   return forwarded ? forwarded.split(',')[0].trim() : req.socket?.remoteAddress || 'unknown';
@@ -37,6 +35,15 @@ function isValidUserAgent(req) {
   return !blocked.some(k => ua.toLowerCase().includes(k));
 }
 
+function parseCookies(cookieHeader) {
+  if (!cookieHeader) return {};
+  return cookieHeader.split(';').reduce((acc, pair) => {
+    const [key, ...rest] = pair.trim().split('=');
+    acc[key] = rest.join('=');
+    return acc;
+  }, {});
+}
+
 async function checkRateLimit(ip, id) {
   const now = Date.now();
   const shortKey = `rate:short:${ip}:${id}`;
@@ -48,70 +55,94 @@ async function checkRateLimit(ip, id) {
   return { allowed: true };
 }
 
-// ==================== 主 Handler ====================
+async function checkSessionLimit(sessionId) {
+  if (!sessionId) return { allowed: true };
+  const rateKey = `rate:session:${sessionId}`;
+  const count = await kv.incr(rateKey);
+  if (count === 1) {
+    await kv.expire(rateKey, 300);
+  }
+  if (count > 30) {
+    return { allowed: false, reason: '操作过于频繁，请稍后再试' };
+  }
+  return { allowed: true };
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   if (!isAllowedOrigin(req)) {
     return res.status(403).json({ success: false, error: 'Forbidden: Invalid Referer' });
   }
+
   if (!isValidUserAgent(req)) {
     return res.status(403).json({ success: false, error: 'Forbidden: Unsupported User-Agent' });
   }
+
   const clientIP = getClientIP(req);
-  const clientKey = req.headers['x-api-key'];
-  if (API_KEY && (!clientKey || clientKey !== API_KEY)) {
-    return res.status(403).json({ success: false, error: 'Invalid API Key' });
+
+  // 解析 Cookie，获取或生成会话 ID
+  const cookies = parseCookies(req.headers.cookie || '');
+  let sessionId = cookies.session_id;
+
+  if (!sessionId) {
+    sessionId = crypto.randomBytes(16).toString('hex');
+    res.setHeader('Set-Cookie', `session_id=${sessionId}; HttpOnly; Secure; SameSite=Lax; Max-Age=300; Path=/`);
   }
 
-  // ==================== GET：获取所有点赞数 ====================
   if (req.method === 'GET') {
     try {
       const counts = await kv.hgetall('likes:counts') || {};
-      return res.status(200).json({ success: true, data: counts, key: API_KEY || '' });
+      return res.status(200).json({ success: true, data: counts });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ success: false, error: 'Internal error' });
     }
   }
 
-  // ==================== POST：点赞/取消点赞 ====================
   if (req.method === 'POST') {
     const { id, action } = req.body || {};
+
     if (!id || !action) {
       return res.status(400).json({ success: false, error: 'Missing id or action' });
     }
+
     if (action !== 'like' && action !== 'unlike') {
       return res.status(400).json({ success: false, error: 'Invalid action' });
     }
-    const rateResult = await checkRateLimit(clientIP, id);
-    if (!rateResult.allowed) {
-      return res.status(429).json({ success: false, error: rateResult.reason });
+
+    const ipRate = await checkRateLimit(clientIP, id);
+    if (!ipRate.allowed) {
+      return res.status(429).json({ success: false, error: ipRate.reason });
     }
+
+    const sessionRate = await checkSessionLimit(sessionId);
+    if (!sessionRate.allowed) {
+      return res.status(429).json({ success: false, error: sessionRate.reason });
+    }
+
     try {
       const key = 'likes:counts';
       const current = await kv.hget(key, id) || 0;
-      let newVal = action === 'like' ? current + 1 : Math.max(0, current - 1);
+      const newVal = action === 'like' ? current + 1 : Math.max(0, current - 1);
       await kv.hset(key, { [id]: newVal });
 
-      // ==================== 🚀 新增：Pusher 实时推送 ====================
-      // 不阻塞主流程，即使推送失败也不影响点赞结果
       pusher.trigger('shuoshuo-channel', 'like-event', {
         id: id,
         likes: newVal,
         action: action,
       }).catch(err => {
-        console.warn('Pusher 推送失败（不影响点赞）:', err.message);
+        console.warn('Pusher push failed:', err.message);
       });
 
       return res.status(200).json({
         success: true,
         id: id,
         likes: newVal,
-        key: API_KEY || ''
       });
     } catch (err) {
       console.error(err);

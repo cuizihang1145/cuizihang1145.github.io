@@ -16,7 +16,10 @@
     <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+    <!-- 行为检测库 -->
+    <script src="https://static.axept.io/behavior-detector.latest.js"></script>
     <style>
+        /* 原有样式保持不变 */
         * {
             margin: 0;
             padding: 0;
@@ -1205,6 +1208,27 @@
         (function() {
             'use strict';
 
+            // -------- 行为检测配置 ----------
+            // 此配置在库加载后自动生效
+            window.bdSettings = {
+                autoStart: true,
+                checkMs: 2000,
+                botThreshold: 0.3,
+                humanThreshold: 0.7,
+                onScore: function(result) {
+                    // 可在此记录分数，暂不处理
+                },
+                ifBot: function(result) {
+                    // 如果检测到机器人，会自动触发数学题
+                    // 但我们会通过后端返回 needMath 来控制，这里只是辅助
+                    console.log('[行为检测] 疑似机器人，分数:', result.score);
+                },
+                ifHuman: function(result) {
+                    console.log('[行为检测] 真人确认，分数:', result.score);
+                }
+            };
+
+            // -------- 原有数据库操作 ----------
             var DB_NAME = 'ks_shuoshuo_db';
             var STORE_NAME = 'settings';
             var LIKED_IDS_KEY = 'liked_ids';
@@ -1979,6 +2003,7 @@
                 }
             }
 
+            // -------- 核心点赞函数（改造版） ----------
             function toggleLike(id, action) {
                 var countEl = document.getElementById('like-count-' + id);
                 if (!countEl) return;
@@ -2010,44 +2035,159 @@
                 window._lastLocalLikeId = String(id);
                 window._lastLocalLikeTime = Date.now();
 
-                fetch('/api/likes', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ id: id, action: action })
-                })
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    if (btn) btn.dataset.loading = 'false';
-                    if (!data.success) {
+                // 采集行为数据
+                var behavior = collectBehavior();
+
+                function sendRequest(mathAnswer) {
+                    var payload = {
+                        id: id,
+                        action: action,
+                        behavior: behavior
+                    };
+                    if (mathAnswer !== undefined && mathAnswer !== null) {
+                        payload.mathAnswer = mathAnswer;
+                    }
+                    return fetch('/api/likes', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    })
+                    .then(function(res) {
+                        if (!res.ok) {
+                            return res.json().then(function(data) {
+                                throw data;
+                            });
+                        }
+                        return res.json();
+                    });
+                }
+
+                // 首次请求（不带 mathAnswer）
+                sendRequest()
+                    .then(function(data) {
+                        if (btn) btn.dataset.loading = 'false';
+                        if (data.needMath) {
+                            // 需要数学题验证
+                            var answer = prompt('请计算: ' + data.question);
+                            if (answer === null) {
+                                // 用户取消，回滚
+                                countEl.textContent = currentText;
+                                if (action === 'like') removeLikedId(id);
+                                else addLikedId(id);
+                                updateHeartIcon(id);
+                                showToast('已取消', 'fa-info-circle');
+                                return;
+                            }
+                            var numAnswer = parseInt(answer, 10);
+                            if (isNaN(numAnswer)) {
+                                showToast('请输入有效数字', 'fa-exclamation-circle');
+                                // 重新触发数学题（递归调用）
+                                toggleLike(id, action);
+                                return;
+                            }
+                            // 带答案重试
+                            sendRequest(numAnswer)
+                                .then(function(data2) {
+                                    if (btn) btn.dataset.loading = 'false';
+                                    if (!data2.success) {
+                                        countEl.textContent = currentText;
+                                        if (action === 'like') removeLikedId(id);
+                                        else addLikedId(id);
+                                        updateHeartIcon(id);
+                                        showToast(data2.error || '操作失败', 'fa-exclamation-circle');
+                                        return;
+                                    }
+                                    // 成功
+                                    likesCache[id] = data2.likes;
+                                    countEl.textContent = data2.likes;
+                                    updateHeartIcon(id);
+                                    var likeCount = parseInt(data2.likes, 10);
+                                    if (!isNaN(likeCount) && likeCount <= 0) {
+                                        removeLikedId(id);
+                                    } else if (action === 'like') {
+                                        addLikedId(id);
+                                    }
+                                })
+                                .catch(function(err) {
+                                    if (btn) btn.dataset.loading = 'false';
+                                    countEl.textContent = currentText;
+                                    if (action === 'like') removeLikedId(id);
+                                    else addLikedId(id);
+                                    updateHeartIcon(id);
+                                    showToast(err.error || '网络错误', 'fa-exclamation-circle');
+                                });
+                            return;
+                        }
+
+                        // 正常成功
+                        if (!data.success) {
+                            countEl.textContent = currentText;
+                            if (action === 'like') removeLikedId(id);
+                            else addLikedId(id);
+                            updateHeartIcon(id);
+                            showToast(data.error || '操作失败', 'fa-exclamation-circle');
+                            return;
+                        }
+                        likesCache[id] = data.likes;
+                        countEl.textContent = data.likes;
+                        updateHeartIcon(id);
+                        var likeCount = parseInt(data.likes, 10);
+                        if (!isNaN(likeCount) && likeCount <= 0) {
+                            removeLikedId(id);
+                        } else if (action === 'like') {
+                            addLikedId(id);
+                        }
+                    })
+                    .catch(function(err) {
+                        if (btn) btn.dataset.loading = 'false';
                         countEl.textContent = currentText;
                         if (action === 'like') removeLikedId(id);
                         else addLikedId(id);
                         updateHeartIcon(id);
-                        showToast(data.error || '操作失败', 'fa-exclamation-circle');
-                        return;
-                    }
-                    likesCache[id] = data.likes;
-                    countEl.textContent = data.likes;
-                    updateHeartIcon(id);
-                    var likeCount = parseInt(data.likes, 10);
-                    if (!isNaN(likeCount) && likeCount <= 0) {
-                        removeLikedId(id);
-                    } else if (action === 'like') {
-                        addLikedId(id);
-                    }
-                })
-                .catch(function() {
-                    if (btn) btn.dataset.loading = 'false';
-                    countEl.textContent = currentText;
-                    if (action === 'like') removeLikedId(id);
-                    else addLikedId(id);
-                    updateHeartIcon(id);
-                    showToast('网络错误', 'fa-exclamation-circle');
-                });
+                        showToast(err.error || '网络错误', 'fa-exclamation-circle');
+                    });
             }
 
+            // -------- 行为数据采集 ----------
+            var _mousePath = [];
+            var _lastClickX = 0,
+                _lastClickY = 0;
+            var _pageLoadTime = Date.now();
+            var _hasScrolled = false;
+
+            document.addEventListener('mousemove', function(e) {
+                _mousePath.push({ x: e.clientX, y: e.clientY, t: Date.now() });
+                if (_mousePath.length > 10) _mousePath.shift();
+            });
+
+            document.addEventListener('click', function(e) {
+                _lastClickX = e.clientX;
+                _lastClickY = e.clientY;
+            });
+
+            document.addEventListener('scroll', function() {
+                _hasScrolled = true;
+            });
+
+            function collectBehavior() {
+                var pathLen = 0;
+                for (var i = 1; i < _mousePath.length; i++) {
+                    var dx = _mousePath[i].x - _mousePath[i-1].x;
+                    var dy = _mousePath[i].y - _mousePath[i-1].y;
+                    pathLen += Math.sqrt(dx*dx + dy*dy);
+                }
+                return {
+                    mousePoints: _mousePath.length,
+                    pathLength: pathLen,
+                    clickOffsetX: _lastClickX,
+                    clickOffsetY: _lastClickY,
+                    stayTime: Date.now() - _pageLoadTime,
+                    hasScrolled: _hasScrolled,
+                    hardwareConcurrency: navigator.hardwareConcurrency || 0
+                };
+            }
+
+            // -------- Pusher 实时推送 ----------
             function initPusher() {
                 try {
                     var pusher = new Pusher('011cb37208751f810834', {
@@ -2083,6 +2223,7 @@
                 } catch (_) {}
             }
 
+            // -------- 其他函数（不变） ----------
             function handleUrlId() {
                 if (urlIdHandled) return;
                 var urlParams = new URLSearchParams(window.location.search);

@@ -90,6 +90,12 @@
         { domain: 'bandcamp.com', icon: 'fa-bandcamp', label: 'Bandcamp', cls: 'source-bandcamp' },
         { domain: 'spotify.com', icon: 'fa-spotify', label: 'Spotify', cls: 'source-spotify' },
         { domain: 'apple.com', icon: 'fa-apple', label: 'Apple Music', cls: 'source-apple' },
+        { domain: 'tidal.com', icon: 'fa-tidal', label: 'Tidal', cls: 'source-tidal' },
+        { domain: 'deezer.com', icon: 'fa-deezer', label: 'Deezer', cls: 'source-deezer' },
+        { domain: 'pandora.com', icon: 'fa-pandora', label: 'Pandora', cls: 'source-pandora' },
+        { domain: 'mixcloud.com', icon: 'fa-mixcloud', label: 'Mixcloud', cls: 'source-mixcloud' },
+        { domain: 'youtube.com', icon: 'fa-youtube', label: 'YouTube Music', cls: 'source-youtube' },
+        { domain: 'amazon.com', icon: 'fa-amazon', label: 'Amazon Music', cls: 'source-amazon' },
       ];
       try {
         const host = new URL(src).hostname.replace(/^www\./, '');

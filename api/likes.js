@@ -72,7 +72,7 @@ export default async function handler(req, res) {
 
   if (!sessionId) {
     sessionId = generateSessionId();
-    res.setHeader('Set-Cookie', `session_id=${sessionId}; HttpOnly; Secure; SameSite=Lax; Max-Age=300; Path=/`);
+    res.setHeader('Set-Cookie', `session_id=${sessionId}; HttpOnly; Secure; SameSite=Lax; Max-Age=604800; Path=/`);
   }
 
   if (req.method === 'GET') {
@@ -86,10 +86,13 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { id, action } = req.body || {};
+    const { id, action, visitorId } = req.body || {};
 
     if (!id || !action) {
       return res.status(400).json({ success: false, error: 'Missing id or action' });
+    }
+    if (!visitorId) {
+      return res.status(400).json({ success: false, error: 'Missing visitorId' });
     }
     if (action !== 'like' && action !== 'unlike') {
       return res.status(400).json({ success: false, error: 'Invalid action' });
@@ -111,33 +114,52 @@ export default async function handler(req, res) {
       return res.status(429).json({ success: false, error: '操作过于频繁，请稍后再试' });
     }
 
+    const likeSetKey = `like:set:${id}`;
+
     try {
-      const delta = action === 'like' ? 1 : -1;
-      const pipeline = kv.pipeline();
-      pipeline.set(shortKey, String(now), { px: RATE_LIMIT_MS });
-      pipeline.incr(sessionKey);
-      pipeline.expire(sessionKey, 300);
-      pipeline.hincrby('likes:counts', id, delta);
+      const isLiked = await kv.sismember(likeSetKey, visitorId);
 
-      const results = await pipeline.exec();
-      let newVal = results[3];
+      if (action === 'like') {
+        if (isLiked) {
+          const currentCount = await kv.scard(likeSetKey);
+          return res.status(200).json({ success: true, id, likes: currentCount });
+        }
 
-      if (newVal < 0) {
-        await kv.hset('likes:counts', { [id]: 0 });
-        newVal = 0;
+        await kv.sadd(likeSetKey, visitorId);
+        const newCount = await kv.scard(likeSetKey);
+        await kv.hset('likes:counts', { [id]: newCount });
+
+        pusher.trigger('shuoshuo-channel', 'like-event', { id, likes: newCount, action }).catch(() => {});
+
+        const pipeline = kv.pipeline();
+        pipeline.set(shortKey, String(now), { px: RATE_LIMIT_MS });
+        pipeline.incr(sessionKey);
+        pipeline.expire(sessionKey, 300);
+        await pipeline.exec();
+
+        return res.status(200).json({ success: true, id, likes: newCount });
       }
 
-      pusher.trigger('shuoshuo-channel', 'like-event', {
-        id,
-        likes: newVal,
-        action,
-      }).catch(() => {});
+      if (action === 'unlike') {
+        if (!isLiked) {
+          const currentCount = await kv.scard(likeSetKey);
+          return res.status(400).json({ success: false, error: '我去了，你都没点赞你取消个毛线' });
+        }
 
-      return res.status(200).json({
-        success: true,
-        id,
-        likes: newVal,
-      });
+        await kv.srem(likeSetKey, visitorId);
+        const newCount = await kv.scard(likeSetKey);
+        await kv.hset('likes:counts', { [id]: newCount });
+
+        pusher.trigger('shuoshuo-channel', 'like-event', { id, likes: newCount, action }).catch(() => {});
+
+        const pipeline = kv.pipeline();
+        pipeline.set(shortKey, String(now), { px: RATE_LIMIT_MS });
+        pipeline.incr(sessionKey);
+        pipeline.expire(sessionKey, 300);
+        await pipeline.exec();
+
+        return res.status(200).json({ success: true, id, likes: newCount });
+      }
     } catch (err) {
       console.error(err);
       return res.status(500).json({ success: false, error: 'Internal error' });

@@ -98,33 +98,62 @@ export default async function handler(req, res) {
     const shortKey = `rate:short:${clientIP}:${id}`;
     const sessionKey = `rate:session:${sessionId}`;
     const now = Date.now();
+    const delta = action === 'like' ? 1 : -1;
 
-    const [shortVal, sessionVal] = await Promise.all([
-      kv.get(shortKey),
-      kv.get(sessionKey),
-    ]);
+    const luaScript = `
+      local shortKey = KEYS[1]
+      local sessionKey = KEYS[2]
+      local countKey = KEYS[3]
+      local now = tonumber(ARGV[1])
+      local delta = tonumber(ARGV[2])
+      local rateLimitMs = tonumber(ARGV[3])
+      local sessionLimit = tonumber(ARGV[4])
+      local field = ARGV[5]
 
-    if (shortVal !== null && (now - Number(shortVal)) < RATE_LIMIT_MS) {
-      return res.status(429).json({ success: false, error: '操作过快，请稍后再试' });
-    }
-    if (sessionVal !== null && Number(sessionVal) > 30) {
-      return res.status(429).json({ success: false, error: '操作过于频繁，请稍后再试' });
-    }
+      local shortVal = redis.call('GET', shortKey)
+      if shortVal then
+        local lastTime = tonumber(shortVal)
+        if (now - lastTime) < rateLimitMs then
+          return {0, 'rate'}
+        end
+      end
+
+      local sessionVal = redis.call('GET', sessionKey)
+      if sessionVal then
+        local count = tonumber(sessionVal)
+        if count >= sessionLimit then
+          return {0, 'limit'}
+        end
+      end
+
+      redis.call('SET', shortKey, now, 'PX', rateLimitMs)
+      redis.call('INCR', sessionKey)
+      redis.call('EXPIRE', sessionKey, 300)
+      local newVal = redis.call('HINCRBY', countKey, field, delta)
+
+      if newVal < 0 then
+        newVal = 0
+        redis.call('HSET', countKey, field, 0)
+      end
+
+      return {newVal, 'ok'}
+    `;
 
     try {
-      const delta = action === 'like' ? 1 : -1;
-      const pipeline = kv.pipeline();
-      pipeline.set(shortKey, String(now), { px: RATE_LIMIT_MS });
-      pipeline.incr(sessionKey);
-      pipeline.expire(sessionKey, 300);
-      pipeline.hincrby('likes:counts', id, delta);
+      const result = await kv.eval(
+        luaScript,
+        [shortKey, sessionKey, 'likes:counts'],
+        [String(now), String(delta), String(RATE_LIMIT_MS), '30', id]
+      );
 
-      const results = await pipeline.exec();
-      let newVal = results[3];
+      const newVal = result[0];
+      const status = result[1];
 
-      if (newVal < 0) {
-        await kv.hset('likes:counts', { [id]: 0 });
-        newVal = 0;
+      if (status === 'rate') {
+        return res.status(429).json({ success: false, error: '操作过快，请稍后再试' });
+      }
+      if (status === 'limit') {
+        return res.status(429).json({ success: false, error: '操作过于频繁，请稍后再试' });
       }
 
       pusher.trigger('shuoshuo-channel', 'like-event', {

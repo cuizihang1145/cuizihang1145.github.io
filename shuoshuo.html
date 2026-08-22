@@ -16,6 +16,7 @@
     <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@thumbmarkjs/thumbmarkjs/dist/thumbmark.umd.js"></script>
     <style>
         * {
             margin: 0;
@@ -1205,6 +1206,30 @@
         (function() {
             'use strict';
 
+            // ---------- 设备指纹 ----------
+            var visitorId = null;
+            var visitorIdReady = false;
+            var visitorIdPromise = (function() {
+                if (typeof ThumbmarkJS !== 'undefined') {
+                    var tm = new ThumbmarkJS.Thumbmark();
+                    return tm.get().then(function(result) {
+                        visitorId = result.visitorId;
+                        visitorIdReady = true;
+                        return visitorId;
+                    }).catch(function() {
+                        // 降级方案
+                        visitorId = 'fallback_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+                        visitorIdReady = true;
+                        return visitorId;
+                    });
+                } else {
+                    visitorId = 'fallback_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+                    visitorIdReady = true;
+                    return Promise.resolve(visitorId);
+                }
+            })();
+
+            // ---------- IndexedDB 等原有代码 ----------
             var DB_NAME = 'ks_shuoshuo_db';
             var STORE_NAME = 'settings';
             var LIKED_IDS_KEY = 'liked_ids';
@@ -1990,6 +2015,11 @@
                     return;
                 }
 
+                if (!visitorIdReady) {
+                    showToast('指纹加载中，请稍后再点', 'fa-info-circle');
+                    return;
+                }
+
                 var btn = countEl.closest('.like-toggle');
                 if (btn && btn.dataset.loading === 'true') return;
 
@@ -2021,7 +2051,7 @@
                 fetch('/api/likes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: id, action: action })
+                    body: JSON.stringify({ id: id, action: action, visitorId: visitorId })
                 })
                 .then(function(res) {
                     if (!res.ok) {
@@ -2663,24 +2693,28 @@
                 renderShuoshuoList();
             });
 
-            loadLikedIdsFromDB()
-                .then(function() {
-                    return fetchShuoshuo();
-                })
-                .then(function() {
-                    return fetchLikes();
-                })
-                .then(function() {
-                    initPusher();
-                })
-                .catch(function(err) {
-                    fetchShuoshuo()
-                        .then(fetchLikes)
-                        .then(function() {
-                            initPusher();
-                        })
-                        .catch(function(err2) {});
-                });
+            // 等待指纹加载完成后再启动
+            visitorIdPromise.then(function() {
+                return loadLikedIdsFromDB();
+            })
+            .then(function() {
+                return fetchShuoshuo();
+            })
+            .then(function() {
+                return fetchLikes();
+            })
+            .then(function() {
+                initPusher();
+            })
+            .catch(function(err) {
+                // 即使出错也尝试加载
+                fetchShuoshuo()
+                    .then(fetchLikes)
+                    .then(function() {
+                        initPusher();
+                    })
+                    .catch(function(err2) {});
+            });
 
         })();
     </script>

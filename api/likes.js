@@ -8,15 +8,6 @@ function generateSessionId() {
   return now + rand;
 }
 
-// ============ 全局 HTTP Agent 复用连接 ============
-import { Agent } from 'undici';
-const globalDispatcher = new Agent({
-  connections: 100,
-  pipelining: 10,
-});
-// 让 @vercel/kv 底层 fetch 复用 TCP 连接
-globalThis[Symbol.for('undici.globalDispatcher')] = globalDispatcher;
-
 const ALLOWED_ORIGINS = ['https://www.cuizi.top'];
 const RATE_LIMIT_MS = 300;
 
@@ -69,6 +60,7 @@ export default async function handler(req, res) {
   if (!isAllowedOrigin(req)) {
     return res.status(403).json({ success: false, error: 'Forbidden: Invalid Referer' });
   }
+
   if (!isValidUserAgent(req)) {
     return res.status(403).json({ success: false, error: 'Forbidden: Unsupported User-Agent' });
   }
@@ -78,11 +70,11 @@ export default async function handler(req, res) {
   let sessionId = cookies.session_id;
 
   if (!sessionId) {
-    sessionId = generateSessionId(); // 超轻量，不拖 CPU
+    sessionId = generateSessionId(); // 替换掉 crypto
     res.setHeader('Set-Cookie', `session_id=${sessionId}; HttpOnly; Secure; SameSite=Lax; Max-Age=300; Path=/`);
   }
 
-  // ==================== GET 请求（保持原样，已够快） ====================
+  // ==================== GET 请求 ====================
   if (req.method === 'GET') {
     try {
       const counts = await kv.hgetall('likes:counts') || {};
@@ -93,27 +85,29 @@ export default async function handler(req, res) {
     }
   }
 
-  // ==================== POST 请求（全部压入 Pipeline） ====================
+  // ==================== POST 请求 ====================
   if (req.method === 'POST') {
     const { id, action } = req.body || {};
+
     if (!id || !action) {
       return res.status(400).json({ success: false, error: 'Missing id or action' });
     }
+
     if (action !== 'like' && action !== 'unlike') {
       return res.status(400).json({ success: false, error: 'Invalid action' });
     }
 
-    // ---- 第一步：一次性读取所有限频相关键（只花 1 次网络往返） ----
+    // ---- 限频检查（保持原样，但已经在内存中，够快） ----
     const shortKey = `rate:short:${clientIP}:${id}`;
     const sessionKey = `rate:session:${sessionId}`;
-
-    const pRead = kv.pipeline();
-    pRead.get(shortKey);
-    pRead.get(sessionKey);
-    const [shortVal, sessionVal] = await pRead.exec();
-
-    // ---- 内存判断（零网络开销） ----
     const now = Date.now();
+
+    // 用 Promise.all 并行读（比串行快一倍）
+    const [shortVal, sessionVal] = await Promise.all([
+      kv.get(shortKey),
+      kv.get(sessionKey)
+    ]);
+
     if (shortVal !== null && (now - Number(shortVal)) < RATE_LIMIT_MS) {
       return res.status(429).json({ success: false, error: '操作过快，请稍后再试' });
     }
@@ -121,45 +115,41 @@ export default async function handler(req, res) {
       return res.status(429).json({ success: false, error: '操作过于频繁，请稍后再试' });
     }
 
-    // ---- 第二步：执行所有写操作（再次只花 1 次网络往返） ----
-    const delta = action === 'like' ? 1 : -1;
-    const pWrite = kv.pipeline();
+    try {
+      const delta = action === 'like' ? 1 : -1;
 
-    // 更新限频短键（IP 限频）
-    pWrite.set(shortKey, String(now), { px: RATE_LIMIT_MS });
+      // ---- 使用 Pipeline 合并写入操作（关键优化！） ----
+      const pipeline = kv.pipeline();
+      pipeline.set(shortKey, String(now), { px: RATE_LIMIT_MS });
+      pipeline.incr(sessionKey);
+      pipeline.expire(sessionKey, 300);
+      pipeline.hincrby('likes:counts', id, delta);
+      
+      const results = await pipeline.exec();
+      // results 数组：[set结果, incr结果, expire结果, hincrby结果]
+      let newVal = results[3]; // hincrby 的返回值在第四个位置
 
-    // 更新会话计数（自增 + 刷新过期）
-    pWrite.incr(sessionKey);
-    pWrite.expire(sessionKey, 300);
+      if (newVal < 0) {
+        await kv.hset('likes:counts', { [id]: 0 });
+        newVal = 0;
+      }
 
-    // 点赞总数增减（原子操作）
-    pWrite.hincrby('likes:counts', id, delta);
+      // ---- Pusher 不等待 ----
+      pusher.trigger('shuoshuo-channel', 'like-event', {
+        id: id,
+        likes: newVal,
+        action: action,
+      }).catch(() => {});
 
-    // 执行
-    const results = await pWrite.exec();
-    // results 顺序对应 pipeline 添加顺序
-    // 第 3 个是 incr 的结果，第 4 个是 expire 的结果（返回 1/0），第 5 个是 hincrby 的结果
-    let newVal = results[4]; // hincrby 的返回值
-
-    // ---- 钳位（如果减到负数，修复，额外一次写，但概率极低） ----
-    if (newVal < 0) {
-      await kv.hset('likes:counts', { [id]: 0 });
-      newVal = 0;
+      return res.status(200).json({
+        success: true,
+        id: id,
+        likes: newVal,
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ success: false, error: 'Internal error' });
     }
-
-    // ---- 触发 Pusher（不等待） ----
-    pusher.trigger('shuoshuo-channel', 'like-event', {
-      id: id,
-      likes: newVal,
-      action: action,
-    }).catch(() => {});
-
-    // ---- 返回结果 ----
-    return res.status(200).json({
-      success: true,
-      id: id,
-      likes: newVal,
-    });
   }
 
   return res.status(405).json({ success: false, error: 'Method Not Allowed' });

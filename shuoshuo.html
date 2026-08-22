@@ -2006,7 +2006,7 @@
 
             var _likeLock = false;
 
-            function toggleLike(id, action) {
+            async function toggleLike(id, action) {
                 var countEl = document.getElementById('like-count-' + id);
                 if (!countEl) return;
 
@@ -2016,8 +2016,11 @@
                 }
 
                 if (!visitorIdReady) {
-                    showToast('指纹加载中，请稍后再点', 'fa-info-circle');
-                    return;
+                    await visitorIdPromise;
+                    if (!visitorId) {
+                        showToast('设备识别失败，请刷新页面', 'fa-exclamation-circle');
+                        return;
+                    }
                 }
 
                 var btn = countEl.closest('.like-toggle');

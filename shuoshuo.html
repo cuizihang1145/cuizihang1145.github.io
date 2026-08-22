@@ -16,7 +16,6 @@
     <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@thumbmarkjs/thumbmarkjs/dist/thumbmark.umd.js"></script>
     <style>
         * {
             margin: 0;
@@ -1206,30 +1205,7 @@
         (function() {
             'use strict';
 
-            // ---------- 设备指纹 ----------
-            var visitorId = null;
-            var visitorIdReady = false;
-            var visitorIdPromise = (function() {
-                if (typeof ThumbmarkJS !== 'undefined') {
-                    var tm = new ThumbmarkJS.Thumbmark();
-                    return tm.get().then(function(result) {
-                        visitorId = result.visitorId;
-                        visitorIdReady = true;
-                        return visitorId;
-                    }).catch(function() {
-                        // 降级方案
-                        visitorId = 'fallback_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-                        visitorIdReady = true;
-                        return visitorId;
-                    });
-                } else {
-                    visitorId = 'fallback_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-                    visitorIdReady = true;
-                    return Promise.resolve(visitorId);
-                }
-            })();
-
-            // ---------- IndexedDB 等原有代码 ----------
+            // ---------- IndexedDB ----------
             var DB_NAME = 'ks_shuoshuo_db';
             var STORE_NAME = 'settings';
             var LIKED_IDS_KEY = 'liked_ids';
@@ -2006,21 +1982,13 @@
 
             var _likeLock = false;
 
-            async function toggleLike(id, action) {
+            function toggleLike(id, action) {
                 var countEl = document.getElementById('like-count-' + id);
                 if (!countEl) return;
 
                 if (_likeLock) {
                     showToast('正在处理，请稍后', 'fa-info-circle');
                     return;
-                }
-
-                if (!visitorIdReady) {
-                    await visitorIdPromise;
-                    if (!visitorId) {
-                        showToast('设备识别失败，请刷新页面', 'fa-exclamation-circle');
-                        return;
-                    }
                 }
 
                 var btn = countEl.closest('.like-toggle');
@@ -2054,7 +2022,7 @@
                 fetch('/api/likes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: id, action: action, visitorId: visitorId })
+                    body: JSON.stringify({ id: id, action: action })
                 })
                 .then(function(res) {
                     if (!res.ok) {
@@ -2696,28 +2664,24 @@
                 renderShuoshuoList();
             });
 
-            // 等待指纹加载完成后再启动
-            visitorIdPromise.then(function() {
-                return loadLikedIdsFromDB();
-            })
-            .then(function() {
-                return fetchShuoshuo();
-            })
-            .then(function() {
-                return fetchLikes();
-            })
-            .then(function() {
-                initPusher();
-            })
-            .catch(function(err) {
-                // 即使出错也尝试加载
-                fetchShuoshuo()
-                    .then(fetchLikes)
-                    .then(function() {
-                        initPusher();
-                    })
-                    .catch(function(err2) {});
-            });
+            loadLikedIdsFromDB()
+                .then(function() {
+                    return fetchShuoshuo();
+                })
+                .then(function() {
+                    return fetchLikes();
+                })
+                .then(function() {
+                    initPusher();
+                })
+                .catch(function(err) {
+                    fetchShuoshuo()
+                        .then(fetchLikes)
+                        .then(function() {
+                            initPusher();
+                        })
+                        .catch(function(err2) {});
+                });
 
         })();
     </script>

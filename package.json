@@ -1,7 +1,6 @@
 {
   "dependencies": {
-    "@upstash/redis": "^1.28.0",
-    "pusher-http-edge": "^1.0.0"
+    "@vercel/kv": "^1.0.0"
   },
   "scripts": {
     "build": "node split.js"

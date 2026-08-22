@@ -1,10 +1,5 @@
-//Edge Runtime
 import { Redis } from '@upstash/redis';
-import Pusher from 'pusher-http-edge';
-
-export const config = {
-  runtime: 'edge',
-};
+import Pusher from 'pusher';
 
 const kv = new Redis({
   url: process.env.KV_REST_API_URL,
@@ -26,13 +21,13 @@ function generateSessionId() {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
 }
 
-function getClientIP(request) {
-  const forwarded = request.headers.get('x-forwarded-for');
-  return forwarded ? forwarded.split(',')[0].trim() : 'unknown';
+function getClientIP(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  return forwarded ? forwarded.split(',')[0].trim() : req.socket?.remoteAddress || 'unknown';
 }
 
-function isAllowedOrigin(request) {
-  const referer = request.headers.get('referer') || '';
+function isAllowedOrigin(req) {
+  const referer = req.headers.referer || '';
   try {
     const url = new URL(referer);
     return ALLOWED_ORIGINS.some(origin => url.origin === origin);
@@ -41,8 +36,8 @@ function isAllowedOrigin(request) {
   }
 }
 
-function isValidUserAgent(request) {
-  const ua = request.headers.get('user-agent') || '';
+function isValidUserAgent(req) {
+  const ua = req.headers['user-agent'] || '';
   if (!ua) return false;
   const blocked = ['curl', 'wget', 'python-requests', 'java', 'okhttp'];
   return !blocked.some(k => ua.toLowerCase().includes(k));
@@ -57,67 +52,47 @@ function parseCookies(cookieHeader) {
   }, {});
 }
 
-function jsonResponse(status, data) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-    },
-  });
-}
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-export default async function handler(request) {
-  if (request.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    });
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  if (!isAllowedOrigin(req)) {
+    return res.status(403).json({ success: false, error: 'Forbidden' });
+  }
+  if (!isValidUserAgent(req)) {
+    return res.status(403).json({ success: false, error: 'Forbidden' });
   }
 
-  if (!isAllowedOrigin(request)) {
-    return jsonResponse(403, { success: false, error: 'Forbidden' });
-  }
-  if (!isValidUserAgent(request)) {
-    return jsonResponse(403, { success: false, error: 'Forbidden' });
-  }
-
-  const clientIP = getClientIP(request);
-  const cookies = parseCookies(request.headers.get('cookie') || '');
+  const clientIP = getClientIP(req);
+  const cookies = parseCookies(req.headers.cookie || '');
   let sessionId = cookies.session_id;
 
   if (!sessionId) {
     sessionId = generateSessionId();
+    res.setHeader('Set-Cookie', `session_id=${sessionId}; HttpOnly; Secure; SameSite=Lax; Max-Age=300; Path=/`);
   }
 
-  if (request.method === 'GET') {
+  if (req.method === 'GET') {
     try {
       const counts = await kv.hgetall('likes:counts') || {};
-      return jsonResponse(200, { success: true, data: counts });
+      return res.status(200).json({ success: true, data: counts });
     } catch (err) {
       console.error(err);
-      return jsonResponse(500, { success: false, error: 'Internal error' });
+      return res.status(500).json({ success: false, error: 'Internal error' });
     }
   }
 
-  if (request.method === 'POST') {
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return jsonResponse(400, { success: false, error: 'Invalid JSON' });
-    }
-    const { id, action } = body || {};
+  if (req.method === 'POST') {
+    const { id, action } = req.body || {};
 
     if (!id || !action) {
-      return jsonResponse(400, { success: false, error: 'Missing id or action' });
+      return res.status(400).json({ success: false, error: 'Missing id or action' });
     }
     if (action !== 'like' && action !== 'unlike') {
-      return jsonResponse(400, { success: false, error: 'Invalid action' });
+      return res.status(400).json({ success: false, error: 'Invalid action' });
     }
 
     const shortKey = `rate:short:${clientIP}:${id}`;
@@ -130,10 +105,10 @@ export default async function handler(request) {
     ]);
 
     if (shortVal !== null && (now - Number(shortVal)) < RATE_LIMIT_MS) {
-      return jsonResponse(429, { success: false, error: '操作过快，请稍后再试' });
+      return res.status(429).json({ success: false, error: '操作过快，请稍后再试' });
     }
     if (sessionVal !== null && Number(sessionVal) > 30) {
-      return jsonResponse(429, { success: false, error: '操作过于频繁，请稍后再试' });
+      return res.status(429).json({ success: false, error: '操作过于频繁，请稍后再试' });
     }
 
     try {
@@ -158,20 +133,16 @@ export default async function handler(request) {
         action,
       }).catch(() => {});
 
-      const headers = {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Set-Cookie': `session_id=${sessionId}; HttpOnly; Secure; SameSite=Lax; Max-Age=300; Path=/`,
-      };
-      return new Response(JSON.stringify({ success: true, id, likes: newVal }), {
-        status: 200,
-        headers,
+      return res.status(200).json({
+        success: true,
+        id,
+        likes: newVal,
       });
     } catch (err) {
       console.error(err);
-      return jsonResponse(500, { success: false, error: 'Internal error' });
+      return res.status(500).json({ success: false, error: 'Internal error' });
     }
   }
 
-  return jsonResponse(405, { success: false, error: 'Method Not Allowed' });
+  return res.status(405).json({ success: false, error: 'Method Not Allowed' });
 }

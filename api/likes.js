@@ -1,6 +1,21 @@
 import { kv } from '@vercel/kv';
 import Pusher from 'pusher';
-import crypto from 'crypto';
+
+// ============ 轻量级随机（替代 crypto） ============
+function generateSessionId() {
+  const now = Date.now().toString(36);
+  const rand = Math.random().toString(36).substring(2, 8);
+  return now + rand;
+}
+
+// ============ 全局 HTTP Agent 复用连接 ============
+import { Agent } from 'undici';
+const globalDispatcher = new Agent({
+  connections: 100,
+  pipelining: 10,
+});
+// 让 @vercel/kv 底层 fetch 复用 TCP 连接
+globalThis[Symbol.for('undici.globalDispatcher')] = globalDispatcher;
 
 const ALLOWED_ORIGINS = ['https://www.cuizi.top'];
 const RATE_LIMIT_MS = 300;
@@ -44,30 +59,6 @@ function parseCookies(cookieHeader) {
   }, {});
 }
 
-async function checkRateLimit(ip, id) {
-  const now = Date.now();
-  const shortKey = `rate:short:${ip}:${id}`;
-  const last = await kv.get(shortKey);
-  if (last && (now - Number(last)) < RATE_LIMIT_MS) {
-    return { allowed: false, reason: '操作过快，请稍后再试' };
-  }
-  await kv.set(shortKey, String(now), { px: RATE_LIMIT_MS });
-  return { allowed: true };
-}
-
-async function checkSessionLimit(sessionId) {
-  if (!sessionId) return { allowed: true };
-  const rateKey = `rate:session:${sessionId}`;
-  const count = await kv.incr(rateKey);
-  if (count === 1) {
-    await kv.expire(rateKey, 300);
-  }
-  if (count > 30) {
-    return { allowed: false, reason: '操作过于频繁，请稍后再试' };
-  }
-  return { allowed: true };
-}
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -78,21 +69,20 @@ export default async function handler(req, res) {
   if (!isAllowedOrigin(req)) {
     return res.status(403).json({ success: false, error: 'Forbidden: Invalid Referer' });
   }
-
   if (!isValidUserAgent(req)) {
     return res.status(403).json({ success: false, error: 'Forbidden: Unsupported User-Agent' });
   }
 
   const clientIP = getClientIP(req);
-
   const cookies = parseCookies(req.headers.cookie || '');
   let sessionId = cookies.session_id;
 
   if (!sessionId) {
-    sessionId = crypto.randomBytes(16).toString('hex');
+    sessionId = generateSessionId(); // 超轻量，不拖 CPU
     res.setHeader('Set-Cookie', `session_id=${sessionId}; HttpOnly; Secure; SameSite=Lax; Max-Age=300; Path=/`);
   }
 
+  // ==================== GET 请求（保持原样，已够快） ====================
   if (req.method === 'GET') {
     try {
       const counts = await kv.hgetall('likes:counts') || {};
@@ -103,54 +93,73 @@ export default async function handler(req, res) {
     }
   }
 
+  // ==================== POST 请求（全部压入 Pipeline） ====================
   if (req.method === 'POST') {
     const { id, action } = req.body || {};
-
     if (!id || !action) {
       return res.status(400).json({ success: false, error: 'Missing id or action' });
     }
-
     if (action !== 'like' && action !== 'unlike') {
       return res.status(400).json({ success: false, error: 'Invalid action' });
     }
 
-    const [ipRate, sessionRate] = await Promise.all([
-      checkRateLimit(clientIP, id),
-      checkSessionLimit(sessionId)
-    ]);
+    // ---- 第一步：一次性读取所有限频相关键（只花 1 次网络往返） ----
+    const shortKey = `rate:short:${clientIP}:${id}`;
+    const sessionKey = `rate:session:${sessionId}`;
 
-    if (!ipRate.allowed) {
-      return res.status(429).json({ success: false, error: ipRate.reason });
+    const pRead = kv.pipeline();
+    pRead.get(shortKey);
+    pRead.get(sessionKey);
+    const [shortVal, sessionVal] = await pRead.exec();
+
+    // ---- 内存判断（零网络开销） ----
+    const now = Date.now();
+    if (shortVal !== null && (now - Number(shortVal)) < RATE_LIMIT_MS) {
+      return res.status(429).json({ success: false, error: '操作过快，请稍后再试' });
     }
-    if (!sessionRate.allowed) {
-      return res.status(429).json({ success: false, error: sessionRate.reason });
+    if (sessionVal !== null && Number(sessionVal) > 30) {
+      return res.status(429).json({ success: false, error: '操作过于频繁，请稍后再试' });
     }
 
-    try {
-      const delta = action === 'like' ? 1 : -1;
-      let newVal = await kv.hincrby('likes:counts', id, delta);
-      if (newVal < 0) {
-        await kv.hset('likes:counts', { [id]: 0 });
-        newVal = 0;
-      }
+    // ---- 第二步：执行所有写操作（再次只花 1 次网络往返） ----
+    const delta = action === 'like' ? 1 : -1;
+    const pWrite = kv.pipeline();
 
-      pusher.trigger('shuoshuo-channel', 'like-event', {
-        id: id,
-        likes: newVal,
-        action: action,
-      }).catch(err => {
-        console.warn('Pusher push failed:', err.message);
-      });
+    // 更新限频短键（IP 限频）
+    pWrite.set(shortKey, String(now), { px: RATE_LIMIT_MS });
 
-      return res.status(200).json({
-        success: true,
-        id: id,
-        likes: newVal,
-      });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ success: false, error: 'Internal error' });
+    // 更新会话计数（自增 + 刷新过期）
+    pWrite.incr(sessionKey);
+    pWrite.expire(sessionKey, 300);
+
+    // 点赞总数增减（原子操作）
+    pWrite.hincrby('likes:counts', id, delta);
+
+    // 执行
+    const results = await pWrite.exec();
+    // results 顺序对应 pipeline 添加顺序
+    // 第 3 个是 incr 的结果，第 4 个是 expire 的结果（返回 1/0），第 5 个是 hincrby 的结果
+    let newVal = results[4]; // hincrby 的返回值
+
+    // ---- 钳位（如果减到负数，修复，额外一次写，但概率极低） ----
+    if (newVal < 0) {
+      await kv.hset('likes:counts', { [id]: 0 });
+      newVal = 0;
     }
+
+    // ---- 触发 Pusher（不等待） ----
+    pusher.trigger('shuoshuo-channel', 'like-event', {
+      id: id,
+      likes: newVal,
+      action: action,
+    }).catch(() => {});
+
+    // ---- 返回结果 ----
+    return res.status(200).json({
+      success: true,
+      id: id,
+      likes: newVal,
+    });
   }
 
   return res.status(405).json({ success: false, error: 'Method Not Allowed' });

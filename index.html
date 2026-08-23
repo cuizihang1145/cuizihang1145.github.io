@@ -868,20 +868,30 @@
                 if (kw && filtered.length > 0) {
                     var firstItem = list.querySelector('.article-item');
                     if (firstItem) {
-                        setTimeout(function() {
-                            var rect = firstItem.getBoundingClientRect();
-                            var targetY = window.pageYOffset + rect.top - 100;
-                            window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
-                        }, 300);
+                        requestAnimationFrame(function() {
+                            requestAnimationFrame(function() {
+                                var rect = firstItem.getBoundingClientRect();
+                                var targetY = rect.top + window.pageYOffset - window.innerHeight / 2 + rect.height / 2;
+                                window.scrollTo({
+                                    top: Math.max(0, targetY),
+                                    behavior: 'smooth'
+                                });
+                            });
+                        });
                     }
                 } else {
                     var container = list.closest('.articles-container');
                     if (container) {
-                        setTimeout(function() {
-                            var rect = container.getBoundingClientRect();
-                            var targetY = window.pageYOffset + rect.top - 80;
-                            window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
-                        }, 200);
+                        requestAnimationFrame(function() {
+                            requestAnimationFrame(function() {
+                                var rect = container.getBoundingClientRect();
+                                var targetY = rect.top + window.pageYOffset - 80;
+                                window.scrollTo({
+                                    top: Math.max(0, targetY),
+                                    behavior: 'smooth'
+                                });
+                            });
+                        });
                     }
                 }
             }

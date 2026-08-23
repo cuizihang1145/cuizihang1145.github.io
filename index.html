@@ -21,6 +21,7 @@
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192" />
     <style>
+        /* ===== 原有样式保持不变 ===== */
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
         body { font-family:'Inter',sans-serif; background:#FAFAFE; color:#1A1A2E; line-height:1.5; min-height:100vh; transition:background 0.4s ease,color 0.3s ease; }
         body.dark { background:#14131F; color:#E8E6F0; }
@@ -341,138 +342,33 @@
         .weather-hidden { display:none !important; }
         @media (max-width:600px) { .progress-card,.weather-card { padding:1.4rem; } .weather-grid { grid-template-columns:1fr; gap:0.15rem 0; } .pollutants-row { grid-column:1 !important; } .weather-grid .wg-item { font-size:0.78rem; } .weather-temp-row .temp-current { font-size:2.2rem; } .progress-item { gap:0.3rem; } .progress-item .progress-label { font-size:0.75rem; min-width:3rem; } .progress-item .progress-detail { font-size:0.7rem; margin-left:0; width:100%; text-align:right; } .holiday-box { font-size:0.85rem; padding:0.6rem 1rem; } }
 
-        /* ===== 骨架屏样式 — 修正布局，与正式文章一致 ===== */
-        .skeleton-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-        }
-        .skeleton-item {
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(8px);
-            border-radius: 1.2rem;
-            padding: 1rem 1.4rem;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-            transition: box-shadow 0.2s;
-            text-align: left;
-        }
-        body.dark .skeleton-item {
-            background: rgba(40, 38, 65, 0.4);
-            border-color: rgba(255, 255, 255, 0.05);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-        .skeleton-line {
-            border-radius: 6px;
-            background: linear-gradient(90deg, #e0dceb 25%, #f0ecf7 50%, #e0dceb 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.8s infinite;
-        }
-        body.dark .skeleton-line {
-            background: linear-gradient(90deg, #3a3560 25%, #4f4a7a 50%, #3a3560 75%);
-            background-size: 200% 100%;
-        }
+        /* ===== 骨架屏样式 ===== */
+        .skeleton-list { display:flex; flex-direction:column; gap:0.8rem; }
+        .skeleton-item { background:rgba(255,255,255,0.5); backdrop-filter:blur(8px); border-radius:1.2rem; padding:1rem 1.4rem; border:1px solid rgba(255,255,255,0.3); box-shadow:0 2px 8px rgba(0,0,0,0.04); transition:box-shadow 0.2s; text-align:left; }
+        body.dark .skeleton-item { background:rgba(40,38,65,0.4); border-color:rgba(255,255,255,0.05); box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+        .skeleton-line { border-radius:6px; background:linear-gradient(90deg,#e0dceb 25%,#f0ecf7 50%,#e0dceb 75%); background-size:200% 100%; animation:shimmer 1.8s infinite; }
+        body.dark .skeleton-line { background:linear-gradient(90deg,#3a3560 25%,#4f4a7a 50%,#3a3560 75%); background-size:200% 100%; }
+        .skeleton-header { display:flex; justify-content:space-between; align-items:baseline; gap:0.5rem; flex-wrap:nowrap; margin-bottom:0.2rem; }
+        .skeleton-title { flex:1; min-width:0; height:22px; }
+        .skeleton-meta { flex-shrink:0; height:14px; width:80px; border-radius:6px; background:linear-gradient(90deg,#e0dceb 25%,#f0ecf7 50%,#e0dceb 75%); background-size:200% 100%; animation:shimmer 1.8s infinite; }
+        body.dark .skeleton-meta { background:linear-gradient(90deg,#3a3560 25%,#4f4a7a 50%,#3a3560 75%); background-size:200% 100%; }
+        .skeleton-desc { height:14px; width:100%; }
+        .skeleton-desc.short { width:60%; }
+        .skeleton-footer { display:flex; justify-content:space-between; align-items:center; margin-top:0.2rem; flex-wrap:wrap; gap:0.3rem; }
+        .skeleton-tags { display:flex; gap:0.3rem; }
+        .skeleton-tag { display:inline-block; height:18px; width:50px; border-radius:40px; background:linear-gradient(90deg,#e0dceb 25%,#f0ecf7 50%,#e0dceb 75%); background-size:200% 100%; animation:shimmer 1.8s infinite; }
+        body.dark .skeleton-tag { background:linear-gradient(90deg,#3a3560 25%,#4f4a7a 50%,#3a3560 75%); background-size:200% 100%; }
+        .skeleton-date { height:12px; width:70px; border-radius:6px; flex-shrink:0; background:linear-gradient(90deg,#e0dceb 25%,#f0ecf7 50%,#e0dceb 75%); background-size:200% 100%; animation:shimmer 1.8s infinite; }
+        body.dark .skeleton-date { background:linear-gradient(90deg,#3a3560 25%,#4f4a7a 50%,#3a3560 75%); background-size:200% 100%; }
+        .skeleton-item .skeleton-desc { margin-bottom:0.3rem; }
+        .skeleton-item .skeleton-desc:last-of-type { margin-bottom:0; }
+        .skeleton-item .skeleton-title { margin-bottom:0; }
+        @keyframes shimmer { 0% { background-position:-200% 0; } 100% { background-position:200% 0; } }
+        .skeleton-item:first-child { margin-top:0.2rem; }
 
-        /* 标题与元数据同行 */
-        .skeleton-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            gap: 0.5rem;
-            flex-wrap: nowrap;          /* 强制不换行，与正式文章在宽屏下一致 */
-            margin-bottom: 0.2rem;
-        }
-        .skeleton-title {
-            flex: 1;                    /* 占据剩余空间，类似标题 */
-            min-width: 0;
-            height: 22px;
-        }
-        .skeleton-meta {
-            flex-shrink: 0;             /* 固定宽度，不压缩 */
-            height: 14px;
-            width: 80px;                /* 模拟「X分钟 · X字」的宽度 */
-            border-radius: 6px;
-            background: linear-gradient(90deg, #e0dceb 25%, #f0ecf7 50%, #e0dceb 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.8s infinite;
-        }
-        body.dark .skeleton-meta {
-            background: linear-gradient(90deg, #3a3560 25%, #4f4a7a 50%, #3a3560 75%);
-            background-size: 200% 100%;
-        }
-
-        .skeleton-desc {
-            height: 14px;
-            width: 100%;
-        }
-        .skeleton-desc.short {
-            width: 60%;
-        }
-        .skeleton-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 0.2rem;
-            flex-wrap: wrap;
-            gap: 0.3rem;
-        }
-        .skeleton-tags {
-            display: flex;
-            gap: 0.3rem;
-        }
-        .skeleton-tag {
-            display: inline-block;
-            height: 18px;
-            width: 50px;
-            border-radius: 40px;
-            background: linear-gradient(90deg, #e0dceb 25%, #f0ecf7 50%, #e0dceb 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.8s infinite;
-        }
-        body.dark .skeleton-tag {
-            background: linear-gradient(90deg, #3a3560 25%, #4f4a7a 50%, #3a3560 75%);
-            background-size: 200% 100%;
-        }
-        .skeleton-date {
-            height: 12px;
-            width: 70px;
-            border-radius: 6px;
-            flex-shrink: 0;
-            background: linear-gradient(90deg, #e0dceb 25%, #f0ecf7 50%, #e0dceb 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.8s infinite;
-        }
-        body.dark .skeleton-date {
-            background: linear-gradient(90deg, #3a3560 25%, #4f4a7a 50%, #3a3560 75%);
-            background-size: 200% 100%;
-        }
-        .skeleton-item .skeleton-desc {
-            margin-bottom: 0.3rem;
-        }
-        .skeleton-item .skeleton-desc:last-of-type {
-            margin-bottom: 0;
-        }
-        .skeleton-item .skeleton-title {
-            margin-bottom: 0;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-        .skeleton-item:first-child {
-            margin-top: 0.2rem;
-        }
-
-        /* 标签点击时搜索框高亮反馈 */
-        .articles-search-input.tag-triggered {
-            animation: searchPulse 0.45s ease;
-        }
-        @keyframes searchPulse {
-            0% { box-shadow: 0 0 0 0 rgba(107,90,207,0.4); }
-            70% { box-shadow: 0 0 0 6px rgba(107,90,207,0); }
-            100% { box-shadow: 0 0 0 0 rgba(107,90,207,0); }
-        }
+        /* 搜索框脉冲动画 */
+        .articles-search-input.tag-triggered { animation:searchPulse 0.45s ease; }
+        @keyframes searchPulse { 0% { box-shadow:0 0 0 0 rgba(107,90,207,0.4); } 70% { box-shadow:0 0 0 6px rgba(107,90,207,0); } 100% { box-shadow:0 0 0 0 rgba(107,90,207,0); } }
     </style>
 </head>
 <body>
@@ -846,7 +742,7 @@
             return false;
         }
 
-        // ---------- 修改点 1：renderArticleList 增加 noScroll 参数 ----------
+        // ===== renderArticleList：增加 noScroll 参数，支持标签点击后禁用内部滚动 =====
         function renderArticleList(filtered, kw, page, noScroll) {
             var list = document.querySelector('.articles-list');
             var countEl = document.querySelector('.result-count');
@@ -909,13 +805,12 @@
             });
             list.innerHTML = html;
 
-            // ---------- 修改点 2：为 .tag 绑定点击事件（标签 → 自动填入搜索框 → 搜索 → 回到顶部） ----------
+            // ===== 🔧 修复点：标签点击 → 触发搜索（同时匹配标题、正文、标签） =====
             list.querySelectorAll('.tag').forEach(function(tagEl) {
                 tagEl.addEventListener('click', function(e) {
                     e.stopPropagation();
                     var tag = this.dataset.tag;
                     if (tag) {
-                        // 触发搜索（fromTag = true 表示来自标签点击）
                         applySearch(tag, true);
                     }
                 });
@@ -939,7 +834,7 @@
                 }
                 var pgHtml = '';
                 pgHtml += '<button class="page-prev" ' + (page <= 1 ? 'disabled' : '') +
-                '><i class="fas fa-chevron-left"></i></button>';
+                    '><i class="fas fa-chevron-left"></i></button>';
                 var startPage = Math.max(1, page - 2);
                 var endPage = Math.min(totalPages, page + 2);
                 if (startPage > 1) {
@@ -989,7 +884,7 @@
             }
             saveArticleState();
 
-            // ---------- 滚动逻辑：若 noScroll 为 true 则跳过内部滚动 ----------
+            // 内部滚动：来自标签点击时由外部控制，此处跳过
             if (!noScroll) {
                 if (kw && filtered.length > 0) {
                     var firstItem = list.querySelector('.article-item');
@@ -1011,17 +906,15 @@
             }
         }
 
-        // ---------- 修改点 3：applySearch 增加 fromTag 参数，支持滚动到顶部 ----------
+        // ===== 🔧 修复点：applySearch 增强 — 同时搜索标题 + 正文 + 标签 =====
         function applySearch(keyword, fromTag) {
             var kw = keyword.trim().toLowerCase();
             currentKeyword = keyword.trim();
 
-            // 更新搜索框的值
             var searchInput = document.querySelector('.articles-search-input');
             if (searchInput) {
                 searchInput.value = keyword.trim();
                 if (fromTag) {
-                    // 添加脉冲动画反馈
                     searchInput.classList.remove('tag-triggered');
                     void searchInput.offsetWidth;
                     searchInput.classList.add('tag-triggered');
@@ -1037,7 +930,10 @@
                 filtered = filtered.filter(function(item) {
                     var title = (item.title || '').toLowerCase();
                     var plainContent = markdownToPlainText(item.content || '').toLowerCase();
-                    return title.indexOf(kw) !== -1 || plainContent.indexOf(kw) !== -1;
+                    // 🔧 新增：标签匹配（只要文章标签中包含该关键词即可）
+                    var tags = (item.tags || []).map(function(t) { return t.toLowerCase(); });
+                    var tagMatch = tags.some(function(t) { return t.indexOf(kw) !== -1; });
+                    return title.indexOf(kw) !== -1 || plainContent.indexOf(kw) !== -1 || tagMatch;
                 });
             }
             filtered.sort(function(a, b) {
@@ -1050,7 +946,6 @@
                 }
             });
             loadedCount = 0;
-            // 来自标签点击时禁用内部滚动，由外部控制滚动到顶部
             renderArticleList(filtered, kw, 1, fromTag);
             currentPage = 1;
             saveArticleState();
@@ -1062,7 +957,7 @@
         }
 
         function renderArticles() {
-            // ---------- 修改点 4：检测 URL 中的 ?tag=xxx 参数 ----------
+            // 检测 URL 中的 ?tag=xxx 参数
             var urlTag = getUrlParam('tag');
             if (urlTag) {
                 currentKeyword = urlTag;
@@ -1117,7 +1012,6 @@
                 sessionStorage.setItem('articlePage', urlPage);
             }
             loadArticleState();
-            // 如果 URL 中有 tag 参数，覆盖 currentKeyword
             if (urlTag) {
                 currentKeyword = urlTag;
                 if (searchInput) searchInput.value = urlTag;
@@ -1131,7 +1025,6 @@
             setTimeout(updateClearBtn, 50);
             loadedCount = 0;
 
-            // 如果 URL 有 tag 参数，且搜索框有值，触发一次搜索（确保结果高亮）
             var initialTag = urlTag || '';
 
             fetch('articles/meta.json', { cache: 'no-cache' })
@@ -1184,7 +1077,9 @@
                                 filtered = filtered.filter(function(item) {
                                     var title = (item.title || '').toLowerCase();
                                     var plainContent = markdownToPlainText(item.content || '').toLowerCase();
-                                    return title.indexOf(kw) !== -1 || plainContent.indexOf(kw) !== -1;
+                                    var tags = (item.tags || []).map(function(t) { return t.toLowerCase(); });
+                                    var tagMatch = tags.some(function(t) { return t.indexOf(kw) !== -1; });
+                                    return title.indexOf(kw) !== -1 || plainContent.indexOf(kw) !== -1 || tagMatch;
                                 });
                             }
                             filtered.sort(function(a, b) {
@@ -1196,7 +1091,6 @@
                                     return dateA.localeCompare(dateB);
                                 }
                             });
-                            // 如果有初始标签，传入 noScroll=false 让列表内部正常滚动
                             renderArticleList(filtered, kw, 1, false);
                             currentPage = 1;
                             saveArticleState();
@@ -1253,6 +1147,7 @@
             }
         }
 
+        // ===== 以下函数（归档、关于、天气、进度等）保持不变 =====
         function openHomeDB() {
             return new Promise(function(resolve, reject) {
                 var req = indexedDB.open('ks_blog_home', 1);
@@ -1334,12 +1229,10 @@
         function updateBannerNewTag() {
             var banner = document.getElementById('shuoshuoBanner');
             if (!banner) return;
-
             getLatestShuoshuo().then(function(latest) {
                 if (!latest) return;
                 var diff = getDaysDiffForBanner(latest.date);
                 if (diff === null || diff < 0 || diff > 7) return;
-
                 return getHomeState('banner_read_id').then(function(readId) {
                     var latestId = String(latest._originIndex);
                     if (readId !== latestId) {
@@ -1355,13 +1248,10 @@
         function bindBannerClick() {
             var banner = document.getElementById('shuoshuoBanner');
             if (!banner) return;
-
             var newBanner = banner.cloneNode(true);
             banner.parentNode.replaceChild(newBanner, banner);
-
             newBanner.addEventListener('click', function(e) {
                 e.preventDefault();
-
                 getLatestShuoshuo().then(function(latest) {
                     if (latest) {
                         return setHomeState('banner_read_id', String(latest._originIndex));
@@ -1657,7 +1547,6 @@
                 })
             ]).then(function(results) {
                 if (currentPageId !== 'about') return;
-
                 var articlesData = results[0] || {};
                 var shuoshuoData = results[1] || [];
                 var articles = articlesData.list || [];
@@ -1683,7 +1572,6 @@
                         .trim();
                     totalWordCount += text.length;
                 });
-
                 var shuoshuo = shuoshuoData.filter(function(item) {
                     return item.delete !== true;
                 });
@@ -1709,7 +1597,6 @@
                         .trim();
                     shuoshuoWordCount += text.length;
                 });
-
                 var stats = {
                     articleCount: articleCount,
                     totalWordCount: totalWordCount,
@@ -1717,7 +1604,6 @@
                     shuoshuoWordCount: shuoshuoWordCount
                 };
                 setCachedStats(stats);
-
                 if (currentPageId !== 'about') return;
                 renderAboutContent(
                     stats.articleCount,
@@ -1805,7 +1691,6 @@
             if (months > 0) carryDisplay += months + ' 月 ';
             carryDisplay += days + ' 天';
             var sameDisplay = (diffDays + ' 天') === carryDisplay.trim();
-
             var cachedStats = getCachedStats();
             if (cachedStats) {
                 renderAboutContent(
@@ -1820,7 +1705,6 @@
                 fetchStatsAndUpdate(diffDays, carryDisplay, sameDisplay);
                 return;
             }
-
             fetchStatsAndUpdate(diffDays, carryDisplay, sameDisplay);
         }
 
@@ -1886,8 +1770,7 @@
                         closest = link;
                     }
                 });
-                if (closest && !closest.classList.contains('active')) {
-                }
+                if (closest && !closest.classList.contains('active')) {}
             }, 80);
         });
         var returnParam = getUrlParam('return');
@@ -1923,23 +1806,12 @@
             }
         }
 
+        // ===== 节日数据 & 进度 & 天气（保持不变） =====
         var holidayData = {
-            "2026": {
-                "元旦": "2026-01-01",
-                "清明节": "2026-04-05",
-                "劳动节": "2026-05-01",
-                "端午节": "2026-06-19",
-                "中秋节": "2026-09-25",
-                "国庆节": "2026-10-01"
-            },
-            "2027": {
-                "元旦": "2027-01-01",
-                "清明节": "2027-04-05",
-                "劳动节": "2027-05-01",
-                "端午节": "2027-06-09",
-                "中秋节": "2027-09-15",
-                "国庆节": "2027-10-01"
-            }
+            "2026": { "元旦": "2026-01-01", "清明节": "2026-04-05", "劳动节": "2026-05-01", "端午节": "2026-06-19",
+                "中秋节": "2026-09-25", "国庆节": "2026-10-01" },
+            "2027": { "元旦": "2027-01-01", "清明节": "2027-04-05", "劳动节": "2027-05-01", "端午节": "2027-06-09",
+                "中秋节": "2027-09-15", "国庆节": "2027-10-01" }
         };
 
         function updateProgress() {
@@ -1997,10 +1869,8 @@
                     var nextYearData = holidayData[String(nextYear)];
                     if (nextYearData && nextYearData.元旦) {
                         var parts = nextYearData.元旦.split('-');
-                        nextHoliday = {
-                            name: '元旦',
-                            date: new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
-                        };
+                        nextHoliday = { name: '元旦', date: new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(
+                                parts[2])) };
                         break;
                     }
                     nextYear++;
@@ -2014,10 +1884,7 @@
 
         function getWeather() {
             var weatherContent = document.getElementById('weatherContent');
-            if (!weatherContent) {
-                console.warn('天气容器未找到');
-                return;
-            }
+            if (!weatherContent) return;
             fetch('https://uapis.cn/api/v1/misc/weather?extended=true&forecast=true')
                 .then(function(response) {
                     if (!response.ok) throw new Error('请求失败');
@@ -2033,10 +1900,7 @@
 
         function renderWeather(data) {
             var weatherContent = document.getElementById('weatherContent');
-            if (!weatherContent) {
-                console.warn('天气容器未找到，无法渲染');
-                return;
-            }
+            if (!weatherContent) return;
             var city = data.city || '未知';
             var district = data.district || '';
             var temp = data.temperature || '--';
@@ -2052,7 +1916,6 @@
             var aqi = data.aqi || '--';
             var aqiCategory = data.aqi_category || '--';
             var aqiLevel = data.aqi_level || 0;
-            var aqiPrimary = data.aqi_primary || '';
             var forecast = data.forecast && data.forecast[0] || {};
             var tempMax = data.temp_max || forecast.temp_max || '--';
             var tempMin = data.temp_min || forecast.temp_min || '--';
@@ -2131,11 +1994,10 @@
         }
         window.getWeather = getWeather;
 
-        // ---------- 初始化时若 URL 带有 tag 参数，自动触发搜索 ----------
+        // ===== 初始化：如果 URL 带有 ?tag=xxx，自动触发搜索 =====
         (function initTagFromUrl() {
             var tag = getUrlParam('tag');
             if (tag) {
-                // 延迟等待页面完全加载后再触发
                 setTimeout(function() {
                     var input = document.querySelector('.articles-search-input');
                     if (input) {

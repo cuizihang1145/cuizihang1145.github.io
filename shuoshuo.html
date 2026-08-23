@@ -1986,6 +1986,19 @@
 
             var _likeLock = false;
 
+            function getNewNonce() {
+                return fetch('/api/likes')
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) {
+                        if (data.success && data.nonce) {
+                            myNonce = data.nonce;
+                            return true;
+                        }
+                        return false;
+                    })
+                    .catch(function() { return false; });
+            }
+
             function toggleLike(id, action) {
                 var countEl = document.getElementById('like-count-' + id);
                 if (!countEl) return;
@@ -2023,19 +2036,20 @@
                 window._lastLocalLikeId = String(id);
                 window._lastLocalLikeTime = Date.now();
 
-                fetch('/api/likes', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-Nonce': myNonce },
-                    body: JSON.stringify({ id: id, action: action })
-                })
-                .then(function(res) {
-                    if (!res.ok) {
+                function doFetch(nonce) {
+                    return fetch('/api/likes', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-Nonce': nonce },
+                        body: JSON.stringify({ id: id, action: action })
+                    }).then(function(res) {
                         return res.json().then(function(data) {
-                            throw data;
+                            if (!res.ok) throw data;
+                            return data;
                         });
-                    }
-                    return res.json();
-                })
+                    });
+                }
+
+                doFetch(myNonce)
                 .then(function(data) {
                     _likeLock = false;
                     if (btn) btn.dataset.loading = 'false';
@@ -2065,13 +2079,53 @@
                     }
                 })
                 .catch(function(err) {
-                    _likeLock = false;
-                    if (btn) btn.dataset.loading = 'false';
-                    countEl.textContent = currentText;
-                    if (action === 'like') removeLikedId(id);
-                    else addLikedId(id);
-                    updateHeartIcon(id);
-                    showToast(err.error || '网络错误', 'fa-exclamation-circle');
+                    if (err && err.error === 'Invalid or expired nonce') {
+                        getNewNonce().then(function(success) {
+                            if (success) {
+                                doFetch(myNonce).then(function(data) {
+                                    _likeLock = false;
+                                    if (btn) btn.dataset.loading = 'false';
+                                    
+                                    if (data.nonce) { myNonce = data.nonce; }
+
+                                    likesCache[id] = data.likes;
+                                    countEl.textContent = data.likes;
+                                    updateHeartIcon(id);
+
+                                    var likeCount = parseInt(data.likes, 10);
+                                    if (!isNaN(likeCount) && likeCount <= 0) {
+                                        removeLikedId(id);
+                                    } else if (action === 'like') {
+                                        addLikedId(id);
+                                    }
+                                }).catch(function(finalErr) {
+                                    _likeLock = false;
+                                    if (btn) btn.dataset.loading = 'false';
+                                    countEl.textContent = currentText;
+                                    if (action === 'like') removeLikedId(id);
+                                    else addLikedId(id);
+                                    updateHeartIcon(id);
+                                    showToast(finalErr.error || '网络错误', 'fa-exclamation-circle');
+                                });
+                            } else {
+                                _likeLock = false;
+                                if (btn) btn.dataset.loading = 'false';
+                                countEl.textContent = currentText;
+                                if (action === 'like') removeLikedId(id);
+                                else addLikedId(id);
+                                updateHeartIcon(id);
+                                showToast('网络错误', 'fa-exclamation-circle');
+                            }
+                        });
+                    } else {
+                        _likeLock = false;
+                        if (btn) btn.dataset.loading = 'false';
+                        countEl.textContent = currentText;
+                        if (action === 'like') removeLikedId(id);
+                        else addLikedId(id);
+                        updateHeartIcon(id);
+                        showToast(err.error || '网络错误', 'fa-exclamation-circle');
+                    }
                 });
             }
 

@@ -21,7 +21,6 @@
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192" />
     <style>
-        /* ===== 原有样式保持不变 ===== */
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
         body { font-family:'Inter',sans-serif; background:#FAFAFE; color:#1A1A2E; line-height:1.5; min-height:100vh; transition:background 0.4s ease,color 0.3s ease; }
         body.dark { background:#14131F; color:#E8E6F0; }
@@ -254,10 +253,8 @@
         body.dark .article-item .item-summary code { background:rgba(255,255,255,0.06); color:#E8A87C; }
         .article-item .item-footer { display:flex; align-items:center; justify-content:space-between; margin-top:0.2rem; flex-wrap:wrap; gap:0.3rem; }
         .article-item .item-tags { display:flex; flex-wrap:wrap; gap:0.25rem; }
-        .article-item .item-tags .tag { display:inline-block; font-size:0.65rem; font-weight:500; color:#6B5ACF; background:rgba(107,90,207,0.10); padding:0.02rem 0.5rem; border-radius:40px; cursor:pointer; transition:0.2s ease; user-select:none; }
+        .article-item .item-tags .tag { display:inline-block; font-size:0.65rem; font-weight:500; color:#6B5ACF; background:rgba(107,90,207,0.10); padding:0.02rem 0.5rem; border-radius:40px; cursor:default; user-select:none; }
         body.dark .article-item .item-tags .tag { color:#88ccff; background:rgba(136,204,255,0.10); }
-        .article-item .item-tags .tag:hover { background:rgba(107,90,207,0.20); transform:scale(1.04); }
-        body.dark .article-item .item-tags .tag:hover { background:rgba(136,204,255,0.20); }
         .article-item .item-footer .item-date { font-size:0.7rem; color:#8A8AB5; flex-shrink:0; }
         body.dark .article-item .item-footer .item-date { color:#6A6A8A; }
         .highlight { background:rgba(107,90,207,0.25); border-radius:4px; padding:0 2px; }
@@ -342,7 +339,6 @@
         .weather-hidden { display:none !important; }
         @media (max-width:600px) { .progress-card,.weather-card { padding:1.4rem; } .weather-grid { grid-template-columns:1fr; gap:0.15rem 0; } .pollutants-row { grid-column:1 !important; } .weather-grid .wg-item { font-size:0.78rem; } .weather-temp-row .temp-current { font-size:2.2rem; } .progress-item { gap:0.3rem; } .progress-item .progress-label { font-size:0.75rem; min-width:3rem; } .progress-item .progress-detail { font-size:0.7rem; margin-left:0; width:100%; text-align:right; } .holiday-box { font-size:0.85rem; padding:0.6rem 1rem; } }
 
-        /* ===== 骨架屏样式 ===== */
         .skeleton-list { display:flex; flex-direction:column; gap:0.8rem; }
         .skeleton-item { background:rgba(255,255,255,0.5); backdrop-filter:blur(8px); border-radius:1.2rem; padding:1rem 1.4rem; border:1px solid rgba(255,255,255,0.3); box-shadow:0 2px 8px rgba(0,0,0,0.04); transition:box-shadow 0.2s; text-align:left; }
         body.dark .skeleton-item { background:rgba(40,38,65,0.4); border-color:rgba(255,255,255,0.05); box-shadow:0 2px 8px rgba(0,0,0,0.2); }
@@ -365,10 +361,6 @@
         .skeleton-item .skeleton-title { margin-bottom:0; }
         @keyframes shimmer { 0% { background-position:-200% 0; } 100% { background-position:200% 0; } }
         .skeleton-item:first-child { margin-top:0.2rem; }
-
-        /* 搜索框脉冲动画 */
-        .articles-search-input.tag-triggered { animation:searchPulse 0.45s ease; }
-        @keyframes searchPulse { 0% { box-shadow:0 0 0 0 rgba(107,90,207,0.4); } 70% { box-shadow:0 0 0 6px rgba(107,90,207,0); } 100% { box-shadow:0 0 0 0 rgba(107,90,207,0); } }
     </style>
 </head>
 <body>
@@ -742,7 +734,6 @@
             return false;
         }
 
-        // ===== renderArticleList：增加 noScroll 参数，支持标签点击后禁用内部滚动 =====
         function renderArticleList(filtered, kw, page, noScroll) {
             var list = document.querySelector('.articles-list');
             var countEl = document.querySelector('.result-count');
@@ -804,17 +795,6 @@
                     '</span></div></div>';
             });
             list.innerHTML = html;
-
-            // ===== 🔧 修复点：标签点击 → 触发搜索（同时匹配标题、正文、标签） =====
-            list.querySelectorAll('.tag').forEach(function(tagEl) {
-                tagEl.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    var tag = this.dataset.tag;
-                    if (tag) {
-                        applySearch(tag, true);
-                    }
-                });
-            });
 
             list.querySelectorAll('.article-item').forEach(function(el) {
                 el.addEventListener('click', function() {
@@ -884,7 +864,6 @@
             }
             saveArticleState();
 
-            // 内部滚动：来自标签点击时由外部控制，此处跳过
             if (!noScroll) {
                 if (kw && filtered.length > 0) {
                     var firstItem = list.querySelector('.article-item');
@@ -906,19 +885,13 @@
             }
         }
 
-        // ===== 🔧 修复点：applySearch 增强 — 同时搜索标题 + 正文 + 标签 =====
-        function applySearch(keyword, fromTag) {
+        function applySearch(keyword) {
             var kw = keyword.trim().toLowerCase();
             currentKeyword = keyword.trim();
 
             var searchInput = document.querySelector('.articles-search-input');
             if (searchInput) {
                 searchInput.value = keyword.trim();
-                if (fromTag) {
-                    searchInput.classList.remove('tag-triggered');
-                    void searchInput.offsetWidth;
-                    searchInput.classList.add('tag-triggered');
-                }
             }
             updateClearBtn();
 
@@ -930,7 +903,6 @@
                 filtered = filtered.filter(function(item) {
                     var title = (item.title || '').toLowerCase();
                     var plainContent = markdownToPlainText(item.content || '').toLowerCase();
-                    // 🔧 新增：标签匹配（只要文章标签中包含该关键词即可）
                     var tags = (item.tags || []).map(function(t) { return t.toLowerCase(); });
                     var tagMatch = tags.some(function(t) { return t.indexOf(kw) !== -1; });
                     return title.indexOf(kw) !== -1 || plainContent.indexOf(kw) !== -1 || tagMatch;
@@ -946,18 +918,12 @@
                 }
             });
             loadedCount = 0;
-            renderArticleList(filtered, kw, 1, fromTag);
+            renderArticleList(filtered, kw, 1, false);
             currentPage = 1;
             saveArticleState();
-
-            // 来自标签点击 → 滚动到页面顶部
-            if (fromTag) {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
         }
 
         function renderArticles() {
-            // 检测 URL 中的 ?tag=xxx 参数
             var urlTag = getUrlParam('tag');
             if (urlTag) {
                 currentKeyword = urlTag;
@@ -1054,14 +1020,14 @@
                                     window._allArticlesForSearch = data.list || [];
                                     var currentKw = document.querySelector('.articles-search-input');
                                     if (currentKw && currentKw.value.trim()) {
-                                        applySearch(currentKw.value, false);
+                                        applySearch(currentKw.value);
                                     } else if (initialTag) {
-                                        applySearch(initialTag, false);
+                                        applySearch(initialTag);
                                     }
                                 })['catch'](function() {
                                     window._allArticlesForSearch = null;
                                     if (initialTag) {
-                                        applySearch(initialTag, false);
+                                        applySearch(initialTag);
                                     }
                                 });
                             if (allArticles.length === 0) {
@@ -1104,13 +1070,13 @@
                 });
 
             searchInput.addEventListener('input', function() {
-                applySearch(this.value, false);
+                applySearch(this.value);
                 updateClearBtn();
             });
             searchClearBtn.addEventListener('click', function() {
                 if (searchInput) {
                     searchInput.value = '';
-                    applySearch('', false);
+                    applySearch('');
                     updateClearBtn();
                     searchInput.focus();
                 }
@@ -1122,7 +1088,7 @@
                     });
                     this.classList.add('active');
                     currentFilter = this.dataset.filter;
-                    applySearch(searchInput.value, false);
+                    applySearch(searchInput.value);
                     updateClearBtn();
                 });
             });
@@ -1147,7 +1113,6 @@
             }
         }
 
-        // ===== 以下函数（归档、关于、天气、进度等）保持不变 =====
         function openHomeDB() {
             return new Promise(function(resolve, reject) {
                 var req = indexedDB.open('ks_blog_home', 1);
@@ -1806,7 +1771,6 @@
             }
         }
 
-        // ===== 节日数据 & 进度 & 天气（保持不变） =====
         var holidayData = {
             "2026": { "元旦": "2026-01-01", "清明节": "2026-04-05", "劳动节": "2026-05-01", "端午节": "2026-06-19",
                 "中秋节": "2026-09-25", "国庆节": "2026-10-01" },
@@ -1994,7 +1958,6 @@
         }
         window.getWeather = getWeather;
 
-        // ===== 初始化：如果 URL 带有 ?tag=xxx，自动触发搜索 =====
         (function initTagFromUrl() {
             var tag = getUrlParam('tag');
             if (tag) {
@@ -2002,7 +1965,7 @@
                     var input = document.querySelector('.articles-search-input');
                     if (input) {
                         input.value = tag;
-                        applySearch(tag, false);
+                        applySearch(tag);
                     }
                 }, 300);
             }

@@ -53,11 +53,13 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      const counts = await kv.hgetall('likes:counts') || {};
-      // 换回 crypto 库生成随机数
       const nonce = crypto.randomBytes(16).toString('hex');
-      // 关键修复点：改为对象写法 { ex: 300 }
-      await kv.set(`auth_nonce:${nonce}`, 'valid', { ex: 300 });
+      const p = kv.pipeline();
+      p.hgetall('likes:counts');
+      p.set(`auth_nonce:${nonce}`, 'valid', { ex: 300 });
+      const result = await p.exec();
+      const counts = result[0] || {};
+
       return res.status(200).json({ success: true, data: counts, nonce: nonce });
     } catch (err) {
       console.error('GET ERROR:', err);
@@ -148,16 +150,22 @@ export default async function handler(req, res) {
         return res.status(429).json({ success: false, error: '操作过于频繁，请稍后再试' });
       }
 
-      pusher.trigger('shuoshuo-channel', 'like-event', {
-        id,
-        likes: newVal,
-        action,
-      }).catch(() => {});
+      const newNonce = crypto.randomBytes(16).toString('hex');
+      await kv.set(`auth_nonce:${newNonce}`, 'valid', { ex: 300 });
+
+      setTimeout(() => {
+        pusher.trigger('shuoshuo-channel', 'like-event', {
+          id,
+          likes: newVal,
+          action,
+        }).catch(() => {});
+      }, 0);
 
       return res.status(200).json({
         success: true,
         id,
         likes: newVal,
+        nonce: newNonce
       });
     } catch (err) {
       console.error(err);

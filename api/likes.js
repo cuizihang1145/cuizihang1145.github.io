@@ -15,7 +15,6 @@ const pusher = new Pusher({
   useTLS: true,
 });
 
-const ALLOWED_ORIGINS = ['https://www.cuizi.top'];
 const RATE_LIMIT_MS = 300;
 
 function generateSessionId() {
@@ -25,23 +24,6 @@ function generateSessionId() {
 function getClientIP(req) {
   const forwarded = req.headers['x-forwarded-for'];
   return forwarded ? forwarded.split(',')[0].trim() : req.socket?.remoteAddress || 'unknown';
-}
-
-function isAllowedOrigin(req) {
-  const referer = req.headers.referer || '';
-  try {
-    const url = new URL(referer);
-    return ALLOWED_ORIGINS.some(origin => url.origin === origin);
-  } catch {
-    return false;
-  }
-}
-
-function isValidUserAgent(req) {
-  const ua = req.headers['user-agent'] || '';
-  if (!ua) return false;
-  const blocked = ['curl', 'wget', 'python-requests', 'java', 'okhttp'];
-  return !blocked.some(k => ua.toLowerCase().includes(k));
 }
 
 function parseCookies(cookieHeader) {
@@ -56,16 +38,9 @@ function parseCookies(cookieHeader) {
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Nonce');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
-
-  if (!isAllowedOrigin(req)) {
-    return res.status(403).json({ success: false, error: 'Forbidden' });
-  }
-  if (!isValidUserAgent(req)) {
-    return res.status(403).json({ success: false, error: 'Forbidden' });
-  }
 
   const clientIP = getClientIP(req);
   const cookies = parseCookies(req.headers.cookie || '');
@@ -80,7 +55,6 @@ export default async function handler(req, res) {
     try {
       const counts = await kv.hgetall('likes:counts') || {};
       
-      // 生成一次性随机号（Nonce），存进Redis，300秒过期，然后返回给前端
       const nonce = crypto.randomBytes(16).toString('hex');
       await kv.set(`auth_nonce:${nonce}`, 'valid', 'EX', 300);
 
@@ -103,7 +77,6 @@ export default async function handler(req, res) {
 
     const shortKey = `rate:short:${clientIP}:${id}`;
     const sessionKey = `rate:session:${sessionId}`;
-    // 新增：拼接 Nonce 的 Redis Key
     const nonceKey = `auth_nonce:${userNonce}`;
     const now = Date.now();
     const delta = action === 'like' ? 1 : -1;
@@ -121,13 +94,11 @@ export default async function handler(req, res) {
       local field = ARGV[5]
       local nonce = ARGV[6]
 
-      -- 第一步：验证并删除 Nonce（防重放，原子操作）
       if redis.call('GET', nonceKey) == false then
         return {0, 'invalid_nonce'}
       end
       redis.call('DEL', nonceKey)
 
-      -- 第二步：原有的限流逻辑（只有验证通过才会走到这里）
       local shortVal = redis.call('GET', shortKey)
       if shortVal then
         local lastTime = tonumber(shortVal)
@@ -160,9 +131,7 @@ export default async function handler(req, res) {
     try {
       const result = await kv.eval(
         luaScript,
-        // 将 nonceKey 作为第4个参数传入
         [shortKey, sessionKey, 'likes:counts', nonceKey],
-        // 将 userNonce 作为第6个参数传入
         [String(now), String(delta), String(RATE_LIMIT_MS), '30', id, userNonce]
       );
 

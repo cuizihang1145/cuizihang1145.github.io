@@ -54,13 +54,11 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const counts = await kv.hgetall('likes:counts') || {};
-      
       const nonce = crypto.randomBytes(16).toString('hex');
       await kv.set(`auth_nonce:${nonce}`, 'valid', 'EX', 300);
-
       return res.status(200).json({ success: true, data: counts, nonce: nonce });
     } catch (err) {
-      console.error(err);
+      console.error('GET ERROR:', err);
       return res.status(500).json({ success: false, error: 'Internal error' });
     }
   }

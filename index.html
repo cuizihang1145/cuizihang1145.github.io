@@ -765,15 +765,15 @@
                 var title = item.title || '无标题';
                 var date = item.date || '';
                 var content = item.content || '';
-                var wordCount = item._wordCount || 0;
+                var wordCount = countWords(content);
                 var readTimeDisplay;
                 if (wordCount === 0) {
-                    readTimeDisplay = '114514分钟';
+                    readTimeDisplay = '0分钟';
                 } else {
                     var readTime = Math.ceil(wordCount / 300);
                     readTimeDisplay = readTime === 1 ? '1分钟' : readTime + '分钟';
                 }
-                var wordDisplay = wordCount === 0 ? '没有字哦' : wordCount + '字';
+                var wordDisplay = wordCount === 0 ? '0字' : wordCount + '字';
                 var titleHtml = highlightText(escapeHtml(title), kw);
                 var previewText = getPreviewAroundMatch(content, kw);
                 var previewHtml = renderPreviewMarkdown(previewText);
@@ -863,38 +863,6 @@
                 }
             }
             saveArticleState();
-
-            if (!noScroll) {
-                if (kw && filtered.length > 0) {
-                    var firstItem = list.querySelector('.article-item');
-                    if (firstItem) {
-                        requestAnimationFrame(function() {
-                            requestAnimationFrame(function() {
-                                var rect = firstItem.getBoundingClientRect();
-                                var targetY = rect.top + window.pageYOffset - window.innerHeight / 2 + rect.height / 2;
-                                window.scrollTo({
-                                    top: Math.max(0, targetY),
-                                    behavior: 'smooth'
-                                });
-                            });
-                        });
-                    }
-                } else {
-                    var container = list.closest('.articles-container');
-                    if (container) {
-                        requestAnimationFrame(function() {
-                            requestAnimationFrame(function() {
-                                var rect = container.getBoundingClientRect();
-                                var targetY = rect.top + window.pageYOffset - 80;
-                                window.scrollTo({
-                                    top: Math.max(0, targetY),
-                                    behavior: 'smooth'
-                                });
-                            });
-                        });
-                    }
-                }
-            }
         }
 
         var searchInputGlobal = null;

@@ -885,13 +885,25 @@
             }
         }
 
+        var searchInputGlobal = null;
+        var searchClearBtnGlobal = null;
+
+        function updateClearBtn() {
+            if (searchInputGlobal && searchClearBtnGlobal) {
+                if (searchInputGlobal.value.length > 0) {
+                    searchClearBtnGlobal.classList.add('visible');
+                } else {
+                    searchClearBtnGlobal.classList.remove('visible');
+                }
+            }
+        }
+
         function applySearch(keyword) {
             var kw = keyword.trim().toLowerCase();
             currentKeyword = keyword.trim();
 
-            var searchInput = document.querySelector('.articles-search-input');
-            if (searchInput) {
-                searchInput.value = keyword.trim();
+            if (searchInputGlobal) {
+                searchInputGlobal.value = keyword.trim();
             }
             updateClearBtn();
 
@@ -959,20 +971,11 @@
                 '</div>' +
                 '</div><div class="pagination" id="pagination"></div></div></div>';
 
-            var searchInput = container.querySelector('.articles-search-input');
-            var searchClearBtn = document.getElementById('searchClearBtn');
+            searchInputGlobal = container.querySelector('.articles-search-input');
+            searchClearBtnGlobal = document.getElementById('searchClearBtn');
             var filterBtns = container.querySelectorAll('.filter-btn');
             var list = container.querySelector('.articles-list');
 
-            function updateClearBtn() {
-                if (searchInput && searchClearBtn) {
-                    if (searchInput.value.length > 0) {
-                        searchClearBtn.classList.add('visible');
-                    } else {
-                        searchClearBtn.classList.remove('visible');
-                    }
-                }
-            }
             var urlPage = getUrlParam('page');
             if (urlPage) {
                 sessionStorage.setItem('articlePage', urlPage);
@@ -980,10 +983,10 @@
             loadArticleState();
             if (urlTag) {
                 currentKeyword = urlTag;
-                if (searchInput) searchInput.value = urlTag;
+                if (searchInputGlobal) searchInputGlobal.value = urlTag;
             }
-            if (searchInput && currentKeyword) {
-                searchInput.value = currentKeyword;
+            if (searchInputGlobal && currentKeyword) {
+                searchInputGlobal.value = currentKeyword;
             }
             filterBtns.forEach(function(btn) {
                 btn.classList.toggle('active', btn.dataset.filter === currentFilter);
@@ -1069,16 +1072,16 @@
                         '<div class="no-result"><i class="far fa-frown"></i> 加载文章数据失败<br><span style="font-size:0.8rem;">请稍后再试或刷新网页…</span></div>';
                 });
 
-            searchInput.addEventListener('input', function() {
+            searchInputGlobal.addEventListener('input', function() {
                 applySearch(this.value);
                 updateClearBtn();
             });
-            searchClearBtn.addEventListener('click', function() {
-                if (searchInput) {
-                    searchInput.value = '';
+            searchClearBtnGlobal.addEventListener('click', function() {
+                if (searchInputGlobal) {
+                    searchInputGlobal.value = '';
                     applySearch('');
                     updateClearBtn();
-                    searchInput.focus();
+                    searchInputGlobal.focus();
                 }
             });
             filterBtns.forEach(function(btn) {
@@ -1088,7 +1091,7 @@
                     });
                     this.classList.add('active');
                     currentFilter = this.dataset.filter;
-                    applySearch(searchInput.value);
+                    applySearch(searchInputGlobal.value);
                     updateClearBtn();
                 });
             });
@@ -1096,18 +1099,18 @@
                 if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
                     if (document.querySelector('.articles-search-input')) {
                         e.preventDefault();
-                        searchInput.focus();
-                        searchInput.select();
+                        searchInputGlobal.focus();
+                        searchInputGlobal.select();
                     }
                 }
                 if (e.key === 'Escape') {
-                    searchInput.blur();
+                    searchInputGlobal.blur();
                     updateClearBtn();
                 }
             });
-            if (searchInput) {
-                searchInput.addEventListener('focus', updateClearBtn);
-                searchInput.addEventListener('blur', function() {
+            if (searchInputGlobal) {
+                searchInputGlobal.addEventListener('focus', updateClearBtn);
+                searchInputGlobal.addEventListener('blur', function() {
                     setTimeout(updateClearBtn, 200);
                 });
             }

@@ -1,6 +1,5 @@
 import { Redis } from '@upstash/redis';
 import Pusher from 'pusher';
-import crypto from 'crypto';
 
 const kv = new Redis({
   url: process.env.KV_REST_API_URL,
@@ -16,6 +15,11 @@ const pusher = new Pusher({
 });
 
 const RATE_LIMIT_MS = 300;
+
+// 纯原生JS生成随机Nonce，不需要任何外部库
+function generateNonce() {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+}
 
 function generateSessionId() {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
@@ -54,12 +58,13 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const counts = await kv.hgetall('likes:counts') || {};
-      const nonce = crypto.randomBytes(16).toString('hex');
+      const nonce = generateNonce();
       await kv.set(`auth_nonce:${nonce}`, 'valid', 'EX', 300);
       return res.status(200).json({ success: true, data: counts, nonce: nonce });
     } catch (err) {
       console.error('GET ERROR:', err);
-      return res.status(500).json({ success: false, error: 'Internal error' });
+      // 这里的 debug 会把真实报错直接打出来
+      return res.status(500).json({ success: false, error: 'Internal error', debug: err.message });
     }
   }
 
@@ -90,7 +95,6 @@ export default async function handler(req, res) {
       local rateLimitMs = tonumber(ARGV[3])
       local sessionLimit = tonumber(ARGV[4])
       local field = ARGV[5]
-      local nonce = ARGV[6]
 
       if redis.call('GET', nonceKey) == false then
         return {0, 'invalid_nonce'}

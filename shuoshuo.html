@@ -1822,6 +1822,7 @@
             var currentKeyword = '';
             var urlIdHandled = false;
             var likesCache = {};
+            var myNonce = '';
 
             var commentCountsCache = {};
             var commentCountsRequested = {};
@@ -1953,6 +1954,9 @@
                         if (!data.success) {
                             throw new Error(data.error || '获取失败');
                         }
+                        if (data.nonce) {
+                            myNonce = data.nonce;
+                        }
                         likesCache = data.data || {};
                         syncLikedIdsWithCounts();
                         refreshLikeUI();
@@ -2021,7 +2025,7 @@
 
                 fetch('/api/likes', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'X-Nonce': myNonce },
                     body: JSON.stringify({ id: id, action: action })
                 })
                 .then(function(res) {

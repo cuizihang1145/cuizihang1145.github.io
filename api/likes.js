@@ -1,5 +1,6 @@
 import { Redis } from '@upstash/redis';
 import Pusher from 'pusher';
+import crypto from 'crypto';
 
 const kv = new Redis({
   url: process.env.KV_REST_API_URL,
@@ -78,7 +79,12 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const counts = await kv.hgetall('likes:counts') || {};
-      return res.status(200).json({ success: true, data: counts });
+      
+      // 生成一次性随机号（Nonce），存进Redis，300秒过期，然后返回给前端
+      const nonce = crypto.randomBytes(16).toString('hex');
+      await kv.set(`auth_nonce:${nonce}`, 'valid', 'EX', 300);
+
+      return res.status(200).json({ success: true, data: counts, nonce: nonce });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ success: false, error: 'Internal error' });
@@ -87,9 +93,9 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     const { id, action } = req.body || {};
-
-    if (!id || !action) {
-      return res.status(400).json({ success: false, error: 'Missing id or action' });
+    const userNonce = req.headers['x-nonce'];
+    if (!userNonce || !id || !action) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
     }
     if (action !== 'like' && action !== 'unlike') {
       return res.status(400).json({ success: false, error: 'Invalid action' });
@@ -97,6 +103,8 @@ export default async function handler(req, res) {
 
     const shortKey = `rate:short:${clientIP}:${id}`;
     const sessionKey = `rate:session:${sessionId}`;
+    // 新增：拼接 Nonce 的 Redis Key
+    const nonceKey = `auth_nonce:${userNonce}`;
     const now = Date.now();
     const delta = action === 'like' ? 1 : -1;
 
@@ -104,12 +112,22 @@ export default async function handler(req, res) {
       local shortKey = KEYS[1]
       local sessionKey = KEYS[2]
       local countKey = KEYS[3]
+      local nonceKey = KEYS[4]
+
       local now = tonumber(ARGV[1])
       local delta = tonumber(ARGV[2])
       local rateLimitMs = tonumber(ARGV[3])
       local sessionLimit = tonumber(ARGV[4])
       local field = ARGV[5]
+      local nonce = ARGV[6]
 
+      -- 第一步：验证并删除 Nonce（防重放，原子操作）
+      if redis.call('GET', nonceKey) == false then
+        return {0, 'invalid_nonce'}
+      end
+      redis.call('DEL', nonceKey)
+
+      -- 第二步：原有的限流逻辑（只有验证通过才会走到这里）
       local shortVal = redis.call('GET', shortKey)
       if shortVal then
         local lastTime = tonumber(shortVal)
@@ -142,13 +160,18 @@ export default async function handler(req, res) {
     try {
       const result = await kv.eval(
         luaScript,
-        [shortKey, sessionKey, 'likes:counts'],
-        [String(now), String(delta), String(RATE_LIMIT_MS), '30', id]
+        // 将 nonceKey 作为第4个参数传入
+        [shortKey, sessionKey, 'likes:counts', nonceKey],
+        // 将 userNonce 作为第6个参数传入
+        [String(now), String(delta), String(RATE_LIMIT_MS), '30', id, userNonce]
       );
 
       const newVal = result[0];
       const status = result[1];
 
+      if (status === 'invalid_nonce') {
+        return res.status(403).json({ success: false, error: 'Invalid or expired nonce' });
+      }
       if (status === 'rate') {
         return res.status(429).json({ success: false, error: '操作过快，请稍后再试' });
       }

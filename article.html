@@ -1677,6 +1677,18 @@
                     generateShareImage();
                     initWaline(id);
 
+                    // ========== 修改：标签点击跳转到 /index.html?tag=点击的标签 ==========
+                    appContent.querySelectorAll('.tag').forEach(function(tagEl) {
+                        tagEl.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            var tagName = this.getAttribute('data-tag') || this.textContent.trim();
+                            if (tagName) {
+                                window.location.href = '/index.html?tag=' + encodeURIComponent(tagName);
+                            }
+                        });
+                    });
+                    // ========== 修改结束 ==========
+
                     // 加载 archive.json 并渲染导航
                     loadArchive().then(function() {
                         renderNav();

@@ -2040,6 +2040,10 @@
                     _likeLock = false;
                     if (btn) btn.dataset.loading = 'false';
 
+                    if (data.nonce) {
+                        myNonce = data.nonce;
+                    }
+
                     if (!data.success) {
                         countEl.textContent = currentText;
                         if (action === 'like') removeLikedId(id);

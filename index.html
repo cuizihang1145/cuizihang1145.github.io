@@ -767,13 +767,17 @@
                 var content = item.content || '';
                 var wordCount = countWords(content);
                 var readTimeDisplay;
+                var wordDisplay;
+
                 if (wordCount === 0) {
-                    readTimeDisplay = '0分钟';
+                    readTimeDisplay = '114514分钟';
+                    wordDisplay = '没有字哦';
                 } else {
                     var readTime = Math.ceil(wordCount / 300);
                     readTimeDisplay = readTime === 1 ? '1分钟' : readTime + '分钟';
+                    wordDisplay = wordCount + '字';
                 }
-                var wordDisplay = wordCount === 0 ? '0字' : wordCount + '字';
+
                 var titleHtml = highlightText(escapeHtml(title), kw);
                 var previewText = getPreviewAroundMatch(content, kw);
                 var previewHtml = renderPreviewMarkdown(previewText);

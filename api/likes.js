@@ -62,6 +62,7 @@ export default async function handler(req, res) {
     res.setHeader('Set-Cookie', `session_id=${sessionId}; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL}; Path=/`);
   }
 
+  // ---------- GET 请求 ----------
   if (req.method === 'GET') {
     try {
       const getLimitKey = `get:limit:${sessionId}`;
@@ -87,8 +88,25 @@ export default async function handler(req, res) {
     }
   }
 
+  // ---------- POST 请求 ----------
   if (req.method === 'POST') {
-    const { id, action } = req.body || {};
+    // ---- 1. 请求头环境检查 ----
+    const ua = req.headers['user-agent'] || '';
+    const accept = req.headers['accept'] || '';
+    const acceptLanguage = req.headers['accept-language'] || '';
+
+    if (ua.length < 10) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+    if (!accept.includes('application/json')) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+    if (!acceptLanguage) {
+      console.warn(`[Security] Missing accept-language from IP ${clientIP}`);
+    }
+
+    // ---- 2. 解析请求体 ----
+    const { id, action, browser } = req.body || {};
     const userNonce = req.headers['x-nonce'];
 
     if (!/^\d+$/.test(String(id))) {
@@ -102,6 +120,28 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Invalid action' });
     }
 
+    // ---- 3. 验证前端传来的环境信号 ----
+    if (!browser || typeof browser !== 'object') {
+      console.warn(`[Security] Missing browser signals from ${clientIP}`);
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+
+    const requiredBrowserKeys = ['hasWindow', 'hasDocument', 'hasNavigator', 'hasLocalStorage', 'hasCreateElement'];
+    for (const key of requiredBrowserKeys) {
+      if (browser[key] !== true) {
+        console.warn(`[Security] Missing ${key} from ${clientIP}`);
+        return res.status(403).json({ success: false, error: 'Forbidden' });
+      }
+    }
+
+    if (browser.hasWebdriver === true) {
+      console.warn(`[Security] Webdriver detected from ${clientIP}`);
+    }
+    if (browser.pluginsLen === 0) {
+      console.warn(`[Security] Empty plugins from ${clientIP}`);
+    }
+
+    // ---- 4. Redis 限流与 Nonce 验证 ----
     const shortKey = `rate:short:${clientIP}:${id}`;
     const sessionKey = `rate:session:${sessionId}`;
     const nonceKey = `auth_nonce:${userNonce}`;

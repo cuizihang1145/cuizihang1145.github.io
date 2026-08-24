@@ -16,6 +16,12 @@ const pusher = new Pusher({
 });
 
 const RATE_LIMIT_MS = 300;
+const GET_LIMIT_WINDOW = 10;
+const GET_LIMIT_MAX = 3;
+const SESSION_LIMIT = 30;
+const SESSION_TTL = 300;
+const RENEW_LIMIT = 3;
+const RENEW_WINDOW = 10;
 
 function generateSessionId() {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
@@ -48,15 +54,24 @@ export default async function handler(req, res) {
 
   if (!sessionId) {
     sessionId = generateSessionId();
-    res.setHeader('Set-Cookie', `session_id=${sessionId}; HttpOnly; Secure; SameSite=Lax; Max-Age=300; Path=/`);
+    res.setHeader('Set-Cookie', `session_id=${sessionId}; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL}; Path=/`);
   }
 
   if (req.method === 'GET') {
     try {
+      const getLimitKey = `get:limit:${sessionId}`;
+      const getCount = await kv.incr(getLimitKey);
+      if (getCount === 1) {
+        await kv.expire(getLimitKey, GET_LIMIT_WINDOW);
+      }
+      if (getCount > GET_LIMIT_MAX) {
+        return res.status(429).json({ success: false, error: '请求太频繁，请稍后再试' });
+      }
+
       const nonce = crypto.randomBytes(16).toString('hex');
       const p = kv.pipeline();
       p.hgetall('likes:counts');
-      p.set(`auth_nonce:${nonce}`, 'valid', { ex: 300 });
+      p.set(`auth_nonce:${nonce}`, 'valid', { ex: SESSION_TTL });
       const result = await p.exec();
       const counts = result[0] || {};
 
@@ -80,6 +95,7 @@ export default async function handler(req, res) {
     const shortKey = `rate:short:${clientIP}:${id}`;
     const sessionKey = `rate:session:${sessionId}`;
     const nonceKey = `auth_nonce:${userNonce}`;
+    const renewKey = `renew:count:${sessionId}`;
     const now = Date.now();
     const delta = action === 'like' ? 1 : -1;
 
@@ -88,16 +104,19 @@ export default async function handler(req, res) {
       local sessionKey = KEYS[2]
       local countKey = KEYS[3]
       local nonceKey = KEYS[4]
+      local renewKey = KEYS[5]
 
       local now = tonumber(ARGV[1])
       local delta = tonumber(ARGV[2])
       local rateLimitMs = tonumber(ARGV[3])
       local sessionLimit = tonumber(ARGV[4])
-      local field = ARGV[5]
-      local nonce = ARGV[6]
+      local renewLimit = tonumber(ARGV[5])
+      local renewWindow = tonumber(ARGV[6])
+      local field = ARGV[7]
+      local nonce = ARGV[8]
 
       if redis.call('GET', nonceKey) == false then
-        return {0, 'invalid_nonce'}
+        return {0, 'invalid_nonce', 0}
       end
       redis.call('DEL', nonceKey)
 
@@ -105,7 +124,7 @@ export default async function handler(req, res) {
       if shortVal then
         local lastTime = tonumber(shortVal)
         if (now - lastTime) < rateLimitMs then
-          return {0, 'rate'}
+          return {0, 'rate', 0}
         end
       end
 
@@ -113,32 +132,52 @@ export default async function handler(req, res) {
       if sessionVal then
         local count = tonumber(sessionVal)
         if count >= sessionLimit then
-          return {0, 'limit'}
+          return {0, 'limit', 0}
         end
       end
 
       redis.call('SET', shortKey, now, 'PX', rateLimitMs)
       redis.call('INCR', sessionKey)
       redis.call('EXPIRE', sessionKey, 300)
-      local newVal = redis.call('HINCRBY', countKey, field, delta)
 
+      local newVal = redis.call('HINCRBY', countKey, field, delta)
       if newVal < 0 then
         newVal = 0
         redis.call('HSET', countKey, field, 0)
       end
 
-      return {newVal, 'ok'}
+      local renewCount = redis.call('INCR', renewKey)
+      if renewCount == 1 then
+        redis.call('EXPIRE', renewKey, renewWindow)
+      end
+
+      local shouldRenew = 0
+      if renewCount <= renewLimit then
+        shouldRenew = 1
+      end
+
+      return {newVal, 'ok', shouldRenew}
     `;
 
     try {
       const result = await kv.eval(
         luaScript,
-        [shortKey, sessionKey, 'likes:counts', nonceKey],
-        [String(now), String(delta), String(RATE_LIMIT_MS), '30', id, userNonce]
+        [shortKey, sessionKey, 'likes:counts', nonceKey, renewKey],
+        [
+          String(now),
+          String(delta),
+          String(RATE_LIMIT_MS),
+          String(SESSION_LIMIT),
+          String(RENEW_LIMIT),
+          String(RENEW_WINDOW),
+          id,
+          userNonce
+        ]
       );
 
       const newVal = result[0];
       const status = result[1];
+      const shouldRenew = result[2];
 
       if (status === 'invalid_nonce') {
         return res.status(403).json({ success: false, error: 'Invalid or expired nonce' });
@@ -150,8 +189,11 @@ export default async function handler(req, res) {
         return res.status(429).json({ success: false, error: '操作过于频繁，请稍后再试' });
       }
 
-      const newNonce = crypto.randomBytes(16).toString('hex');
-      await kv.set(`auth_nonce:${newNonce}`, 'valid', { ex: 300 });
+      let newNonce = null;
+      if (shouldRenew === 1) {
+        newNonce = crypto.randomBytes(16).toString('hex');
+        await kv.set(`auth_nonce:${newNonce}`, 'valid', { ex: SESSION_TTL });
+      }
 
       setTimeout(() => {
         pusher.trigger('shuoshuo-channel', 'like-event', {

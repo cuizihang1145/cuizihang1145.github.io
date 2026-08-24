@@ -4,6 +4,6 @@
     "pusher": "^5.2.0"
   },
   "scripts": {
-    "build": "node split.js && node a.js"
+    "build": "node split.js"
   }
 }

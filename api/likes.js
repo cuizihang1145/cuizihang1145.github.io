@@ -23,15 +23,9 @@ const SESSION_TTL = 300;
 const RENEW_LIMIT = 3;
 const RENEW_WINDOW = 10;
 
-// ---------- 日志工具 ----------
 function log(level, message, meta = {}) {
   const timestamp = new Date().toISOString();
-  const entry = {
-    timestamp,
-    level,
-    message,
-    ...meta
-  };
+  const entry = { timestamp, level, message, ...meta };
   if (level === 'error') {
     console.error(JSON.stringify(entry));
   } else if (level === 'warn') {
@@ -91,7 +85,7 @@ export default async function handler(req, res) {
     log('debug', 'Existing session', { requestId, sessionId });
   }
 
-  // ---------- GET 请求 ----------
+  // ---------- GET ----------
   if (req.method === 'GET') {
     try {
       const getLimitKey = `get:limit:${sessionId}`;
@@ -119,21 +113,14 @@ export default async function handler(req, res) {
     }
   }
 
-  // ---------- POST 请求 ----------
+  // ---------- POST ----------
   if (req.method === 'POST') {
-    // ---- 1. 请求头环境检查 ----
+    // ---- 1. 请求头检查（仅 User-Agent） ----
     const ua = req.headers['user-agent'] || '';
-    const accept = req.headers['accept'] || '';
     const acceptLanguage = req.headers['accept-language'] || '';
-
-    log('debug', 'Request headers', { requestId, ua: ua.slice(0, 50), accept, acceptLanguage });
 
     if (ua.length < 10) {
       log('warn', 'User-Agent too short', { requestId, ip: clientIP, ua });
-      return res.status(403).json({ success: false, error: 'Forbidden' });
-    }
-    if (!accept.includes('application/json')) {
-      log('warn', 'Accept header missing application/json', { requestId, ip: clientIP, accept });
       return res.status(403).json({ success: false, error: 'Forbidden' });
     }
     if (!acceptLanguage) {
@@ -144,13 +131,10 @@ export default async function handler(req, res) {
     const { id, action, browser } = req.body || {};
     const userNonce = req.headers['x-nonce'];
 
-    log('debug', 'Request body parsed', { requestId, id, action, hasBrowser: !!browser });
-
     if (!/^\d+$/.test(String(id))) {
       log('warn', 'Invalid ID format', { requestId, id });
       return res.status(400).json({ success: false, error: 'ID must be numeric' });
     }
-
     if (!userNonce || !id || !action) {
       log('warn', 'Missing required fields', { requestId, hasNonce: !!userNonce, id, action });
       return res.status(403).json({ success: false, error: 'Forbidden' });
@@ -160,32 +144,19 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Invalid action' });
     }
 
-    // ---- 3. 验证前端传来的环境信号 ----
+    // ---- 3. 验证浏览器环境信号（只检查关键 API） ----
     if (!browser || typeof browser !== 'object') {
       log('warn', 'Missing browser signals', { requestId, ip: clientIP });
       return res.status(403).json({ success: false, error: 'Forbidden' });
     }
 
-    const requiredBrowserKeys = ['hasWindow', 'hasDocument', 'hasNavigator', 'hasLocalStorage', 'hasCreateElement'];
-    for (const key of requiredBrowserKeys) {
+    const requiredKeys = ['hasWindow', 'hasDocument', 'hasNavigator', 'hasLocalStorage', 'hasCreateElement'];
+    for (const key of requiredKeys) {
       if (browser[key] !== true) {
-        log('warn', 'Missing browser API', { requestId, ip: clientIP, missingKey: key, browser });
+        log('warn', 'Missing browser API', { requestId, ip: clientIP, missingKey: key });
         return res.status(403).json({ success: false, error: 'Forbidden' });
       }
     }
-
-    // 辅助检测（只记录日志，不拦截）
-    if (browser.hasWebdriver === true) {
-      log('warn', 'Webdriver detected', { requestId, ip: clientIP });
-    }
-    if (browser.pluginsLen === 0) {
-      log('info', 'Empty plugins (mobile WebView likely)', { requestId, ip: clientIP });
-    }
-    if (browser.isChrome === false) {
-      log('info', 'Not Chrome (Safari/Firefox/WebView likely)', { requestId, ip: clientIP });
-    }
-
-    log('debug', 'Browser signal check passed', { requestId });
 
     // ---- 4. Redis 限流与 Nonce 验证 ----
     const shortKey = `rate:short:${clientIP}:${id}`;
@@ -194,8 +165,6 @@ export default async function handler(req, res) {
     const renewKey = `renew:count:${sessionId}`;
     const now = Date.now();
     const delta = action === 'like' ? 1 : -1;
-
-    log('debug', 'Redis keys prepared', { requestId, shortKey, sessionKey, nonceKey: nonceKey.slice(0, 20) });
 
     const luaScript = `
       local shortKey = KEYS[1]
@@ -258,7 +227,6 @@ export default async function handler(req, res) {
     `;
 
     try {
-      log('debug', 'Executing Lua script', { requestId });
       const result = await kv.eval(
         luaScript,
         [shortKey, sessionKey, 'likes:counts', nonceKey, renewKey],
@@ -278,10 +246,8 @@ export default async function handler(req, res) {
       const status = result[1];
       const shouldRenew = result[2];
 
-      log('debug', 'Lua script result', { requestId, newVal, status, shouldRenew });
-
       if (status === 'invalid_nonce') {
-        log('warn', 'Invalid or expired nonce', { requestId, ip: clientIP, nonce: userNonce.slice(0, 8) });
+        log('warn', 'Invalid nonce', { requestId, ip: clientIP, nonce: userNonce.slice(0, 8) });
         return res.status(403).json({ success: false, error: 'Invalid or expired nonce' });
       }
       if (status === 'rate') {
@@ -302,6 +268,7 @@ export default async function handler(req, res) {
 
       log('info', 'Like/unlike success', { requestId, id, action, newVal, ip: clientIP });
 
+      // 异步推送 Pusher（不阻塞响应）
       setTimeout(() => {
         pusher.trigger('shuoshuo-channel', 'like-event', {
           id,

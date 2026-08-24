@@ -85,6 +85,12 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const { id, action } = req.body || {};
     const userNonce = req.headers['x-nonce'];
+
+    //ID纯数字校验
+    if (!/^\d+$/.test(String(id))) {
+      return res.status(400).json({ success: false, error: 'ID must be numeric' });
+    }
+
     if (!userNonce || !id || !action) {
       return res.status(403).json({ success: false, error: 'Forbidden' });
     }

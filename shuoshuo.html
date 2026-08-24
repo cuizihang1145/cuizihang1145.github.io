@@ -1205,7 +1205,6 @@
         (function() {
             'use strict';
 
-            // ---------- IndexedDB ----------
             var DB_NAME = 'ks_shuoshuo_db';
             var STORE_NAME = 'settings';
             var LIKED_IDS_KEY = 'liked_ids';
@@ -1945,7 +1944,7 @@
             }
 
             function fetchLikes() {
-                return fetch('/api/likes')
+                return fetch('/api/likes?prefix=shuoshuo:')
                     .then(function(res) {
                         if (!res.ok) throw new Error('获取点赞数失败');
                         return res.json();
@@ -1987,7 +1986,7 @@
             var _likeLock = false;
 
             function getNewNonce() {
-                return fetch('/api/likes')
+                return fetch('/api/likes?prefix=shuoshuo:')
                     .then(function(res) { return res.json(); })
                     .then(function(data) {
                         if (data.success && data.nonce) {
@@ -2290,7 +2289,7 @@
                     var strId = String(item._originIndex);
                     var liked = isLiked(strId);
                     var heartClass = liked ? 'fas fa-heart' : 'far fa-heart';
-                    var likeCount = likesCache[item._originIndex];
+                    var likeCount = likesCache[strId];
                     if (likeCount === undefined) likeCount = '-';
 
                     var commentCountText = commentCountsCache.hasOwnProperty(item._originIndex) ?
@@ -2321,9 +2320,9 @@
                     if (tagsHtml) html += tagsHtml;
                     html += '<div class="shuoshuo-actions">';
                     html += '<button class="shuoshuo-action-btn share-toggle" data-index="' + item._originIndex + '" title="分享"><i class="fas fa-share-alt"></i></button>';
-                    html += '<button class="shuoshuo-action-btn like-toggle" data-index="' + item._originIndex + '" title="点赞">';
+                    html += '<button class="shuoshuo-action-btn like-toggle" data-index="' + strId + '" title="点赞">';
                     html += '<i class="' + heartClass + '"></i> ';
-                    html += '<span class="like-count" id="like-count-' + item._originIndex + '">' + likeCount + '</span>';
+                    html += '<span class="like-count" id="like-count-' + strId + '">' + likeCount + '</span>';
                     html += '</button>';
                     html += '<button class="shuoshuo-action-btn comment-toggle" data-index="' + item._originIndex + '" title="评论"><i class="far fa-comments"></i> <span class="comment-count" id="comment-count-' + item._originIndex + '">' + commentCountText + '</span></button>';
                     html += '</div>';

@@ -1145,12 +1145,12 @@
 
                 doFetch(myNonce)
                 .then(function(data) {
-                    _likeLock = false;
-                    if (btn) btn.dataset.loading = 'false';
-
+                    // 先更新 Nonce，再释放锁
                     if (data.nonce) {
                         myNonce = data.nonce;
                     }
+                    _likeLock = false;
+                    if (btn) btn.dataset.loading = 'false';
 
                     if (!data.success) {
                         countEl.textContent = currentText;
@@ -1177,10 +1177,12 @@
                         getNewNonce().then(function(success) {
                             if (success) {
                                 doFetch(myNonce).then(function(data) {
+                                    // 同样先更新 Nonce，再释放锁
+                                    if (data.nonce) {
+                                        myNonce = data.nonce;
+                                    }
                                     _likeLock = false;
                                     if (btn) btn.dataset.loading = 'false';
-                                    
-                                    if (data.nonce) { myNonce = data.nonce; }
 
                                     likesCache[id] = data.likes;
                                     countEl.textContent = data.likes;

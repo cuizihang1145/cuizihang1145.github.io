@@ -1122,73 +1122,6 @@
         .footer--no-border {
             border-top: none !important;
         }
-
-        .particle-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 999;
-        }
-        .particle {
-            position: absolute;
-            animation: particleFly var(--particle-duration) ease-out forwards;
-            pointer-events: none;
-            will-change: transform, opacity;
-        }
-        .particle i {
-            font-size: inherit;
-            display: block;
-            line-height: 1;
-        }
-        @keyframes particleFly {
-            0% { opacity: 1; transform: translate(0,0) scale(1) rotate(0deg); }
-            100% { opacity: 0; transform: translate(var(--particle-tx), var(--particle-ty)) scale(var(--particle-end-scale)) rotate(var(--particle-end-rotate)); }
-        }
-
-        .like-ripple {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            border-radius: 50%;
-            border: 2px solid rgba(107,90,207,0.2);
-            animation: rippleWave var(--ripple-duration) ease-out forwards;
-            pointer-events: none;
-            will-change: transform, opacity;
-        }
-        .like-ripple.second {
-            animation-name: rippleWaveSecond;
-        }
-        @keyframes rippleWave {
-            0% {
-                width: 8px;
-                height: 8px;
-                opacity: 0.5;
-                transform: translate(calc(-50% + var(--ripple-offset-x)), calc(-50% + var(--ripple-offset-y))) scale(1);
-            }
-            100% {
-                width: var(--ripple-size);
-                height: var(--ripple-size);
-                opacity: 0;
-                transform: translate(calc(-50% + var(--ripple-offset-x)), calc(-50% + var(--ripple-offset-y))) scale(1);
-            }
-        }
-        @keyframes rippleWaveSecond {
-            0% {
-                width: 8px;
-                height: 8px;
-                opacity: 0.35;
-                transform: translate(calc(-50% + var(--ripple-offset-x)), calc(-50% + var(--ripple-offset-y))) scale(1);
-            }
-            100% {
-                width: calc(var(--ripple-size) * 1.4);
-                height: calc(var(--ripple-size) * 1.4);
-                opacity: 0;
-                transform: translate(calc(-50% + var(--ripple-offset-x)), calc(-50% + var(--ripple-offset-y))) scale(1);
-            }
-        }
     </style>
 </head>
 <body>
@@ -1196,8 +1129,6 @@
     <div class="bg-glow"></div>
     <div class="glow-soft"></div>
     <div class="glow-soft-2"></div>
-
-    <div class="particle-container" id="particleContainer"></div>
 
     <div class="top-buttons">
         <div class="left">
@@ -1274,6 +1205,7 @@
         (function() {
             'use strict';
 
+            // ---------- IndexedDB ----------
             var DB_NAME = 'ks_shuoshuo_db';
             var STORE_NAME = 'settings';
             var LIKED_IDS_KEY = 'liked_ids';
@@ -1845,7 +1777,7 @@
                             }
                         }
                         if (collageImages.length >= 2) {
-                            const placeholder = '@@COLLAGE_' + index + '@@';
+                            const placeholder = `@@COLLAGE_${index}@@`;
                             collages.push({ images: collageImages });
                             resultLines.push(placeholder);
                             index++;
@@ -2067,115 +1999,6 @@
                     .catch(function() { return false; });
             }
 
-            var colorPalette = ['#6B5ACF','#7A6BCF','#8A7ADF','#9A8AEF','#B09AFF','#5A4ABF','#A88AFF','#C8B0FF','#624ED0'];
-
-            function createParticles(cx, cy) {
-                var total = Math.floor(Math.random() * 8) + 8;
-                var baseAngles = [];
-                for (var i = 0; i < total; i++) {
-                    baseAngles.push((i / total) * Math.PI * 2);
-                }
-                for (var i = baseAngles.length - 1; i > 0; i--) {
-                    var j = Math.floor(Math.random() * (i + 1));
-                    var temp = baseAngles[i];
-                    baseAngles[i] = baseAngles[j];
-                    baseAngles[j] = temp;
-                }
-                var container = document.getElementById('particleContainer');
-                for (var i = 0; i < total; i++) {
-                    var el = document.createElement('div');
-                    el.className = 'particle';
-                    var size = Math.random() * 20 + 12;
-                    var angle = baseAngles[i] + (Math.random() - 0.5) * 0.7;
-                    var distance = Math.random() * 140 + 60;
-                    var tx = Math.cos(angle) * distance;
-                    var ty = Math.sin(angle) * distance;
-                    el.style.width = size + 'px';
-                    el.style.height = size + 'px';
-                    el.style.left = (cx - size / 2) + 'px';
-                    el.style.top = (cy - size / 2) + 'px';
-                    el.style.setProperty('--particle-tx', tx + 'px');
-                    el.style.setProperty('--particle-ty', ty + 'px');
-                    el.style.setProperty('--particle-end-scale', Math.random() * 0.3 + 0.1);
-                    el.style.setProperty('--particle-end-rotate', (Math.random() * 720) + 'deg');
-                    el.style.setProperty('--particle-duration', (Math.random() * 0.3 + 0.3) + 's');
-
-                    var shape = Math.random();
-                    if (shape < 0.20) {
-                        var icon = document.createElement('i');
-                        icon.className = 'fas fa-heart';
-                        icon.style.color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-                        icon.style.fontSize = size + 'px';
-                        el.style.background = 'transparent';
-                        el.style.width = 'auto';
-                        el.style.height = 'auto';
-                        el.appendChild(icon);
-                    } else if (shape < 0.40) {
-                        el.style.background = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-                        el.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
-                    } else if (shape < 0.60) {
-                        el.style.background = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-                        el.style.clipPath = 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)';
-                    } else if (shape < 0.80) {
-                        el.style.borderRadius = '50%';
-                        el.style.background = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-                    } else {
-                        el.style.background = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-                        el.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
-                    }
-
-                    container.appendChild(el);
-                    el.addEventListener('animationend', function() { this.remove(); });
-                }
-            }
-
-            function createRipples(buttonElement) {
-                var count = Math.floor(Math.random() * 2) + 2;
-                for (var i = 0; i < count; i++) {
-                    var angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
-                    var distance = Math.random() * 40 + 20;
-                    var offsetX = Math.cos(angle) * distance;
-                    var offsetY = Math.sin(angle) * distance;
-
-                    var r1 = document.createElement('div');
-                    r1.className = 'like-ripple';
-                    var size1 = Math.random() * 160 + 160;
-                    r1.style.setProperty('--ripple-size', size1 + 'px');
-                    r1.style.setProperty('--ripple-offset-x', offsetX + 'px');
-                    r1.style.setProperty('--ripple-offset-y', offsetY + 'px');
-                    r1.style.setProperty('--ripple-duration', (Math.random() * 0.3 + 0.3) + 's');
-                    r1.style.borderColor = 'rgba(107,90,207,' + (Math.random() * 0.2 + 0.15) + ')';
-                    r1.style.animationDelay = (Math.random() * 0.05) + 's';
-                    buttonElement.appendChild(r1);
-                    r1.addEventListener('animationend', function() { this.remove(); });
-
-                    var r2 = document.createElement('div');
-                    r2.className = 'like-ripple second';
-                    var size2 = size1 * (Math.random() * 0.4 + 1.1);
-                    r2.style.setProperty('--ripple-size', size2 + 'px');
-                    r2.style.setProperty('--ripple-offset-x', offsetX + 'px');
-                    r2.style.setProperty('--ripple-offset-y', offsetY + 'px');
-                    r2.style.setProperty('--ripple-duration', (Math.random() * 0.3 + 0.3) + 's');
-                    r2.style.borderColor = 'rgba(107,90,207,' + (Math.random() * 0.15 + 0.08) + ')';
-                    r2.style.animationDelay = (Math.random() * 0.12 + 0.05) + 's';
-                    buttonElement.appendChild(r2);
-                    r2.addEventListener('animationend', function() { this.remove(); });
-                }
-            }
-
-            function triggerLikeEffect(likeButton) {
-                if (!likeButton) return;
-                var rect = likeButton.getBoundingClientRect();
-                var cx = rect.left + rect.width / 2;
-                var cy = rect.top + rect.height / 2;
-                createParticles(cx, cy);
-                createRipples(likeButton);
-                likeButton.style.transform = 'scale(0.92)';
-                setTimeout(function() {
-                    likeButton.style.transform = '';
-                }, 120);
-            }
-
             function toggleLike(id, action) {
                 var countEl = document.getElementById('like-count-' + id);
                 if (!countEl) return;
@@ -2254,10 +2077,6 @@
                     } else if (action === 'like') {
                         addLikedId(id);
                     }
-
-                    if (action === 'like' && btn) {
-                        triggerLikeEffect(btn);
-                    }
                 })
                 .catch(function(err) {
                     if (err && err.error === 'Invalid or expired nonce') {
@@ -2278,10 +2097,6 @@
                                         removeLikedId(id);
                                     } else if (action === 'like') {
                                         addLikedId(id);
-                                    }
-
-                                    if (action === 'like' && btn) {
-                                        triggerLikeEffect(btn);
                                     }
                                 }).catch(function(finalErr) {
                                     _likeLock = false;
@@ -2426,7 +2241,7 @@
                     window.KSMarkdown.mountMarkdown(tempContainer, markdown);
 
                     collages.forEach(function(collage, idx) {
-                        var placeholder = '@@COLLAGE_' + idx + '@@';
+                        var placeholder = `@@COLLAGE_${idx}@@`;
                         var collageHtml = renderCollage(
                             collage.images.map(function(img) { return img.src; }),
                             collage.images.map(function(img) { return img.alt; })

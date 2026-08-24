@@ -24,12 +24,17 @@ const RENEW_LIMIT = 3;
 const RENEW_WINDOW = 10;
 
 function generateSessionId() {
-  return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
+  return crypto.randomBytes(16).toString('hex');
 }
 
 function getClientIP(req) {
+  const realIp = req.headers['x-real-ip'];
+  if (realIp) return realIp;
   const forwarded = req.headers['x-forwarded-for'];
-  return forwarded ? forwarded.split(',')[0].trim() : req.socket?.remoteAddress || 'unknown';
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  return req.socket?.remoteAddress || 'unknown';
 }
 
 function parseCookies(cookieHeader) {
@@ -86,7 +91,6 @@ export default async function handler(req, res) {
     const { id, action } = req.body || {};
     const userNonce = req.headers['x-nonce'];
 
-    //ID纯数字校验
     if (!/^\d+$/.test(String(id))) {
       return res.status(400).json({ success: false, error: 'ID must be numeric' });
     }

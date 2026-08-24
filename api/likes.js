@@ -69,13 +69,31 @@ export default async function handler(req, res) {
       }
 
       const nonce = crypto.randomBytes(16).toString('hex');
+      const prefix = req.query.prefix || '';
+
       const p = kv.pipeline();
       p.hgetall('likes:counts');
       p.set(`auth_nonce:${nonce}`, 'valid', { ex: SESSION_TTL });
       const result = await p.exec();
-      const counts = result[0] || {};
+      const allCounts = result[0] || {};
 
-      return res.status(200).json({ success: true, data: counts, nonce: nonce });
+      let filteredCounts = {};
+      if (prefix) {
+        for (const [key, value] of Object.entries(allCounts)) {
+          if (key.startsWith(prefix)) {
+            const cleanKey = key.slice(prefix.length);
+            filteredCounts[cleanKey] = value;
+          }
+        }
+      } else {
+        filteredCounts = allCounts;
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: filteredCounts,
+        nonce: nonce
+      });
     } catch (err) {
       console.error('GET ERROR:', err);
       return res.status(500).json({ success: false, error: 'Internal error' });

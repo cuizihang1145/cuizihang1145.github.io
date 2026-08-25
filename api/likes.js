@@ -98,11 +98,33 @@ export default async function handler(req, res) {
       }
 
       const nonce = crypto.randomBytes(16).toString('hex');
-      const p = kv.pipeline();
-      p.hgetall('likes:counts');
-      p.set(`auth_nonce:${nonce}`, 'valid', { ex: SESSION_TTL });
-      const result = await p.exec();
-      const counts = result[0] || {};
+      const idsParam = req.query.ids || '';
+
+      const luaScript = `
+        local countKey = KEYS[1]
+        local nonceKey = KEYS[2]
+        local ids = ARGV
+
+        redis.call('SET', nonceKey, 'valid', 'EX', tonumber(ARGV[#ids + 1]))
+
+        for _, id in ipairs(ids) do
+          if not redis.call('HEXISTS', countKey, id) then
+            redis.call('HSET', countKey, id, '0')
+          end
+        end
+
+        return redis.call('HGETALL', countKey)
+      `;
+
+      const idList = idsParam.split(',').filter(id => /^\d+$/.test(id));
+      const args = [...idList, String(SESSION_TTL)];
+
+      const result = await kv.eval(luaScript, ['likes:counts', `auth_nonce:${nonce}`], args);
+
+      const counts = {};
+      for (let i = 0; i < result.length; i += 2) {
+        counts[result[i]] = result[i + 1];
+      }
 
       log('info', 'GET success', { requestId, sessionId, nonce: nonce.slice(0, 8) });
       return res.status(200).json({ success: true, data: counts, nonce: nonce });

@@ -1272,8 +1272,13 @@
                 filtered.sort(function(a, b) {
                     var dateA = a.date || '1970-01-01';
                     var dateB = b.date || '1970-01-01';
-                    if (currentFilter === 'newest') return dateB.localeCompare(dateA);
-                    else return dateA.localeCompare(dateB);
+                    if (currentFilter === 'newest') {
+                        var diff = dateB.localeCompare(dateA);
+                        return diff !== 0 ? diff : (b._originIndex - a._originIndex);
+                    } else {
+                        var diffOld = dateA.localeCompare(dateB);
+                        return diffOld !== 0 ? diffOld : (a._originIndex - b._originIndex);
+                    }
                 });
 
                 var listEl = document.getElementById('shuoshuoList');

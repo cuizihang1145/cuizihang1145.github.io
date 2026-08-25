@@ -1293,9 +1293,11 @@
                 var newBadgeId = null;
                 if (allShuoshuo.length) {
                     var latestItem = allShuoshuo.reduce(function(prev, curr) {
-                        var prevDate = prev.date || '';
-                        var currDate = curr.date || '';
-                        return (currDate > prevDate) ? curr : prev;
+                        var prevDate = prev.date || '1970-01-01';
+                        var currDate = curr.date || '1970-01-01';
+                        if (currDate > prevDate) return curr;
+                        if (currDate < prevDate) return prev;
+                        return curr._originIndex > prev._originIndex ? curr : prev;
                     });
                     var diff = getDaysDiff(latestItem.date);
                     if (diff !== null && diff <= 7) {
@@ -1324,7 +1326,7 @@
                     window.KSMarkdown.mountMarkdown(tempContainer, markdown);
 
                     collages.forEach(function(collage, idx) {
-                        var placeholder = `@@COLLAGE_${idx}@@`;
+                        var placeholder = '@@COLLAGE_' + idx + '@@';
                         var collageHtml = renderCollage(
                             collage.images.map(function(img) { return img.src; }),
                             collage.images.map(function(img) { return img.alt; })

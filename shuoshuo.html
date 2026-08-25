@@ -1022,7 +1022,8 @@
             }
 
             function fetchLikes() {
-                return fetch('/api/likes')
+                var ids = allShuoshuo.map(function(_, idx) { return idx; }).join(',');
+                return fetch('/api/likes?ids=' + ids)
                     .then(function(res) {
                         if (!res.ok) throw new Error('获取点赞数失败');
                         return res.json();

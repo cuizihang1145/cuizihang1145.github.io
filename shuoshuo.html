@@ -125,8 +125,9 @@
         .memos-image-loading { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#aaa; font-size:1.2rem; z-index:1; pointer-events:none; }
         .memos-image img { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity .3s ease; }
         .memos-image img.loaded { opacity:1; }
-        .img-placeholder { border-radius:12px !important; background:transparent !important; max-width:190px; margin:0; }
-        .img-placeholder img { border-radius:12px !important; width:100%; height:auto; display:block; }
+        .img-placeholder { border-radius:12px !important; background:transparent !important; max-width:190px; margin:0; overflow:hidden !important; }
+        .img-placeholder img { border-radius:12px !important; width:100% !important; height:100% !important; object-fit:cover !important; display:block; opacity:0; transition:opacity .5s ease; }
+        .img-placeholder img.loaded { opacity:1; }
         body.dark .img-placeholder { background:transparent !important; }
         .shuoshuo-footer { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-start; margin-top:.8rem; gap:.5rem .8rem; }
         .shuoshuo-tags { display:flex; flex-wrap:wrap; gap:.4rem; }
@@ -1145,7 +1146,6 @@
 
                 doFetch(myNonce)
                 .then(function(data) {
-                    // 先更新 Nonce，再释放锁
                     if (data.nonce) {
                         myNonce = data.nonce;
                     }
@@ -1177,7 +1177,6 @@
                         getNewNonce().then(function(success) {
                             if (success) {
                                 doFetch(myNonce).then(function(data) {
-                                    // 同样先更新 Nonce，再释放锁
                                     if (data.nonce) {
                                         myNonce = data.nonce;
                                     }

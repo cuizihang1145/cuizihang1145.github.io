@@ -103,11 +103,12 @@ export default async function handler(req, res) {
       const luaScript = `
         local countKey = KEYS[1]
         local nonceKey = KEYS[2]
-        local ids = ARGV
+        local ttl = tonumber(ARGV[#ARGV])
 
-        redis.call('SET', nonceKey, 'valid', 'EX', tonumber(ARGV[#ids + 1]))
+        redis.call('SET', nonceKey, 'valid', 'EX', ttl)
 
-        for _, id in ipairs(ids) do
+        for i = 1, #ARGV - 1 do
+          local id = ARGV[i]
           if not redis.call('HEXISTS', countKey, id) then
             redis.call('HSET', countKey, id, '0')
           end

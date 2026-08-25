@@ -283,23 +283,6 @@
         (function() {
             'use strict';
 
-            function getBrowserSignals() {
-                return {
-                    hasWindow: typeof window !== 'undefined',
-                    hasDocument: typeof document !== 'undefined',
-                    hasNavigator: typeof navigator !== 'undefined',
-                    hasLocalStorage: typeof window.localStorage === 'object',
-                    hasSessionStorage: typeof window.sessionStorage === 'object',
-                    hasCreateElement: typeof document.createElement === 'function',
-                    hasAddEventListener: typeof window.addEventListener === 'function',
-                    hasRequestAnimationFrame: typeof window.requestAnimationFrame === 'function',
-                    hasWebdriver: !!navigator.webdriver,
-                    pluginsLen: navigator.plugins ? navigator.plugins.length : -1,
-                    isChrome: !!window.chrome,
-                    userAgent: navigator.userAgent || ''
-                };
-            }
-
             var DB_NAME = 'ks_shuoshuo_db';
             var STORE_NAME = 'settings';
             var LIKED_IDS_KEY = 'liked_ids';
@@ -1131,11 +1114,10 @@
                 window._lastLocalLikeTime = Date.now();
 
                 function doFetch(nonce) {
-                    var signals = getBrowserSignals();
                     return fetch('/api/likes', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-Nonce': nonce },
-                        body: JSON.stringify({ id: id, action: action, browser: signals })
+                        body: JSON.stringify({ id: id, action: action })
                     }).then(function(res) {
                         return res.json().then(function(data) {
                             if (!res.ok) throw data;

@@ -85,7 +85,6 @@ export default async function handler(req, res) {
     log('debug', 'Existing session', { requestId, sessionId });
   }
 
-  // ---------- GET ----------
   if (req.method === 'GET') {
     try {
       const getLimitKey = `get:limit:${sessionId}`;
@@ -113,22 +112,14 @@ export default async function handler(req, res) {
     }
   }
 
-  // ---------- POST ----------
   if (req.method === 'POST') {
-    // ---- 1. 请求头检查（仅 User-Agent） ----
     const ua = req.headers['user-agent'] || '';
-    const acceptLanguage = req.headers['accept-language'] || '';
 
     if (ua.length < 10) {
-      log('warn', 'User-Agent too short', { requestId, ip: clientIP, ua });
       return res.status(403).json({ success: false, error: 'Forbidden' });
     }
-    if (!acceptLanguage) {
-      log('warn', 'Missing accept-language header', { requestId, ip: clientIP });
-    }
 
-    // ---- 2. 解析请求体 ----
-    const { id, action, browser } = req.body || {};
+    const { id, action } = req.body || {};
     const userNonce = req.headers['x-nonce'];
 
     if (!/^\d+$/.test(String(id))) {
@@ -144,21 +135,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, error: 'Invalid action' });
     }
 
-    // ---- 3. 验证浏览器环境信号（只检查关键 API） ----
-    if (!browser || typeof browser !== 'object') {
-      log('warn', 'Missing browser signals', { requestId, ip: clientIP });
-      return res.status(403).json({ success: false, error: 'Forbidden' });
-    }
-
-    const requiredKeys = ['hasWindow', 'hasDocument', 'hasNavigator', 'hasLocalStorage', 'hasCreateElement'];
-    for (const key of requiredKeys) {
-      if (browser[key] !== true) {
-        log('warn', 'Missing browser API', { requestId, ip: clientIP, missingKey: key });
-        return res.status(403).json({ success: false, error: 'Forbidden' });
-      }
-    }
-
-    // ---- 4. Redis 限流与 Nonce 验证 ----
     const shortKey = `rate:short:${clientIP}:${id}`;
     const sessionKey = `rate:session:${sessionId}`;
     const nonceKey = `auth_nonce:${userNonce}`;
@@ -268,7 +244,6 @@ export default async function handler(req, res) {
 
       log('info', 'Like/unlike success', { requestId, id, action, newVal, ip: clientIP });
 
-      // 异步推送 Pusher（不阻塞响应）
       setTimeout(() => {
         pusher.trigger('shuoshuo-channel', 'like-event', {
           id,

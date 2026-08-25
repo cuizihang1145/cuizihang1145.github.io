@@ -100,6 +100,7 @@ export default async function handler(req, res) {
       const nonce = crypto.randomBytes(16).toString('hex');
       const idsParam = req.query.ids || '';
 
+      // 修改点：使用 HSETNX 确保每个 ID 都有初始值 0，避免新 ID 缺失
       const luaScript = `
         local countKey = KEYS[1]
         local nonceKey = KEYS[2]
@@ -109,9 +110,7 @@ export default async function handler(req, res) {
 
         for i = 1, #ARGV - 1 do
           local id = ARGV[i]
-          if not redis.call('HEXISTS', countKey, id) then
-            redis.call('HSET', countKey, id, '0')
-          end
+          redis.call('HSETNX', countKey, id, '0')
         end
 
         return redis.call('HGETALL', countKey)

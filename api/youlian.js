@@ -1,50 +1,77 @@
 import { neon } from '@neondatabase/serverless';
 
+// 在 Vercel 环境下，直接使用环境变量初始化
 const sql = neon(process.env.DATABASE_URL);
 
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+export const config = {
+  runtime: 'edge',  // 使用 Edge Runtime 速度更快
 };
 
-function json(data, status = 200) {
-    return new Response(JSON.stringify(data), {
-        status,
-        headers: {
-            'Content-Type': 'application/json',
-            ...corsHeaders,
-        },
-    });
-}
-
 export default async function handler(request) {
-    if (request.method === 'OPTIONS') {
-        return new Response(null, { status: 204, headers: corsHeaders });
+  // 处理 OPTIONS 预检请求
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    });
+  }
+
+  // 只允许 POST
+  if (request.method !== 'POST') {
+    return new Response(
+      JSON.stringify({ error: 'Method not allowed' }),
+      { status: 405, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  try {
+    // 解析请求体 - 必须用 .json() 方法
+    const body = await request.json();
+    const { name, url, email, desc = '', logo = '', feed = '', reason = '' } = body;
+
+    // 校验必填字段
+    if (!name || !url || !email || !desc) {
+      return new Response(
+        JSON.stringify({ message: '请填写完整信息' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
     }
 
-    if (request.method !== 'POST') {
-        return json({ error: 'Method not allowed' }, 405);
+    // 执行数据库插入 - 使用模板字符串
+    await sql`
+      INSERT INTO friend_applications (site_name, site_url, contact_email, site_desc, logo_url, feed_url, apply_reason)
+      VALUES (${name}, ${url}, ${email}, ${desc}, ${logo}, ${feed}, ${reason})
+    `;
+
+    return new Response(
+      JSON.stringify({ success: true, message: '提交成功，等待审核' }),
+      { 
+        status: 200, 
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        } 
+      }
+    );
+
+  } catch (err) {
+    console.error('数据库错误:', err);
+    
+    // 处理重复提交
+    if (err.message?.includes('duplicate key') || err.code === '23505') {
+      return new Response(
+        JSON.stringify({ message: '该网址已提交过申请' }),
+        { status: 409, headers: { 'Content-Type': 'application/json' } }
+      );
     }
 
-    try {
-        const { name, url, email, logo = '', feed = '', reason = '' } = await request.json();
-
-        if (!name || !url || !email) {
-            return json({ message: '请填写完整信息' }, 400);
-        }
-
-        await sql`
-            INSERT INTO friend_applications (site_name, site_url, contact_email, logo_url, feed_url, apply_reason)
-            VALUES (${name}, ${url}, ${email}, ${logo}, ${feed}, ${reason})
-        `;
-
-        return json({ success: true, message: '提交成功，等待审核' });
-    } catch (err) {
-        console.error(err);
-        if (err.message?.includes('duplicate key') || err.code === '23505') {
-            return json({ message: '该网址已提交过申请' }, 409);
-        }
-        return json({ message: '服务器错误' }, 500);
-    }
+    return new Response(
+      JSON.stringify({ message: '服务器错误', error: err.message }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
 }

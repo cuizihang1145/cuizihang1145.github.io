@@ -184,7 +184,6 @@
         body.dark .format-box .label { color:#88ccff; }
         .format-box .break-all { word-break:break-all; }
 
-        /* 申请表单移出 exchange-section，独立样式 */
         .apply-section {
             margin: 2rem 0;
             padding: 1.5rem 1.8rem;
@@ -438,7 +437,6 @@
 </div>
 
 <div class="container">
-    <!-- 友链交换说明区域 -->
     <div class="exchange-section">
         <h2 class="title">交换友链</h2>
         <p class="sub">
@@ -464,12 +462,10 @@
         </div>
     </div>
 
-    <!-- 友链列表 -->
     <div id="friendsContainer">
         <div class="loading"><i class="fas fa-spinner fa-spin"></i>加载中...</div>
     </div>
 
-    <!-- 申请表单（已移到列表下方） -->
     <div class="apply-section">
         <h3 class="apply-title"><i class="fas fa-pen-fancy"></i> 申请友链</h3>
         <p class="apply-sub">填写以下信息，提交后我会尽快审核并展示。</p>
@@ -482,6 +478,12 @@
                 <div class="form-group">
                     <label for="siteUrl">站点链接 <span class="required">*</span></label>
                     <input type="url" id="siteUrl" placeholder="https://example.com" required />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="siteDesc">站点简介 <span class="required">*</span></label>
+                    <input type="text" id="siteDesc" placeholder="一句话介绍你的网站" required />
                 </div>
             </div>
             <div class="form-row">
@@ -511,9 +513,7 @@
         </form>
     </div>
 
-    <!-- 评论区 -->
     <div id="waline-comments"></div>
-
     <div id="footer-root"></div>
 </div>
 
@@ -827,12 +827,13 @@
 
         const siteName = document.getElementById('siteName').value.trim();
         const siteUrl = document.getElementById('siteUrl').value.trim();
+        const siteDesc = document.getElementById('siteDesc').value.trim();
         const contactEmail = document.getElementById('contactEmail').value.trim();
         const logoUrl = document.getElementById('logoUrl').value.trim();
         const feedUrl = document.getElementById('feedUrl').value.trim();
         const applyReason = document.getElementById('applyReason').value.trim();
 
-        if (!siteName || !siteUrl || !contactEmail) {
+        if (!siteName || !siteUrl || !siteDesc || !contactEmail) {
             formTip.textContent = '请填写完整（带 * 的必填）';
             formTip.className = 'form-tip error';
             return;
@@ -860,6 +861,7 @@
                 body: JSON.stringify({
                     name: siteName,
                     url: siteUrl,
+                    desc: siteDesc,
                     email: contactEmail,
                     logo: logoUrl || '',
                     feed: feedUrl || '',

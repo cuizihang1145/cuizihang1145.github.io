@@ -19,6 +19,7 @@
             background:#FAFAFE; color:#1A1A2E; line-height:1.6; min-height:100vh;
             transition:background .4s ease,color .3s ease;
         }
+        button { font-family: inherit; }
         body.dark { background:#14131F; color:#E8E6F0; }
         .bg-glow {
             position:fixed; top:0; left:0; width:100%; height:100%; z-index:-2;
@@ -183,6 +184,123 @@
         body.dark .format-box .label { color:#88ccff; }
         .format-box .break-all { word-break:break-all; }
 
+        /* 申请表单移出 exchange-section，独立样式 */
+        .apply-section {
+            margin: 2rem 0;
+            padding: 1.5rem 1.8rem;
+            background: rgba(255,255,255,.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255,255,255,.4);
+            transition: background .4s, border-color .3s;
+        }
+        body.dark .apply-section {
+            background: rgba(35,32,60,.45);
+            border-color: rgba(255,255,255,.06);
+        }
+        .apply-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2D2D4A;
+            margin-bottom: .2rem;
+        }
+        body.dark .apply-title { color: #D0CAF0; }
+        .apply-sub {
+            font-size: .85rem;
+            color: #6A6A92;
+            margin-bottom: 1.2rem;
+        }
+        body.dark .apply-sub { color: #A8A4C8; }
+        .apply-form .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        @media (max-width: 560px) {
+            .apply-form .form-row {
+                grid-template-columns: 1fr;
+                gap: .8rem;
+            }
+        }
+        .apply-form .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .apply-form .form-group label {
+            font-size: .8rem;
+            font-weight: 500;
+            color: #4F4F78;
+            margin-bottom: .3rem;
+            transition: color .3s;
+        }
+        body.dark .apply-form .form-group label { color: #B8B4D8; }
+        .apply-form .form-group .required {
+            color: #E74C6F;
+            font-weight: 600;
+        }
+        .apply-form .form-group input {
+            padding: .6rem .8rem;
+            border-radius: .8rem;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.6);
+            font-size: .9rem;
+            font-family: inherit;
+            transition: border .2s, background .3s, color .3s;
+            color: #1A1A2E;
+            outline: none;
+        }
+        body.dark .apply-form .form-group input {
+            background: rgba(40,38,65,.4);
+            border-color: rgba(255,255,255,.08);
+            color: #E8E6F0;
+        }
+        .apply-form .form-group input:focus {
+            border-color: #6B5ACF;
+            box-shadow: 0 0 0 3px rgba(107,90,207,.15);
+        }
+        body.dark .apply-form .form-group input:focus {
+            border-color: #88ccff;
+            box-shadow: 0 0 0 3px rgba(136,204,255,.15);
+        }
+        .apply-btn {
+            width: 100%;
+            padding: .8rem;
+            border: none;
+            border-radius: 60px;
+            background: linear-gradient(145deg, #7A6BCF, #624ED0);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: .25s ease;
+            box-shadow: 0 8px 24px rgba(90,70,170,.2);
+            margin-top: .2rem;
+        }
+        .apply-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 32px rgba(90,70,170,.3);
+        }
+        .apply-btn:active { transform: scale(.98); }
+        .apply-btn:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .form-tip {
+            margin-top: .8rem;
+            font-size: .85rem;
+            text-align: center;
+            min-height: 1.6rem;
+            color: #6A6A92;
+            transition: color .3s;
+        }
+        body.dark .form-tip { color: #A8A4C8; }
+        .form-tip.success { color: #4CAF50; }
+        .form-tip.error { color: #E74C6F; }
+
         #waline-comments {
             max-width:640px; margin:3rem auto 0; padding-top:1.5rem;
             border-top:1px solid rgba(0,0,0,.06);
@@ -254,7 +372,8 @@
         .modal-fixed-top .modal-visit-btn {
             display:block; width:100%; padding:.7rem 1rem; border-radius:60px;
             background:linear-gradient(145deg,#7A6BCF,#624ED0); color:#fff;
-            font-size:.95rem; font-weight:600; text-decoration:none; transition:.25s ease;
+            font-size:.95rem; font-weight:600; font-family: inherit;
+            text-decoration:none; transition:.25s ease;
             box-shadow:0 8px 24px rgba(90,70,170,.2); border:none; cursor:pointer; text-align:center;
         }
         .modal-fixed-top .modal-visit-btn:hover { transform:scale(1.02); box-shadow:0 12px 32px rgba(90,70,170,.3); }
@@ -319,6 +438,7 @@
 </div>
 
 <div class="container">
+    <!-- 友链交换说明区域 -->
     <div class="exchange-section">
         <h2 class="title">交换友链</h2>
         <p class="sub">
@@ -329,12 +449,12 @@
             <div><span class="label">介绍：</span>保持好奇，保持诚实。</div>
             <div><span class="label">链接：</span><span class="break-all">https://www.cuizi.top/</span></div>
             <div><span class="label">订阅（可选）：</span><span class="break-all">https://www.cuizi.top/rss.xml</span></div>
-            <div><span class="label">头像：</span><span class="break-all">https://cdn.jsdelivr.net/gh/cuizihang1145/cuizihang1145.github.io@main/logo.png</span></div>
+            <div><span class="label">头像：</span><span class="break-all">https://www.cuizi.top/logo.png</span></div>
         </div>
         <div class="friends-grid" style="margin-top:1rem;">
             <div class="friend-card" id="demoFriendCard">
                 <div class="card-logo">
-                    <img src="https://cdn.jsdelivr.net/gh/cuizihang1145/cuizihang1145.github.io@main/logo.png" alt="ks blog" />
+                    <img src="https://www.cuizi.top/logo.png" alt="ks blog" />
                 </div>
                 <div class="card-right">
                     <div class="card-name">ks blog</div>
@@ -344,10 +464,54 @@
         </div>
     </div>
 
+    <!-- 友链列表 -->
     <div id="friendsContainer">
         <div class="loading"><i class="fas fa-spinner fa-spin"></i>加载中...</div>
     </div>
 
+    <!-- 申请表单（已移到列表下方） -->
+    <div class="apply-section">
+        <h3 class="apply-title"><i class="fas fa-pen-fancy"></i> 申请友链</h3>
+        <p class="apply-sub">填写以下信息，提交后我会尽快审核并展示。</p>
+        <form id="applyForm" class="apply-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="siteName">站点名称 <span class="required">*</span></label>
+                    <input type="text" id="siteName" placeholder="例如：ks blog" required />
+                </div>
+                <div class="form-group">
+                    <label for="siteUrl">站点链接 <span class="required">*</span></label>
+                    <input type="url" id="siteUrl" placeholder="https://example.com" required />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="contactEmail">联系邮箱 <span class="required">*</span></label>
+                    <input type="email" id="contactEmail" placeholder="your@email.com" required />
+                </div>
+                <div class="form-group">
+                    <label for="logoUrl">头像链接（尽量填写）</label>
+                    <input type="url" id="logoUrl" placeholder="https://example.com/logo.png" />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="feedUrl">RSS 订阅地址（可选）</label>
+                    <input type="url" id="feedUrl" placeholder="https://example.com/feed.xml" />
+                </div>
+                <div class="form-group">
+                    <label for="applyReason">申请理由（可选）</label>
+                    <input type="text" id="applyReason" placeholder="简单介绍你的网站" />
+                </div>
+            </div>
+            <button type="submit" class="apply-btn" id="applyBtn">
+                <i class="fas fa-paper-plane"></i> 提交申请
+            </button>
+            <div class="form-tip" id="formTip"></div>
+        </form>
+    </div>
+
+    <!-- 评论区 -->
     <div id="waline-comments"></div>
 
     <div id="footer-root"></div>
@@ -356,7 +520,6 @@
 <div class="modal-overlay" id="friendModal">
     <div class="modal-box" id="modalBox">
         <div class="modal-status" id="modalStatus"></div>
-
         <div class="modal-fixed-top">
             <div class="modal-logo" id="modalLogo"></div>
             <div class="modal-name" id="modalName"></div>
@@ -366,21 +529,25 @@
             <hr class="modal-divider" id="modalDivider" />
             <div class="modal-articles-title" id="modalArticlesTitle"><i class="fas fa-rss"></i> 订阅文章(仅显示最近三篇)</div>
         </div>
-
         <div class="modal-articles-scroll" id="modalArticlesScroll">
             <ul class="modal-articles-list" id="modalArticlesList">
                 <li class="loading-item">加载中...</li>
             </ul>
         </div>
-
         <div class="modal-bottom">
             <button class="modal-close-btn" id="modalCloseBtn">关闭</button>
         </div>
     </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
 (function(){
+    const CONFIG = {
+        APPLY_ENDPOINT: '/api/youlian',
+    };
+
     const themeToggle = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -396,47 +563,36 @@
         setTheme(currentTheme==='dark' ? 'light' : 'dark');
     });
 
-    // 评论按钮：平滑滚动到评论区
     const commentBtn = document.getElementById('commentBtn');
     commentBtn.addEventListener('click', function(){
-        const commentsEl = document.getElementById('waline-comments');
-        if(commentsEl){
-            commentsEl.scrollIntoView({behavior:'smooth', block:'start'});
-        }
+        const el = document.getElementById('waline-comments');
+        if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
     });
 
-    // 回到顶部按钮
     const backToTopBtn = document.getElementById('backToTopBtn');
     let isScrollingToTop = false;
-
     window.addEventListener('scroll', function(){
         const scrollY = window.scrollY || window.pageYOffset;
-        // 回到顶部按钮显示
         if (scrollY > 300 && !isScrollingToTop) {
             backToTopBtn.classList.add('show');
         } else if (!isScrollingToTop) {
             backToTopBtn.classList.remove('show');
         }
-
-        // 评论按钮隐藏：评论区已经出现在视口内
         const commentsEl = document.getElementById('waline-comments');
         if(commentsEl){
             const rect = commentsEl.getBoundingClientRect();
-            const viewportHeight = window.innerHeight;
-            if(rect.top < viewportHeight && rect.bottom > 0){
+            if(rect.top < window.innerHeight && rect.bottom > 0){
                 commentBtn.classList.add('hide');
             } else {
                 commentBtn.classList.remove('hide');
             }
         }
     });
-
     function fastScrollToTop(){
         const startY = window.scrollY || window.pageYOffset;
         if(startY === 0) return;
         const duration = 300;
         const startTime = performance.now();
-
         function step(currentTime){
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
@@ -452,11 +608,9 @@
         }
         requestAnimationFrame(step);
     }
-
     backToTopBtn.addEventListener('click', function(){
         if(isScrollingToTop) return;
-        const scrollY = window.scrollY || window.pageYOffset;
-        if(scrollY === 0) return;
+        if((window.scrollY || window.pageYOffset) === 0) return;
         isScrollingToTop = true;
         fastScrollToTop();
     });
@@ -466,7 +620,7 @@
         desc: '保持好奇，保持诚实。',
         url: 'https://www.cuizi.top/',
         feed: 'https://www.cuizi.top/rss.xml',
-        logo: 'https://cdn.jsdelivr.net/gh/cuizihang1145/cuizihang1145.github.io@main/logo.png'
+        logo: 'https://www.cuizi.top/logo.png'
     };
 
     let friendsData = [];
@@ -510,11 +664,13 @@
     }
 
     function loadFriends(){
-        fetch('youlian.json', {cache:'no-cache'})
-            .then(res=>{ if(!res.ok) throw new Error(); return res.json(); })
-            .then(data=>renderFriends(data))
-            .catch(()=>{
-                document.getElementById('friendsContainer').innerHTML = `<div class="empty-state"><i class="fas fa-user-plus"></i>还没有友链呢</div>`;
+        const container = document.getElementById('friendsContainer');
+        container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i>加载中...</div>`;
+        fetch('youlian.json', { cache: 'no-cache' })
+            .then(res => res.json())
+            .then(data => renderFriends(data))
+            .catch(() => {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-user-plus"></i>还没有友链呢</div>`;
             });
     }
     loadFriends();
@@ -651,6 +807,87 @@
             });
     }
 
+    const applyForm = document.getElementById('applyForm');
+    const formTip = document.getElementById('formTip');
+    const applyBtn = document.getElementById('applyBtn');
+
+    function showToast(message, type = 'info') {
+        const toast = document.getElementById('toast');
+        let icon = 'fa-info-circle';
+        if (type === 'success') icon = 'fa-check-circle';
+        else if (type === 'error') icon = 'fa-exclamation-circle';
+        toast.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+        toast.className = 'toast show';
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    applyForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const siteName = document.getElementById('siteName').value.trim();
+        const siteUrl = document.getElementById('siteUrl').value.trim();
+        const contactEmail = document.getElementById('contactEmail').value.trim();
+        const logoUrl = document.getElementById('logoUrl').value.trim();
+        const feedUrl = document.getElementById('feedUrl').value.trim();
+        const applyReason = document.getElementById('applyReason').value.trim();
+
+        if (!siteName || !siteUrl || !contactEmail) {
+            formTip.textContent = '请填写完整（带 * 的必填）';
+            formTip.className = 'form-tip error';
+            return;
+        }
+        if (!/^https?:\/\/.+/.test(siteUrl)) {
+            formTip.textContent = '请填写正确的网址（以 http:// 或 https:// 开头）';
+            formTip.className = 'form-tip error';
+            return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) {
+            formTip.textContent = '请填写正确的邮箱地址';
+            formTip.className = 'form-tip error';
+            return;
+        }
+
+        applyBtn.disabled = true;
+        applyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 提交中...';
+        formTip.textContent = '';
+        formTip.className = 'form-tip';
+
+        try {
+            const response = await fetch(CONFIG.APPLY_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: siteName,
+                    url: siteUrl,
+                    email: contactEmail,
+                    logo: logoUrl || '',
+                    feed: feedUrl || '',
+                    reason: applyReason || '',
+                }),
+            });
+            const result = await response.json();
+            if (response.ok) {
+                formTip.textContent = '提交成功，等待审核！';
+                formTip.className = 'form-tip success';
+                showToast('申请已提交，感谢您的支持！', 'success');
+                applyForm.reset();
+            } else {
+                const errMsg = result.message || '提交失败，请稍后重试';
+                formTip.textContent = errMsg;
+                formTip.className = 'form-tip error';
+                showToast(errMsg, 'error');
+            }
+        } catch (err) {
+            formTip.textContent = '网络错误，请检查连接';
+            formTip.className = 'form-tip error';
+            showToast('网络异常，请稍后重试', 'error');
+        } finally {
+            applyBtn.disabled = false;
+            applyBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 提交申请';
+        }
+    });
+
     function initWaline(){
         const el = document.getElementById('waline-comments');
         if(!el) return;
@@ -671,10 +908,7 @@
             .catch(()=>{});
     }
     setTimeout(initWaline, 500);
-})();
-</script>
 
-<script>
     fetch('/assets/footer.html')
         .then(function(res) {
             if (!res.ok) throw new Error('加载失败');
@@ -684,6 +918,7 @@
             document.getElementById('footer-root').innerHTML = html;
         })
         .catch(function() {});
+})();
 </script>
 
 </body>

@@ -1,14 +1,12 @@
 import { neon } from '@neondatabase/serverless';
-import { Resend } from 'resend';
-
-// 强制使用 Node.js Runtime（稳定，支持 Resend SDK）
-export const runtime = 'nodejs';
 
 const sql = neon(process.env.DATABASE_URL);
-const resend = new Resend(process.env.RESEND_API_KEY);
+
+export const config = {
+  runtime: 'edge',
+};
 
 export default async function handler(request) {
-  // 处理 OPTIONS 预检请求
   if (request.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
@@ -20,7 +18,6 @@ export default async function handler(request) {
     });
   }
 
-  // 只允许 POST
   if (request.method !== 'POST') {
     return new Response(
       JSON.stringify({ error: 'Method not allowed' }),
@@ -29,11 +26,9 @@ export default async function handler(request) {
   }
 
   try {
-    // 解析请求体
     const body = await request.json();
     const { name, url, email, desc = '', logo = '', feed = '', reason = '' } = body;
 
-    // 校验必填字段
     if (!name || !url || !email || !desc) {
       return new Response(
         JSON.stringify({ message: '请填写完整信息（名称、链接、简介、邮箱为必填）' }),
@@ -41,16 +36,22 @@ export default async function handler(request) {
       );
     }
 
-    // 插入数据库
+    // ===== 先插入数据库（确保写入成功，邮件失败不影响） =====
     await sql`
       INSERT INTO friend_applications (site_name, site_url, contact_email, site_desc, logo_url, feed_url, apply_reason)
       VALUES (${name}, ${url}, ${email}, ${desc}, ${logo}, ${feed}, ${reason})
     `;
 
-    // ===== 发送邮件提醒（非阻塞，失败不影响主流程） =====
-    try {
-      if (process.env.RESEND_API_KEY) {
-        await resend.emails.send({
+    // ===== 非阻塞发邮件 =====
+    const RESEND_API_KEY = process.env.RESEND_API_KEY;
+    if (RESEND_API_KEY) {
+      fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           from: '友链系统 <onboarding@resend.dev>',
           to: ['340313894@qq.com'],
           subject: `🔗 新的友链申请：${name}`,
@@ -66,17 +67,10 @@ export default async function handler(request) {
             <hr />
             <p>👉 <a href="https://admin.cuizi.top" target="_blank">点此进入后台审核</a></p>
           `,
-        });
-        console.log('✅ 邮件发送成功');
-      } else {
-        console.log('⚠️ RESEND_API_KEY 未配置，跳过邮件发送');
-      }
-    } catch (emailErr) {
-      // 邮件发送失败只记日志，不影响用户响应
-      console.error('❌ 邮件发送失败:', emailErr.message);
+        }),
+      }).then(() => console.log('✅ 邮件发送成功')).catch(err => console.error('❌ 邮件发送失败:', err.message));
     }
 
-    // 返回成功响应
     return new Response(
       JSON.stringify({ success: true, message: '提交成功，等待审核' }),
       {
@@ -91,7 +85,6 @@ export default async function handler(request) {
   } catch (err) {
     console.error('数据库错误:', err);
 
-    // 处理重复提交（唯一约束冲突）
     if (err.message?.includes('duplicate key') || err.code === '23505') {
       return new Response(
         JSON.stringify({ message: '该网址已提交过申请' }),

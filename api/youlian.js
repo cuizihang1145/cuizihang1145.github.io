@@ -7,10 +7,10 @@ export const config = {
 };
 
 const LIMITS = {
-  EMAIL_SHORT_WINDOW: 2,      
-  EMAIL_SHORT_MINUTES: 10,    
-  EMAIL_DAILY_LIMIT: 3,       
-  IP_DAILY_LIMIT: 8,          
+  EMAIL_SHORT_WINDOW: 2,
+  EMAIL_SHORT_MINUTES: 10,
+  EMAIL_DAILY_LIMIT: 3,
+  IP_DAILY_LIMIT: 8,
 };
 
 function getClientIp(request) {
@@ -85,13 +85,12 @@ export default async function handler(request) {
 
     const ip = getClientIp(request);
 
-    // 修正：去掉嵌套的 sql() 调用，直接使用变量
     const [shortCheck, dailyEmailCheck, dailyIpCheck] = await Promise.all([
       sql`
         SELECT COUNT(*) as count
         FROM friend_applications
         WHERE contact_email = ${email}
-          AND created_at > NOW() - INTERVAL '${LIMITS.EMAIL_SHORT_MINUTES} minutes'
+          AND created_at > NOW() - INTERVAL '1 minute' * ${LIMITS.EMAIL_SHORT_MINUTES}
       `,
       sql`
         SELECT COUNT(*) as count

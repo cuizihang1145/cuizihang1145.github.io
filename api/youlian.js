@@ -1,10 +1,10 @@
-import { neon } from '@neondatabase/serverless';
-import { Resend } from 'resend';
+const { neon } = require('@neondatabase/serverless');
+const { Resend } = require('resend');
 
 const sql = neon(process.env.DATABASE_URL);
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export default async function handler(request) {
+module.exports = async function handler(request) {
   if (request.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
@@ -85,4 +85,4 @@ export default async function handler(request) {
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
-}
+};

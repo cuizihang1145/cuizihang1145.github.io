@@ -2,8 +2,7 @@
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
     "@upstash/redis": "^1.34.0",
-    "pusher": "^5.2.0",
-    "resend": "latest"
+    "pusher": "^5.2.0"
   },
   "scripts": {
     "build": "node split.js"

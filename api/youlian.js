@@ -52,7 +52,7 @@ export default async function handler(request) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: '友链系统 <onboarding@resend.dev>',
+          from: '友链系统 <youlian@mail.cuizi.top>',
           to: ['340313894@qq.com'],
           subject: `🔗 新的友链申请：${name}`,
           html: `

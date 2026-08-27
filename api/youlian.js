@@ -1,10 +1,8 @@
 import { neon } from '@neondatabase/serverless';
+import { Resend } from 'resend';
 
 const sql = neon(process.env.DATABASE_URL);
-
-export const config = {
-  runtime: 'edge',
-};
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async function handler(request) {
   if (request.method === 'OPTIONS') {
@@ -36,39 +34,29 @@ export default async function handler(request) {
       );
     }
 
-    // ===== 先插入数据库（确保写入成功，邮件失败不影响） =====
     await sql`
       INSERT INTO friend_applications (site_name, site_url, contact_email, site_desc, logo_url, feed_url, apply_reason)
       VALUES (${name}, ${url}, ${email}, ${desc}, ${logo}, ${feed}, ${reason})
     `;
 
-    // ===== 非阻塞发邮件 =====
-    const RESEND_API_KEY = process.env.RESEND_API_KEY;
-    if (RESEND_API_KEY) {
-      fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: '友链系统 <youlian@mail.cuizi.top>',
-          to: ['340313894@qq.com'],
-          subject: `🔗 新的友链申请：${name}`,
-          html: `
-            <h2>📬 新的友链申请</h2>
-            <p><strong>站点名称：</strong>${name}</p>
-            <p><strong>站点链接：</strong><a href="${url}" target="_blank">${url}</a></p>
-            <p><strong>站点简介：</strong>${desc}</p>
-            <p><strong>联系邮箱：</strong>${email}</p>
-            ${logo ? `<p><strong>Logo：</strong><img src="${logo}" width="80" /></p>` : ''}
-            ${feed ? `<p><strong>RSS：</strong>${feed}</p>` : ''}
-            ${reason ? `<p><strong>申请理由：</strong>${reason}</p>` : ''}
-            <hr />
-            <p>👉 <a href="https://admin.cuizi.top" target="_blank">点此进入后台审核</a></p>
-          `,
-        }),
-      }).then(() => console.log('✅ 邮件发送成功')).catch(err => console.error('❌ 邮件发送失败:', err.message));
+    if (process.env.RESEND_API_KEY) {
+      await resend.emails.send({
+        from: '友链系统 <noreply@mail.cuizi.top>',
+        to: ['340313894@qq.com'],
+        subject: `🔗 新的友链申请：${name}`,
+        html: `
+          <h2>📬 新的友链申请</h2>
+          <p><strong>站点名称：</strong>${name}</p>
+          <p><strong>站点链接：</strong><a href="${url}" target="_blank">${url}</a></p>
+          <p><strong>站点简介：</strong>${desc}</p>
+          <p><strong>联系邮箱：</strong>${email}</p>
+          ${logo ? `<p><strong>Logo：</strong><img src="${logo}" width="80" /></p>` : ''}
+          ${feed ? `<p><strong>RSS：</strong>${feed}</p>` : ''}
+          ${reason ? `<p><strong>申请理由：</strong>${reason}</p>` : ''}
+          <hr />
+          <p>👉 <a href="https://admin.cuizi.top" target="_blank">点此进入后台审核</a></p>
+        `,
+      });
     }
 
     return new Response(

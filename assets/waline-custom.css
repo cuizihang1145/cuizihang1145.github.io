@@ -39,3 +39,11 @@
     overflow-x: auto !important;
     white-space: pre !important;
 }
+.wl-card .wl-content img,
+.wl-content img {
+    max-width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    margin: 0.5em auto !important;
+    border-radius: 4px;
+}

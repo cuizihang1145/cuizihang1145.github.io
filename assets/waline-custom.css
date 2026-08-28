@@ -268,3 +268,12 @@ body.dark .wl-header input{background:rgba(40,38,65,0.4)}
 .wl-card .wl-content object,
 .wl-card .wl-content video{max-width:100%!important}
 .wl-card .wl-content{overflow-wrap:break-word!important;word-break:break-word!important}
+.wl-content img.wl-emoji,
+.wl-content img.vemoji{
+    height:1.25em !important;
+    max-height:1.25em !important;
+    width:auto !important;
+    max-width:none !important;
+    margin:-0.125em .25em !important;
+    display:inline-block !important;
+}

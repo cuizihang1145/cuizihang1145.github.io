@@ -78,16 +78,6 @@
       ],
       "delete": false,
       "content": "!video[`<u>~~***视频***~~</u>`](https://www.bilibili.com/video/BV1GJ411x7h7)\n---\n!video[🤔](https://www.bilibili.com/video/BV1xx411c79H)\n\n!audio[测试音频](https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3)"
-    },
-    {
-      "title": "测试2",
-      "date": "2026-08-28",
-      "tags": [
-        "测试",
-        "bug"
-      ],
-      "delete": false,
-      "content": "神了 我发现有表格的话好像评论区会莫名其妙的冲出屏幕 很诡异 让我测试一下…\n\n| 列1 | 列2 | 列3 |\n|-----|-----|-----|\n| 内容 | 内容 | 内容 |"
     }
   ]
 }

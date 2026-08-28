@@ -82,6 +82,13 @@
         .format-box .label { color:#6B5ACF; font-weight:500; }
         body.dark .format-box .label { color:#88ccff; }
         .format-box .break-all { word-break:break-all; }
+        .friends-header { margin-bottom: 0.5rem; }
+        .friends-header .title { font-size:1.2rem; font-weight:600; color:#2D2D4A; margin-bottom:.2rem; transition:color .3s; }
+        body.dark .friends-header .title { color:#D0CAF0; }
+        .friends-header .sub { color:#6A6A92; font-size:.85rem; margin-bottom:1.2rem; transition:color .3s; }
+        body.dark .friends-header .sub { color:#A8A4C8; }
+        .section-divider { border: none; border-top: 1px solid rgba(0,0,0,.08); margin: 1.8rem 0; transition:border-color .3s; }
+        body.dark .section-divider { border-top-color: rgba(255,255,255,.08); }
         .apply-section { margin: 2rem 0; padding: 1.5rem 1.8rem; background: rgba(255,255,255,.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 1.5rem; border: 1px solid rgba(255,255,255,.4); transition: background .4s, border-color .3s; }
         body.dark .apply-section { background: rgba(35,32,60,.45); border-color: rgba(255,255,255,.06); }
         .apply-title { font-size: 1.2rem; font-weight: 600; color: #2D2D4A; margin-bottom: .2rem; }
@@ -189,6 +196,14 @@
     </div>
 </div>
 <div class="container">
+    <div class="friends-header">
+        <h2 class="title">朋友们</h2>
+        <p class="sub">欢迎来串门呦</p>
+    </div>
+    <div id="friendsContainer">
+        <div class="loading"><i class="fas fa-spinner fa-spin"></i>加载中...</div>
+    </div>
+    <hr class="section-divider" />
     <div class="exchange-section">
         <h2 class="title">交换友链</h2>
         <p class="sub">
@@ -212,9 +227,6 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div id="friendsContainer">
-        <div class="loading"><i class="fas fa-spinner fa-spin"></i>加载中...</div>
     </div>
     <div class="apply-section">
         <h3 class="apply-title"><i class="fas fa-pen-fancy"></i> 申请友链</h3>

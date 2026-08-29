@@ -53,7 +53,7 @@
         body.dark .friend-card { background:rgba(35,32,60,.55); border-color:rgba(255,255,255,.06); color:#E8E6F0; }
         .friend-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(80,60,160,.10); background:rgba(255,255,255,.8); border-color:#D6CCFF; }
         body.dark .friend-card:hover { background:rgba(50,45,80,.65); border-color:rgba(160,140,220,.25); box-shadow:0 8px 24px rgba(0,0,0,.20); }
-        .friend-card .card-logo { width:56px; height:56px; border-radius:50%; flex-shrink:0; background:rgba(107,90,207,.12); display:flex; align-items:center; justify-content:center; font-size:1.6rem; color:#6B5ACF; overflow:hidden; }
+        .friend-card .card-logo { width:56px; height:56px; border-radius:8px; flex-shrink:0; background:rgba(107,90,207,.12); display:flex; align-items:center; justify-content:center; font-size:1.6rem; color:#6B5ACF; overflow:hidden; }
         body.dark .friend-card .card-logo { background:rgba(136,204,255,.10); color:#88ccff; }
         .friend-card .card-logo img { width:100%; height:100%; object-fit:cover; }
         .friend-card .card-right { flex:1; min-width:0; display:flex; flex-direction:column; }
@@ -89,12 +89,17 @@
         body.dark .friends-header .sub { color:#A8A4C8; }
         .section-divider { border: none; border-top: 1px solid rgba(0,0,0,.08); margin: 1.8rem 0; transition:border-color .3s; }
         body.dark .section-divider { border-top-color: rgba(255,255,255,.08); }
-        .apply-section { margin: 2rem 0; padding: 1.5rem 1.8rem; background: rgba(255,255,255,.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 1.5rem; border: 1px solid rgba(255,255,255,.4); transition: background .4s, border-color .3s; }
+        .apply-section { margin: 1.2rem 0; padding: 0.6rem 1.2rem; background: rgba(255,255,255,.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 1.5rem; border: 1px solid rgba(255,255,255,.4); transition: background .4s, border-color .3s; }
         body.dark .apply-section { background: rgba(35,32,60,.45); border-color: rgba(255,255,255,.06); }
-        .apply-title { font-size: 1.2rem; font-weight: 600; color: #2D2D4A; margin-bottom: .2rem; }
-        body.dark .apply-title { color: #D0CAF0; }
-        .apply-sub { font-size: .85rem; color: #6A6A92; margin-bottom: 1.2rem; }
-        body.dark .apply-sub { color: #A8A4C8; }
+        .apply-toggle { display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; padding:0.2rem 0; }
+        .apply-toggle .apply-title { font-size:1.1rem; font-weight:600; color:#2D2D4A; transition:color .3s; }
+        body.dark .apply-toggle .apply-title { color:#D0CAF0; }
+        .apply-toggle .toggle-icon { font-size:1.1rem; color:#6A6A92; transition:transform 0.3s ease; }
+        .apply-toggle .toggle-icon.open { transform:rotate(180deg); }
+        .apply-collapsible { overflow:hidden; max-height:0; opacity:0; transition:max-height 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease, margin 0.3s ease; margin-top:0; }
+        .apply-collapsible.open { max-height:800px; opacity:1; margin-top:0.8rem; }
+        .apply-sub { font-size:.85rem; color:#6A6A92; margin-bottom:1rem; }
+        body.dark .apply-sub { color:#A8A4C8; }
         .apply-form .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
         @media (max-width: 560px) { .apply-form .form-row { grid-template-columns: 1fr; gap: .8rem; } }
         .apply-form .form-group { display: flex; flex-direction: column; }
@@ -113,6 +118,12 @@
         body.dark .form-tip { color: #A8A4C8; }
         .form-tip.success { color: #4CAF50; }
         .form-tip.error { color: #E74C6F; }
+        .rules-list { list-style:none; padding:0; margin:0; font-size:.9rem; color:#4F4F78; line-height:2; }
+        body.dark .rules-list { color:#B8B4D8; }
+        .rules-list li::before { content:"· "; }
+        .reminder-warning { background: #fff3cd; color: #856404; border-radius: 8px; padding: 0.8rem 1rem; margin-bottom: 1rem; border-left: 4px solid #ffc107; display: flex; align-items: center; gap: 0.5rem; transition: opacity 0.6s ease; }
+        .reminder-warning i { font-size: 1.1rem; }
+        .reminder-fade-out { opacity: 0; pointer-events: none; }
         #waline-comments { max-width:640px; margin:3rem auto 0; padding-top:1.5rem; border-top:1px solid rgba(0,0,0,.06); }
         body.dark #waline-comments { border-top-color:rgba(255,255,255,.06); }
         #waline-comments * { font-family:'Inter',-apple-system,"PingFang SC","Microsoft YaHei",sans-serif!important; }
@@ -135,7 +146,7 @@
         .modal-status.online { background:#4CAF50; display:block; }
         .modal-status.offline { background:#F44336; display:block; }
         .modal-fixed-top { flex-shrink:0; padding:2rem 1.8rem .5rem 1.8rem; }
-        .modal-fixed-top .modal-logo { width:80px; height:80px; border-radius:50%; background:rgba(107,90,207,.12); display:flex; align-items:center; justify-content:center; font-size:2.4rem; color:#6B5ACF; margin:0 auto .6rem; overflow:hidden; }
+        .modal-fixed-top .modal-logo { width:80px; height:80px; border-radius:8px; background:rgba(107,90,207,.12); display:flex; align-items:center; justify-content:center; font-size:2.4rem; color:#6B5ACF; margin:0 auto .6rem; overflow:hidden; }
         body.dark .modal-fixed-top .modal-logo { background:rgba(136,204,255,.10); color:#88ccff; }
         .modal-fixed-top .modal-logo img { width:100%; height:100%; object-fit:cover; }
         .modal-fixed-top .modal-name { font-size:1.4rem; font-weight:700; color:#1A1A2E; transition:color .3s; text-align:center; }
@@ -228,52 +239,80 @@
             </div>
         </div>
     </div>
+
     <div class="apply-section">
-        <h3 class="apply-title"><i class="fas fa-pen-fancy"></i> 申请友链</h3>
-        <p class="apply-sub">填写以下信息，提交后我会尽快审核并展示。</p>
-        <form id="applyForm" class="apply-form">
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="siteName">站点名称 <span class="required">*</span></label>
-                    <input type="text" id="siteName" placeholder="例如：ks blog" required />
-                </div>
-                <div class="form-group">
-                    <label for="siteUrl">站点链接 <span class="required">*</span></label>
-                    <input type="url" id="siteUrl" placeholder="https://example.com" required />
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group" style="grid-column: 1 / -1;">
-                    <label for="siteDesc">站点简介 <span class="required">*</span></label>
-                    <input type="text" id="siteDesc" placeholder="一句话介绍你的网站" required />
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="contactEmail">联系邮箱 <span class="required">*</span></label>
-                    <input type="email" id="contactEmail" placeholder="your@email.com" required />
-                </div>
-                <div class="form-group">
-                    <label for="logoUrl">头像链接（尽量填写）</label>
-                    <input type="url" id="logoUrl" placeholder="https://example.com/logo.png" />
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="feedUrl">RSS 订阅地址（可选）</label>
-                    <input type="url" id="feedUrl" placeholder="https://example.com/feed.xml" />
-                </div>
-                <div class="form-group">
-                    <label for="applyReason">申请理由（可选）</label>
-                    <input type="text" id="applyReason" placeholder="简单介绍你的网站" />
-                </div>
-            </div>
-            <button type="submit" class="apply-btn" id="applyBtn">
-                <i class="fas fa-paper-plane"></i> 提交申请
-            </button>
-            <div class="form-tip" id="formTip"></div>
-        </form>
+        <div class="apply-toggle" id="rulesToggle">
+            <span class="apply-title"><i class="fas fa-clipboard-list"></i> 申请要求、须知</span>
+            <span class="toggle-icon" id="rulesIcon"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="apply-collapsible" id="rulesCollapsible">
+            <ul class="rules-list">
+                <li>不要打小广告！球球了</li>
+                <li>国内可访问</li>
+                <li>网站无恶意内容 符合法律法规</li>
+                <li>无任何形式的弹窗、强制性广告</li>
+                <li>网站正常运行且拥有正式域名</li>
+                <li>在申请前先添加本站友链</li>
+                <li>谢谢！</li>
+            </ul>
+        </div>
     </div>
+
+    <div class="apply-section">
+        <div class="apply-toggle" id="applyToggle">
+            <span class="apply-title"><i class="fas fa-pen-fancy"></i> 申请友链</span>
+            <span class="toggle-icon" id="applyIcon"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="apply-collapsible" id="applyCollapsible">
+            <p class="apply-sub">填写以下信息，提交后我会尽快审核并展示…（对了你也可以发邮件提醒我…不然我可能会很久才看…）</p>
+            <div id="rulesReminder" class="reminder-warning">
+                <i class="fas fa-info-circle"></i> 看起来你貌似并没有看过申请须知…我觉得你应该去看一下？
+            </div>
+            <form id="applyForm" class="apply-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="siteName">站点名称 <span class="required">*</span></label>
+                        <input type="text" id="siteName" placeholder="例如：ks blog" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="siteUrl">站点链接 <span class="required">*</span></label>
+                        <input type="url" id="siteUrl" placeholder="https://example.com" required />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="siteDesc">站点简介 <span class="required">*</span></label>
+                        <input type="text" id="siteDesc" placeholder="一句话介绍你的网站" required />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contactEmail">联系邮箱 <span class="required">*</span></label>
+                        <input type="email" id="contactEmail" placeholder="your@email.com" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="logoUrl">头像链接（尽量填写）</label>
+                        <input type="url" id="logoUrl" placeholder="https://example.com/logo.png" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="feedUrl">RSS 订阅地址（可选）</label>
+                        <input type="url" id="feedUrl" placeholder="https://example.com/feed.xml" />
+                    </div>
+                    <div class="form-group">
+                        <label for="applyReason">申请理由（可选）</label>
+                        <input type="text" id="applyReason" placeholder="简单讲讲罢" />
+                    </div>
+                </div>
+                <button type="submit" class="apply-btn" id="applyBtn">
+                    <i class="fas fa-paper-plane"></i> 提交申请
+                </button>
+                <div class="form-tip" id="formTip"></div>
+            </form>
+        </div>
+    </div>
+
     <div id="waline-comments"></div>
     <div id="footer-root"></div>
 </div>
@@ -710,6 +749,62 @@
             document.getElementById('footer-root').innerHTML = html;
         })
         .catch(function() {});
+
+    const reminder = document.getElementById('rulesReminder');
+    const hasReadKey = 'hasReadRules';
+    function updateReminderVisibility() {
+        const read = localStorage.getItem(hasReadKey) === 'true';
+        if (read) {
+            reminder.style.display = 'none';
+        } else {
+            reminder.style.display = 'flex';
+            reminder.classList.remove('reminder-fade-out');
+        }
+    }
+    updateReminderVisibility();
+
+    (function() {
+        const toggle = document.getElementById('rulesToggle');
+        const collapsible = document.getElementById('rulesCollapsible');
+        const icon = document.getElementById('rulesIcon');
+        let isOpen = false;
+        toggle.addEventListener('click', function() {
+            isOpen = !isOpen;
+            collapsible.classList.toggle('open', isOpen);
+            icon.classList.toggle('open', isOpen);
+            const i = icon.querySelector('i');
+            if (isOpen) {
+                i.className = 'fas fa-chevron-up';
+                localStorage.setItem(hasReadKey, 'true');
+                if (reminder.style.display !== 'none' && !reminder.classList.contains('reminder-fade-out')) {
+                    reminder.classList.add('reminder-fade-out');
+                    setTimeout(function() {
+                        reminder.style.display = 'none';
+                    }, 600);
+                }
+            } else {
+                i.className = 'fas fa-chevron-down';
+            }
+        });
+    })();
+
+    (function() {
+        const toggle = document.getElementById('applyToggle');
+        const collapsible = document.getElementById('applyCollapsible');
+        const icon = document.getElementById('applyIcon');
+        let isOpen = false;
+        toggle.addEventListener('click', function() {
+            isOpen = !isOpen;
+            collapsible.classList.toggle('open', isOpen);
+            icon.classList.toggle('open', isOpen);
+            const i = icon.querySelector('i');
+            if (isOpen) {
+                i.className = 'fas fa-chevron-up';
+            } else {
+                i.className = 'fas fa-chevron-down';
+            }
+        });
+    })();
 })();
 </script>
 </body>

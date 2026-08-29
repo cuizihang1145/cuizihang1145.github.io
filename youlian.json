@@ -26,5 +26,12 @@
     "desc": "我的梦想就是成为一名背包客，走遍世界，包里装的是自由和勇气。",
     "logo": "https://www.lov3u.top/wp-content/uploads/2026/07/cropped-cropped-1785343618-IMG_20260730_004521.png",
     "feed": ""
+  },
+  {
+    "name": "SAKURAIN TEAM",
+    "url": "https://sakurain.net",
+    "desc": "用代码构建未来",
+    "logo": "https://sakurain.net/favicon",
+    "feed": "https://sakurain.net/feed"
   }
 ]

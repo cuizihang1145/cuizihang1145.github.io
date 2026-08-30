@@ -29,7 +29,8 @@ const BLOCKED_WORDS = [
   '代办','代考','枪手','作弊',
   '一夜情','换妻',
   '拼多多','阿里','腾讯','字节','vivo','iqoo','爱酷','米','华为','哇为','啊这个','你这是','恶意','realme','一加','真我','oneplus','oppo','步步高','三鹿',
-  'wx','vpn','v','q','qq','tb','taobao','jd','pdd','dy','ks','zfb','alipay','tpp','bd'
+  'wx','pn','v','q','qq','tb','taobao','jd','pdd','dy','ks','zfb','alipay','tpp','bd',
+  '微','梯子','机场','限','快'
 ];
 
 const PINYIN_BLOCKED = [

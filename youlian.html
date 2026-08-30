@@ -503,8 +503,8 @@
             if (logo.startsWith('http://') || logo.startsWith('https://')) {
                 logoHtml = `
                     <div class="card-logo" style="position:relative; background:linear-gradient(145deg,#7A6BCF,#624ED0); display:flex; align-items:center; justify-content:center; border-radius:8px; width:56px; height:56px; flex-shrink:0; overflow:hidden;">
-                        <img src="${logo}" alt="${name}" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; border-radius:8px;" onerror="this.style.display='none'; this.parentElement.querySelector('.fallback-initial').style.display='flex';" />
-                        <span class="fallback-initial" style="display:none; font-family:'Iansui','Inter',sans-serif; font-size:28px; font-weight:600; color:#fff; text-shadow:0 2px 12px rgba(0,0,0,.25); z-index:1; width:100%; height:100%; align-items:center; justify-content:center; border-radius:8px; background:linear-gradient(145deg,#7A6BCF,#624ED0); letter-spacing:2px;">${initial}</span>
+                        <img src="${logo}" alt="${name}" style="display:none; width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; border-radius:8px;" onload="this.style.display='block'; this.parentElement.querySelector('.fallback-initial').style.display='none';" onerror="this.style.display='none'; this.parentElement.querySelector('.fallback-initial').style.display='flex';" />
+                        <span class="fallback-initial" style="display:flex; font-family:'Iansui','Inter',sans-serif; font-size:28px; font-weight:600; color:#fff; text-shadow:0 2px 12px rgba(0,0,0,.25); z-index:1; width:100%; height:100%; align-items:center; justify-content:center; border-radius:8px; background:linear-gradient(145deg,#7A6BCF,#624ED0); letter-spacing:2px;">${initial}</span>
                     </div>
                 `;
             } else {
@@ -575,8 +575,8 @@
         if (logo.startsWith('http://') || logo.startsWith('https://')) {
             logoHtml = `
                 <div style="position:relative; width:80px; height:80px; margin:0 auto 0.6rem; border-radius:8px; overflow:hidden; flex-shrink:0;">
-                    <img src="${logo}" alt="${friend.name || ''}" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; border-radius:8px;" onerror="this.style.display='none'; this.parentElement.querySelector('.modal-fallback-initial').style.display='flex';" />
-                    <span class="modal-fallback-initial" style="display:none; font-family:'Iansui','Inter',sans-serif; font-size:40px; font-weight:600; color:#fff; text-shadow:0 2px 16px rgba(0,0,0,.25); width:100%; height:100%; align-items:center; justify-content:center; border-radius:8px; background:linear-gradient(145deg,#7A6BCF,#624ED0); letter-spacing:2px;">${initial}</span>
+                    <img src="${logo}" alt="${friend.name || ''}" style="display:none; width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; border-radius:8px;" onload="this.style.display='block'; this.parentElement.querySelector('.modal-fallback-initial').style.display='none';" onerror="this.style.display='none'; this.parentElement.querySelector('.modal-fallback-initial').style.display='flex';" />
+                    <span class="modal-fallback-initial" style="display:flex; font-family:'Iansui','Inter',sans-serif; font-size:40px; font-weight:600; color:#fff; text-shadow:0 2px 16px rgba(0,0,0,.25); width:100%; height:100%; align-items:center; justify-content:center; border-radius:8px; background:linear-gradient(145deg,#7A6BCF,#624ED0); letter-spacing:2px;">${initial}</span>
                 </div>
             `;
         } else {

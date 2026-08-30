@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/assets/footer.css" />
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192" />
+    <script src="https://unpkg.com/pinyin-pro@3.26.0/dist/pinyin-pro.min.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
         body { font-family:'Inter',-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; background:#FAFAFE; color:#1A1A2E; line-height:1.6; min-height:100vh; transition:background .4s ease,color .3s ease; }
@@ -355,9 +356,51 @@
 <script>
 (function(){
     const CONFIG = {
-        APPLY_ENDPOINT: '/api/youlian',
-        SENSITIVE_API: '/api/minganci'
+        APPLY_ENDPOINT: '/api/youlian'
     };
+
+    let SENSITIVE_KEYWORDS = [];
+    let SENSITIVE_PINYIN = [];
+    let wordListLoaded = false;
+
+    function normalizeText(text) {
+        return text.replace(/\+/g, '加').replace(/[Vv]/g, '微').replace(/@/g, '艾特');
+    }
+
+    function containsBlockedLocal(text) {
+        if (!text || !wordListLoaded) return { blocked: false, matched: [] };
+        const processed = normalizeText(text);
+        const lower = processed.toLowerCase();
+        const matched = [];
+        for (const word of SENSITIVE_KEYWORDS) {
+            if (lower.includes(word.toLowerCase())) {
+                matched.push(word);
+            }
+        }
+        if (window.pinyinPro && window.pinyinPro.pinyin) {
+            const pinyinStr = window.pinyinPro.pinyin(processed, { toneType: 'none', type: 'array' }).join(' ').toLowerCase();
+            for (const p of SENSITIVE_PINYIN) {
+                if (pinyinStr.includes(p.toLowerCase())) {
+                    matched.push(p);
+                }
+            }
+        }
+        return { blocked: matched.length > 0, matched };
+    }
+
+    async function loadWordList() {
+        try {
+            const res = await fetch('/api/sensitive-words', { cache: 'no-cache' });
+            if (!res.ok) throw new Error('Failed to load word list');
+            const data = await res.json();
+            SENSITIVE_KEYWORDS = data.keywords || [];
+            SENSITIVE_PINYIN = data.pinyinList || [];
+            wordListLoaded = true;
+        } catch (e) {
+            console.warn('词库加载失败，将使用在线检测备用');
+            wordListLoaded = false;
+        }
+    }
 
     const themeToggle = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
@@ -688,30 +731,17 @@
     const applyReasonInput = document.getElementById('applyReason');
     let sensitiveTimer = null;
 
-    function checkSensitive(text) {
-        if (!text || text.length < 2) {
+    function checkSensitiveLocal(text) {
+        if (!text || text.length < 2 || !wordListLoaded) {
             sensitiveWarning.classList.remove('show');
             return;
         }
-        fetch(CONFIG.SENSITIVE_API, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error('API error');
-            return res.json();
-        })
-        .then(data => {
-            if (data.blocked) {
-                sensitiveWarning.classList.add('show');
-            } else {
-                sensitiveWarning.classList.remove('show');
-            }
-        })
-        .catch(() => {
+        const result = containsBlockedLocal(text);
+        if (result.blocked) {
+            sensitiveWarning.classList.add('show');
+        } else {
             sensitiveWarning.classList.remove('show');
-        });
+        }
     }
 
     function handleSensitiveInput() {
@@ -721,7 +751,7 @@
         const combined = (name + ' ' + desc + ' ' + reason).trim();
         clearTimeout(sensitiveTimer);
         sensitiveTimer = setTimeout(() => {
-            checkSensitive(combined);
+            checkSensitiveLocal(combined);
         }, 350);
     }
 
@@ -924,6 +954,8 @@
             }
         });
     })();
+
+    loadWordList();
 })();
 </script>
 </body>

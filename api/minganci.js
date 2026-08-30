@@ -31,7 +31,7 @@ const BLOCKED_WORDS = [
 
 const PINYIN_BLOCKED = [
   'sha bi',
-  'wei xin',
+  'wei',
   'zhi fu bao',
   'shua dan',
   'fan li',

@@ -58,7 +58,6 @@ const PINYIN_BLOCKED_FULL = [...new Set([...PINYIN_BLOCKED, ...EXTRA_PINYIN])];
 
 function containsBlocked(text) {
   if (!text) return { blocked: false, matched: [] };
-  // 只替换符号，不碰数字
   let processed = text
     .replace(/\+/g, '加')
     .replace(/[Vv]/g, '微')
@@ -80,39 +79,58 @@ function containsBlocked(text) {
 }
 
 export default async function handler(request) {
+  const url = new URL(request.url);
+  const pathname = url.pathname;
+
   if (request.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
       },
     });
   }
-  if (request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+
+  if (request.method === 'GET' && pathname === '/api/sensitive-words') {
+    return new Response(JSON.stringify({
+      keywords: BLOCKED_WORDS,
+      pinyinList: PINYIN_BLOCKED_FULL
+    }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'public, max-age=3600'
+      }
     });
   }
-  try {
-    const { text } = await request.json();
-    if (typeof text !== 'string') {
-      return new Response(JSON.stringify({ error: 'Missing text' }), {
-        status: 400,
+
+  if (request.method === 'POST' && pathname === '/api/minganci') {
+    try {
+      const { text } = await request.json();
+      if (typeof text !== 'string') {
+        return new Response(JSON.stringify({ error: 'Missing text' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        });
+      }
+      const result = containsBlocked(text);
+      return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      });
+    } catch (err) {
+      return new Response(JSON.stringify({ error: 'Internal error' }), {
+        status: 500,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
     }
-    const result = containsBlocked(text);
-    return new Response(JSON.stringify(result), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-    });
-  } catch (err) {
-    return new Response(JSON.stringify({ error: 'Internal error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-    });
   }
+
+  return new Response(JSON.stringify({ error: 'Not found' }), {
+    status: 404,
+    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+  });
 }

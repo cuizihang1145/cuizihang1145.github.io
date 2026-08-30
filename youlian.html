@@ -6,7 +6,7 @@
     <title>友链 · ks</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Iansui&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.1/css/all.css" />
     <link rel="stylesheet" href="/assets/waline-custom.css" />
     <link rel="stylesheet" href="/assets/footer.css" />
@@ -479,6 +479,13 @@
 
     let friendsData = [];
 
+    function getInitial(name) {
+        if (!name) return '?';
+        const first = name.trim().charAt(0);
+        if (/[a-zA-Z]/.test(first)) return first.toUpperCase();
+        return first;
+    }
+
     function renderFriends(data){
         const container = document.getElementById('friendsContainer');
         friendsData = data || [];
@@ -490,16 +497,26 @@
         friendsData.forEach((friend,index)=>{
             const name = friend.name || '未知';
             const desc = friend.desc || '';
-            const logo = (friend.logo || '').trim() || 'fas fa-user';
+            const logo = (friend.logo || '').trim();
+            const initial = getInitial(name);
             let logoHtml = '';
-            if(logo.startsWith('http://')||logo.startsWith('https://')){
-                logoHtml = `<img src="${logo}" alt="${name}" />`;
+            if (logo.startsWith('http://') || logo.startsWith('https://')) {
+                logoHtml = `
+                    <div class="card-logo" style="position:relative; background:linear-gradient(145deg,#7A6BCF,#624ED0); display:flex; align-items:center; justify-content:center; border-radius:8px; width:56px; height:56px; flex-shrink:0; overflow:hidden;">
+                        <img src="${logo}" alt="${name}" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; border-radius:8px;" onerror="this.style.display='none'; this.parentElement.querySelector('.fallback-initial').style.display='flex';" />
+                        <span class="fallback-initial" style="display:none; font-family:'Iansui','Inter',sans-serif; font-size:28px; font-weight:600; color:#fff; text-shadow:0 2px 12px rgba(0,0,0,.25); z-index:1; width:100%; height:100%; align-items:center; justify-content:center; border-radius:8px; background:linear-gradient(145deg,#7A6BCF,#624ED0); letter-spacing:2px;">${initial}</span>
+                    </div>
+                `;
             } else {
-                logoHtml = `<i class="${logo}"></i>`;
+                logoHtml = `
+                    <div class="card-logo" style="background:linear-gradient(145deg,#7A6BCF,#624ED0); display:flex; align-items:center; justify-content:center; border-radius:8px; width:56px; height:56px; flex-shrink:0; overflow:hidden;">
+                        <span style="font-family:'Iansui','Inter',sans-serif; font-size:28px; font-weight:600; color:#fff; text-shadow:0 2px 12px rgba(0,0,0,.25); letter-spacing:2px;">${initial}</span>
+                    </div>
+                `;
             }
             html += `
                 <div class="friend-card" data-index="${index}">
-                    <div class="card-logo">${logoHtml}</div>
+                    ${logoHtml}
                     <div class="card-right">
                         <div class="card-name">${name}</div>
                         <div class="card-desc">${desc}</div>
@@ -552,12 +569,22 @@
 
     function openModal(friend){
         if(!friend) return;
-        const logo = (friend.logo || '').trim() || 'fas fa-user';
+        const logo = (friend.logo || '').trim();
+        const initial = getInitial(friend.name || '');
         let logoHtml = '';
-        if(logo.startsWith('http://')||logo.startsWith('https://')){
-            logoHtml = `<img src="${logo}" alt="${friend.name || ''}" />`;
+        if (logo.startsWith('http://') || logo.startsWith('https://')) {
+            logoHtml = `
+                <div style="position:relative; width:80px; height:80px; margin:0 auto 0.6rem; border-radius:8px; overflow:hidden; flex-shrink:0;">
+                    <img src="${logo}" alt="${friend.name || ''}" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; border-radius:8px;" onerror="this.style.display='none'; this.parentElement.querySelector('.modal-fallback-initial').style.display='flex';" />
+                    <span class="modal-fallback-initial" style="display:none; font-family:'Iansui','Inter',sans-serif; font-size:40px; font-weight:600; color:#fff; text-shadow:0 2px 16px rgba(0,0,0,.25); width:100%; height:100%; align-items:center; justify-content:center; border-radius:8px; background:linear-gradient(145deg,#7A6BCF,#624ED0); letter-spacing:2px;">${initial}</span>
+                </div>
+            `;
         } else {
-            logoHtml = `<i class="${logo}"></i>`;
+            logoHtml = `
+                <div style="width:80px; height:80px; margin:0 auto 0.6rem; border-radius:8px; background:linear-gradient(145deg,#7A6BCF,#624ED0); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">
+                    <span style="font-family:'Iansui','Inter',sans-serif; font-size:40px; font-weight:600; color:#fff; text-shadow:0 2px 16px rgba(0,0,0,.25); letter-spacing:2px;">${initial}</span>
+                </div>
+            `;
         }
         modalLogo.innerHTML = logoHtml;
         modalName.textContent = friend.name || '未知';

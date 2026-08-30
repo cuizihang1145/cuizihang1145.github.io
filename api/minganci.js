@@ -58,12 +58,11 @@ const PINYIN_BLOCKED_FULL = [...new Set([...PINYIN_BLOCKED, ...EXTRA_PINYIN])];
 
 function containsBlocked(text) {
   if (!text) return { blocked: false, matched: [] };
+  // 只替换符号，不碰数字
   let processed = text
     .replace(/\+/g, '加')
     .replace(/[Vv]/g, '微')
-    .replace(/@/g, '艾特')
-    .replace(/1/g, '一')
-    .replace(/0/g, '零');
+    .replace(/@/g, '艾特');
   const lower = processed.toLowerCase();
   const matched = [];
   for (const word of BLOCKED_WORDS) {

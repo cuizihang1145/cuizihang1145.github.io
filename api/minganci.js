@@ -44,6 +44,18 @@ const PINYIN_BLOCKED = [
   'xiao qi'
 ];
 
+const EXTRA_PINYIN = [];
+for (const w of BLOCKED_WORDS) {
+  if (/[\u4e00-\u9fa5]/.test(w)) {
+    try {
+      const p = pinyin(w, { toneType: 'none', type: 'array' }).join(' ').toLowerCase();
+      const trimmed = p.replace(/\s+/g, ' ').trim();
+      if (trimmed) EXTRA_PINYIN.push(trimmed);
+    } catch (_) {}
+  }
+}
+const PINYIN_BLOCKED_FULL = [...new Set([...PINYIN_BLOCKED, ...EXTRA_PINYIN])];
+
 function containsBlocked(text) {
   if (!text) return { blocked: false, matched: [] };
   const lower = text.toLowerCase();
@@ -56,7 +68,7 @@ function containsBlocked(text) {
   }
 
   const pinyinStr = pinyin(text, { toneType: 'none', type: 'array' }).join(' ').toLowerCase();
-  for (const p of PINYIN_BLOCKED) {
+  for (const p of PINYIN_BLOCKED_FULL) {
     if (pinyinStr.includes(p.toLowerCase())) {
       matched.push(p);
     }

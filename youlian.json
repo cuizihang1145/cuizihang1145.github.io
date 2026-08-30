@@ -33,5 +33,12 @@
     "desc": "用代码构建未来",
     "logo": "https://sakurain.net/favicon",
     "feed": "https://sakurain.net/feed"
+  },
+  {
+    "name": "测试",
+    "url": "http://1145141919810122532567.myzgwy",
+    "desc": "测试",
+    "logo": "",
+    "feed": ""
   }
 ]

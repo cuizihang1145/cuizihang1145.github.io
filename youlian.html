@@ -684,16 +684,17 @@
         if(data && data.status==='ok' && data.items && data.items.length>0){
             const items = data.items.slice(0,3);
             let html = '';
+            const safeText = (text) => { const el = document.createElement('div'); el.textContent = text; return el.innerHTML; };
+            const safeUrl = (url) => { if (url && (url.startsWith('http://') || url.startsWith('https://'))) return url; return '#'; };
             items.forEach(item=>{
                 const title = item.title || '无标题';
-                const link = item.link || '#';
+                const link = safeUrl(item.link || '#');
                 let desc = item.description || item.content || '';
                 const div = document.createElement('div');
                 div.innerHTML = desc;
                 let plain = div.textContent || div.innerText || '';
                 plain = plain.trim().substring(0,30);
                 if(plain.length===30) plain += '…';
-
                 let dateHtml = '';
                 if(item.pubDate){
                     const dateObj = new Date(item.pubDate);
@@ -705,12 +706,11 @@
                         dateHtml = `<div class="article-date"><i class="far fa-calendar-alt"></i> ${formattedDate}</div>`;
                     }
                 }
-
                 html += `
                     <li>
-                        <a href="${link}" target="_blank" rel="noopener" class="article-link">${title}</a>
+                        <a href="${link}" target="_blank" rel="noopener" class="article-link">${safeText(title)}</a>
                         ${dateHtml}
-                        ${plain ? `<div class="article-desc">${plain}</div>` : ''}
+                        ${plain ? `<div class="article-desc">${safeText(plain)}</div>` : ''}
                     </li>
                 `;
             });

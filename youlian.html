@@ -156,9 +156,9 @@
         .modal-status.online { background:#4CAF50; display:block; }
         .modal-status.offline { background:#F44336; display:block; }
         .modal-fixed-top { flex-shrink:0; padding:2rem 1.8rem .5rem 1.8rem; }
-        .modal-fixed-top .modal-logo { width:80px; height:80px; border-radius:8px; background:rgba(107,90,207,.12); display:flex; align-items:center; justify-content:center; font-size:2.4rem; color:#6B5ACF; margin:0 auto .6rem; overflow:hidden; }
+        .modal-fixed-top .modal-logo { width:80px; height:80px; border-radius:8px; background:rgba(107,90,207,.12); display:flex; align-items:center; justify-content:center; font-size:2.4rem; color:#6B5ACF; margin:0 auto .6rem; overflow:hidden; position:relative; }
         body.dark .modal-fixed-top .modal-logo { background:rgba(136,204,255,.10); color:#88ccff; }
-        .modal-fixed-top .modal-logo img { width:100%; height:100%; object-fit:cover; }
+        .modal-fixed-top .modal-logo img { width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; border-radius:8px; }
         .modal-fixed-top .modal-name { font-size:1.4rem; font-weight:700; color:#1A1A2E; transition:color .3s; text-align:center; }
         body.dark .modal-fixed-top .modal-name { color:#E8E6F0; }
         .modal-fixed-top .modal-desc { font-size:.9rem; color:#6A6A92; margin-top:.2rem; margin-bottom:.8rem; transition:color .3s; text-align:center; }
@@ -180,9 +180,13 @@
         body.dark .modal-articles-scroll::-webkit-scrollbar-track { background:rgba(255,255,255,.04); }
         body.dark .modal-articles-scroll::-webkit-scrollbar-thumb { background:rgba(136,204,255,.2); }
         .modal-articles-list { list-style:none; padding:0; margin:0; text-align:left; }
-        .modal-articles-list li { padding:.5rem 0; border-bottom:1px solid rgba(0,0,0,.04); font-size:.85rem; }
+        .modal-articles-list li { padding:.5rem 0; border-bottom:1px solid rgba(0,0,0,.04); font-size:.85rem; opacity:0; transform:translateY(20px); animation:articleFadeIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; padding-left:0.5rem; padding-right:0.5rem; border-radius:8px; margin:2px 0; }
         body.dark .modal-articles-list li { border-bottom-color:rgba(255,255,255,.04); }
         .modal-articles-list li:last-child { border-bottom:none; }
+        .modal-articles-list li:nth-child(1) { animation-delay:0.05s; }
+        .modal-articles-list li:nth-child(2) { animation-delay:0.15s; }
+        .modal-articles-list li:nth-child(3) { animation-delay:0.25s; }
+        @keyframes articleFadeIn { 0%{opacity:0; transform:translateY(20px); } 100%{opacity:1; transform:translateY(0); } }
         .modal-articles-list .article-link { color:#6B5ACF; text-decoration:none; transition:.2s; display:block; font-weight:500; }
         body.dark .modal-articles-list .article-link { color:#88ccff; }
         .modal-articles-list .article-link:hover { text-decoration:underline; }
@@ -190,8 +194,8 @@
         body.dark .modal-articles-list .article-desc { color:#7A7AA0; }
         .modal-articles-list .article-date { font-size:.7rem; color:#B0A8D0; margin-top:.15rem; transition:color .3s; }
         body.dark .modal-articles-list .article-date { color:#8A84B0; }
-        .modal-articles-list .loading-item { color:#8A8AB5; font-style:italic; padding:.5rem 0; border-bottom:none; text-align:center; }
-        .modal-articles-list .no-feed { color:#8A8AB5; text-align:center; padding:.5rem 0; border-bottom:none; }
+        .modal-articles-list .loading-item { opacity:1 !important; transform:none !important; animation:none !important; color:#8A8AB5; font-style:italic; padding:.5rem 0; border-bottom:none; text-align:center; }
+        .modal-articles-list .no-feed { opacity:1 !important; transform:none !important; animation:none !important; color:#8A8AB5; text-align:center; padding:.5rem 0; border-bottom:none; }
         body.dark .modal-articles-list .no-feed { color:#7A7AA0; }
         .modal-bottom { flex-shrink:0; padding:.5rem 1.8rem 1.8rem 1.8rem; }
         .modal-box .modal-close-btn { width:100%; padding:.6rem 1rem; border:none; border-radius:60px; background:rgba(0,0,0,.06); color:#6A6A92; font-size:.85rem; font-weight:500; cursor:pointer; transition:.2s ease; font-family: inherit; }
@@ -358,6 +362,8 @@
     const CONFIG = {
         APPLY_ENDPOINT: '/api/youlian'
     };
+    const CACHE = { feed: {}, status: {} };
+    const CACHE_TTL = 60000;
 
     let SENSITIVE_KEYWORDS = [];
     let SENSITIVE_PINYIN = [];
@@ -571,22 +577,20 @@
         if(!friend) return;
         const logo = (friend.logo || '').trim();
         const initial = getInitial(friend.name || '');
-        let logoHtml = '';
+        modalLogo.innerHTML = '';
+        modalLogo.style.background = 'transparent';
         if (logo.startsWith('http://') || logo.startsWith('https://')) {
-            logoHtml = `
-                <div style="position:relative; width:80px; height:80px; margin:0 auto 0.6rem; border-radius:8px; overflow:hidden; flex-shrink:0;">
-                    <img src="${logo}" alt="${friend.name || ''}" style="display:none; width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; border-radius:8px;" onload="this.style.display='block'; this.parentElement.querySelector('.modal-fallback-initial').style.display='none'; this.parentElement.style.background='transparent';" onerror="this.style.display='none'; this.parentElement.querySelector('.modal-fallback-initial').style.display='flex';" />
-                    <span class="modal-fallback-initial" style="display:flex; font-family:'Iansui','Inter',sans-serif; font-size:40px; font-weight:600; color:#fff; text-shadow:0 2px 16px rgba(0,0,0,.25); width:100%; height:100%; align-items:center; justify-content:center; border-radius:8px; background:linear-gradient(145deg,#7A6BCF,#624ED0); letter-spacing:2px;">${initial}</span>
-                </div>
-            `;
+            const img = document.createElement('img');
+            img.src = logo;
+            img.alt = friend.name || '';
+            img.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; border-radius:8px; z-index:2;';
+            img.onerror = function() {
+                modalLogo.innerHTML = `<span style="font-family:'Iansui','Inter',sans-serif; font-size:40px; font-weight:600; color:#fff; text-shadow:0 2px 16px rgba(0,0,0,.25); width:100%; height:100%; display:flex; align-items:center; justify-content:center; border-radius:8px; background:linear-gradient(145deg,#7A6BCF,#624ED0); letter-spacing:2px;">${initial}</span>`;
+            };
+            modalLogo.appendChild(img);
         } else {
-            logoHtml = `
-                <div style="width:80px; height:80px; margin:0 auto 0.6rem; border-radius:8px; background:linear-gradient(145deg,#7A6BCF,#624ED0); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden;">
-                    <span style="font-family:'Iansui','Inter',sans-serif; font-size:40px; font-weight:600; color:#fff; text-shadow:0 2px 16px rgba(0,0,0,.25); letter-spacing:2px;">${initial}</span>
-                </div>
-            `;
+            modalLogo.innerHTML = `<span style="font-family:'Iansui','Inter',sans-serif; font-size:40px; font-weight:600; color:#fff; text-shadow:0 2px 16px rgba(0,0,0,.25); width:100%; height:100%; display:flex; align-items:center; justify-content:center; border-radius:8px; background:linear-gradient(145deg,#7A6BCF,#624ED0); letter-spacing:2px;">${initial}</span>`;
         }
-        modalLogo.innerHTML = logoHtml;
         modalName.textContent = friend.name || '未知';
         modalDesc.textContent = friend.desc || '';
         modalUrl.innerHTML = highlightHttp(friend.url || '');
@@ -629,71 +633,91 @@
     });
 
     function pingWebsite(url){
+        const now = Date.now();
+        const cached = CACHE.status[url];
+        if (cached && (now - cached.time) < CACHE_TTL) {
+            modalStatus.className = 'modal-status ' + (cached.status ? 'online' : 'offline');
+            modalStatus.style.display = 'block';
+            return;
+        }
         const controller = new AbortController();
         const timeoutId = setTimeout(()=>controller.abort(), 15000);
         fetch(url, { method:'HEAD', mode:'no-cors', signal:controller.signal })
             .then(()=>{
                 clearTimeout(timeoutId);
+                CACHE.status[url] = { status: true, time: Date.now() };
                 modalStatus.className = 'modal-status online';
                 modalStatus.style.display = 'block';
             })
             .catch(()=>{
                 clearTimeout(timeoutId);
+                CACHE.status[url] = { status: false, time: Date.now() };
                 modalStatus.className = 'modal-status offline';
                 modalStatus.style.display = 'block';
             });
     }
 
     function fetchFeedArticles(feedUrl){
+        const now = Date.now();
+        const cached = CACHE.feed[feedUrl];
+        if (cached && (now - cached.time) < CACHE_TTL) {
+            renderFeedItems(cached.data);
+            return;
+        }
         const proxyUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feedUrl);
         const controller = new AbortController();
         const timeoutId = setTimeout(()=>controller.abort(), 15000);
         fetch(proxyUrl, { signal:controller.signal })
             .then(res=>{ clearTimeout(timeoutId); if(!res.ok) throw new Error(); return res.json(); })
             .then(data=>{
-                if(data.status==='ok' && data.items && data.items.length>0){
-                    const items = data.items.slice(0,3);
-                    let html = '';
-                    items.forEach(item=>{
-                        const title = item.title || '无标题';
-                        const link = item.link || '#';
-                        let desc = item.description || item.content || '';
-                        const div = document.createElement('div');
-                        div.innerHTML = desc;
-                        let plain = div.textContent || div.innerText || '';
-                        plain = plain.trim().substring(0,30);
-                        if(plain.length===30) plain += '…';
-
-                        let dateHtml = '';
-                        if(item.pubDate){
-                            const dateObj = new Date(item.pubDate);
-                            if(!isNaN(dateObj.getTime())){
-                                const year = dateObj.getFullYear();
-                                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                                const day = String(dateObj.getDate()).padStart(2, '0');
-                                const formattedDate = `${year}-${month}-${day}`;
-                                dateHtml = `<div class="article-date"><i class="far fa-calendar-alt"></i> ${formattedDate}</div>`;
-                            }
-                        }
-
-                        html += `
-                            <li>
-                                <a href="${link}" target="_blank" rel="noopener" class="article-link">${title}</a>
-                                ${dateHtml}
-                                ${plain ? `<div class="article-desc">${plain}</div>` : ''}
-                            </li>
-                        `;
-                    });
-                    modalArticlesList.innerHTML = html;
-                } else {
-                    modalArticlesList.innerHTML = '<li class="no-feed">暂无文章</li>';
-                }
+                CACHE.feed[feedUrl] = { data: data, time: Date.now() };
+                renderFeedItems(data);
             })
             .catch(err=>{
                 clearTimeout(timeoutId);
                 if(err.name==='AbortError') modalArticlesList.innerHTML = '<li class="no-feed">加载超时</li>';
                 else modalArticlesList.innerHTML = '<li class="no-feed">加载失败</li>';
             });
+    }
+
+    function renderFeedItems(data){
+        if(data && data.status==='ok' && data.items && data.items.length>0){
+            const items = data.items.slice(0,3);
+            let html = '';
+            items.forEach(item=>{
+                const title = item.title || '无标题';
+                const link = item.link || '#';
+                let desc = item.description || item.content || '';
+                const div = document.createElement('div');
+                div.innerHTML = desc;
+                let plain = div.textContent || div.innerText || '';
+                plain = plain.trim().substring(0,30);
+                if(plain.length===30) plain += '…';
+
+                let dateHtml = '';
+                if(item.pubDate){
+                    const dateObj = new Date(item.pubDate);
+                    if(!isNaN(dateObj.getTime())){
+                        const year = dateObj.getFullYear();
+                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                        const day = String(dateObj.getDate()).padStart(2, '0');
+                        const formattedDate = `${year}-${month}-${day}`;
+                        dateHtml = `<div class="article-date"><i class="far fa-calendar-alt"></i> ${formattedDate}</div>`;
+                    }
+                }
+
+                html += `
+                    <li>
+                        <a href="${link}" target="_blank" rel="noopener" class="article-link">${title}</a>
+                        ${dateHtml}
+                        ${plain ? `<div class="article-desc">${plain}</div>` : ''}
+                    </li>
+                `;
+            });
+            modalArticlesList.innerHTML = html;
+        } else {
+            modalArticlesList.innerHTML = '<li class="no-feed">暂无文章</li>';
+        }
     }
 
     const applyForm = document.getElementById('applyForm');

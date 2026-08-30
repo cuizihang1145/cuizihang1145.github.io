@@ -58,22 +58,25 @@ const PINYIN_BLOCKED_FULL = [...new Set([...PINYIN_BLOCKED, ...EXTRA_PINYIN])];
 
 function containsBlocked(text) {
   if (!text) return { blocked: false, matched: [] };
-  const lower = text.toLowerCase();
+  let processed = text
+    .replace(/\+/g, '加')
+    .replace(/[Vv]/g, '微')
+    .replace(/@/g, '艾特')
+    .replace(/1/g, '一')
+    .replace(/0/g, '零');
+  const lower = processed.toLowerCase();
   const matched = [];
-
   for (const word of BLOCKED_WORDS) {
     if (lower.includes(word.toLowerCase())) {
       matched.push(word);
     }
   }
-
-  const pinyinStr = pinyin(text, { toneType: 'none', type: 'array' }).join(' ').toLowerCase();
+  const pinyinStr = pinyin(processed, { toneType: 'none', type: 'array' }).join(' ').toLowerCase();
   for (const p of PINYIN_BLOCKED_FULL) {
     if (pinyinStr.includes(p.toLowerCase())) {
       matched.push(p);
     }
   }
-
   return { blocked: matched.length > 0, matched };
 }
 
@@ -88,14 +91,12 @@ export default async function handler(request) {
       },
     });
   }
-
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     });
   }
-
   try {
     const { text } = await request.json();
     if (typeof text !== 'string') {
@@ -104,7 +105,6 @@ export default async function handler(request) {
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
     }
-
     const result = containsBlocked(text);
     return new Response(JSON.stringify(result), {
       status: 200,

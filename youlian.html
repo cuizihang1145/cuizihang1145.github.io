@@ -390,7 +390,7 @@
 
     async function loadWordList() {
         try {
-            const res = await fetch('/api/sensitive-words', { cache: 'no-cache' });
+            const res = await fetch('/api/minganci', { cache: 'no-cache' });
             if (!res.ok) throw new Error('Failed to load word list');
             const data = await res.json();
             SENSITIVE_KEYWORDS = data.keywords || [];

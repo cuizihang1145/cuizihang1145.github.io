@@ -93,7 +93,7 @@ export default async function handler(request) {
     });
   }
 
-  if (request.method === 'GET' && pathname === '/api/sensitive-words') {
+  if (request.method === 'GET' && pathname === '/api/minganci') {
     return new Response(JSON.stringify({
       keywords: BLOCKED_WORDS,
       pinyinList: PINYIN_BLOCKED_FULL

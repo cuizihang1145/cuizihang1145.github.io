@@ -110,23 +110,25 @@
 
     function renderAudio(title, src, cover) {
       const escapedTitle = escapeHtml(title);
+      const escapedSrc = escapeHtml(src);
+      const escapedCover = escapeHtml(cover || '');
       if (src.includes('music.163.com')) {
         const loadingId = 'audio-loading-' + Math.random().toString(36).slice(2, 9);
         return '<div class="netease-wrapper">' +
           '<div class="embed-loading" id="' + loadingId + '"><i class="fas fa-spinner fa-spin"></i></div>' +
-          '<iframe src="' + src + '" scrolling="no" frameborder="0" onload="this.classList.add(\'loaded\'); document.getElementById(\'' + loadingId + '\').classList.add(\'hidden\');"></iframe>' +
+          '<iframe src="' + escapedSrc + '" scrolling="no" frameborder="0" onload="this.classList.add(\'loaded\'); document.getElementById(\'' + loadingId + '\').classList.add(\'hidden\');"></iframe>' +
           '</div>';
       }
       const badge = renderAudioBadge(src);
       const coverHtml = cover
-        ? '<div class="audio-cover" style="background-image:url(' + cover + ');background-size:contain;background-position:center;background-repeat:no-repeat;background-color:#f0f0f0;position:relative;overflow:hidden;"><img src="' + cover + '" alt="' + escapedTitle + '" loading="lazy" style="display:block;width:100%;height:100%;opacity:0;position:absolute;top:0;left:0;pointer-events:auto;z-index:2;" /></div>'
+        ? '<div class="audio-cover" style="background-image:url(' + escapedCover + ');background-size:contain;background-position:center;background-repeat:no-repeat;background-color:#f0f0f0;position:relative;overflow:hidden;"><img src="' + escapedCover + '" alt="' + escapedTitle + '" loading="lazy" style="display:block;width:100%;height:100%;opacity:0;position:absolute;top:0;left:0;pointer-events:auto;z-index:2;" /></div>'
         : '<div class="audio-cover"><span class="fallback-icon"><i class="fas fa-music"></i></span></div>';
       return '<div class="audio-card">' +
         badge +
         coverHtml +
         '<div class="audio-info"><div class="audio-title">' + escapedTitle + '</div></div>' +
-        '<div class="audio-player"><audio controls src="' + src + '" preload="metadata"></audio></div>' +
-        '<button class="info-btn" data-audio-title="' + escapedTitle + '" data-audio-src="' + src + '" data-cover-src="' + (cover || '') + '"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>' +
+        '<div class="audio-player"><audio controls src="' + escapedSrc + '" preload="metadata"></audio></div>' +
+        '<button class="info-btn" data-audio-title="' + escapedTitle + '" data-audio-src="' + escapedSrc + '" data-cover-src="' + escapedCover + '"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>' +
         '</div>';
     }
 
@@ -161,8 +163,8 @@
           if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
           else if (w) style = ' style="width:' + w + 'px; height:auto;"';
           else if (h) style = ' style="height:' + h + 'px; width:auto;"';
-          const titleAttr = title ? ' title="' + title + '"' : '';
-          return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + titleAttr + ' />';
+          const titleAttr = title ? ' title="' + escapeHtml(title) + '"' : '';
+          return '<img src="' + escapeHtml(src) + '" alt="' + escapeHtml(alt) + '" loading="lazy"' + style + titleAttr + ' />';
         });
 
       html = html.replace(
@@ -172,7 +174,7 @@
           if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
           else if (w) style = ' style="width:' + w + 'px; height:auto;"';
           else if (h) style = ' style="height:' + h + 'px; width:auto;"';
-          const descHtml = desc ? '<div class="video-alt-text">' + desc + '</div>' : '';
+          const descHtml = desc ? '<div class="video-alt-text">' + escapeHtml(desc) + '</div>' : '';
 
           const youtubeMatch = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
           if (youtubeMatch) {
@@ -182,7 +184,7 @@
           if (bilibiliMatch) {
             return '<div class="video-placeholder"><span class="video-loading"><i class="fas fa-spinner fa-spin"></i></span><iframe src="https://player.bilibili.com/player.html?bvid=' + bilibiliMatch[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
           }
-          return '<div class="video-placeholder"><video src="' + src + '" controls' + style + '></video>' + descHtml + '</div>';
+          return '<div class="video-placeholder"><video src="' + escapeHtml(src) + '" controls' + style + '></video>' + descHtml + '</div>';
         });
 
       html = html.replace(/!audio\[([^\]]*)\]\(([^)]*)\)/g, function (match, title, srcAndCover) {
@@ -920,23 +922,28 @@
 
         var overlay = document.createElement('div');
         overlay.className = 'cover-modal-overlay';
-        overlay.innerHTML = '<div class="cover-modal"><button class="cover-modal-close">&times;</button><div id="modal-content"></div></div>';
+        overlay.innerHTML = '<div class="cover-modal"><button class="cover-modal-close">&times;</button><div class="modal-content"></div></div>';
         document.body.appendChild(overlay);
 
-        var modalContent = document.getElementById('modal-content');
+        var modalContent = overlay.querySelector('.modal-content');
         var closeBtn = overlay.querySelector('.cover-modal-close');
+
+        var escTitle = escapeHtml(title);
+        var escCover = escapeHtml(coverSrc);
+        var escAudio = escapeHtml(audioSrc);
+        var escSource = escapeHtml(source);
 
         var html = '';
         if (coverSrc) {
-          html += '<img src="' + coverSrc + '" alt="' + title + '" />';
+          html += '<img src="' + escCover + '" alt="' + escTitle + '" />';
         }
-        html += '<div class="field"><span class="label">标题</span><span class="value">' + title + '</span></div>';
-        html += '<div class="field"><span class="label">来源</span><span class="value">' + source + '</span></div>';
+        html += '<div class="field"><span class="label">标题</span><span class="value">' + escTitle + '</span></div>';
+        html += '<div class="field"><span class="label">来源</span><span class="value">' + escSource + '</span></div>';
         if (coverSrc) {
-          html += '<div class="field"><span class="label">封面</span><span class="value"><a href="' + coverSrc + '" target="_blank">' + coverSrc + '</a></span> <button class="copy-btn-modal" data-copy="' + coverSrc + '"><span class="copy-text">复制</span><span class="copied-text">已复制</span></button></div>';
+          html += '<div class="field"><span class="label">封面</span><span class="value"><a href="' + escCover + '" target="_blank">' + escCover + '</a></span> <button class="copy-btn-modal" data-copy="' + escCover + '"><span class="copy-text">复制</span><span class="copied-text">已复制</span></button></div>';
         }
         if (audioSrc && audioSrc !== '') {
-          html += '<div class="field"><span class="label">音频</span><span class="value"><a href="' + audioSrc + '" target="_blank">' + audioSrc + '</a></span> <button class="copy-btn-modal" data-copy="' + audioSrc + '"><span class="copy-text">复制</span><span class="copied-text">已复制</span></button></div>';
+          html += '<div class="field"><span class="label">音频</span><span class="value"><a href="' + escAudio + '" target="_blank">' + escAudio + '</a></span> <button class="copy-btn-modal" data-copy="' + escAudio + '"><span class="copy-text">复制</span><span class="copied-text">已复制</span></button></div>';
         }
         modalContent.innerHTML = html;
         overlay.classList.add('active');

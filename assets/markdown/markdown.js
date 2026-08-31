@@ -878,74 +878,100 @@
     if (container._audioInfoInited) return;
     container._audioInfoInited = true;
 
-    container.addEventListener('click', function(e) {
-      const btn = e.target.closest('.info-btn');
-      if (!btn) return;
-
-      const title = btn.dataset.audioTitle || '未知标题';
-      const coverSrc = btn.dataset.coverSrc || '';
-      const audioSrc = btn.dataset.audioSrc || '';
-      const card = btn.closest('.audio-card');
-      let source = '未知来源';
-      if (card) {
-        const badgeEl = card.querySelector('.audio-source-badge');
-        if (badgeEl) source = badgeEl.textContent.trim();
+    container.querySelectorAll('.audio-card .info-btn').forEach(function(btn) {
+      if (!btn.dataset.audioSrc) {
+        var card = btn.closest('.audio-card');
+        if (card) {
+          var audioEl = card.querySelector('audio');
+          if (audioEl && audioEl.src) {
+            btn.dataset.audioSrc = audioEl.src;
+          }
+        }
       }
 
-      document.querySelectorAll('.cover-modal-overlay').forEach(function(el) { el.remove(); });
+      btn.removeEventListener('click', btn._handler);
+      btn._handler = function(e) {
+        e.stopPropagation();
+        e.preventDefault();
 
-      var overlay = document.createElement('div');
-      overlay.className = 'cover-modal-overlay';
-      overlay.innerHTML = '<div class="cover-modal"><button class="cover-modal-close">&times;</button><div id="modal-content"></div></div>';
-      document.body.appendChild(overlay);
+        var title = this.dataset.audioTitle || '未知标题';
+        var coverSrc = this.dataset.coverSrc || '';
+        var audioSrc = this.dataset.audioSrc || '';
 
-      var modalContent = document.getElementById('modal-content');
-      var closeBtn = overlay.querySelector('.cover-modal-close');
+        if (!audioSrc) {
+          var card = this.closest('.audio-card');
+          if (card) {
+            var audioEl = card.querySelector('audio');
+            if (audioEl && audioEl.src) {
+              audioSrc = audioEl.src;
+              this.dataset.audioSrc = audioSrc;
+            }
+          }
+        }
 
-      var html = '';
-      if (coverSrc) {
-        html += '<img src="' + coverSrc + '" alt="' + title + '" />';
-      }
-      html += '<div class="field"><span class="label">标题</span><span class="value">' + title + '</span></div>';
-      html += '<div class="field"><span class="label">来源</span><span class="value">' + source + '</span></div>';
-      if (coverSrc) {
-        html += '<div class="field"><span class="label">封面</span><span class="value"><a href="' + coverSrc + '" target="_blank">' + coverSrc + '</a></span> <button class="copy-btn-modal" data-copy="' + coverSrc + '"><span class="copy-text">复制</span><span class="copied-text">已复制</span></button></div>';
-      }
-      if (audioSrc && audioSrc !== '') {
-        html += '<div class="field"><span class="label">音频</span><span class="value"><a href="' + audioSrc + '" target="_blank">' + audioSrc + '</a></span> <button class="copy-btn-modal" data-copy="' + audioSrc + '"><span class="copy-text">复制</span><span class="copied-text">已复制</span></button></div>';
-      }
-      modalContent.innerHTML = html;
-      overlay.classList.add('active');
+        var card = this.closest('.audio-card');
+        var source = '未知来源';
+        if (card) {
+          var badge = card.querySelector('.audio-source-badge');
+          if (badge) source = badge.textContent.trim();
+        }
 
-      closeBtn.addEventListener('click', function() {
-        overlay.classList.remove('active');
-        setTimeout(function() { overlay.remove(); }, 300);
-      });
-      overlay.addEventListener('click', function(e) {
-        if (e.target === overlay) {
+        document.querySelectorAll('.cover-modal-overlay').forEach(function(el) { el.remove(); });
+
+        var overlay = document.createElement('div');
+        overlay.className = 'cover-modal-overlay';
+        overlay.innerHTML = '<div class="cover-modal"><button class="cover-modal-close">&times;</button><div id="modal-content"></div></div>';
+        document.body.appendChild(overlay);
+
+        var modalContent = document.getElementById('modal-content');
+        var closeBtn = overlay.querySelector('.cover-modal-close');
+
+        var html = '';
+        if (coverSrc) {
+          html += '<img src="' + coverSrc + '" alt="' + title + '" />';
+        }
+        html += '<div class="field"><span class="label">标题</span><span class="value">' + title + '</span></div>';
+        html += '<div class="field"><span class="label">来源</span><span class="value">' + source + '</span></div>';
+        if (coverSrc) {
+          html += '<div class="field"><span class="label">封面</span><span class="value"><a href="' + coverSrc + '" target="_blank">' + coverSrc + '</a></span> <button class="copy-btn-modal" data-copy="' + coverSrc + '"><span class="copy-text">复制</span><span class="copied-text">已复制</span></button></div>';
+        }
+        if (audioSrc && audioSrc !== '') {
+          html += '<div class="field"><span class="label">音频</span><span class="value"><a href="' + audioSrc + '" target="_blank">' + audioSrc + '</a></span> <button class="copy-btn-modal" data-copy="' + audioSrc + '"><span class="copy-text">复制</span><span class="copied-text">已复制</span></button></div>';
+        }
+        modalContent.innerHTML = html;
+        overlay.classList.add('active');
+
+        closeBtn.addEventListener('click', function() {
           overlay.classList.remove('active');
           setTimeout(function() { overlay.remove(); }, 300);
-        }
-      });
-
-      modalContent.querySelectorAll('[data-copy]').forEach(function(copyBtn) {
-        copyBtn.addEventListener('click', function() {
-          var text = this.dataset.copy;
-          navigator.clipboard.writeText(text).then(function() {
-            this.classList.add('copied');
-            setTimeout(function() { this.classList.remove('copied'); }.bind(this), 1500);
-          }.bind(this)).catch(function() {
-            var ta = document.createElement('textarea');
-            ta.value = text;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            ta.remove();
-            this.classList.add('copied');
-            setTimeout(function() { this.classList.remove('copied'); }.bind(this), 1500);
-          }.bind(this));
         });
-      });
+        overlay.addEventListener('click', function(e) {
+          if (e.target === overlay) {
+            overlay.classList.remove('active');
+            setTimeout(function() { overlay.remove(); }, 300);
+          }
+        });
+
+        modalContent.querySelectorAll('[data-copy]').forEach(function(copyBtn) {
+          copyBtn.addEventListener('click', function() {
+            var text = this.dataset.copy;
+            navigator.clipboard.writeText(text).then(function() {
+              this.classList.add('copied');
+              setTimeout(function() { this.classList.remove('copied'); }.bind(this), 1500);
+            }.bind(this)).catch(function() {
+              var ta = document.createElement('textarea');
+              ta.value = text;
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand('copy');
+              ta.remove();
+              this.classList.add('copied');
+              setTimeout(function() { this.classList.remove('copied'); }.bind(this), 1500);
+            }.bind(this));
+          });
+        });
+      };
+      btn.addEventListener('click', btn._handler);
     });
   }
 

@@ -152,7 +152,14 @@
       });
 
       html = html.replace(/<br\s*\/?>/gi, '<br>');
-      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+      const codePlaceholders = [];
+      html = html.replace(/`([^`]+)`/g, function (match, code) {
+        const key = '\uE004' + (codePlaceholders.length) + '\uE005';
+        codePlaceholders.push(code);
+        return key;
+      });
+
       html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
       html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
@@ -174,7 +181,7 @@
           if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
           else if (w) style = ' style="width:' + w + 'px; height:auto;"';
           else if (h) style = ' style="height:' + h + 'px; width:auto;"';
-          const descHtml = desc ? '<div class="video-alt-text">' + escapeHtml(desc) + '</div>' : '';
+          const descHtml = desc ? '<div class="video-alt-text">' + renderInline(desc) + '</div>' : '';
 
           const youtubeMatch = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
           if (youtubeMatch) {
@@ -198,6 +205,10 @@
       html = html.replace(/\[\^([^\]]+)\]/g, function (match, key) {
         const id = getFootnoteId(key);
         return '<sup class="footnote-ref"><a data-footnote-ref="' + id + '">' + id + '</a></sup>';
+      });
+
+      html = html.replace(/\uE004(\d+)\uE005/g, function (match, index) {
+        return '<code>' + escapeHtml(codePlaceholders[parseInt(index)]) + '</code>';
       });
 
       html = restoreEscapes(html);

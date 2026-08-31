@@ -134,6 +134,14 @@
 
     function renderInline(text) {
       let html = text;
+
+      const codePlaceholders = [];
+      html = html.replace(/`([^`]+)`/g, function (match, code) {
+        const key = '\uE004' + (codePlaceholders.length) + '\uE005';
+        codePlaceholders.push(code);
+        return key;
+      });
+
       html = html.replace(/<([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s<>]+)>/g, '<a href="$1">$1</a>');
 
       const tagMap = {};
@@ -152,13 +160,6 @@
       });
 
       html = html.replace(/<br\s*\/?>/gi, '<br>');
-
-      const codePlaceholders = [];
-      html = html.replace(/`([^`]+)`/g, function (match, code) {
-        const key = '\uE004' + (codePlaceholders.length) + '\uE005';
-        codePlaceholders.push(code);
-        return key;
-      });
 
       html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');

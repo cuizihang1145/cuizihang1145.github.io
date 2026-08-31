@@ -119,13 +119,14 @@
       }
       const badge = renderAudioBadge(src);
       const coverHtml = cover
-        ? '<img src="' + cover + '" alt="' + escapedTitle + '" loading="lazy" />'
-        : '<span class="fallback-icon"><i class="fas fa-music"></i></span>';
+        ? '<div class="audio-cover" style="background-image:url(' + cover + ');background-size:contain;background-position:center;background-repeat:no-repeat;background-color:#f0f0f0;position:relative;overflow:hidden;"><img src="' + cover + '" alt="' + escapedTitle + '" loading="lazy" style="display:block;width:100%;height:100%;opacity:0;position:absolute;top:0;left:0;pointer-events:auto;z-index:2;" /></div>'
+        : '<div class="audio-cover"><span class="fallback-icon"><i class="fas fa-music"></i></span></div>';
       return '<div class="audio-card">' +
         badge +
-        '<div class="audio-cover">' + coverHtml + '</div>' +
+        coverHtml +
         '<div class="audio-info"><div class="audio-title">' + escapedTitle + '</div></div>' +
         '<div class="audio-player"><audio controls src="' + src + '" preload="metadata"></audio></div>' +
+        '<button class="info-btn" data-audio-title="' + escapedTitle + '" data-audio-src="' + src + '" data-cover-src="' + (cover || '') + '"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>' +
         '</div>';
     }
 
@@ -471,20 +472,20 @@
       });
 
       const statsHtml = '<span>' + lineCount + ' 行</span> · <span>' + maxLineLength + ' 列</span> · <span>' + totalChars + ' 字符</span>';
-      const codeBlockHtml = `
-        <div class="code-block-wrapper" id="cbw-${copyId}">
-          <div class="code-block-header">
-            <span class="lang-label">${escapeHtml(block.lang || 'text')}</span>
-            <span class="code-stats">${statsHtml}</span>
-            <span class="header-actions">
-              <button class="copy-btn" data-copy="${copyId}"><i class="fas fa-copy"></i> 复制</button>
-              <button class="collapse-btn" data-target="cbw-${copyId}"><i class="fas fa-chevron-up"></i></button>
-            </span>
-          </div>
-          <div class="code-block-body-wrapper">
-            <div class="code-block-body" id="code-body-${copyId}">${codeHtml}</div>
-          </div>
-        </div>`;
+      const codeBlockHtml =
+        '<div class="code-block-wrapper" id="cbw-' + copyId + '">' +
+        '<div class="code-block-header">' +
+        '<span class="lang-label">' + escapeHtml(block.lang || 'text') + '</span>' +
+        '<span class="code-stats">' + statsHtml + '</span>' +
+        '<span class="header-actions">' +
+        '<button class="copy-btn" data-copy="' + copyId + '"><i class="fas fa-copy"></i> 复制</button>' +
+        '<button class="collapse-btn" data-target="cbw-' + copyId + '"><i class="fas fa-chevron-up"></i></button>' +
+        '</span>' +
+        '</div>' +
+        '<div class="code-block-body-wrapper">' +
+        '<div class="code-block-body" id="code-body-' + copyId + '">' + codeHtml + '</div>' +
+        '</div>' +
+        '</div>';
       html = html.replace(block.id, codeBlockHtml);
     });
 
@@ -584,17 +585,16 @@
 
     const overlay = document.createElement('div');
     overlay.className = 'lightbox-overlay';
-    overlay.innerHTML = `
-      <button class="lightbox-close">&times;</button>
-      <button class="lightbox-nav prev"><i class="fas fa-chevron-left"></i></button>
-      <button class="lightbox-nav next"><i class="fas fa-chevron-right"></i></button>
-      <button class="lightbox-play"><i class="fas fa-play"></i></button>
-      <div class="lightbox-container">
-        <div class="lightbox-img-wrapper"><img src="" alt="" /></div>
-        <div class="lightbox-alt"></div>
-      </div>
-      <div class="lightbox-counter"></div>
-    `;
+    overlay.innerHTML =
+      '<button class="lightbox-close">&times;</button>' +
+      '<button class="lightbox-nav prev"><i class="fas fa-chevron-left"></i></button>' +
+      '<button class="lightbox-nav next"><i class="fas fa-chevron-right"></i></button>' +
+      '<button class="lightbox-play"><i class="fas fa-play"></i></button>' +
+      '<div class="lightbox-container">' +
+      '<div class="lightbox-img-wrapper"><img src="" alt="" /></div>' +
+      '<div class="lightbox-alt"></div>' +
+      '</div>' +
+      '<div class="lightbox-counter"></div>';
     document.body.appendChild(overlay);
     document.body.style.overflow = 'hidden';
 
@@ -853,6 +853,7 @@
     initVideoLazyLoad(container);
     initCodeHighlight(container);
     bindImageLightbox(container);
+    initAudioInfoButtons(container);
     return container;
   }
 
@@ -869,6 +870,72 @@
       img.addEventListener('click', function (e) {
         e.stopPropagation();
         openLightbox(images, index);
+      });
+    });
+  }
+
+  function initAudioInfoButtons(container) {
+    if (container._audioInfoInited) return;
+    container._audioInfoInited = true;
+
+    let modal = document.querySelector('.cover-modal-overlay');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.className = 'cover-modal-overlay';
+      modal.innerHTML = '<div class="cover-modal"><button class="cover-modal-close">&times;</button><div id="modal-content"></div></div>';
+      document.body.appendChild(modal);
+      const closeBtn = modal.querySelector('.cover-modal-close');
+      closeBtn.addEventListener('click', function() { modal.classList.remove('active'); });
+      modal.addEventListener('click', function(e) { if (e.target === modal) modal.classList.remove('active'); });
+    }
+
+    container.addEventListener('click', function(e) {
+      const btn = e.target.closest('.info-btn');
+      if (!btn) return;
+      const title = btn.dataset.audioTitle || '未知标题';
+      const coverSrc = btn.dataset.coverSrc || '';
+      const audioSrc = btn.dataset.audioSrc || '';
+      const card = btn.closest('.audio-card');
+      let badge = '';
+      if (card) {
+        const badgeEl = card.querySelector('.audio-source-badge');
+        if (badgeEl) badge = badgeEl.textContent.trim();
+      }
+      const source = badge || '未知来源';
+      const modalContent = document.getElementById('modal-content');
+      if (!modalContent) return;
+      let html = '';
+      if (coverSrc) {
+        html += '<img src="' + coverSrc + '" alt="' + title + '" />';
+      }
+      html += '<div class="field"><span class="label">标题</span><span class="value">' + title + '</span></div>';
+      html += '<div class="field"><span class="label">来源</span><span class="value">' + source + '</span></div>';
+      if (coverSrc) {
+        html += '<div class="field"><span class="label">封面</span><span class="value"><a href="' + coverSrc + '" target="_blank">' + coverSrc + '</a></span> <button class="copy-btn-modal" data-copy="' + coverSrc + '"><span class="copy-text">复制</span><span class="copied-text">已复制</span></button></div>';
+      }
+      if (audioSrc && audioSrc !== '') {
+        html += '<div class="field"><span class="label">音频</span><span class="value"><a href="' + audioSrc + '" target="_blank">' + audioSrc + '</a></span> <button class="copy-btn-modal" data-copy="' + audioSrc + '"><span class="copy-text">复制</span><span class="copied-text">已复制</span></button></div>';
+      }
+      modalContent.innerHTML = html;
+      modal.classList.add('active');
+
+      modalContent.querySelectorAll('[data-copy]').forEach(function(copyBtn) {
+        copyBtn.addEventListener('click', function() {
+          const text = this.dataset.copy;
+          navigator.clipboard.writeText(text).then(function() {
+            this.classList.add('copied');
+            setTimeout(function() { this.classList.remove('copied'); }.bind(this), 1500);
+          }.bind(this)).catch(function() {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            ta.remove();
+            this.classList.add('copied');
+            setTimeout(function() { this.classList.remove('copied'); }.bind(this), 1500);
+          }.bind(this));
+        });
       });
     });
   }
@@ -930,7 +997,7 @@
       const wrapper = document.getElementById('cbw-' + targetId);
       if (!wrapper) return;
       let text = '';
-      wrapper.querySelectorAll('.code-line').forEach(line => {
+      wrapper.querySelectorAll('.code-line').forEach(function(line) {
         const clone = line.cloneNode(true);
         const lineNum = clone.querySelector('.line-number');
         if (lineNum) lineNum.remove();
@@ -953,7 +1020,7 @@
         if (success) {
           copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
           copyBtn.classList.add('copied');
-          setTimeout(() => {
+          setTimeout(function() {
             copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
             copyBtn.classList.remove('copied');
           }, 2000);

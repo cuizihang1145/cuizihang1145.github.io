@@ -135,13 +135,6 @@
     function renderInline(text) {
       let html = text;
 
-      const codePlaceholders = [];
-      html = html.replace(/`([^`]+)`/g, function (match, code) {
-        const key = '\uE004' + (codePlaceholders.length) + '\uE005';
-        codePlaceholders.push(code);
-        return key;
-      });
-
       html = html.replace(/<([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s<>]+)>/g, '<a href="$1">$1</a>');
 
       const tagMap = {};
@@ -160,10 +153,6 @@
       });
 
       html = html.replace(/<br\s*\/?>/gi, '<br>');
-
-      html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-      html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
 
       html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,
         function (match, alt, src, title, w, h) {
@@ -201,6 +190,17 @@
         const cover = parts.length > 1 ? parts[1].trim() : '';
         return renderAudio(title, src, cover);
       });
+
+      const codePlaceholders = [];
+      html = html.replace(/`([^`]+)`/g, function (match, code) {
+        const key = '\uE004' + (codePlaceholders.length) + '\uE005';
+        codePlaceholders.push(code);
+        return key;
+      });
+
+      html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
 
       html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
       html = html.replace(/\[\^([^\]]+)\]/g, function (match, key) {

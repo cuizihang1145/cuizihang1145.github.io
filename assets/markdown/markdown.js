@@ -175,13 +175,13 @@
 
           const youtubeMatch = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
           if (youtubeMatch) {
-            return '<div class="video-placeholder"><span class="video-loading"><i class="fas fa-spinner fa-spin"></i></span><iframe src="https://www.youtube.com/embed/' + youtubeMatch[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
+            return '<div class="video-placeholder"><iframe src="https://www.youtube.com/embed/' + youtubeMatch[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
           }
           const bilibiliMatch = src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
           if (bilibiliMatch) {
-            return '<div class="video-placeholder"><span class="video-loading"><i class="fas fa-spinner fa-spin"></i></span><iframe src="https://player.bilibili.com/player.html?bvid=' + bilibiliMatch[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
+            return '<div class="video-placeholder"><iframe src="https://player.bilibili.com/player.html?bvid=' + bilibiliMatch[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
           }
-          return '<div class="video-placeholder"><span class="video-loading"><i class="fas fa-spinner fa-spin"></i></span><video src="' + escapeHtml(src) + '" controls' + style + '></video>' + descHtml + '</div>';
+          return '<div class="video-placeholder"><video src="' + escapeHtml(src) + '" controls' + style + '></video>' + descHtml + '</div>';
         });
 
       html = html.replace(/!audio\[([^\]]*)\]\(([^)]*)\)/g, function (match, title, srcAndCover) {
@@ -544,10 +544,8 @@
     container.querySelectorAll('.video-placeholder').forEach(function (wrapper) {
       const video = wrapper.querySelector('video');
       const iframe = wrapper.querySelector('iframe');
-      const loadingEl = wrapper.querySelector('.video-loading');
       const done = () => {
         wrapper.classList.add('loaded');
-        if (loadingEl) loadingEl.style.display = 'none';
       };
       if (video) {
         if (video.readyState >= 4) {

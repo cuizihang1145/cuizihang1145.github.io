@@ -181,7 +181,7 @@
           if (bilibiliMatch) {
             return '<div class="video-placeholder"><span class="video-loading"><i class="fas fa-spinner fa-spin"></i></span><iframe src="https://player.bilibili.com/player.html?bvid=' + bilibiliMatch[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
           }
-          return '<div class="video-placeholder"><video src="' + escapeHtml(src) + '" controls' + style + '></video>' + descHtml + '</div>';
+          return '<div class="video-placeholder"><span class="video-loading"><i class="fas fa-spinner fa-spin"></i></span><video src="' + escapeHtml(src) + '" controls' + style + '></video>' + descHtml + '</div>';
         });
 
       html = html.replace(/!audio\[([^\]]*)\]\(([^)]*)\)/g, function (match, title, srcAndCover) {
@@ -542,17 +542,29 @@
 
   function initVideoLazyLoad(container) {
     container.querySelectorAll('.video-placeholder').forEach(function (wrapper) {
+      const video = wrapper.querySelector('video');
       const iframe = wrapper.querySelector('iframe');
-      if (!iframe) return;
       const loadingEl = wrapper.querySelector('.video-loading');
       const done = () => {
         wrapper.classList.add('loaded');
         if (loadingEl) loadingEl.style.display = 'none';
       };
-      iframe.addEventListener('load', done);
-      setTimeout(() => {
-        if (!wrapper.classList.contains('loaded')) done();
-      }, 8000);
+      if (video) {
+        if (video.readyState >= 4) {
+          done();
+        } else {
+          video.addEventListener('loadeddata', done);
+          video.addEventListener('error', done);
+          setTimeout(() => {
+            if (!wrapper.classList.contains('loaded')) done();
+          }, 8000);
+        }
+      } else if (iframe) {
+        iframe.addEventListener('load', done);
+        setTimeout(() => {
+          if (!wrapper.classList.contains('loaded')) done();
+        }, 8000);
+      }
     });
   }
 

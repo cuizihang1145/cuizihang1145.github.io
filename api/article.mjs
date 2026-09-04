@@ -46,7 +46,7 @@ export default function handler(req, res) {
     return res.status(400).send('缺少 id');
   }
 
-  const filePath = path.join(process.cwd(), 'public', 'articles', `article-${id}.json`);
+  const filePath = path.join(process.cwd(), 'articles', `article-${id}.json`);
   try {
     const raw = fs.readFileSync(filePath, 'utf-8');
     const article = JSON.parse(raw);

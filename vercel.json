@@ -2,7 +2,7 @@
   "cleanUrls": true,
   "outputDirectory": ".",
   "routes": [
-    { "src": "/article.html", "dest": "/api/article.mjs" }
+    { "src": "/article.html(.*)", "dest": "/api/article.mjs" }
   ],
   "rewrites": [
     { "source": "/rss.xml", "destination": "/api/rss" },

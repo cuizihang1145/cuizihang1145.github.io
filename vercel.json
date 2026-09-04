@@ -1,13 +1,8 @@
 {
-  "cleanUrls": true,
+  "cleanUrls": false,
   "outputDirectory": ".",
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/article.html(.*)", "dest": "/api/article.js" }
-  ],
   "rewrites": [
     { "source": "/article", "destination": "/api/article.js" },
-    { "source": "/article.html", "destination": "/api/article.js" },
     { "source": "/rss.xml", "destination": "/api/rss" },
     { "source": "/feed.json", "destination": "/api/feed" },
     { "source": "/atom.xml", "destination": "/api/atom" }

@@ -39,33 +39,66 @@ const CRAWLERS = [
 ];
 
 function isCrawler(userAgent) {
-  if (!userAgent) return false;
-  return CRAWLERS.some(regex => regex.test(userAgent));
+  if (!userAgent) {
+    console.log('[isCrawler] userAgent 为空');
+    return false;
+  }
+  const result = CRAWLERS.some(regex => regex.test(userAgent));
+  console.log('[isCrawler] userAgent:', userAgent, '结果:', result);
+  return result;
 }
 
 export default function handler(req, res) {
+  console.log('[handler] 请求到达');
+  console.log('[handler] req.url:', req.url);
+  console.log('[handler] req.method:', req.method);
+  console.log('[handler] req.headers.user-agent:', req.headers['user-agent'] || '无');
+  console.log('[handler] req.query:', req.query);
+
   const userAgent = req.headers['user-agent'] || '';
   const id = req.query.id;
+  console.log('[handler] 提取到的 id:', id);
+
   if (!id) {
+    console.log('[handler] id 缺失，返回 400');
     return res.status(400).send('缺少 id');
   }
 
-  // 统一用 __dirname 定位，不用 process.cwd()
   const projectRoot = path.resolve(__dirname, '..');
   const jsonPath = path.join(projectRoot, 'articles', `article-${id}.json`);
   const htmlPath = path.join(projectRoot, 'public', 'article.html');
 
-  let article;
+  console.log('[handler] projectRoot:', projectRoot);
+  console.log('[handler] jsonPath:', jsonPath);
+  console.log('[handler] htmlPath:', htmlPath);
+
+  console.log('[handler] 开始读取 JSON 文件');
+  let raw;
   try {
-    const raw = fs.readFileSync(jsonPath, 'utf-8');
-    article = JSON.parse(raw);
-  } catch {
+    raw = fs.readFileSync(jsonPath, 'utf-8');
+    console.log('[handler] JSON 文件读取成功，长度:', raw.length);
+  } catch (err) {
+    console.log('[handler] JSON 文件读取失败:', err.message);
     return res.status(404).send('文章不存在');
   }
 
-  if (isCrawler(userAgent)) {
+  let article;
+  try {
+    article = JSON.parse(raw);
+    console.log('[handler] JSON 解析成功，标题:', article.title);
+  } catch (err) {
+    console.log('[handler] JSON 解析失败:', err.message);
+    return res.status(404).send('文章不存在');
+  }
+
+  const isCrawlerRequest = isCrawler(userAgent);
+  console.log('[handler] 是否为爬虫:', isCrawlerRequest);
+
+  if (isCrawlerRequest) {
+    console.log('[handler] 进入爬虫分支，开始渲染 Markdown');
     const contentHtml = renderMarkdown(article.content || '');
-    return res.send(`
+    console.log('[handler] Markdown 渲染完成，内容长度:', contentHtml.length);
+    const responseHtml = `
       <!DOCTYPE html>
       <html>
         <head>
@@ -77,16 +110,22 @@ export default function handler(req, res) {
           <div>${contentHtml}</div>
         </body>
       </html>
-    `);
+    `;
+    console.log('[handler] 返回爬虫 HTML，状态 200');
+    return res.send(responseHtml);
   }
 
+  console.log('[handler] 进入真人分支，开始读取 HTML 模板');
   let html;
   try {
     html = fs.readFileSync(htmlPath, 'utf-8');
-  } catch {
+    console.log('[handler] HTML 模板读取成功，长度:', html.length);
+  } catch (err) {
+    console.log('[handler] HTML 模板读取失败:', err.message);
     return res.status(404).send('页面文件缺失');
   }
 
+  console.log('[handler] 返回 SPA 模板，状态 200');
   res.setHeader('Content-Type', 'text/html');
   return res.send(html);
 }

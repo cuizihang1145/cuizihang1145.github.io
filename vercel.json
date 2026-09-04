@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/article.mjs": {
+      "runtime": "nodejs20.x"
+    }
+  },
   "cleanUrls": false,
   "outputDirectory": ".",
   "routes": [
@@ -6,6 +11,8 @@
     { "src": "/article.html(.*)", "dest": "/api/article.mjs" }
   ],
   "rewrites": [
+    { "source": "/article", "destination": "/api/article.mjs" },
+    { "source": "/article.html", "destination": "/api/article.mjs" },
     { "source": "/rss.xml", "destination": "/api/rss" },
     { "source": "/feed.json", "destination": "/api/feed" },
     { "source": "/atom.xml", "destination": "/api/atom" }

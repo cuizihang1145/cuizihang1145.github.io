@@ -1,6 +1,10 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { renderMarkdown } from '../assets/markdown/markdown-node.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const CRAWLERS = [
   /Googlebot/i, /Googlebot-Image/i, /Googlebot-Video/i, /Googlebot-News/i,
@@ -35,44 +39,58 @@ const CRAWLERS = [
 ];
 
 function isCrawler(userAgent) {
-  if (!userAgent) return false;
-  return CRAWLERS.some(regex => regex.test(userAgent));
+  if (!userAgent) {
+    return false;
+  }
+  return CRAWLERS.some(function(regex) {
+    return regex.test(userAgent);
+  });
 }
 
 export default function handler(req, res) {
   const userAgent = req.headers['user-agent'] || '';
   const id = req.query.id;
+
   if (!id) {
     return res.status(400).send('缺少 id');
   }
 
-  const filePath = path.join(process.cwd(), 'articles', `article-${id}.json`);
+  const projectRoot = path.resolve(__dirname, '..');
+  const jsonPath = path.join(projectRoot, 'articles', 'article-' + id + '.json');
+
+  let article;
   try {
-    const raw = fs.readFileSync(filePath, 'utf-8');
-    const article = JSON.parse(raw);
-
-    if (isCrawler(userAgent)) {
-      const contentHtml = renderMarkdown(article.content || '');
-      return res.send(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>${article.title}</title>
-            <meta name="description" content="${article.summary || ''}" />
-          </head>
-          <body>
-            <h1>${article.title}</h1>
-            <div>${contentHtml}</div>
-          </body>
-        </html>
-      `);
-    }
-
-    const html = fs.readFileSync(path.join(process.cwd(), 'public', 'article.html'), 'utf-8');
-    res.setHeader('Content-Type', 'text/html');
-    return res.send(html);
-
-  } catch {
+    const raw = fs.readFileSync(jsonPath, 'utf-8');
+    article = JSON.parse(raw);
+  } catch (err) {
     return res.status(404).send('文章不存在');
   }
-    }
+
+  if (isCrawler(userAgent)) {
+    const contentHtml = renderMarkdown(article.content || '');
+    return res.send(
+      '<!DOCTYPE html>\n' +
+      '<html>\n' +
+      '  <head>\n' +
+      '    <title>' + article.title + '</title>\n' +
+      '    <meta name="description" content="' + (article.summary || '') + '" />\n' +
+      '  </head>\n' +
+      '  <body>\n' +
+      '    <h1>' + article.title + '</h1>\n' +
+      '    <div>' + contentHtml + '</div>\n' +
+      '  </body>\n' +
+      '</html>'
+    );
+  }
+
+  const htmlPath = path.join(projectRoot, 'public', 'article.html');
+  let html;
+  try {
+    html = fs.readFileSync(htmlPath, 'utf-8');
+  } catch (err) {
+    return res.status(404).send('页面文件缺失');
+  }
+
+  res.setHeader('Content-Type', 'text/html');
+  return res.send(html);
+}

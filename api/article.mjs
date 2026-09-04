@@ -66,7 +66,7 @@ export default function handler(req, res) {
 
   const projectRoot = path.resolve(__dirname, '..');
   const jsonPath = path.join(projectRoot, 'articles', `article-${id}.json`);
-  const htmlPath = path.join(projectRoot, 'public', 'article.html');
+  const htmlPath = path.join(projectRoot, 'article.html');
 
   console.log('[handler] projectRoot:', projectRoot);
   console.log('[handler] jsonPath:', jsonPath);

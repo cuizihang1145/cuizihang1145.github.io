@@ -804,7 +804,7 @@
                 el.addEventListener('click', function() {
                     var id = this.dataset.id;
                     saveArticleState();
-                    window.location.href = 'article.html?id=' + id + '&page=' + currentPage;
+                    window.location.href = 'article?id=' + id + '&page=' + currentPage;
                 });
             });
             if (countEl) {
@@ -1446,7 +1446,7 @@
             listEl.querySelectorAll('.archive-item').forEach(function(el) {
                 el.addEventListener('click', function() {
                     var id = this.dataset.id;
-                    window.location.href = 'article.html?id=' + id + '&from=archive&folder=articles';
+                    window.location.href = 'article?id=' + id + '&from=archive&folder=articles';
                 });
             });
             listEl.querySelectorAll('.archive-tag').forEach(function(el) {

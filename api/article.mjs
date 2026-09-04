@@ -39,55 +39,51 @@ const CRAWLERS = [
 ];
 
 function isCrawler(userAgent) {
-  if (!userAgent) {
-    return false;
-  }
-  return CRAWLERS.some(function(regex) {
-    return regex.test(userAgent);
-  });
+  if (!userAgent) return false;
+  return CRAWLERS.some(regex => regex.test(userAgent));
 }
 
 export default function handler(req, res) {
   const userAgent = req.headers['user-agent'] || '';
   const id = req.query.id;
-
   if (!id) {
     return res.status(400).send('缺少 id');
   }
 
+  // 统一用 __dirname 定位，不用 process.cwd()
   const projectRoot = path.resolve(__dirname, '..');
-  const jsonPath = path.join(projectRoot, 'articles', 'article-' + id + '.json');
+  const jsonPath = path.join(projectRoot, 'articles', `article-${id}.json`);
+  const htmlPath = path.join(projectRoot, 'public', 'article.html');
 
   let article;
   try {
     const raw = fs.readFileSync(jsonPath, 'utf-8');
     article = JSON.parse(raw);
-  } catch (err) {
+  } catch {
     return res.status(404).send('文章不存在');
   }
 
   if (isCrawler(userAgent)) {
     const contentHtml = renderMarkdown(article.content || '');
-    return res.send(
-      '<!DOCTYPE html>\n' +
-      '<html>\n' +
-      '  <head>\n' +
-      '    <title>' + article.title + '</title>\n' +
-      '    <meta name="description" content="' + (article.summary || '') + '" />\n' +
-      '  </head>\n' +
-      '  <body>\n' +
-      '    <h1>' + article.title + '</h1>\n' +
-      '    <div>' + contentHtml + '</div>\n' +
-      '  </body>\n' +
-      '</html>'
-    );
+    return res.send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${article.title}</title>
+          <meta name="description" content="${article.summary || ''}" />
+        </head>
+        <body>
+          <h1>${article.title}</h1>
+          <div>${contentHtml}</div>
+        </body>
+      </html>
+    `);
   }
 
-  const htmlPath = path.join(projectRoot, 'public', 'article.html');
   let html;
   try {
     html = fs.readFileSync(htmlPath, 'utf-8');
-  } catch (err) {
+  } catch {
     return res.status(404).send('页面文件缺失');
   }
 

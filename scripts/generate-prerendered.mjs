@@ -7,7 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, '..');
 
 const ARTICLES_ALL = path.join(PROJECT_ROOT, 'articles/all.json');
-const OUTPUT_DIR = path.join(PROJECT_ROOT, 'public/prerendered');
+const OUTPUT_DIR = path.join(PROJECT_ROOT, 'prerendered');
 const MARKDOWN_CSS = '/assets/markdown/markdown.css';
 
 if (!fs.existsSync(OUTPUT_DIR)) {

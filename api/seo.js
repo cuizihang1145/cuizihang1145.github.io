@@ -53,10 +53,10 @@ Sitemap: https://cuizi.top/sitemap.xml
         { loc: '/youlian.html', priority: 0.7, changefreq: 'monthly' },
       ];
 
-      const filtered = articles.filter(item => !item.delete);
-      filtered.forEach((item, idx) => {
+      articles.forEach((item, originalIndex) => {
+        if (item.delete) return;
         pages.push({
-          loc: `/article.html?id=${idx}`,
+          loc: `/article.html?id=${originalIndex}`,
           priority: 0.9,
           changefreq: 'monthly',
           lastmod: item.date || now,
@@ -103,4 +103,4 @@ function escapeXml(unsafe) {
       default: return c;
     }
   });
-  }
+}

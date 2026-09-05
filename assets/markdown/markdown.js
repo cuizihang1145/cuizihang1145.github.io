@@ -175,11 +175,11 @@
 
           const youtubeMatch = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
           if (youtubeMatch) {
-            return '<div class="video-placeholder"><div class="video-loading"><i class="fas fa-spinner fa-spin"></i></div><iframe src="https://www.youtube.com/embed/' + youtubeMatch[1] + '" frameborder="0" allowfullscreen' + style + ' onload="this.parentNode.classList.add(\'loaded\'); this.parentNode.querySelector(\'.video-loading\').style.display=\'none\';" onerror="this.parentNode.querySelector(\'.video-loading\').style.display=\'none\';"></iframe>' + descHtml + '</div>';
+            return '<div class="video-placeholder" data-video-loading="1"><div class="video-loading"><i class="fas fa-spinner fa-spin"></i></div><iframe src="https://www.youtube.com/embed/' + youtubeMatch[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
           }
           const bilibiliMatch = src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
           if (bilibiliMatch) {
-            return '<div class="video-placeholder"><div class="video-loading"><i class="fas fa-spinner fa-spin"></i></div><iframe src="https://player.bilibili.com/player.html?bvid=' + bilibiliMatch[1] + '" frameborder="0" allowfullscreen' + style + ' onload="this.parentNode.classList.add(\'loaded\'); this.parentNode.querySelector(\'.video-loading\').style.display=\'none\';" onerror="this.parentNode.querySelector(\'.video-loading\').style.display=\'none\';"></iframe>' + descHtml + '</div>';
+            return '<div class="video-placeholder" data-video-loading="1"><div class="video-loading"><i class="fas fa-spinner fa-spin"></i></div><iframe src="https://player.bilibili.com/player.html?bvid=' + bilibiliMatch[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
           }
           return '<div class="video-placeholder"><video src="' + escapeHtml(src) + '" controls' + style + '></video>' + descHtml + '</div>';
         });
@@ -541,33 +541,46 @@
   }
 
   function initVideoLazyLoad(container) {
-    container.querySelectorAll('.video-placeholder').forEach(function (wrapper) {
-      const video = wrapper.querySelector('video');
+    container.querySelectorAll('.video-placeholder[data-video-loading]').forEach(function (wrapper) {
       const iframe = wrapper.querySelector('iframe');
       const loading = wrapper.querySelector('.video-loading');
-      const done = function() {
-        wrapper.classList.add('loaded');
-        if (loading) loading.style.display = 'none';
-      };
-      if (video) {
-        if (video.readyState >= 4) done();
-        else {
-          video.addEventListener('loadeddata', done);
-          video.addEventListener('error', done);
-          setTimeout(() => { if (!wrapper.classList.contains('loaded')) done(); }, 8000);
-        }
-      } else if (iframe) {
-        try {
-          if (iframe.contentWindow && iframe.contentWindow.document &&
-              iframe.contentWindow.document.readyState === 'complete') {
-            done();
-            return;
-          }
-        } catch(e) {}
-        iframe.addEventListener('load', done);
-        iframe.addEventListener('error', done);
-        setTimeout(() => { if (!wrapper.classList.contains('loaded')) done(); }, 8000);
+      if (!iframe || !loading) return;
+      let hidden = false;
+      let loaded = false;
+      const MIN_DISPLAY = 400;
+      const startTime = Date.now();
+
+      function hideLoading() {
+        if (hidden) return;
+        hidden = true;
+        const elapsed = Date.now() - startTime;
+        const delay = Math.max(0, MIN_DISPLAY - elapsed);
+        setTimeout(function () {
+          wrapper.classList.add('loaded');
+          loading.style.display = 'none';
+        }, delay);
       }
+
+      function markLoaded() {
+        if (loaded) return;
+        loaded = true;
+        hideLoading();
+      }
+
+      try {
+        if (iframe.contentWindow && iframe.contentWindow.document &&
+            iframe.contentWindow.document.readyState === 'complete') {
+          markLoaded();
+          return;
+        }
+      } catch (e) {}
+
+      iframe.addEventListener('load', markLoaded);
+      iframe.addEventListener('error', markLoaded);
+
+      setTimeout(function () {
+        if (!loaded) markLoaded();
+      }, 8000);
     });
   }
 

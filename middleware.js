@@ -1,4 +1,8 @@
 export default async function middleware(request) {
+  if (request.headers.get('x-middleware-internal') === 'true') {
+    return;
+  }
+
   const url = new URL(request.url);
   const userAgent = request.headers.get('user-agent') || '';
 
@@ -30,7 +34,8 @@ export default async function middleware(request) {
   const response = await fetch(targetUrl.toString(), {
     headers: {
       'Accept': 'text/html',
-      'User-Agent': request.headers.get('user-agent') || ''
+      'User-Agent': request.headers.get('user-agent') || '',
+      'x-middleware-internal': 'true'
     }
   });
 

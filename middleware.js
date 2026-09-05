@@ -32,23 +32,31 @@ export default async function middleware(request) {
     return;
   }
 
-  const targetUrl = new URL(targetPath, url.origin);
-  const response = await fetch(targetUrl.toString(), {
-    headers: {
-      'Accept': 'text/html',
-      'User-Agent': request.headers.get('user-agent') || '',
-      'x-middleware-internal': 'true'
-    }
-  });
+  try {
+    const targetUrl = new URL(targetPath, url.origin);
+    const response = await fetch(targetUrl.toString(), {
+      headers: {
+        'Accept': 'text/html',
+        'User-Agent': request.headers.get('user-agent') || '',
+        'x-middleware-internal': 'true'
+      }
+    });
 
-  const html = await response.text();
-  return new Response(html, {
-    status: 200,
-    headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600'
+    if (!response.ok) {
+      return;
     }
-  });
+
+    const html = await response.text();
+    return new Response(html, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600'
+      }
+    });
+  } catch {
+    return;
+  }
 }
 
 export const config = {

@@ -30,10 +30,59 @@ if (articles.length === 0) {
 
 console.log(`共 ${articles.length} 篇文章，开始预渲染...`);
 
-function generateArticleHTML(article) {
+function getPlainSummary(md, len = 80) {
+  if (!md) return '';
+  const plain = md.replace(/[#*`_\[\]\(\)!]/g, '').trim().slice(0, len);
+  return plain + (md.length > len ? '…' : '');
+}
+
+function generateArticleHTML(article, allArticles, shuoshuoList) {
   const { id, title, date, tags = [], content = '' } = article;
   const contentHtml = renderMarkdown(content);
   const tagsHtml = tags.map(t => `<span class="tag">${t}</span>`).join('');
+  
+  const summary = getPlainSummary(content);
+  const fullUrl = `https://www.cuizi.top/article.html?id=${id}`;
+
+  const currentIndex = allArticles.findIndex(a => a.id === id);
+  const prevArticle = currentIndex > 0 ? allArticles[currentIndex - 1] : null;
+  const nextArticle = currentIndex < allArticles.length - 1 ? allArticles[currentIndex + 1] : null;
+
+  const excludeIds = new Set([id]);
+  if (prevArticle) excludeIds.add(prevArticle.id);
+  if (nextArticle) excludeIds.add(nextArticle.id);
+  
+  const otherArticles = allArticles.filter(a => !excludeIds.has(a.id));
+  const shuffled = otherArticles.sort(() => Math.random() - 0.5);
+  const randomArticles = shuffled.slice(0, 3);
+
+  let recommendHtml = '';
+  const allRecommends = [];
+  if (prevArticle) allRecommends.push({ type: 'prev', ...prevArticle });
+  if (nextArticle) allRecommends.push({ type: 'next', ...nextArticle });
+  allRecommends.push(...randomArticles.map(a => ({ type: 'random', ...a })));
+
+  if (allRecommends.length > 0) {
+    const itemsHtml = allRecommends.map((a, idx) => {
+      const label = a.type === 'prev' ? '上一篇' : a.type === 'next' ? '下一篇' : '推荐';
+      return `
+        <div class="recommend-item">
+          <span class="recommend-label">${label}</span>
+          <a href="/prerendered/article/${a.id}.html">${a.title}</a>
+        </div>
+      `;
+    }).join('');
+
+    recommendHtml = `
+      <div class="recommend-section">
+        <h3>推荐阅读</h3>
+        ${itemsHtml}
+        <div class="recommend-shuoshuo">
+          <a href="/prerendered/shuoshuo/index.html">去看看 ks 的碎碎念 →</a>
+        </div>
+      </div>
+    `;
+  }
 
   return `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -41,7 +90,36 @@ function generateArticleHTML(article) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title} · ks</title>
-  <meta name="description" content="文章详情">
+  <meta name="description" content="${summary}">
+  <link rel="canonical" href="${fullUrl}" />
+  <meta property="og:title" content="${title} · ks" />
+  <meta property="og:description" content="${summary}" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="${fullUrl}" />
+  <meta property="og:image" content="https://www.cuizi.top/og-image.png" />
+  <meta property="og:site_name" content="ks 的个人博客" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${title} · ks" />
+  <meta name="twitter:description" content="${summary}" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "${title}",
+    "datePublished": "${date}",
+    "dateModified": "${date}",
+    "author": {
+      "@type": "Person",
+      "name": "ks"
+    },
+    "description": "${summary}",
+    "url": "${fullUrl}",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "${fullUrl}"
+    }
+  }
+  </script>
   <link rel="stylesheet" href="${MARKDOWN_CSS}">
   <style>
     body { font-family: 'Inter', sans-serif; background: #FAFAFE; color: #1A1A2E; line-height: 1.8; padding: 2rem; max-width: 700px; margin: 0 auto; }
@@ -54,7 +132,16 @@ function generateArticleHTML(article) {
     .detail-content pre { background: #f4f4f8; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; }
     .detail-content code { background: rgba(0,0,0,0.06); padding: 0.1rem 0.3rem; border-radius: 3px; }
     .detail-content a { color: #6B5ACF; text-decoration: underline; }
-    .nav-link { margin-top: 2rem; display: block; color: #6B5ACF; }
+    .recommend-section { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 2px solid rgba(107,90,207,0.15); }
+    .recommend-section h3 { font-size: 1.1rem; color: #6B5ACF; margin-bottom: 0.8rem; }
+    .recommend-item { display: flex; align-items: baseline; gap: 0.6rem; padding: 0.3rem 0; }
+    .recommend-item .recommend-label { font-size: 0.7rem; background: rgba(107,90,207,0.1); color: #6B5ACF; padding: 0.05rem 0.5rem; border-radius: 20px; flex-shrink: 0; }
+    .recommend-item a { color: #1A1A2E; text-decoration: none; }
+    .recommend-item a:hover { color: #6B5ACF; text-decoration: underline; }
+    .recommend-shuoshuo { margin-top: 0.8rem; padding-top: 0.6rem; border-top: 1px dashed rgba(107,90,207,0.2); }
+    .recommend-shuoshuo a { color: #6B5ACF; text-decoration: none; font-weight: 500; }
+    .recommend-shuoshuo a:hover { text-decoration: underline; }
+    .nav-link { margin-top: 1rem; display: block; color: #6B5ACF; }
   </style>
 </head>
 <body>
@@ -63,16 +150,25 @@ function generateArticleHTML(article) {
   <div class="detail-tags">${tagsHtml}</div>
   <hr class="detail-divider">
   <div class="detail-content">${contentHtml}</div>
+  ${recommendHtml}
   <a class="nav-link" href="/">← 返回首页</a>
 </body>
 </html>`;
 }
 
-function generateIndexHTML(articles) {
-  function getPlainSummary(md) {
-    if (!md) return '';
-    const plain = md.replace(/[#*`_\[\]\(\)!]/g, '').trim().slice(0, 120);
-    return plain + (md.length > 120 ? '…' : '');
+function generateIndexHTML(articles, shuoshuoItems) {
+  const latestTwoShuoshuo = (shuoshuoItems || []).slice(0, 2);
+  let desc = 'ks 的个人博客，记录生活与思考';
+  
+  if (latestTwoShuoshuo.length > 0) {
+    const shuoshuoTexts = latestTwoShuoshuo.map(item => {
+      const plain = item.content.replace(/[#*`_\[\]\(\)!]/g, '').trim();
+      return plain.length > 30 ? plain.slice(0, 30) + '…' : plain;
+    });
+    desc = `💬 ${shuoshuoTexts.join(' | ')}`;
+    if (desc.length > 80) {
+      desc = desc.slice(0, 77) + '…';
+    }
   }
 
   const shuoshuoEntry = `
@@ -98,8 +194,27 @@ function generateIndexHTML(articles) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ks · 个人博客</title>
-  <meta name="description" content="ks 的个人博客，记录生活和思考">
+  <title>ks · 个人博客 · 保持好奇，保持诚实</title>
+  <meta name="description" content="${desc}">
+  <link rel="canonical" href="https://www.cuizi.top/" />
+  <meta property="og:title" content="ks · 个人博客 · 保持好奇，保持诚实" />
+  <meta property="og:description" content="${desc}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.cuizi.top/" />
+  <meta property="og:image" content="https://www.cuizi.top/og-image.png" />
+  <meta property="og:site_name" content="ks 的个人博客" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="ks · 个人博客 · 保持好奇，保持诚实" />
+  <meta name="twitter:description" content="${desc}" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "ks 的个人博客",
+    "description": "记录生活与思考，保持好奇，保持诚实",
+    "url": "https://www.cuizi.top/"
+  }
+  </script>
   <style>
     body { font-family: 'Inter', sans-serif; background: #FAFAFE; color: #1A1A2E; line-height: 1.6; padding: 2rem; max-width: 700px; margin: 0 auto; }
     h1 { font-size: 2.2rem; margin-bottom: 0.2rem; }
@@ -125,81 +240,63 @@ function generateIndexHTML(articles) {
 </html>`;
 }
 
-const articleDir = path.join(OUTPUT_DIR, 'article');
-if (!fs.existsSync(articleDir)) {
-  fs.mkdirSync(articleDir, { recursive: true });
-}
+function generateShuoshuoHTML(items) {
+  function renderShuoshuoContent(md) {
+    if (!md) return '';
+    let html = renderMarkdown(md);
+    const imgRegex = /!\[([^\]]*)\]\(([^)]*)\)/g;
+    html = html.replace(imgRegex, (match, alt, src) => {
+      const altText = alt || src.split('/').pop().split('.')[0] || '图片';
+      return `<div class="shuoshuo-image"><img src="${src}" alt="${altText}" loading="lazy"></div>`;
+    });
+    return html;
+  }
 
-articles.forEach(article => {
-  const html = generateArticleHTML(article);
-  const filePath = path.join(articleDir, `${article.id}.html`);
-  fs.writeFileSync(filePath, html, 'utf-8');
-  console.log(`  生成文章 ${article.id} -> ${filePath}`);
-});
+  const listHtml = items.map((item, idx) => {
+    const date = item.date || '';
+    const location = item.location || '';
+    const tags = item.tags || [];
+    const content = item.content || '';
+    const contentHtml = renderShuoshuoContent(content);
 
-const indexHtml = generateIndexHTML(articles);
-fs.writeFileSync(path.join(OUTPUT_DIR, 'index.html'), indexHtml, 'utf-8');
-console.log(`  生成主页 -> ${path.join(OUTPUT_DIR, 'index.html')}`);
+    const tagsHtml = tags.map(t => `<span class="tag">${t}</span>`).join('');
+    const locationHtml = location ? `<span class="location"><i class="fas fa-map-marker-alt"></i> ${location}</span>` : '';
 
-let shuoshuoData;
-try {
-  shuoshuoData = JSON.parse(fs.readFileSync(SHUOSHUO_JSON, 'utf-8'));
-} catch (e) {
-  console.log('未找到 shuoshuo.json，跳过说说预渲染');
-  shuoshuoData = [];
-}
-
-const shuoshuoList = (shuoshuoData || []).filter(item => item.delete !== true);
-
-if (shuoshuoList.length > 0) {
-  console.log(`共 ${shuoshuoList.length} 条说说，开始预渲染...`);
-
-  function generateShuoshuoHTML(items) {
-    function renderShuoshuoContent(md) {
-      if (!md) return '';
-      let html = renderMarkdown(md);
-      const imgRegex = /!\[([^\]]*)\]\(([^)]*)\)/g;
-      html = html.replace(imgRegex, (match, alt, src) => {
-        return `<div class="shuoshuo-image"><img src="${src}" alt="${alt}" loading="lazy"></div>`;
-      });
-      return html;
-    }
-
-    const listHtml = items.map((item, idx) => {
-      const date = item.date || '';
-      const location = item.location || '';
-      const tags = item.tags || [];
-      const content = item.content || '';
-      const contentHtml = renderShuoshuoContent(content);
-
-      const tagsHtml = tags.map(t => `<span class="tag">${t}</span>`).join('');
-      const locationHtml = location ? `<span class="location"><i class="fas fa-map-marker-alt"></i> ${location}</span>` : '';
-
-      return `
-        <div class="shuoshuo-item">
-          <div class="shuoshuo-header">
-            <img class="shuoshuo-avatar" src="https://www.cuizi.top/logo.png" alt="ks" loading="lazy">
-            <div class="shuoshuo-header-info">
-              <div class="shuoshuo-name">ks</div>
-              <div class="shuoshuo-date-location">
-                <span>${date}</span>
-                ${location ? `<span class="sep">·</span> ${locationHtml}` : ''}
-              </div>
+    return `
+      <div class="shuoshuo-item">
+        <div class="shuoshuo-header">
+          <img class="shuoshuo-avatar" src="https://www.cuizi.top/logo.png" alt="ks 的头像" loading="lazy">
+          <div class="shuoshuo-header-info">
+            <div class="shuoshuo-name">ks</div>
+            <div class="shuoshuo-date-location">
+              <span>${date}</span>
+              ${location ? `<span class="sep">·</span> ${locationHtml}` : ''}
             </div>
           </div>
-          <div class="shuoshuo-content">${contentHtml}</div>
-          ${tagsHtml ? `<div class="shuoshuo-footer"><div class="shuoshuo-tags">${tagsHtml}</div></div>` : ''}
         </div>
-      `;
-    }).join('');
+        <div class="shuoshuo-content">${contentHtml}</div>
+        ${tagsHtml ? `<div class="shuoshuo-footer"><div class="shuoshuo-tags">${tagsHtml}</div></div>` : ''}
+      </div>
+    `;
+  }).join('');
 
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>说说 · ks</title>
-  <meta name="description" content="ks 的说说列表">
+  <meta name="description" content="ks 的日常碎碎念，记录生活点滴">
+  <link rel="canonical" href="https://www.cuizi.top/shuoshuo.html" />
+  <meta property="og:title" content="说说 · ks" />
+  <meta property="og:description" content="ks 的日常碎碎念，记录生活点滴" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.cuizi.top/shuoshuo.html" />
+  <meta property="og:image" content="https://www.cuizi.top/og-image.png" />
+  <meta property="og:site_name" content="ks 的个人博客" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="说说 · ks" />
+  <meta name="twitter:description" content="ks 的日常碎碎念，记录生活点滴" />
   <link rel="stylesheet" href="${MARKDOWN_CSS}">
   <style>
     body { font-family: 'Inter', sans-serif; background: #FAFAFE; color: #1A1A2E; line-height: 1.8; padding: 2rem; max-width: 700px; margin: 0 auto; }
@@ -231,14 +328,42 @@ if (shuoshuoList.length > 0) {
   <a class="nav-link" href="/">← 返回首页</a>
 </body>
 </html>`;
-  }
+}
 
+const articleDir = path.join(OUTPUT_DIR, 'article');
+if (!fs.existsSync(articleDir)) {
+  fs.mkdirSync(articleDir, { recursive: true });
+}
+
+let shuoshuoData;
+try {
+  shuoshuoData = JSON.parse(fs.readFileSync(SHUOSHUO_JSON, 'utf-8'));
+} catch (e) {
+  console.log('未找到 shuoshuo.json，跳过说说预渲染');
+  shuoshuoData = [];
+}
+
+const shuoshuoList = (shuoshuoData || []).filter(item => item.delete !== true);
+
+articles.forEach(article => {
+  const html = generateArticleHTML(article, articles, shuoshuoList);
+  const filePath = path.join(articleDir, `${article.id}.html`);
+  fs.writeFileSync(filePath, html, 'utf-8');
+  console.log(`  生成文章 ${article.id} -> ${filePath}`);
+});
+
+const indexHtml = generateIndexHTML(articles, shuoshuoList);
+fs.writeFileSync(path.join(OUTPUT_DIR, 'index.html'), indexHtml, 'utf-8');
+console.log(`  生成主页 -> ${path.join(OUTPUT_DIR, 'index.html')}`);
+
+if (shuoshuoList.length > 0) {
+  console.log(`共 ${shuoshuoList.length} 条说说，开始预渲染...`);
+
+  const shuoshuoHtml = generateShuoshuoHTML(shuoshuoList);
   const shuoshuoDir = path.join(OUTPUT_DIR, 'shuoshuo');
   if (!fs.existsSync(shuoshuoDir)) {
     fs.mkdirSync(shuoshuoDir, { recursive: true });
   }
-
-  const shuoshuoHtml = generateShuoshuoHTML(shuoshuoList);
   fs.writeFileSync(path.join(shuoshuoDir, 'index.html'), shuoshuoHtml, 'utf-8');
   console.log(`  生成说说 -> ${path.join(shuoshuoDir, 'index.html')}`);
 } else {

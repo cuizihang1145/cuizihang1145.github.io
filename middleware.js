@@ -15,9 +15,9 @@ export default async function middleware(request) {
   const pathname = url.pathname;
   let targetPath = null;
 
-  if (pathname === '/' || pathname === '/index.html' || pathname === '/index') {
+  if (pathname === '/' || pathname === '/index.html') {
     targetPath = '/prerendered/index.html';
-  } else if (pathname === '/article') {
+  } else if (pathname === '/article.html') {
     const id = url.searchParams.get('id');
     if (id && /^\d+$/.test(id)) {
       targetPath = `/prerendered/article/${id}.html`;
@@ -50,5 +50,5 @@ export default async function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/', '/index.html', '/index', '/article']
+  matcher: ['/', '/index.html', '/article.html']
 };

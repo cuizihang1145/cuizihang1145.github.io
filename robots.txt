@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://bot.cuizi.top/sitemap.xml

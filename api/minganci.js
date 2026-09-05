@@ -30,7 +30,8 @@ const BLOCKED_WORDS = [
   '一夜情','换妻',
   '拼多多','阿里','腾讯','字节','vivo','iqoo','爱酷','米','华为','哇为','啊这个','你这是','恶意','realme','一加','真我','oneplus','oppo','步步高','三鹿',
   'wx','pn','v','q','qq','tb','taobao','jd','pdd','dy','ks','zfb','alipay','tpp','bd',
-  '微','梯子','机场','限','快','官','中心','集团','控股','公司','国'
+  '微','梯子','机场','限','快','官','中心','集团','控股','公司','国',
+  'vx','weixin','v信','wechat','WX'
 ];
 
 const PINYIN_BLOCKED = [
@@ -62,10 +63,18 @@ const PINYIN_BLOCKED_FULL = [...new Set([...PINYIN_BLOCKED, ...EXTRA_PINYIN])];
 
 function containsBlocked(text) {
   if (!text) return { blocked: false, matched: [] };
-  let processed = text
+  let cleaned = text.replace(/[\u200B-\u200F\uFEFF]/g, '');
+  const radicalRegex = /[\u5f33\u6c39\u5fc4\u624c\u91d5\u7e9f]/g;
+  const radicals = cleaned.match(radicalRegex) || [];
+  if (radicals.length >= 3) {
+    return { blocked: true, matched: ['疑似拆字'] };
+  }
+  let processed = cleaned
     .replace(/\+/g, '加')
-    .replace(/[Vv]/g, '微')
-    .replace(/@/g, '艾特');
+    .replace(/[VvＶν∨]/g, '微')
+    .replace(/[@＠]/g, '艾特')
+    .replace(/[ＱＱ]/g, 'QQ')
+    .replace(/[ｑｑ]/g, 'qq');
   const lower = processed.toLowerCase();
   const matched = [];
   for (const word of BLOCKED_WORDS) {

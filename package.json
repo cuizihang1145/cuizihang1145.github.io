@@ -6,6 +6,8 @@
     "pinyin-pro": "^3.23.0"
   },
   "scripts": {
-    "build": "node split.js"
+    "split": "node split.js",
+    "prerender": "node scripts/generate-prerendered.mjs",
+    "build": "npm run split && npm run prerender"
   }
 }

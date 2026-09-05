@@ -370,12 +370,28 @@
     let wordListLoaded = false;
 
     function normalizeText(text) {
-        return text.replace(/\+/g, '加').replace(/[Vv]/g, '微').replace(/@/g, '艾特');
+        let cleaned = text.replace(/[\u200B-\u200F\uFEFF]/g, '');
+        cleaned = cleaned
+            .replace(/\+/g, '加')
+            .replace(/[VvＶν∨]/g, '微')
+            .replace(/[@＠]/g, '艾特')
+            .replace(/[ＱＱ]/g, 'QQ')
+            .replace(/[ｑｑ]/g, 'qq');
+        const radicalRegex = /[\u5f33\u6c39\u5fc4\u624c\u91d5\u7e9f]/g;
+        const radicals = cleaned.match(radicalRegex) || [];
+        if (radicals.length >= 3) {
+            return { blocked: true, matched: ['疑似拆字'] };
+        }
+        return cleaned;
     }
 
     function containsBlockedLocal(text) {
         if (!text || !wordListLoaded) return { blocked: false, matched: [] };
-        const processed = normalizeText(text);
+        const normalized = normalizeText(text);
+        if (typeof normalized === 'object' && normalized.blocked) {
+            return normalized;
+        }
+        const processed = normalized;
         const lower = processed.toLowerCase();
         const matched = [];
         for (const word of SENSITIVE_KEYWORDS) {

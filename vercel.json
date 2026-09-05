@@ -2,6 +2,33 @@
   "cleanUrls": true,
   "outputDirectory": ".",
   "rewrites": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bingbot|Baiduspider|Googlebot|Slurp|DuckDuckBot|facebookexternalhit|Twitterbot|LinkedInBot|Applebot|bot|crawler|spider).*"
+        }
+      ],
+      "destination": "/prerendered/index.html"
+    },
+    {
+      "source": "/article.html",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(bingbot|Baiduspider|Googlebot|Slurp|DuckDuckBot|facebookexternalhit|Twitterbot|LinkedInBot|Applebot|bot|crawler|spider).*"
+        },
+        {
+          "type": "query",
+          "key": "id",
+          "value": "(\\d+)"
+        }
+      ],
+      "destination": "/prerendered/article/$1.html"
+    },
     { "source": "/rss.xml", "destination": "/api/rss" },
     { "source": "/feed.json", "destination": "/api/feed" },
     { "source": "/atom.xml", "destination": "/api/atom" }

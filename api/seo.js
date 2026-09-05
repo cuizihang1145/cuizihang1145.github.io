@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   const { type } = req.query;
 
   if (type === 'robots') {
-    const robots = `# 允许所有爬虫
+    const robots = `
 User-agent: *
 Allow: /
 

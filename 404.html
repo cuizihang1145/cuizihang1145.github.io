@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title id="pageTitle">加载中 · ks</title>
+    <title>404 · 页面走丢了</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.1/css/all.css" />
     <link rel="stylesheet" href="/assets/footer.css" />
@@ -594,39 +594,8 @@
         const parts = window.location.pathname.split('/').filter(Boolean);
         const params = new URLSearchParams(window.location.search);
 
-        let redirectTarget = null;
-
-        if (parts.length === 2 && parts[0] === 'article' && isNumeric(parts[1])) {
-            redirectTarget = '/article.html?id=' + parts[1];
-        }
-        else if (parts.length === 2 && parts[0] === 'post' && isNumeric(parts[1])) {
-            redirectTarget = '/article.html?id=' + parts[1];
-        }
-        else if (parts.length === 1 && parts[0] === 'post') {
-            const id = params.get('id');
-            if (id && isNumeric(id)) {
-                redirectTarget = '/article.html?id=' + id;
-            }
-        }
-        else if (parts.length === 2 && parts[0] === 'shuoshuo' && isNumeric(parts[1])) {
-            redirectTarget = '/shuoshuo.html?id=' + parts[1];
-        }
-        else if (parts.length === 1 && parts[0] === 'shuoshuo') {
-            const id = params.get('id');
-            if (id && isNumeric(id)) {
-                redirectTarget = '/shuoshuo.html?id=' + id;
-            }
-        }
-
-        if (redirectTarget) {
-            document.title = '加载中 · ks';
-            history.replaceState(null, '', redirectTarget);
-            location.reload();
-        } else {
-            document.title = '404 · 页面走丢了';
-            document.getElementById('loader').classList.add('hide');
-            document.getElementById('app').classList.add('show');
-        }
+        document.getElementById('loader').classList.add('hide');
+        document.getElementById('app').classList.add('show');
 
         const themeToggle = document.getElementById('themeToggle');
         const icon = themeToggle.querySelector('i');

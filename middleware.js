@@ -24,6 +24,8 @@ export default async function middleware(request) {
     } else {
       targetPath = '/prerendered/index.html';
     }
+  } else if (pathname === '/shuoshuo.html') {
+    targetPath = '/prerendered/shuoshuo/index.html';
   }
 
   if (!targetPath) {
@@ -50,5 +52,5 @@ export default async function middleware(request) {
 }
 
 export const config = {
-  matcher: ['/', '/index.html', '/article.html']
+  matcher: ['/', '/index.html', '/article.html', '/shuoshuo.html']
 };

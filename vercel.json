@@ -2,9 +2,9 @@
   "cleanUrls": false,
   "outputDirectory": ".",
   "rewrites": [
-    { "source": "/rss.xml", "destination": "/api/rss" },
-    { "source": "/feed.json", "destination": "/api/feed" },
-    { "source": "/atom.xml", "destination": "/api/atom" },
+    { "source": "/atom.xml", "destination": "/api/feed?type=atom" },
+    { "source": "/rss.xml", "destination": "/api/feed?type=rss" },
+    { "source": "/feed.json", "destination": "/api/feed?type=json" },
     { "source": "/robots.txt", "destination": "/api/seo?type=robots" },
     { "source": "/sitemap.xml", "destination": "/api/seo?type=sitemap" }
   ]

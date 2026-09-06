@@ -64,3 +64,11 @@ body.dark .ipv6-badge i {
 .footer-item {
     white-space: nowrap;
 }
+.footer-subscribe {
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+}

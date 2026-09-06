@@ -128,7 +128,7 @@ export default async function handler(req, res) {
       const json = buildJSONFeed(articles, baseUrl);
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
       res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
-      return res.status(200).json(json);
+      return res.status(200).send(JSON.stringify(json, null, 2));
     }
     res.status(400).json({ error: 'Invalid type. Use ?type=atom, ?type=rss, or ?type=json' });
   } catch (error) {

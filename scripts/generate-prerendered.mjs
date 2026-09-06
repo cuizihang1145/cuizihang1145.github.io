@@ -44,6 +44,14 @@ function generateArticleHTML(article, allArticles, shuoshuoList) {
   const summary = getPlainSummary(content);
   const fullUrl = `https://www.cuizi.top/article.html?id=${id}`;
 
+  let fullTitle = title;
+  if (fullTitle.length < 10) {
+    fullTitle = `${fullTitle} · ks`;
+  }
+  if (fullTitle.length < 15) {
+    fullTitle = `${fullTitle} · 保持好奇，保持诚实`;
+  }
+
   const currentIndex = allArticles.findIndex(a => a.id === id);
   const prevArticle = currentIndex > 0 ? allArticles[currentIndex - 1] : null;
   const nextArticle = currentIndex < allArticles.length - 1 ? allArticles[currentIndex + 1] : null;
@@ -89,23 +97,23 @@ function generateArticleHTML(article, allArticles, shuoshuoList) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title} · ks</title>
+  <title>${fullTitle}</title>
   <meta name="description" content="${summary}">
   <link rel="canonical" href="${fullUrl}" />
-  <meta property="og:title" content="${title} · ks" />
+  <meta property="og:title" content="${fullTitle}" />
   <meta property="og:description" content="${summary}" />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="${fullUrl}" />
   <meta property="og:image" content="https://www.cuizi.top/og-image.png" />
   <meta property="og:site_name" content="ks 的个人博客" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="${title} · ks" />
+  <meta name="twitter:title" content="${fullTitle}" />
   <meta name="twitter:description" content="${summary}" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
-    "headline": "${title}",
+    "headline": "${fullTitle}",
     "datePublished": "${date}",
     "dateModified": "${date}",
     "author": {
@@ -157,7 +165,11 @@ function generateArticleHTML(article, allArticles, shuoshuoList) {
 }
 
 function generateIndexHTML(articles, shuoshuoItems) {
-  const latestTwoShuoshuo = (shuoshuoItems || []).slice(0, 2);
+  const sortedShuoshuo = [...shuoshuoItems].sort((a, b) => {
+    return new Date(b.date) - new Date(a.date);
+  });
+  const latestTwoShuoshuo = sortedShuoshuo.slice(0, 2);
+  
   let desc = 'ks 的个人博客，记录生活与思考';
   
   if (latestTwoShuoshuo.length > 0) {

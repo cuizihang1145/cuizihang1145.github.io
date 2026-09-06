@@ -6,7 +6,8 @@ async function loadArticles() {
   const filePath = path.join(process.cwd(), 'articles', 'all.json');
   const raw = await fs.readFile(filePath, 'utf-8');
   const data = JSON.parse(raw);
-  return data.list || [];
+  const list = data.list || [];
+  return list.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 }
 
 function escapeXml(unsafe) {

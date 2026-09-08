@@ -33,5 +33,12 @@
     "desc": "用代码构建未来",
     "logo": "https://sakurain.net/favicon",
     "feed": "https://sakurain.net/feed"
+  },
+  {
+    "name": "趣由心生",
+    "url": "https://okoki.cn/",
+    "desc": "心生妙趣，乐享无限创意生活！",
+    "logo": "https://old.okoki.cn/avtar.jpg",
+    "feed": ""
   }
 ]

@@ -202,6 +202,88 @@
         body.dark .modal-box .modal-close-btn { background:rgba(255,255,255,.08); color:#9A96B8; }
         .modal-box .modal-close-btn:hover { background:rgba(0,0,0,.1); }
         body.dark .modal-box .modal-close-btn:hover { background:rgba(255,255,255,.15); }
+
+        .math-section {
+            margin: 0.8rem 0 1rem;
+        }
+        .math-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            background: rgba(255,255,255,.3);
+            border-radius: 0.8rem;
+            padding: 0.6rem 0.9rem;
+            border: 1px solid rgba(0,0,0,.04);
+        }
+        body.dark .math-row {
+            background: rgba(40,38,65,.2);
+            border-color: rgba(255,255,255,.04);
+        }
+        .math-question {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2D2D4A;
+            cursor: pointer;
+            user-select: none;
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.3rem;
+            transition: background .15s;
+            flex-shrink: 0;
+        }
+        body.dark .math-question {
+            color: #D0CAF0;
+        }
+        .math-question:hover {
+            background: rgba(107,90,207,.08);
+        }
+        .math-question:active {
+            transform: scale(0.96);
+        }
+        .math-input {
+            flex: 1;
+            min-width: 60px;
+            padding: 0.35rem 0.6rem;
+            border-radius: 0.6rem;
+            border: 1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.6);
+            font-size: 0.85rem;
+            font-family: inherit;
+            outline: none;
+            transition: border .2s;
+            color: #1A1A2E;
+            width: 100%;
+        }
+        body.dark .math-input {
+            background: rgba(40,38,65,.4);
+            border-color: rgba(255,255,255,.08);
+            color: #E8E6F0;
+        }
+        .math-input:focus {
+            border-color: #6B5ACF;
+            box-shadow: 0 0 0 3px rgba(107,90,207,.12);
+        }
+        body.dark .math-input:focus {
+            border-color: #88ccff;
+            box-shadow: 0 0 0 3px rgba(136,204,255,.12);
+        }
+        .math-status {
+            font-size: 0.8rem;
+            color: #6A6A92;
+            margin-top: 0.3rem;
+            padding-left: 0.2rem;
+            min-height: 1.3rem;
+            width: 100%;
+        }
+        body.dark .math-status {
+            color: #A8A4C8;
+        }
+        .math-status.success {
+            color: #4CAF50;
+        }
+        .math-status.error {
+            color: #E74C6F;
+        }
     </style>
 </head>
 <body>
@@ -323,6 +405,15 @@
                         <input type="text" id="applyReason" placeholder="简单讲讲罢" />
                     </div>
                 </div>
+
+                <div class="math-section">
+                    <div class="math-row">
+                        <span class="math-question" id="mathQuestion">加载中...</span>
+                        <input type="number" class="math-input" id="mathInput" placeholder="答案" />
+                    </div>
+                    <div class="math-status" id="mathStatus">请计算并填写答案</div>
+                </div>
+
                 <button type="submit" class="apply-btn" id="applyBtn">
                     <i class="fas fa-paper-plane"></i> 提交申请
                 </button>
@@ -826,8 +917,81 @@
     siteDescInput.addEventListener('input', handleSensitiveInput);
     applyReasonInput.addEventListener('input', handleSensitiveInput);
 
+    var mathAnswer = null;
+    var mathRefreshCount = 0;
+    var mathLastRefreshTime = 0;
+    var mathMaxRefresh = 5;
+    var mathResetInterval = 60000;
+
+    function maybeResetMathCount() {
+        var now = Date.now();
+        if (now - mathLastRefreshTime > mathResetInterval && mathRefreshCount > 0) {
+            mathRefreshCount = 0;
+        }
+    }
+
+    async function fetchMathQuestion() {
+        maybeResetMathCount();
+        if (mathRefreshCount >= mathMaxRefresh) {
+            document.getElementById('mathStatus').className = 'math-status error';
+            document.getElementById('mathStatus').textContent = '刷新次数已用完，请稍后再试';
+            return;
+        }
+        try {
+            var res = await fetch('/api/math');
+            var data = await res.json();
+            mathAnswer = data.answer;
+            mathRefreshCount++;
+            mathLastRefreshTime = Date.now();
+            document.getElementById('mathQuestion').textContent = data.question;
+            document.getElementById('mathInput').value = '';
+            document.getElementById('mathInput').focus();
+            document.getElementById('mathStatus').className = 'math-status';
+            document.getElementById('mathStatus').textContent = '请计算并填写答案';
+        } catch (_) {
+            document.getElementById('mathStatus').className = 'math-status error';
+            document.getElementById('mathStatus').textContent = '加载题目失败，点击题目重试';
+        }
+    }
+
+    document.getElementById('mathQuestion').addEventListener('click', fetchMathQuestion);
+
     applyForm.addEventListener('submit', async function(e) {
         e.preventDefault();
+
+        var mathInput = document.getElementById('mathInput');
+        var mathStatus = document.getElementById('mathStatus');
+        var userAnswer = parseInt(mathInput.value.trim());
+        if (isNaN(userAnswer)) {
+            mathStatus.className = 'math-status error';
+            mathStatus.textContent = '请填写有效的数字答案';
+            mathInput.focus();
+            return;
+        }
+
+        try {
+            var verifyRes = await fetch('/api/math', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ answer: userAnswer })
+            });
+            var verifyData = await verifyRes.json();
+            if (!verifyData.valid) {
+                mathStatus.className = 'math-status error';
+                mathStatus.textContent = verifyData.error || '答案错误，请重试';
+                mathInput.value = '';
+                mathInput.focus();
+                setTimeout(fetchMathQuestion, 1500);
+                return;
+            }
+        } catch (_) {
+            mathStatus.className = 'math-status error';
+            mathStatus.textContent = '验证请求失败，请重试';
+            return;
+        }
+
+        mathStatus.className = 'math-status success';
+        mathStatus.textContent = '验证通过';
 
         if (applyBtn.disabled) {
             formTip.textContent = '当前域名不被接受，请更换';
@@ -918,6 +1082,7 @@
                 applyForm.reset();
                 checkDomain();
                 sensitiveWarning.classList.remove('show');
+                fetchMathQuestion();
             } else {
                 const errMsg = result.message || '提交失败，请稍后重试';
                 formTip.textContent = errMsg;
@@ -1023,6 +1188,7 @@
     })();
 
     loadWordList();
+    fetchMathQuestion();
 })();
 </script>
 </body>

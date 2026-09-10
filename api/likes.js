@@ -22,6 +22,7 @@ const SESSION_LIMIT = 30;
 const SESSION_TTL = 300;
 const RENEW_LIMIT = 3;
 const RENEW_WINDOW = 10;
+const MAX_IDS_PER_REQUEST = 50000;
 
 function log(level, message, meta = {}) {
   const timestamp = new Date().toISOString();
@@ -56,6 +57,31 @@ function parseCookies(cookieHeader) {
     acc[key] = rest.join('=');
     return acc;
   }, {});
+}
+
+function parseIdList(str) {
+  const ids = [];
+  if (!str) return ids;
+  const parts = String(str).split(',');
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i].trim();
+    if (!part) continue;
+    const rangeMatch = part.match(/^(\d+)-(\d+)$/);
+    if (rangeMatch) {
+      const start = parseInt(rangeMatch[1], 10);
+      const end = parseInt(rangeMatch[2], 10);
+      if (start <= end) {
+        for (let j = start; j <= end; j++) {
+          ids.push(String(j));
+          if (ids.length >= MAX_IDS_PER_REQUEST) break;
+        }
+      }
+    } else if (/^\d+$/.test(part)) {
+      ids.push(part);
+    }
+    if (ids.length >= MAX_IDS_PER_REQUEST) break;
+  }
+  return ids;
 }
 
 export default async function handler(req, res) {
@@ -99,8 +125,13 @@ export default async function handler(req, res) {
 
       const nonce = crypto.randomBytes(16).toString('hex');
       const idsParam = req.query.ids || '';
+      const idList = parseIdList(idsParam);
 
-      // 修改点：使用 HSETNX 确保每个 ID 都有初始值 0，避免新 ID 缺失
+      if (idList.length > MAX_IDS_PER_REQUEST) {
+        log('warn', 'Too many IDs', { requestId, count: idList.length, max: MAX_IDS_PER_REQUEST });
+        return res.status(400).json({ success: false, error: 'Too many IDs' });
+      }
+
       const luaScript = `
         local countKey = KEYS[1]
         local nonceKey = KEYS[2]
@@ -116,7 +147,6 @@ export default async function handler(req, res) {
         return redis.call('HGETALL', countKey)
       `;
 
-      const idList = idsParam.split(',').filter(id => /^\d+$/.test(id));
       const args = [...idList, String(SESSION_TTL)];
 
       const result = await kv.eval(luaScript, ['likes:counts', `auth_nonce:${nonce}`], args);
@@ -126,7 +156,7 @@ export default async function handler(req, res) {
         counts[result[i]] = result[i + 1];
       }
 
-      log('info', 'GET success', { requestId, sessionId, nonce: nonce.slice(0, 8) });
+      log('info', 'GET success', { requestId, sessionId, nonce: nonce.slice(0, 8), idCount: idList.length });
       return res.status(200).json({ success: true, data: counts, nonce: nonce });
     } catch (err) {
       log('error', 'GET error', { requestId, sessionId, error: err.message, stack: err.stack });
@@ -288,4 +318,4 @@ export default async function handler(req, res) {
 
   log('warn', 'Method not allowed', { requestId, method });
   return res.status(405).json({ success: false, error: 'Method Not Allowed' });
-}
+        }

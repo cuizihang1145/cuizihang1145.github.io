@@ -1022,9 +1022,16 @@
                 updateAllHeartIcons();
             }
 
+            function buildIdsParam() {
+                var len = allShuoshuo.length;
+                if (len === 0) return '';
+                return '0-' + (len - 1);
+            }
+
             function fetchLikes() {
-                var ids = allShuoshuo.map(function(_, idx) { return idx; }).join(',');
-                return fetch('/api/likes?ids=' + ids)
+                var idsParam = buildIdsParam();
+                var url = '/api/likes' + (idsParam ? ('?ids=' + idsParam) : '');
+                return fetch(url)
                     .then(function(res) {
                         if (!res.ok) throw new Error('获取点赞数失败');
                         return res.json();

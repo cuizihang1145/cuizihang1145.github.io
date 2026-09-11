@@ -1,9 +1,15 @@
-export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+export const config = { runtime: 'edge' };
+
+export default async function handler(request) {
+  if (request.method !== 'GET') {
+    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), {
+      status: 405,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
-  const { type } = req.query;
+  const { searchParams } = new URL(request.url);
+  const type = searchParams.get('type');
 
   if (type === 'robots') {
     const robots = `
@@ -15,9 +21,13 @@ Disallow: /assets/
 
 Sitemap: https://cuizi.top/sitemap.xml
 `;
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=3600');
-    return res.status(200).send(robots);
+    return new Response(robots, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600',
+      },
+    });
   }
 
   if (type === 'sitemap') {
@@ -28,13 +38,15 @@ Sitemap: https://cuizi.top/sitemap.xml
         headers: {
           Authorization: `token ${TOKEN}`,
           'User-Agent': 'ks-admin',
-          'Accept': 'application/vnd.github.v3+json'
-        }
+          'Accept': 'application/vnd.github.v3+json',
+        },
       });
 
       if (!response.ok) throw new Error(`GitHub API 失败: ${response.status}`);
       const data = await response.json();
-      const content = Buffer.from(data.content, 'base64').toString('utf-8');
+      const binary = atob(data.content.replace(/\n/g, ''));
+      const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+      const content = new TextDecoder().decode(bytes);
       const json = JSON.parse(content);
       const articles = json.announcements || [];
 
@@ -77,16 +89,20 @@ Sitemap: https://cuizi.top/sitemap.xml
       });
       xml += `</urlset>`;
 
-      res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-      res.setHeader('Cache-Control', 'public, max-age=600');
-      return res.status(200).send(xml);
+      return new Response(xml, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/xml; charset=utf-8',
+          'Cache-Control': 'public, max-age=600',
+        },
+      });
     } catch (error) {
       console.error('Sitemap 生成失败:', error.message);
-      return res.status(500).send('Sitemap 生成失败');
+      return new Response('Sitemap 生成失败', { status: 500 });
     }
   }
 
-  res.status(400).send('Invalid type parameter. Use ?type=robots or ?type=sitemap');
+  return new Response('Invalid type parameter. Use ?type=robots or ?type=sitemap', { status: 400 });
 }
 
 function escapeXml(unsafe) {

@@ -7,7 +7,6 @@
   },
   "scripts": {
     "split": "curl -sL https://go.dev/dl/go1.22.0.linux-amd64.tar.gz | tar -C /tmp -xz && /tmp/go/bin/go run split.go",
-    "prerender": "node scripts/generate-prerendered.mjs",
-    "build": "npm run split && npm run prerender"
+    "build": "npm run split"
   }
 }

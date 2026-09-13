@@ -58,7 +58,7 @@ body.dark .icon-btn{background:rgba(30,28,50,.7);border-color:rgba(255,255,255,.
 body.dark .icon-btn:hover{background:rgba(50,45,80,.85)}
 body.dark .icon-btn.active{background:rgba(136,204,255,.18);border-color:rgba(136,204,255,.4);color:#88ccff}
 
-.detail-back{position:fixed;top:82px;left:calc(max((100vw - 1280px) / 2, 0px) + 1.8rem);z-index:49;background:rgba(255,255,255,.6);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.8);border-radius:60px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:#4F4F78;cursor:pointer;outline:none;box-shadow:0 6px 20px rgba(80,60,160,.10);opacity:0;visibility:hidden;transition:top .4s var(--ease-out),opacity .3s var(--ease-smooth),visibility .3s ease,background .3s ease,box-shadow .3s ease,color .3s ease,transform .3s var(--ease-out);transform:translateY(-6px)}
+.detail-back{position:fixed;top:82px;left:calc(max((100vw - 1280px) / 2, 0px) + 1.8rem);z-index:60;background:rgba(255,255,255,.6);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.8);border-radius:60px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:#4F4F78;cursor:pointer;outline:none;box-shadow:0 6px 20px rgba(80,60,160,.10);opacity:0;visibility:hidden;transition:top .4s var(--ease-out),opacity .3s var(--ease-smooth),visibility .3s ease,background .3s ease,box-shadow .3s ease,color .3s ease,transform .3s var(--ease-out);transform:translateY(-6px)}
 body.detail-active .detail-back{opacity:1;visibility:visible;transform:translateY(0)}
 body.detail-active.hide-top-back .detail-back{top:20px}
 .detail-back:hover{background:rgba(255,255,255,.9);box-shadow:0 12px 28px rgba(80,60,160,.20);transform:translateY(-3px) scale(1.05)}
@@ -180,8 +180,9 @@ body.hide-live-badge .photo-live-badge{display:none!important}
 .detail-view.active{display:block;animation:detailIn .55s var(--ease-out)}
 @keyframes detailIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 
-.detail-header{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.5rem;padding:0 0 1.2rem 64px;border-bottom:1px solid rgba(0,0,0,.06)}
+.detail-header{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.5rem;padding:0 0 1.2rem 64px;border-bottom:1px solid rgba(0,0,0,.06);pointer-events:none}
 body.dark .detail-header{border-bottom-color:rgba(255,255,255,.06)}
+.detail-header .detail-info{pointer-events:auto}
 .detail-info{flex:1;min-width:0}
 .detail-title{font-size:1.4rem;font-weight:700;color:#1A1A2E;margin-bottom:.4rem;line-height:1.3;word-break:break-word}
 body.dark .detail-title{color:#E8E6F0}
@@ -428,6 +429,28 @@ body.dark .pwd-cancel:hover{background:rgba(255,255,255,.1);color:#E8E6F0}
 .pwd-confirm:disabled{opacity:.6;cursor:not-allowed;transform:none}
 body.dark .pwd-confirm{background:linear-gradient(135deg,#5aa8e0,#88ccff);box-shadow:0 4px 14px rgba(136,204,255,.3)}
 
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);z-index:450;display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;visibility:hidden;transition:opacity .3s var(--ease-smooth),background .3s var(--ease-smooth),backdrop-filter .3s var(--ease-smooth),visibility .3s ease}
+.confirm-overlay.active{opacity:1;visibility:visible;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.confirm-box{width:min(360px,100%);background:rgba(255,255,255,.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.7);border-radius:1.3rem;box-shadow:0 24px 60px rgba(80,60,160,.3);padding:1.8rem 1.6rem 1.4rem;transform:scale(.92) translateY(10px);opacity:0;transition:transform .4s var(--ease-spring),opacity .3s var(--ease-smooth);text-align:center}
+.confirm-overlay.active .confirm-box{transform:scale(1) translateY(0);opacity:1}
+body.dark .confirm-box{background:rgba(30,28,50,.95);border-color:rgba(255,255,255,.1);box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.confirm-icon{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,rgba(107,90,207,.15),rgba(160,130,230,.1));display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:var(--accent);margin:0 auto 1rem}
+body.dark .confirm-icon{background:linear-gradient(135deg,rgba(136,204,255,.12),rgba(107,90,207,.1))}
+.confirm-title{font-size:1.05rem;font-weight:700;color:#1A1A2E;margin-bottom:.3rem}
+body.dark .confirm-title{color:#E8E6F0}
+.confirm-sub{font-size:.78rem;color:#8A8AB5;margin-bottom:1.3rem;line-height:1.5}
+body.dark .confirm-sub{color:#9A96B8}
+.confirm-actions{display:flex;gap:.6rem}
+.confirm-cancel,.confirm-ok{flex:1;padding:.75rem;border-radius:.8rem;border:none;font-family:inherit;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .3s var(--ease-out);outline:none}
+.confirm-cancel{background:rgba(0,0,0,.05);color:#6A6A92}
+.confirm-cancel:hover{background:rgba(0,0,0,.08);color:#1A1A2E}
+body.dark .confirm-cancel{background:rgba(255,255,255,.05);color:#9A96B8}
+body.dark .confirm-cancel:hover{background:rgba(255,255,255,.1);color:#E8E6F0}
+.confirm-ok{background:linear-gradient(135deg,#6B5ACF,#8F7BE0);color:#fff;box-shadow:0 4px 14px rgba(107,90,207,.35)}
+.confirm-ok:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(107,90,207,.45)}
+.confirm-ok:active{transform:translateY(0) scale(.97)}
+body.dark .confirm-ok{background:linear-gradient(135deg,#5aa8e0,#88ccff);box-shadow:0 4px 14px rgba(136,204,255,.3)}
+
 .photo-item.decrypt-failed::after{content:'\f071';font-family:'Font Awesome 7 Free';font-weight:900;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#E85D5D;font-size:1.2rem;z-index:2;background:rgba(232,93,93,.08)}
 
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px) scale(.9);background:rgba(28,26,44,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:.8rem 2.5rem;border-radius:60px;color:#EFEAFF;font-size:.9rem;font-weight:500;border:1px solid rgba(255,255,255,.08);box-shadow:0 16px 40px rgba(0,0,0,.3);opacity:0;transition:opacity .45s var(--ease-spring),transform .45s var(--ease-spring);z-index:1000;pointer-events:none;white-space:nowrap;min-width:200px;text-align:center}
@@ -478,6 +501,11 @@ body.dark #waline-comments{border-top-color:rgba(255,255,255,.06)}
     .pwd-sub{font-size:.72rem}
     .pwd-input{padding:.8rem 1rem;font-size:.95rem}
     .pwd-cancel,.pwd-confirm{padding:.7rem;font-size:.82rem}
+    .confirm-box{padding:1.5rem 1.2rem 1.1rem;border-radius:1.1rem}
+    .confirm-icon{width:56px;height:56px;font-size:1.3rem}
+    .confirm-title{font-size:.98rem}
+    .confirm-sub{font-size:.72rem}
+    .confirm-cancel,.confirm-ok{padding:.7rem;font-size:.82rem}
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -663,6 +691,18 @@ body.dark #waline-comments{border-top-color:rgba(255,255,255,.06)}
     </div>
 </div>
 
+<div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box" id="confirmBox">
+        <div class="confirm-icon"><i class="fas fa-arrow-left"></i></div>
+        <div class="confirm-title">确定要返回吗？</div>
+        <div class="confirm-sub">将离开相册页面，返回首页</div>
+        <div class="confirm-actions">
+            <button class="confirm-cancel" id="confirmCancel">取消</button>
+            <button class="confirm-ok" id="confirmOk">确定返回</button>
+        </div>
+    </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="/assets/markdown/markdown.js"></script>
@@ -735,6 +775,10 @@ body.dark #waline-comments{border-top-color:rgba(255,255,255,.06)}
     var pwdSub = document.getElementById('pwdSub');
     var pwdConfirm = document.getElementById('pwdConfirm');
     var pwdCancel = document.getElementById('pwdCancel');
+    var topBackBtn = document.getElementById('topBackBtn');
+    var confirmOverlay = document.getElementById('confirmOverlay');
+    var confirmCancel = document.getElementById('confirmCancel');
+    var confirmOk = document.getElementById('confirmOk');
 
     var themeToggle = document.getElementById('themeToggle');
     var themeIcon = document.getElementById('themeIcon');
@@ -903,6 +947,27 @@ body.dark #waline-comments{border-top-color:rgba(255,255,255,.06)}
         settingsBtn.classList.remove('active');
         document.body.style.overflow = '';
     }
+
+    function openConfirm(){
+        confirmOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeConfirm(){
+        confirmOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    topBackBtn.addEventListener('click', function(e){
+        e.preventDefault();
+        openConfirm();
+    });
+    confirmCancel.addEventListener('click', closeConfirm);
+    confirmOk.addEventListener('click', function(){
+        location.href = 'index.html';
+    });
+    confirmOverlay.addEventListener('click', function(e){
+        if(e.target === confirmOverlay) closeConfirm();
+    });
 
     function bindSettings(){
         document.querySelectorAll('.segmented').forEach(function(group){
@@ -1853,6 +1918,10 @@ body.dark #waline-comments{border-top-color:rgba(255,255,255,.06)}
 
     document.addEventListener('keydown', function(e){
         if(e.key === 'Escape'){
+            if(confirmOverlay.classList.contains('active')){
+                closeConfirm();
+                return;
+            }
             if(pwdOverlay.classList.contains('active')){
                 closePwd();
                 return;

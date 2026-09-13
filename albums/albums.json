@@ -18,7 +18,8 @@
         { "src": "https://s41.ax1x.com/2026/09/13/pnm9HmT.png", "alt": "我都等不及了😱", "exif": { "camera": "搬运", "lens": "滚木" } },
         { "src": "https://s41.ax1x.com/2026/09/13/pnm9b0U.png", "alt": "你只是想发这张图而已" },
         { "src": "https://random.danielpetrica.com/api/random", "alt": "随机的喔" },
-        { "src": "https://picsum.photos/200/300", "alt": "随机2号" }
+        { "src": "https://picsum.photos/200/300", "alt": "随机2号" },
+        { "src": "https://picsum.photos/200/300", "alt": "移动端点击左上角徽章 桌面端可鼠标悬停或点击徽章", "live": "https://api.kuleu.com/api/MP4_xiaojiejie" }
       ],
       "date": "2026-09-13",
       "location": "徐州"

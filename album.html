@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.1/css/all.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 <link rel="stylesheet" href="/assets/markdown/markdown.css">
+<link rel="stylesheet" href="/assets/waline-custom.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js"></script>
 <style>
@@ -436,6 +437,9 @@ body.dark .pwd-confirm{background:linear-gradient(135deg,#5aa8e0,#88ccff);box-sh
 .toast .fa-info-circle{color:#60a5fa}
 .toast .fa-lock{color:#fbbf24}
 
+#waline-comments{max-width:100%;margin:2rem 0 1rem;padding-top:1.5rem;border-top:1px solid rgba(0,0,0,.06);transition:border-color .3s ease}
+body.dark #waline-comments{border-top-color:rgba(255,255,255,.06)}
+
 @media (max-width:900px){
     .album-grid.layout-list .album-cover{width:150px;min-height:110px}
     .album-grid.layout-list .album-cover-locked i{font-size:1.4rem}
@@ -522,6 +526,7 @@ body.dark .pwd-confirm{background:linear-gradient(135deg,#5aa8e0,#88ccff);box-sh
             </div>
         </div>
         <div class="photo-grid layout-grid" id="photoGrid"></div>
+        <div id="waline-comments"></div>
     </div>
 </div>
 
@@ -693,6 +698,10 @@ body.dark .pwd-confirm{background:linear-gradient(135deg,#5aa8e0,#88ccff);box-sh
     var pendingAlbum = null;
     var pendingDownload = null;
     var isScrollingToTop = false;
+
+    var walineInstance = null;
+    var walinePath = null;
+    var walineReqId = 0;
 
     var supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
@@ -1549,6 +1558,10 @@ body.dark .pwd-confirm{background:linear-gradient(135deg,#5aa8e0,#88ccff);box-sh
         document.body.classList.add('detail-active');
         window.scrollTo({top:0, behavior:'smooth'});
         requestAnimationFrame(updateScrollUI);
+
+        setTimeout(function(){
+            if(currentAlbum) refreshWaline(currentAlbum.id);
+        }, 200);
     }
 
     async function loadEncryptedImage(el, img, item, idx){
@@ -1635,6 +1648,108 @@ body.dark .pwd-confirm{background:linear-gradient(135deg,#5aa8e0,#88ccff);box-sh
     liveDlOverlay.addEventListener('click', function(e){
         if(e.target === liveDlOverlay) closeLiveDl();
     });
+
+    function compressImage(file, maxSize, quality){
+        return new Promise(function(resolve, reject){
+            var reader = new FileReader();
+            reader.onload = function(e){
+                var img = new Image();
+                img.onload = function(){
+                    var canvas = document.createElement('canvas');
+                    var w = img.width, h = img.height;
+                    if(w > h){
+                        if(w > maxSize){ h = h * maxSize / w; w = maxSize; }
+                    } else {
+                        if(h > maxSize){ w = w * maxSize / h; h = maxSize; }
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    canvas.toBlob(function(blob){
+                        resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                    }, 'image/jpeg', quality);
+                };
+                img.onerror = reject;
+                img.src = e.target.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function refreshWaline(albumId){
+        var path = '/album/' + albumId;
+        var el = document.getElementById('waline-comments');
+        if(!el) return;
+
+        if(walineInstance && walinePath === path) return;
+
+        var reqId = ++walineReqId;
+
+        if(walineInstance && typeof walineInstance.destroy === 'function'){
+            try { walineInstance.destroy(); } catch(e){}
+        }
+        walineInstance = null;
+        walinePath = null;
+        el.innerHTML = '';
+
+        import('/assets/waline.js').then(function(module){
+            if(reqId !== walineReqId) return;
+            var init = module.init;
+            walineInstance = init({
+                el: '#waline-comments',
+                serverURL: 'https://comment.cuizi.top',
+                lang: 'zh-CN',
+                path: path,
+                dark: 'body.dark',
+                imageUploader: function(file){
+                    return new Promise(function(resolve, reject){
+                        var uploadFile = file;
+                        var shouldCompress = !['image/gif','image/svg+xml'].includes(file.type);
+                        var doUpload = function(f){
+                            var reader = new FileReader();
+                            reader.onload = function(){
+                                var base64 = reader.result.split(',')[1];
+                                fetch('https://comment.cuizi.top/api/upload', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ image: base64, filename: file.name })
+                                }).then(function(resp){ return resp.json(); })
+                                  .then(function(data){ resolve(data.url); })
+                                  .catch(reject);
+                            };
+                            reader.readAsDataURL(f);
+                        };
+                        if(shouldCompress){
+                            compressImage(file, 720, 0.8).then(doUpload).catch(reject);
+                        } else {
+                            doUpload(uploadFile);
+                        }
+                    });
+                },
+                emoji: [
+                    'https://unpkg.com/@waline/emojis@1.4.0/alus',
+                    'https://unpkg.com/@waline/emojis@1.4.0/bilibili',
+                    'https://unpkg.com/@waline/emojis@1.4.0/bmoji',
+                    'https://unpkg.com/@waline/emojis@1.4.0/qq',
+                    'https://unpkg.com/@waline/emojis@1.4.0/tieba'
+                ],
+                requiredMeta: ['nick','mail'],
+                locale: {
+                    placeholder: '邮箱用于接收邮件回复，不会展示给其他人。欢迎评论捏',
+                    sofa: '还没有人评论哦！来抢个沙发吧~',
+                    submit: '发射!',
+                    nick: '昵称*',
+                    mail: '邮箱*',
+                    link: '网站'
+                }
+            });
+            walinePath = path;
+        }).catch(function(err){
+            console.error('Waline 加载失败:', err);
+        });
+    }
 
     function openLightbox(index){
         if(!currentAlbum) return;

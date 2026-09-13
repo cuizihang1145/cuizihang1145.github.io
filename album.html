@@ -488,7 +488,7 @@ body.dark .pwd-confirm{background:linear-gradient(135deg,#5aa8e0,#88ccff);box-sh
 
 <div class="top-buttons">
     <div class="left">
-        <a href="javascript:history.back()" class="back-btn" id="topBackBtn"><i class="fas fa-arrow-left"></i> 返回</a>
+        <a href="index.html" class="back-btn" id="topBackBtn"><i class="fas fa-arrow-left"></i> 返回</a>
     </div>
     <div class="right">
         <button class="icon-btn" id="settingsBtn" title="显示设置"><i class="fas fa-sliders"></i></button>
@@ -1638,6 +1638,12 @@ body.dark .pwd-confirm{background:linear-gradient(135deg,#5aa8e0,#88ccff);box-sh
 
     function openLightbox(index){
         if(!currentAlbum) return;
+        var newHash = '#album=' + encodeURIComponent(currentAlbum.id) + '&photo=' + index;
+        if(location.hash !== newHash){
+            isNavigating = true;
+            location.hash = newHash;
+            setTimeout(function(){ isNavigating = false; }, 50);
+        }
         var imgs;
         if(currentAlbum._decryptedData){
             imgs = currentAlbum._decryptedData.images.map(function(item){
@@ -1749,7 +1755,24 @@ body.dark .pwd-confirm{background:linear-gradient(135deg,#5aa8e0,#88ccff);box-sh
         }
     });
 
-    window.addEventListener('hashchange', handleRoute);
+    window.addEventListener('hashchange', function(){
+        if(isNavigating) return;
+        var hasLightbox = !!document.querySelector('.lightbox-overlay.active');
+        var hasPhotoInHash = /[&]photo=/.test(location.hash);
+        if(hasLightbox && !hasPhotoInHash){
+            var escEvent = new KeyboardEvent('keydown', {
+                key: 'Escape',
+                code: 'Escape',
+                keyCode: 27,
+                which: 27,
+                bubbles: true,
+                cancelable: true
+            });
+            document.dispatchEvent(escEvent);
+            return;
+        }
+        handleRoute();
+    });
 
     applyPrefs();
     bindSettings();

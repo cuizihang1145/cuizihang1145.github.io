@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 <link rel="stylesheet" href="/assets/markdown/markdown.css">
 <link rel="stylesheet" href="/assets/waline-custom.css">
+<link rel="stylesheet" href="/assets/footer.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js"></script>
 <style>
@@ -104,6 +105,7 @@ body.dark .stats-row{color:#7A7AA0}
 .stats-row .sep{opacity:.4;margin:0 .1rem}
 
 .album-grid{display:grid;gap:1.2rem}
+.album-grid.layout-grid{align-items:stretch}
 .album-grid.layout-masonry{display:block;column-gap:1.2rem}
 .album-grid.layout-masonry .album-card{display:block;margin-bottom:1.2rem;break-inside:avoid;width:100%;-webkit-column-break-inside:avoid}
 .album-grid.layout-list{display:flex;flex-direction:column;gap:.8rem}
@@ -116,14 +118,14 @@ body.dark .stats-row{color:#7A7AA0}
 .album-grid.layout-list .album-cover-locked i{font-size:1.6rem}
 .album-grid.layout-list .album-cover-locked span{display:none}
 
-.album-card{position:relative;border-radius:1rem;overflow:hidden;background:rgba(255,255,255,.6);border:1px solid rgba(0,0,0,.08);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 4px 16px rgba(80,60,160,.06);cursor:pointer;transition:transform .5s var(--ease-out),box-shadow .5s var(--ease-out),background .4s var(--ease-smooth),border-color .4s var(--ease-smooth);opacity:0;animation:cardIn .6s var(--ease-out) forwards;will-change:transform}
+.album-card{position:relative;border-radius:1rem;overflow:hidden;background:rgba(255,255,255,.6);border:1px solid rgba(0,0,0,.08);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 4px 16px rgba(80,60,160,.06);cursor:pointer;transition:transform .5s var(--ease-out),box-shadow .5s var(--ease-out),background .4s var(--ease-smooth),border-color .4s var(--ease-smooth);opacity:0;animation:cardIn .6s var(--ease-out) forwards;will-change:transform;display:flex;flex-direction:column;height:100%}
 @keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
 .album-card:hover{transform:translateY(-6px) scale(1.015);box-shadow:0 20px 44px rgba(80,60,160,.20)}
 .album-card:active{transform:translateY(-2px) scale(.995);transition-duration:.15s}
 body.dark .album-card{background:rgba(30,28,50,.7);border-color:rgba(255,255,255,.08)}
 body.dark .album-card:hover{background:rgba(50,45,80,.85);box-shadow:0 20px 44px rgba(0,0,0,.45)}
 
-.album-cover{position:relative;aspect-ratio:4/3;overflow:hidden;background:linear-gradient(135deg,rgba(107,90,207,.15),rgba(160,130,230,.1))}
+.album-cover{position:relative;aspect-ratio:4/3;overflow:hidden;background:linear-gradient(135deg,rgba(107,90,207,.15),rgba(160,130,230,.1));flex-shrink:0}
 .album-grid.layout-masonry .album-cover{aspect-ratio:auto;height:180px}
 .album-cover .cover-skeleton{position:absolute;inset:0;background:linear-gradient(110deg,rgba(107,90,207,.06) 30%,rgba(160,130,230,.15) 50%,rgba(107,90,207,.06) 70%);background-size:200% 100%;animation:shimmer 1.6s linear infinite;opacity:1;transition:opacity .5s var(--ease-smooth);z-index:1}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
@@ -138,7 +140,7 @@ body.dark .album-cover-locked{color:#88ccff;background:linear-gradient(135deg,rg
 @keyframes lockPulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.08);opacity:1}}
 .album-cover-locked span{font-size:.75rem;font-weight:500;letter-spacing:.02em;line-height:1.4}
 
-.album-info{padding:.9rem 1.1rem 1rem;position:relative;z-index:2}
+.album-info{padding:.9rem 1.1rem 1rem;position:relative;z-index:2;flex:1;display:flex;flex-direction:column}
 .album-title{font-size:.95rem;font-weight:600;color:#1A1A2E;margin-bottom:.35rem;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;word-break:break-word;transition:color .3s ease}
 body.dark .album-title{color:#E8E6F0}
 .album-card:hover .album-title{color:var(--accent)}
@@ -155,7 +157,7 @@ body.dark .album-desc a{color:#88ccff}
 body.dark .album-desc code{background:rgba(255,255,255,.06);color:#E8A87C}
 .album-desc del{color:#8A8AB5;text-decoration:line-through}
 
-.album-meta{display:flex;flex-wrap:wrap;gap:.3rem .8rem;font-size:.68rem;color:#8A8AB5}
+.album-meta{display:flex;flex-wrap:wrap;gap:.3rem .8rem;font-size:.68rem;color:#8A8AB5;margin-top:auto}
 body.dark .album-meta{color:#7A7AA0}
 .album-meta span{display:inline-flex;align-items:center;gap:.3rem;transition:color .3s ease}
 .album-card:hover .album-meta span{color:#6A6A92}
@@ -230,7 +232,8 @@ body.dark .photo-item .photo-skeleton{background:linear-gradient(110deg,rgba(136
 .photo-grid.cols-1 .photo-item.loaded .photo-img{opacity:1;transform:scale(1)}
 .photo-grid.cols-1 .photo-item:hover.loaded .photo-img{transform:scale(1.01)}
 .photo-grid.cols-1 .photo-item.is-live.is-playing .photo-img{opacity:0}
-.photo-grid.cols-1 .photo-item .photo-skeleton{position:absolute;inset:0;aspect-ratio:16/9}
+.photo-grid.cols-1 .photo-item .photo-skeleton{position:relative;inset:auto;display:block;width:100%;aspect-ratio:4/3;opacity:1;transition:opacity .3s var(--ease-smooth)}
+.photo-grid.cols-1 .photo-item.loaded .photo-skeleton{display:none}
 
 .photo-grid.layout-masonry:not(.cols-1) .photo-item{aspect-ratio:auto;background:transparent;position:relative;overflow:hidden}
 .photo-grid.layout-masonry:not(.cols-1) .photo-item .photo-img{position:static;display:block;width:100%;height:auto;object-fit:cover;opacity:0;transform:none;transition:opacity .5s var(--ease-smooth)}
@@ -301,10 +304,13 @@ body.dark .photo-item .photo-skeleton{background:linear-gradient(110deg,rgba(136
 }
 .photo-item.is-live.is-playing .photo-live-badge .live-text::after{content:'STOP';letter-spacing:.06em}
 
-.photo-info-overlay{position:absolute;right:1.5cqw;bottom:1.5cqw;display:flex;flex-direction:column;align-items:flex-end;gap:0.8cqw;max-width:calc(100% - 3cqw);opacity:0;transform:translateY(2cqw);transition:opacity .3s var(--ease-smooth),transform .35s var(--ease-spring);pointer-events:none;z-index:5}
-.photo-item:hover .photo-info-overlay{opacity:1;transform:translateY(0)}
-.photo-info-overlay .pio-alt{background:rgba(0,0,0,.68);color:#fff;font-size:.7rem;font-size:max(3px,3.2cqw);font-weight:500;line-height:1.3;padding:.28rem .65rem;padding:max(1px,.9cqw) max(2px,2.2cqw);border-radius:.5rem;border-radius:max(2px,1.2cqw);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 4px 12px rgba(0,0,0,.25)}
-.photo-info-overlay .pio-exif{display:flex;flex-wrap:wrap;gap:.25rem;gap:0.6cqw;justify-content:flex-end;max-width:100%}
+.photo-info-overlay{position:absolute;right:1.5cqw;bottom:1.5cqw;display:flex;flex-direction:column;align-items:flex-end;gap:0.8cqw;max-width:calc(100% - 3cqw);pointer-events:none;z-index:5}
+.photo-info-overlay .pio-alt{background:rgba(0,0,0,.68);color:#fff;font-size:.7rem;font-size:max(3px,3.2cqw);font-weight:500;line-height:1.3;padding:.28rem .65rem;padding:max(1px,.9cqw) max(2px,2.2cqw);border-radius:.5rem;border-radius:max(2px,1.2cqw);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 4px 12px rgba(0,0,0,.25);opacity:0;transform:translateY(2cqw);transition:opacity .3s var(--ease-smooth),transform .35s var(--ease-spring)}
+.photo-info-overlay .pio-exif{display:flex;flex-wrap:wrap;gap:.25rem;gap:0.6cqw;justify-content:flex-end;max-width:100%;opacity:0;transform:translateY(2cqw);transition:opacity .3s var(--ease-smooth),transform .35s var(--ease-spring)}
+.photo-item:hover .pio-alt,
+.photo-item:hover .pio-exif{opacity:1;transform:translateY(0)}
+.photo-item.always-alt .pio-alt{opacity:1;transform:translateY(0)}
+.photo-item.always-exif .pio-exif{opacity:1;transform:translateY(0)}
 .photo-info-overlay .pio-exif-item{background:rgba(0,0,0,.55);color:#fff;font-size:.62rem;font-size:max(2.5px,2.6cqw);font-weight:500;line-height:1.3;padding:.18rem .5rem;padding:max(.8px,.7cqw) max(1.5px,1.8cqw);border-radius:.4rem;border-radius:max(1.5px,1cqw);white-space:nowrap;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(0,0,0,.2);letter-spacing:.01em}
 
 .settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);z-index:200;opacity:0;visibility:hidden;transition:opacity .35s var(--ease-smooth),background .35s var(--ease-smooth),backdrop-filter .35s var(--ease-smooth),visibility .35s ease}
@@ -326,13 +332,15 @@ body.dark .settings-close{background:rgba(255,255,255,.06);color:#9A96B8}
 .settings-body::-webkit-scrollbar-track{background:transparent}
 .settings-body::-webkit-scrollbar-thumb{background:rgba(107,90,207,.25);border-radius:3px}
 .settings-body::-webkit-scrollbar-thumb:hover{background:rgba(107,90,207,.45)}
-.settings-group{margin-bottom:1.3rem}
+.settings-group{margin-bottom:1.3rem;transition:opacity .3s var(--ease-smooth)}
 .settings-group:last-child{margin-bottom:.6rem}
 .settings-group.hidden{display:none!important}
+.settings-group.disabled{opacity:.4;pointer-events:none;cursor:not-allowed}
 .settings-group-title{font-size:.72rem;font-weight:600;color:#8A8AB5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.7rem;display:flex;align-items:center;gap:.4rem}
 .settings-group-title i{font-size:.7rem;opacity:.8}
 body.dark .settings-group-title{color:#7A7AA0}
-.segmented{display:flex;background:rgba(0,0,0,.05);border-radius:.8rem;padding:.25rem;gap:.2rem;position:relative}
+.segmented{display:flex;background:rgba(0,0,0,.05);border-radius:.8rem;padding:.25rem;gap:.2rem;position:relative;transition:opacity .3s var(--ease-smooth)}
+.segmented.disabled{opacity:.4;pointer-events:none;cursor:not-allowed}
 body.dark .segmented{background:rgba(255,255,255,.05)}
 .segment-btn{flex:1;padding:.55rem .6rem;border:none;background:transparent;border-radius:.6rem;font-family:inherit;font-size:.78rem;font-weight:500;color:#6A6A92;cursor:pointer;transition:all .35s var(--ease-out);display:flex;align-items:center;justify-content:center;gap:.35rem;outline:none;position:relative;z-index:1}
 .segment-btn.hidden{display:none}
@@ -343,9 +351,10 @@ body.dark .segmented{background:rgba(255,255,255,.05)}
 .segment-btn.active i{transform:scale(1.1)}
 body.dark .segment-btn{color:#9A96B8}
 body.dark .segment-btn.active{background:rgba(60,55,90,.95);color:#88ccff;box-shadow:0 2px 8px rgba(0,0,0,.4)}
-.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:.7rem .2rem;border-radius:.6rem;transition:background .3s ease}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:.7rem .2rem;border-radius:.6rem;transition:background .3s ease,opacity .3s var(--ease-smooth)}
 .toggle-row:hover{background:rgba(107,90,207,.04)}
 body.dark .toggle-row:hover{background:rgba(136,204,255,.06)}
+.toggle-row.disabled{opacity:.4;pointer-events:none;cursor:not-allowed}
 .toggle-label{display:flex;align-items:center;gap:.6rem;font-size:.83rem;color:#4A4A6E;font-weight:500}
 body.dark .toggle-label{color:#C4C0DC}
 .toggle-label i{width:1.2rem;text-align:center;color:var(--accent);font-size:.85rem}
@@ -473,6 +482,8 @@ body.dark .detail-tag{color:#88ccff;background:rgba(136,204,255,.10)}
 body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
 .detail-tag i{font-size:.6rem;opacity:.7}
 
+#footer-root{margin-top:1rem}
+
 @media (max-width:900px){
     .album-grid.layout-list .album-cover{width:150px;min-height:110px}
     .album-grid.layout-list .album-cover-locked i{font-size:1.4rem}
@@ -566,6 +577,8 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
         <div class="photo-grid layout-grid" id="photoGrid"></div>
         <div id="waline-comments"></div>
     </div>
+
+    <div id="footer-root"></div>
 </div>
 
 <div class="settings-overlay" id="settingsOverlay">
@@ -586,6 +599,7 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
             <div class="settings-group" data-settings-group="albumCols">
                 <div class="settings-group-title"><i class="fas fa-calculator"></i> 相册列数</div>
                 <div class="segmented" data-group="albumCols">
+                    <button class="segment-btn" data-value="1">1 列</button>
                     <button class="segment-btn" data-value="2">2 列</button>
                     <button class="segment-btn" data-value="3">3 列</button>
                     <button class="segment-btn" data-value="4">4 列</button>
@@ -626,8 +640,16 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
                     <button class="toggle-switch" data-toggle="alt" aria-label="显示图片 alt"></button>
                 </div>
                 <div class="toggle-row">
+                    <div class="toggle-label"><i class="fas fa-thumbtack"></i> 常驻显示 alt</div>
+                    <button class="toggle-switch" data-toggle="altAlways" aria-label="常驻显示 alt"></button>
+                </div>
+                <div class="toggle-row">
                     <div class="toggle-label"><i class="fas fa-camera"></i> 显示 EXIF 信息</div>
                     <button class="toggle-switch" data-toggle="exif" aria-label="显示 EXIF"></button>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-label"><i class="fas fa-thumbtack"></i> 常驻显示 EXIF</div>
+                    <button class="toggle-switch" data-toggle="exifAlways" aria-label="常驻显示 EXIF"></button>
                 </div>
             </div>
             <div class="settings-group">
@@ -727,6 +749,8 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
     var isNavigating = false;
     var STORAGE_KEY = 'ks-album-prefs';
     var ITERATIONS = 250000;
+    var listScrollY = 0;
+    var pendingRestoreScroll = false;
     var defaultPrefs = {
         albumLayout: 'grid',
         albumCols: '3',
@@ -736,7 +760,9 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
         meta: true,
         download: true,
         alt: true,
+        altAlways: false,
         exif: true,
+        exifAlways: false,
         live: true,
         liveBadge: true,
         liveDownload: 'ask',
@@ -911,6 +937,62 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
         }
     }
 
+    function updateConflictStates(){
+        var altAlwaysSw = document.querySelector('[data-toggle="altAlways"]');
+        if(altAlwaysSw){
+            var altRow = altAlwaysSw.closest('.toggle-row');
+            if(!prefs.alt){
+                altRow.classList.add('disabled');
+                altAlwaysSw.classList.remove('active');
+            } else {
+                altRow.classList.remove('disabled');
+                altAlwaysSw.classList.toggle('active', !!prefs.altAlways);
+            }
+        }
+
+        var exifAlwaysSw = document.querySelector('[data-toggle="exifAlways"]');
+        if(exifAlwaysSw){
+            var exifRow = exifAlwaysSw.closest('.toggle-row');
+            if(!prefs.exif){
+                exifRow.classList.add('disabled');
+                exifAlwaysSw.classList.remove('active');
+            } else {
+                exifRow.classList.remove('disabled');
+                exifAlwaysSw.classList.toggle('active', !!prefs.exifAlways);
+            }
+        }
+
+        var liveBadgeSw = document.querySelector('[data-toggle="liveBadge"]');
+        if(liveBadgeSw){
+            var badgeRow = liveBadgeSw.closest('.toggle-row');
+            if(!prefs.live){
+                badgeRow.classList.add('disabled');
+                liveBadgeSw.classList.remove('active');
+            } else {
+                badgeRow.classList.remove('disabled');
+                liveBadgeSw.classList.toggle('active', !!prefs.liveBadge);
+            }
+        }
+
+        var liveDlSeg = document.querySelector('.segmented[data-group="liveDownload"]');
+        if(liveDlSeg){
+            if(!prefs.download){
+                liveDlSeg.classList.add('disabled');
+            } else {
+                liveDlSeg.classList.remove('disabled');
+            }
+        }
+
+        var albumColsGroup = document.querySelector('.settings-group[data-settings-group="albumCols"]');
+        if(albumColsGroup){
+            if(prefs.albumLayout === 'list'){
+                albumColsGroup.classList.add('disabled');
+            } else {
+                albumColsGroup.classList.remove('disabled');
+            }
+        }
+    }
+
     function applyPrefs(){
         autoFixPrefs();
 
@@ -945,6 +1027,7 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
         });
 
         updateSettingsVisibility();
+        updateConflictStates();
     }
 
     function openSettings(){
@@ -984,6 +1067,7 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
             var g = group.getAttribute('data-group');
             group.querySelectorAll('.segment-btn').forEach(function(btn){
                 btn.addEventListener('click', function(){
+                    if(group.classList.contains('disabled')) return;
                     prefs[g] = btn.getAttribute('data-value');
                     savePrefs();
                     applyPrefs();
@@ -993,6 +1077,8 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
 
         document.querySelectorAll('.toggle-switch').forEach(function(sw){
             sw.addEventListener('click', function(){
+                var row = sw.closest('.toggle-row');
+                if(row && row.classList.contains('disabled')) return;
                 var t = sw.getAttribute('data-toggle');
                 prefs[t] = !prefs[t];
                 savePrefs();
@@ -1085,6 +1171,19 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
     }
 
     backToTopBtn.addEventListener('click', scrollToTopAnimated);
+
+    function restoreListScroll(){
+        if(!pendingRestoreScroll) return;
+        pendingRestoreScroll = false;
+        var target = listScrollY;
+        requestAnimationFrame(function(){
+            window.scrollTo(0, target);
+            requestAnimationFrame(function(){
+                window.scrollTo(0, target);
+                updateScrollUI();
+            });
+        });
+    }
 
     function showToast(msg, icon){
         icon = icon || 'fa-info-circle';
@@ -1364,7 +1463,12 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
             meta += '<span><i class="fas fa-lock"></i> 加密</span>';
         }
 
-        var desc = (!album.encrypted && album.desc) ? '<div class="album-desc">' + renderMd(album.desc) + '</div>' : '';
+        var desc = '';
+        if(album.encrypted){
+            desc = '<div class="album-desc">这个相册被加密保护，输入正确密码即可解锁查看完整内容。解锁后可以浏览其中的全部照片与 Live 图，自由切换布局，查看 EXIF 拍摄信息，也能把喜欢的原图下载收藏。</div>';
+        } else if(album.desc){
+            desc = '<div class="album-desc">' + renderMd(album.desc) + '</div>';
+        }
 
         var tags = (!album.encrypted && album.tags) ? album.tags : [];
         var tagsHtml = '';
@@ -1395,6 +1499,7 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
     }
 
     function openAlbumDetail(album){
+        listScrollY = window.scrollY || window.pageYOffset || 0;
         if(album.encrypted){
             pendingAlbum = album;
             pwdSub.textContent = '「' + (album.title || '相册') + '」需要密码';
@@ -1531,7 +1636,10 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
             var liveBadge = hasLive ? '<button class="photo-live-badge" type="button" aria-label="播放或停止"><span class="live-dot"></span><span class="live-text"></span></button>' : '';
             var videoTag = hasLive ? '<video class="photo-video" data-src="' + escapeHtml(item.live) + '" muted playsinline preload="none"></video>' : '';
             var dlTitle = hasLive ? '下载 (封面 / Live)' : '下载原图';
-            photoHtml += '<div class="photo-item' + (hasLive ? ' is-live' : '') + '" data-idx="' + i + '">' +
+            var itemClass = 'photo-item' + (hasLive ? ' is-live' : '');
+            if(prefs.alt && prefs.altAlways && altText) itemClass += ' always-alt';
+            if(prefs.exif && prefs.exifAlways && item.exif) itemClass += ' always-exif';
+            photoHtml += '<div class="' + itemClass + '" data-idx="' + i + '">' +
                 '<span class="photo-skeleton"></span>' +
                 '<img class="photo-img" alt="' + escapeHtml(altText) + '" loading="lazy">' +
                 videoTag +
@@ -1622,9 +1730,8 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
             }
 
             if(!isEncrypted && !item.exif && !item._exifTried){
-                item._exifTried = true;
-                el.addEventListener('mouseenter', function onEnter(){
-                    el.removeEventListener('mouseenter', onEnter);
+                if(prefs.exifAlways){
+                    item._exifTried = true;
                     fetchExifFromImage(resolveImageUrl(item.src)).then(function(exif){
                         if(exif){
                             item.exif = exif;
@@ -1635,9 +1742,29 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
                             } else {
                                 el.insertAdjacentHTML('beforeend', newHtml);
                             }
+                            if(prefs.exif && prefs.exifAlways){
+                                el.classList.add('always-exif');
+                            }
                         }
                     });
-                }, {once:true});
+                } else {
+                    item._exifTried = true;
+                    el.addEventListener('mouseenter', function onEnter(){
+                        el.removeEventListener('mouseenter', onEnter);
+                        fetchExifFromImage(resolveImageUrl(item.src)).then(function(exif){
+                            if(exif){
+                                item.exif = exif;
+                                var overlay = el.querySelector('.photo-info-overlay');
+                                var newHtml = buildInfoOverlayHtml(item.alt || '', exif);
+                                if(overlay){
+                                    overlay.outerHTML = newHtml;
+                                } else {
+                                    el.insertAdjacentHTML('beforeend', newHtml);
+                                }
+                            }
+                        });
+                    }, {once:true});
+                }
             }
         });
 
@@ -1673,6 +1800,7 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
                 e.stopPropagation();
                 var tag = this.getAttribute('data-tag');
                 if(!tag) return;
+                listScrollY = 0;
                 closeDetail();
                 searchInput.value = tag;
                 searchBar.classList.add('has-value');
@@ -1913,6 +2041,8 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
         revokeDetailBlobs();
         document.body.classList.remove('detail-active');
         document.body.classList.remove('hide-top-back');
+        pendingRestoreScroll = true;
+        restoreListScroll();
         updateScrollUI();
     }
 
@@ -1943,6 +2073,9 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
             revokeDetailBlobs();
             document.body.classList.remove('detail-active');
             document.body.classList.remove('hide-top-back');
+            pendingRestoreScroll = true;
+            restoreListScroll();
+            updateScrollUI();
         }
     }
 
@@ -2020,6 +2153,9 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
     loadAlbums();
     updateScrollUI();
 })();
+</script>
+<script>
+fetch('/assets/footer.html').then(function(res){if(!res.ok)throw new Error('加载失败');return res.text();}).then(function(html){document.getElementById('footer-root').innerHTML=html;}).catch(function(){});
 </script>
 </body>
 </html>

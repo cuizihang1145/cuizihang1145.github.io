@@ -591,6 +591,10 @@
             return /^\d+$/.test(str);
         }
 
+        function isValidAlbumId(str) {
+            return /^[a-zA-Z0-9_-]+$/.test(str);
+        }
+
         const parts = window.location.pathname.split('/').filter(Boolean);
         const params = new URLSearchParams(window.location.search);
 
@@ -616,6 +620,9 @@
             if (id && isNumeric(id)) {
                 redirectTarget = '/shuoshuo.html?id=' + id;
             }
+        }
+        else if (parts.length === 2 && parts[0] === 'album' && isValidAlbumId(parts[1])) {
+            redirectTarget = '/album.html#album=' + encodeURIComponent(parts[1]);
         }
 
         if (redirectTarget) {

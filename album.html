@@ -463,6 +463,16 @@ body.dark .confirm-ok{background:linear-gradient(135deg,#5aa8e0,#88ccff);box-sha
 #waline-comments{max-width:100%;margin:2rem 0 1rem;padding-top:1.5rem;border-top:1px solid rgba(0,0,0,.06);transition:border-color .3s ease}
 body.dark #waline-comments{border-top-color:rgba(255,255,255,.06)}
 
+.album-tags{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.5rem}
+.album-tag{display:inline-block;font-size:.65rem;font-weight:500;color:#6B5ACF;background:rgba(107,90,207,.10);padding:.1rem .55rem;border-radius:40px;user-select:none}
+body.dark .album-tag{color:#88ccff;background:rgba(136,204,255,.10)}
+.detail-tags{display:flex;flex-wrap:wrap;gap:.4rem .6rem;margin-bottom:.8rem}
+.detail-tag{display:inline-flex;align-items:center;gap:.25rem;font-size:.75rem;font-weight:500;color:#6B5ACF;background:rgba(107,90,207,.10);padding:.1rem .7rem .1rem .5rem;border-radius:40px;transition:.2s ease;cursor:pointer;user-select:none}
+body.dark .detail-tag{color:#88ccff;background:rgba(136,204,255,.10)}
+.detail-tag:hover{background:rgba(107,90,207,.20);transform:scale(1.04)}
+body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
+.detail-tag i{font-size:.6rem;opacity:.7}
+
 @media (max-width:900px){
     .album-grid.layout-list .album-cover{width:150px;min-height:110px}
     .album-grid.layout-list .album-cover-locked i{font-size:1.4rem}
@@ -1292,12 +1302,14 @@ body.dark #waline-comments{border-top-color:rgba(255,255,255,.06)}
             filteredAlbums = allAlbums.slice();
         } else {
             filteredAlbums = allAlbums.filter(function(a){
+                var tags = (a.tags || []).join(' ');
                 var fields = [
                     a.title || '',
                     a.user || 'ks',
                     a.date || '',
                     a.desc || '',
-                    a.location || ''
+                    a.location || '',
+                    tags
                 ].join(' ').toLowerCase();
                 return fields.indexOf(k) !== -1;
             });
@@ -1354,11 +1366,22 @@ body.dark #waline-comments{border-top-color:rgba(255,255,255,.06)}
 
         var desc = (!album.encrypted && album.desc) ? '<div class="album-desc">' + renderMd(album.desc) + '</div>' : '';
 
+        var tags = (!album.encrypted && album.tags) ? album.tags : [];
+        var tagsHtml = '';
+        if(tags.length > 0){
+            tagsHtml = '<div class="album-tags">';
+            tags.forEach(function(tag){
+                tagsHtml += '<span class="album-tag">' + escapeHtml(tag) + '</span>';
+            });
+            tagsHtml += '</div>';
+        }
+
         return '<div class="album-card" data-idx="' + idx + '">' +
             '<div class="album-cover">' + coverHtml + '</div>' +
             '<div class="album-info">' +
                 '<div class="album-title">' + escapeHtml(album.title || '无标题') + '</div>' +
                 desc +
+                tagsHtml +
                 '<div class="album-meta">' + meta + '</div>' +
             '</div>' +
         '</div>';
@@ -1447,9 +1470,19 @@ body.dark #waline-comments{border-top-color:rgba(255,255,255,.06)}
         if(album.location) meta += '<span><i class="fas fa-location-dot"></i> ' + escapeHtml(album.location) + '</span>';
         meta += '<span><i class="fas fa-image"></i> ' + album.images.length + ' 张</span>';
 
+        var descHtml = album.desc ? renderMd(album.desc) : '';
+        var tagsHtml = '';
+        if(album.tags && album.tags.length > 0){
+            tagsHtml = '<div class="detail-tags">';
+            album.tags.forEach(function(tag){
+                tagsHtml += '<span class="detail-tag" data-tag="' + escapeHtml(tag) + '"><i class="fas fa-tag"></i> ' + escapeHtml(tag) + '</span>';
+            });
+            tagsHtml += '</div>';
+        }
+
         buildDetailPage(
             album.title || '无标题',
-            album.desc ? renderMd(album.desc) : '',
+            descHtml + tagsHtml,
             meta,
             album.images,
             false
@@ -1466,9 +1499,19 @@ body.dark #waline-comments{border-top-color:rgba(255,255,255,.06)}
         meta += '<span><i class="fas fa-image"></i> ' + images.length + ' 张</span>';
         meta += '<span><i class="fas fa-lock"></i> 已解密</span>';
 
+        var descHtml = data.desc ? renderMd(data.desc) : '';
+        var tagsHtml = '';
+        if(data.tags && data.tags.length > 0){
+            tagsHtml = '<div class="detail-tags">';
+            data.tags.forEach(function(tag){
+                tagsHtml += '<span class="detail-tag" data-tag="' + escapeHtml(tag) + '"><i class="fas fa-tag"></i> ' + escapeHtml(tag) + '</span>';
+            });
+            tagsHtml += '</div>';
+        }
+
         buildDetailPage(
             album.title || '无标题',
-            data.desc ? renderMd(data.desc) : '',
+            descHtml + tagsHtml,
             meta,
             images,
             true
@@ -1623,6 +1666,20 @@ body.dark #waline-comments{border-top-color:rgba(255,255,255,.06)}
         document.body.classList.add('detail-active');
         window.scrollTo({top:0, behavior:'smooth'});
         requestAnimationFrame(updateScrollUI);
+
+        detailDesc.querySelectorAll('.detail-tag').forEach(function(el){
+            el.addEventListener('click', function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                var tag = this.getAttribute('data-tag');
+                if(!tag) return;
+                closeDetail();
+                searchInput.value = tag;
+                searchBar.classList.add('has-value');
+                applyFilter(tag);
+                window.scrollTo({top:0, behavior:'smooth'});
+            });
+        });
 
         setTimeout(function(){
             if(currentAlbum) refreshWaline(currentAlbum.id);

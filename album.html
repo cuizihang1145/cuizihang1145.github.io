@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>相册 · ks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/7.0.1/css/all.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<link rel="stylesheet" href="/assets/markdown/markdown.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+    --accent:#6B5ACF;
+    --accent-2:#8F7BE0;
+    --accent-glow:rgba(107,90,207,.35);
+    --ease-out:cubic-bezier(.22,1,.36,1);
+    --ease-spring:cubic-bezier(.34,1.56,.64,1);
+    --ease-smooth:cubic-bezier(.4,0,.2,1);
+}
+body{font-family:'Inter',-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#FAFAFE;color:#1A1A2E;line-height:1.8;min-height:100vh;transition:background .6s var(--ease-smooth),color .4s var(--ease-smooth);overflow-x:hidden}
+body.dark{background:#14131F;color:#E8E6F0;--accent:#88ccff;--accent-2:#A9DEFF;--accent-glow:rgba(136,204,255,.4)}
+body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important;transition-delay:0s!important}
+
+.bg-glow{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-2;background:radial-gradient(circle at 30% 30%,#F6F2FF,#FFFFFF);transition:background .8s var(--ease-smooth)}
+body.dark .bg-glow{background:radial-gradient(circle at 30% 30%,#28253D,#0E0D18)}
+.glow-soft{position:fixed;width:70vw;height:70vw;background:radial-gradient(circle,rgba(160,130,230,.15),rgba(210,190,255,0) 70%);border-radius:50%;top:-25vh;right:-20vw;z-index:-1;filter:blur(80px);animation:floatGlow 20s infinite alternate var(--ease-smooth);pointer-events:none}
+body.dark .glow-soft{background:radial-gradient(circle,rgba(120,100,200,.20),rgba(60,40,120,0) 70%)}
+.glow-soft-2{position:fixed;width:50vw;height:50vw;background:radial-gradient(circle,rgba(200,180,255,.10),rgba(255,240,255,0) 70%);border-radius:50%;bottom:-15vh;left:-10vw;z-index:-1;filter:blur(70px);animation:floatGlow2 22s infinite alternate var(--ease-smooth);pointer-events:none}
+body.dark .glow-soft-2{background:radial-gradient(circle,rgba(90,70,160,.15),rgba(30,20,60,0) 70%)}
+@keyframes floatGlow{0%{transform:translate(0,0) scale(1);opacity:.3}100%{transform:translate(5%,8%) scale(1.2);opacity:.7}}
+@keyframes floatGlow2{0%{transform:translate(0,0) scale(1);opacity:.2}100%{transform:translate(-6%,-5%) scale(1.3);opacity:.6}}
+
+.container{max-width:1280px;margin:0 auto;padding:5rem 1.8rem 3rem;position:relative;min-height:100vh}
+
+.top-buttons{position:fixed;top:20px;left:20px;right:20px;z-index:50;display:flex;justify-content:space-between;align-items:center;pointer-events:none;opacity:0;animation:fadeSlideDown .7s var(--ease-out) .05s forwards}
+@keyframes fadeSlideDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+.top-buttons .left,.top-buttons .right{pointer-events:auto;display:flex;align-items:center;gap:.5rem}
+.back-btn{background:rgba(255,255,255,.6);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.8);border-radius:60px;padding:.5rem 1.2rem .5rem 1rem;display:flex;align-items:center;gap:.5rem;font-size:.85rem;font-weight:500;color:#4F4F78;text-decoration:none;transition:transform .35s var(--ease-out),opacity .35s var(--ease-out),background .35s var(--ease-out),box-shadow .35s var(--ease-out),border-color .35s var(--ease-out),color .35s var(--ease-out);box-shadow:0 6px 20px rgba(80,60,160,.10);cursor:pointer;font-family:'Inter',sans-serif;outline:none;position:relative;overflow:hidden}
+.back-btn:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 12px 28px rgba(80,60,160,.22)}
+.back-btn:active{transform:translateY(-1px) scale(.98);transition-duration:.1s}
+.back-btn i{font-size:.9rem;transition:transform .35s var(--ease-spring)}
+.back-btn:hover i{transform:translateX(-3px)}
+body.dark .back-btn{background:rgba(30,28,50,.7);border-color:rgba(255,255,255,.08);color:#D0CAF0;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+body.dark .back-btn:hover{background:rgba(50,45,80,.85)}
+body.hide-top-back .back-btn{opacity:0;transform:translateY(-24px);pointer-events:none}
+
+.icon-btn{background:rgba(255,255,255,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.8);border-radius:60px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#4F4F78;cursor:pointer;transition:all .45s var(--ease-spring);box-shadow:0 6px 20px rgba(80,60,160,.10);outline:none;position:relative}
+.icon-btn:hover{transform:scale(1.08) rotate(15deg);box-shadow:0 12px 32px rgba(80,60,160,.24)}
+.icon-btn:active{transform:scale(.92) rotate(-8deg);transition-duration:.12s}
+.icon-btn.active{background:rgba(107,90,207,.15);border-color:rgba(107,90,207,.4);color:var(--accent)}
+body.dark .icon-btn{background:rgba(30,28,50,.7);border-color:rgba(255,255,255,.08);color:#D0CAF0;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+body.dark .icon-btn:hover{background:rgba(50,45,80,.85)}
+body.dark .icon-btn.active{background:rgba(136,204,255,.18);border-color:rgba(136,204,255,.4);color:#88ccff}
+
+.detail-back{position:fixed;top:82px;left:calc(max((100vw - 1280px) / 2, 0px) + 1.8rem);z-index:49;background:rgba(255,255,255,.6);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.8);border-radius:60px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:#4F4F78;cursor:pointer;outline:none;box-shadow:0 6px 20px rgba(80,60,160,.10);opacity:0;visibility:hidden;transition:top .4s var(--ease-out),opacity .3s var(--ease-smooth),visibility .3s ease,background .3s ease,box-shadow .3s ease,color .3s ease,transform .3s var(--ease-out);transform:translateY(-6px)}
+body.detail-active .detail-back{opacity:1;visibility:visible;transform:translateY(0)}
+body.detail-active.hide-top-back .detail-back{top:20px}
+.detail-back:hover{background:rgba(255,255,255,.9);box-shadow:0 12px 28px rgba(80,60,160,.20);transform:translateY(-3px) scale(1.05)}
+.detail-back:active{transform:translateY(-1px) scale(.96);transition-duration:.1s}
+.detail-back i{transition:transform .35s var(--ease-spring)}
+.detail-back:hover i{transform:translateX(-3px)}
+body.dark .detail-back{background:rgba(30,28,50,.7);border-color:rgba(255,255,255,.08);color:#D0CAF0;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+body.dark .detail-back:hover{background:rgba(50,45,80,.9)}
+
+.back-to-top-btn{position:fixed;bottom:30px;right:24px;z-index:48;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.8);color:#4F4F78;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(80,60,160,.10);outline:none;padding:0;opacity:0;visibility:hidden;transform:translateY(16px) scale(.9);transition:opacity .35s var(--ease-smooth),transform .4s var(--ease-spring),visibility .35s ease,background .25s ease,box-shadow .25s ease}
+.back-to-top-btn.show{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+.back-to-top-btn:hover{background:rgba(255,255,255,.9);box-shadow:0 12px 28px rgba(80,60,160,.22);transform:translateY(-3px) scale(1.05)}
+.back-to-top-btn:active{transform:translateY(0) scale(.95);transition-duration:.1s}
+.back-to-top-btn i{transition:transform .35s var(--ease-spring)}
+.back-to-top-btn:hover i{transform:translateY(-3px)}
+body.dark .back-to-top-btn{background:rgba(30,28,50,.7);border-color:rgba(255,255,255,.08);color:#D0CAF0;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+body.dark .back-to-top-btn:hover{background:rgba(50,45,80,.9)}
+
+.search-bar{position:relative;max-width:640px;margin:0 auto 1rem;animation:fadeSlideUp .7s var(--ease-out) .15s backwards}
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.search-bar::before{content:'';position:absolute;inset:-2px;border-radius:62px;background:linear-gradient(120deg,transparent 0%,rgba(107,90,207,.5) 25%,rgba(160,130,230,.5) 50%,rgba(107,90,207,.5) 75%,transparent 100%);background-size:200% 100%;opacity:0;transition:opacity .5s var(--ease-smooth);pointer-events:none;z-index:0;filter:blur(6px)}
+.search-bar:focus-within::before{opacity:1;animation:borderSweep 3s linear infinite}
+@keyframes borderSweep{0%{background-position:0% 0}100%{background-position:200% 0}}
+.search-bar .search-icon{position:absolute;left:1.2rem;top:50%;transform:translateY(-50%);color:#8A8AB5;font-size:.9rem;pointer-events:none;transition:all .4s var(--ease-spring);z-index:2}
+.search-bar:focus-within .search-icon{color:var(--accent);transform:translateY(-50%) scale(1.15) rotate(-8deg)}
+.search-bar .clear-btn{position:absolute;right:1rem;top:50%;transform:translateY(-50%) scale(.6);width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.06);border:none;color:#8A8AB5;font-size:.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:all .35s var(--ease-spring);outline:none;z-index:2}
+.search-bar.has-value .clear-btn{opacity:1;pointer-events:auto;transform:translateY(-50%) scale(1)}
+.search-bar .clear-btn:hover{background:rgba(107,90,207,.15);color:var(--accent);transform:translateY(-50%) scale(1.15) rotate(90deg)}
+body.dark .search-bar .clear-btn{background:rgba(255,255,255,.08);color:#9A96B8}
+.search-bar input{position:relative;width:100%;padding:.9rem 3rem .9rem 3rem;border-radius:60px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);font-family:inherit;font-size:.9rem;color:#1A1A2E;outline:none;transition:all .4s var(--ease-smooth);box-shadow:0 4px 16px rgba(80,60,160,.06);z-index:1}
+.search-bar input::placeholder{color:#9A96B8}
+.search-bar input:focus{border-color:transparent;background:rgba(255,255,255,.85);box-shadow:0 8px 32px rgba(80,60,160,.16);transform:translateY(-1px)}
+.search-bar input:focus::placeholder{color:#B8B4D8}
+body.dark .search-bar input{background:rgba(30,28,50,.7);border-color:rgba(255,255,255,.08);color:#E8E6F0}
+body.dark .search-bar input:focus{background:rgba(40,38,65,.9);box-shadow:0 8px 32px rgba(0,0,0,.35)}
+body.dark .search-bar input::placeholder{color:#7A7AA0}
+body.dark .search-bar .search-icon{color:#7A7AA0}
+
+.stats-row{display:flex;align-items:center;justify-content:center;gap:.5rem;font-size:.72rem;color:#8A8AB5;margin-bottom:1.5rem;transition:color .3s ease;animation:fadeSlideUp .7s var(--ease-out) .2s backwards;min-height:1.2em}
+body.dark .stats-row{color:#7A7AA0}
+.stats-row i{font-size:.7rem;opacity:.75;transition:transform .4s var(--ease-spring)}
+.stats-row.updating i{transform:scale(1.3)}
+.stats-row .sep{opacity:.4;margin:0 .1rem}
+
+.album-grid{display:grid;gap:1.2rem}
+.album-grid.layout-masonry{display:block;column-gap:1.2rem}
+.album-grid.layout-masonry .album-card{display:block;margin-bottom:1.2rem;break-inside:avoid;width:100%;-webkit-column-break-inside:avoid}
+.album-grid.layout-list{display:flex;flex-direction:column;gap:.8rem}
+.album-grid.layout-list .album-card{display:flex;flex-direction:row;align-items:stretch;width:100%}
+.album-grid.layout-list .album-cover{width:200px;flex-shrink:0;aspect-ratio:auto;height:auto;min-height:130px}
+.album-grid.layout-list .album-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;padding:1rem 1.4rem}
+.album-grid.layout-list .album-desc{-webkit-line-clamp:3}
+.album-grid.layout-list .album-title{font-size:1rem}
+.album-grid.layout-list .album-cover-locked{gap:0}
+.album-grid.layout-list .album-cover-locked i{font-size:1.6rem}
+.album-grid.layout-list .album-cover-locked span{display:none}
+
+.album-card{position:relative;border-radius:1rem;overflow:hidden;background:rgba(255,255,255,.6);border:1px solid rgba(0,0,0,.08);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 4px 16px rgba(80,60,160,.06);cursor:pointer;transition:transform .5s var(--ease-out),box-shadow .5s var(--ease-out),background .4s var(--ease-smooth),border-color .4s var(--ease-smooth);opacity:0;animation:cardIn .6s var(--ease-out) forwards;will-change:transform}
+@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.album-card:hover{transform:translateY(-6px) scale(1.015);box-shadow:0 20px 44px rgba(80,60,160,.20)}
+.album-card:active{transform:translateY(-2px) scale(.995);transition-duration:.15s}
+body.dark .album-card{background:rgba(30,28,50,.7);border-color:rgba(255,255,255,.08)}
+body.dark .album-card:hover{background:rgba(50,45,80,.85);box-shadow:0 20px 44px rgba(0,0,0,.45)}
+
+.album-cover{position:relative;aspect-ratio:4/3;overflow:hidden;background:linear-gradient(135deg,rgba(107,90,207,.15),rgba(160,130,230,.1))}
+.album-grid.layout-masonry .album-cover{aspect-ratio:auto;height:180px}
+.album-cover .cover-skeleton{position:absolute;inset:0;background:linear-gradient(110deg,rgba(107,90,207,.06) 30%,rgba(160,130,230,.15) 50%,rgba(107,90,207,.06) 70%);background-size:200% 100%;animation:shimmer 1.6s linear infinite;opacity:1;transition:opacity .5s var(--ease-smooth);z-index:1}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.album-cover.loaded .cover-skeleton{opacity:0;pointer-events:none}
+.album-cover img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transform:scale(1.08);transition:opacity .7s var(--ease-smooth),transform 1s var(--ease-out);will-change:opacity,transform;position:absolute;inset:0;z-index:0}
+.album-cover.loaded img{opacity:1;transform:scale(1)}
+.album-card:hover .album-cover.loaded img{transform:scale(1.08)}
+
+.album-cover-locked{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;background:linear-gradient(135deg,rgba(107,90,207,.18),rgba(160,130,230,.12));color:#6B5ACF;z-index:2;padding:.5rem;text-align:center}
+body.dark .album-cover-locked{color:#88ccff;background:linear-gradient(135deg,rgba(136,204,255,.12),rgba(107,90,207,.1))}
+.album-cover-locked i{font-size:2rem;animation:lockPulse 3s ease-in-out infinite}
+@keyframes lockPulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.08);opacity:1}}
+.album-cover-locked span{font-size:.75rem;font-weight:500;letter-spacing:.02em;line-height:1.4}
+
+.album-info{padding:.9rem 1.1rem 1rem;position:relative;z-index:2}
+.album-title{font-size:.95rem;font-weight:600;color:#1A1A2E;margin-bottom:.35rem;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;word-break:break-word;transition:color .3s ease}
+body.dark .album-title{color:#E8E6F0}
+.album-card:hover .album-title{color:var(--accent)}
+
+.album-desc{font-size:.76rem;color:#6A6A92;margin-bottom:.5rem;line-height:1.55;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word;transition:color .3s ease}
+body.dark .album-desc{color:#9A96B8}
+.album-desc p{margin:0;font-size:inherit;color:inherit;line-height:inherit}
+.album-desc strong{color:#3D2D8A;font-weight:600}
+body.dark .album-desc strong{color:#C8C0F0}
+.album-desc em{font-style:italic;color:inherit}
+.album-desc a{color:#6B5ACF;text-decoration:underline;text-underline-offset:2px}
+body.dark .album-desc a{color:#88ccff}
+.album-desc code{font-family:'JetBrains Mono','Courier New',monospace;font-size:.9em;background:rgba(0,0,0,.06);padding:.05rem .3rem;border-radius:3px;color:#D14C4C}
+body.dark .album-desc code{background:rgba(255,255,255,.06);color:#E8A87C}
+.album-desc del{color:#8A8AB5;text-decoration:line-through}
+
+.album-meta{display:flex;flex-wrap:wrap;gap:.3rem .8rem;font-size:.68rem;color:#8A8AB5}
+body.dark .album-meta{color:#7A7AA0}
+.album-meta span{display:inline-flex;align-items:center;gap:.3rem;transition:color .3s ease}
+.album-card:hover .album-meta span{color:#6A6A92}
+body.dark .album-card:hover .album-meta span{color:#B8B4D8}
+.album-meta i{font-size:.65rem;opacity:.8}
+
+body.hide-desc .album-desc{display:none!important}
+body.hide-meta .album-meta{display:none!important}
+body.hide-download .photo-download{display:none!important}
+body.hide-alt .pio-alt{display:none!important}
+body.hide-exif .pio-exif{display:none!important}
+body.hide-live-badge .photo-live-badge{display:none!important}
+
+.empty-state{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5rem 1rem;color:#8A8AB5;text-align:center;width:100%}
+.empty-state i{font-size:2.4rem;opacity:.4;margin-bottom:1rem}
+.empty-state p{font-size:.85rem}
+
+.list-view{transition:opacity .4s var(--ease-smooth),transform .4s var(--ease-smooth)}
+.list-view.hidden{display:none}
+
+.detail-view{display:none}
+.detail-view.active{display:block;animation:detailIn .55s var(--ease-out)}
+@keyframes detailIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.detail-header{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.5rem;padding:0 0 1.2rem 64px;border-bottom:1px solid rgba(0,0,0,.06)}
+body.dark .detail-header{border-bottom-color:rgba(255,255,255,.06)}
+.detail-info{flex:1;min-width:0}
+.detail-title{font-size:1.4rem;font-weight:700;color:#1A1A2E;margin-bottom:.4rem;line-height:1.3;word-break:break-word}
+body.dark .detail-title{color:#E8E6F0}
+.detail-desc{font-size:.85rem;color:#6A6A92;margin-bottom:.6rem;line-height:1.6;word-break:break-word}
+body.dark .detail-desc{color:#9A96B8}
+.detail-desc p{margin:0 0 .5rem;font-size:inherit;color:inherit;line-height:inherit}
+.detail-desc p:last-child{margin-bottom:0}
+.detail-desc strong{color:#3D2D8A;font-weight:600}
+body.dark .detail-desc strong{color:#C8C0F0}
+.detail-desc em{font-style:italic;color:inherit}
+.detail-desc a{color:#6B5ACF;text-decoration:underline;text-underline-offset:2px}
+body.dark .detail-desc a{color:#88ccff}
+.detail-desc code{font-family:'JetBrains Mono','Courier New',monospace;font-size:.9em;background:rgba(0,0,0,.06);padding:.05rem .3rem;border-radius:3px;color:#D14C4C}
+body.dark .detail-desc code{background:rgba(255,255,255,.06);color:#E8A87C}
+
+body.hide-desc .detail-desc{display:none!important}
+body.hide-meta .detail-meta{display:none!important}
+
+.photo-grid{display:grid;gap:.8rem}
+.photo-grid.layout-masonry{display:block;column-gap:.8rem}
+.photo-grid.layout-masonry .photo-item{display:block;width:100%;margin-bottom:.8rem;aspect-ratio:auto;break-inside:avoid;-webkit-column-break-inside:avoid}
+
+.photo-item{position:relative;aspect-ratio:1;overflow:hidden;border-radius:.7rem;cursor:pointer;background:rgba(0,0,0,.04);transition:transform .45s var(--ease-out),box-shadow .45s var(--ease-out),filter .15s ease;opacity:0;animation:photoIn .55s var(--ease-out) forwards;will-change:transform;container-type:inline-size}
+@keyframes photoIn{from{opacity:0;transform:scale(.88) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.photo-item:hover{transform:translateY(-4px) scale(1.03);box-shadow:0 14px 32px rgba(80,60,160,.22);z-index:2}
+.photo-item:active{filter:brightness(.96)}
+body.dark .photo-item{background:rgba(255,255,255,.04)}
+body.dark .photo-item:hover{box-shadow:0 14px 32px rgba(0,0,0,.5)}
+
+.photo-item .photo-skeleton{position:absolute;inset:0;background:linear-gradient(110deg,rgba(107,90,207,.06) 30%,rgba(160,130,230,.15) 50%,rgba(107,90,207,.06) 70%);background-size:200% 100%;animation:shimmer 1.6s linear infinite;opacity:1;transition:opacity .5s var(--ease-smooth);z-index:1}
+body.dark .photo-item .photo-skeleton{background:linear-gradient(110deg,rgba(136,204,255,.05) 30%,rgba(136,204,255,.12) 50%,rgba(136,204,255,.05) 70%);background-size:200% 100%}
+.photo-item.loaded .photo-skeleton{opacity:0;pointer-events:none}
+
+.photo-item .photo-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transform:scale(1.15);transition:opacity .7s var(--ease-smooth),transform 1.2s var(--ease-out);will-change:opacity,transform;z-index:0}
+.photo-item .photo-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .35s var(--ease-smooth);pointer-events:none;z-index:1}
+.photo-item.loaded .photo-img{opacity:1;transform:scale(1)}
+.photo-item:hover.loaded .photo-img{transform:scale(1.12)}
+.photo-item.is-live.is-playing .photo-img{opacity:0}
+.photo-item.is-live.is-playing .photo-video{opacity:1}
+.photo-item.is-live:hover.loaded .photo-img{transform:scale(1)}
+
+.photo-grid.cols-1 .photo-item{aspect-ratio:auto;background:transparent}
+.photo-grid.cols-1 .photo-item .photo-img{position:static;width:100%;height:auto;aspect-ratio:auto;object-fit:cover;transform:scale(1)}
+.photo-grid.cols-1 .photo-item .photo-video{position:absolute;inset:0;width:100%;height:100%}
+.photo-grid.cols-1 .photo-item.loaded .photo-img{opacity:1;transform:scale(1)}
+.photo-grid.cols-1 .photo-item:hover.loaded .photo-img{transform:scale(1.01)}
+.photo-grid.cols-1 .photo-item.is-live.is-playing .photo-img{opacity:0}
+.photo-grid.cols-1 .photo-item .photo-skeleton{position:absolute;inset:0;aspect-ratio:16/9}
+
+.photo-grid.layout-masonry:not(.cols-1) .photo-item{aspect-ratio:auto;background:transparent;position:relative;overflow:hidden}
+.photo-grid.layout-masonry:not(.cols-1) .photo-item .photo-img{position:static;display:block;width:100%;height:auto;object-fit:cover;opacity:0;transform:none;transition:opacity .5s var(--ease-smooth)}
+.photo-grid.layout-masonry:not(.cols-1) .photo-item.loaded .photo-img{opacity:1;transform:none}
+.photo-grid.layout-masonry:not(.cols-1) .photo-item:hover.loaded .photo-img{transform:scale(1.04)}
+.photo-grid.layout-masonry:not(.cols-1) .photo-item.is-live.is-playing .photo-img{opacity:0}
+.photo-grid.layout-masonry:not(.cols-1) .photo-item .photo-video{position:absolute;inset:0;width:100%;height:100%}
+.photo-grid.layout-masonry:not(.cols-1) .photo-item .photo-skeleton{position:relative;inset:auto;display:block;width:100%;aspect-ratio:4/3;opacity:1}
+.photo-grid.layout-masonry:not(.cols-1) .photo-item.loaded .photo-skeleton{display:none}
+
+.photo-download{position:absolute;top:.5rem;right:.5rem;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:none;color:#fff;font-size:.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(.6) translateY(-6px);transition:opacity .35s var(--ease-smooth),transform .4s var(--ease-spring),background .25s ease;outline:none;z-index:6;padding:0}
+.photo-item:hover .photo-download{opacity:1;transform:scale(1) translateY(0)}
+.photo-download:hover{background:rgba(107,90,207,.9);transform:scale(1.15) translateY(0)}
+.photo-download:active{transform:scale(.9) translateY(0);transition-duration:.1s}
+
+.photo-live-badge{
+    position:absolute;
+    top:.5rem;
+    left:.5rem;
+    height:24px;
+    padding:0 .55rem 0 .45rem;
+    border-radius:50px;
+    background:rgba(0,0,0,.55);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    color:#fff;
+    font-size:.6rem;
+    font-weight:700;
+    letter-spacing:.08em;
+    display:flex;
+    align-items:center;
+    gap:.35rem;
+    z-index:7;
+    pointer-events:auto;
+    cursor:pointer;
+    border:none;
+    outline:none;
+    font-family:inherit;
+    box-shadow:0 2px 8px rgba(0,0,0,.25);
+    transition:background .3s ease,box-shadow .3s ease,transform .3s var(--ease-spring);
+    -webkit-tap-highlight-color:transparent;
+}
+.photo-live-badge:hover{background:rgba(0,0,0,.75);transform:scale(1.05)}
+.photo-live-badge:active{transform:scale(.95);transition-duration:.1s}
+.photo-live-badge .live-dot{
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:#ff3b30;
+    box-shadow:0 0 6px rgba(255,59,48,.8);
+    animation:livePulse 1.6s ease-in-out infinite;
+    flex-shrink:0;
+    transition:background .25s ease,border-radius .25s ease,box-shadow .25s ease,transform .25s ease;
+}
+@keyframes livePulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+.photo-live-badge .live-text{line-height:1;display:inline-flex;align-items:center;gap:.25rem}
+.photo-live-badge .live-text::after{content:'LIVE';font-size:.6rem}
+
+.photo-item.is-live.is-playing .photo-live-badge{background:rgba(255,59,48,.9);box-shadow:0 2px 12px rgba(255,59,48,.5);transform:scale(1.05)}
+.photo-item.is-live.is-playing .photo-live-badge:hover{background:rgba(255,59,48,1);transform:scale(1.1)}
+.photo-item.is-live.is-playing .photo-live-badge .live-dot{
+    border-radius:2px;
+    animation:none;
+    opacity:1;
+    transform:scale(1);
+    box-shadow:0 0 0 rgba(0,0,0,0);
+    background:#fff;
+}
+.photo-item.is-live.is-playing .photo-live-badge .live-text::after{content:'STOP';letter-spacing:.06em}
+
+.photo-info-overlay{position:absolute;right:1.5cqw;bottom:1.5cqw;display:flex;flex-direction:column;align-items:flex-end;gap:0.8cqw;max-width:calc(100% - 3cqw);opacity:0;transform:translateY(2cqw);transition:opacity .3s var(--ease-smooth),transform .35s var(--ease-spring);pointer-events:none;z-index:5}
+.photo-item:hover .photo-info-overlay{opacity:1;transform:translateY(0)}
+.photo-info-overlay .pio-alt{background:rgba(0,0,0,.68);color:#fff;font-size:.7rem;font-size:max(3px,3.2cqw);font-weight:500;line-height:1.3;padding:.28rem .65rem;padding:max(1px,.9cqw) max(2px,2.2cqw);border-radius:.5rem;border-radius:max(2px,1.2cqw);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.photo-info-overlay .pio-exif{display:flex;flex-wrap:wrap;gap:.25rem;gap:0.6cqw;justify-content:flex-end;max-width:100%}
+.photo-info-overlay .pio-exif-item{background:rgba(0,0,0,.55);color:#fff;font-size:.62rem;font-size:max(2.5px,2.6cqw);font-weight:500;line-height:1.3;padding:.18rem .5rem;padding:max(.8px,.7cqw) max(1.5px,1.8cqw);border-radius:.4rem;border-radius:max(1.5px,1cqw);white-space:nowrap;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(0,0,0,.2);letter-spacing:.01em}
+
+.settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);z-index:200;opacity:0;visibility:hidden;transition:opacity .35s var(--ease-smooth),background .35s var(--ease-smooth),backdrop-filter .35s var(--ease-smooth),visibility .35s ease}
+.settings-overlay.active{opacity:1;visibility:visible;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.settings-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);width:min(480px,calc(100vw - 2rem));max-height:85vh;background:rgba(255,255,255,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.7);border-radius:1.4rem;box-shadow:0 24px 60px rgba(80,60,160,.28);z-index:201;opacity:0;visibility:hidden;transition:opacity .35s var(--ease-smooth),transform .45s var(--ease-spring),visibility .35s ease;display:flex;flex-direction:column;overflow:hidden}
+.settings-overlay.active .settings-panel{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1)}
+body.dark .settings-panel{background:rgba(30,28,50,.94);border-color:rgba(255,255,255,.1);box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.settings-header{display:flex;align-items:center;justify-content:space-between;padding:1.3rem 1.5rem 1rem;border-bottom:1px solid rgba(0,0,0,.06);flex-shrink:0;background:inherit;position:relative;z-index:2}
+body.dark .settings-header{border-bottom-color:rgba(255,255,255,.08)}
+.settings-title{font-size:1rem;font-weight:700;color:#1A1A2E;display:flex;align-items:center;gap:.5rem}
+.settings-title i{font-size:.9rem;color:var(--accent);animation:gearSpin 8s linear infinite}
+@keyframes gearSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+body.dark .settings-title{color:#E8E6F0}
+.settings-close{width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.05);border:none;color:#6A6A92;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;transition:all .3s var(--ease-spring);outline:none}
+.settings-close:hover{background:rgba(107,90,207,.15);color:var(--accent);transform:rotate(90deg) scale(1.1)}
+body.dark .settings-close{background:rgba(255,255,255,.06);color:#9A96B8}
+.settings-body{flex:1;overflow-y:auto;padding:1.2rem 1.5rem 1.2rem;scrollbar-width:thin;scrollbar-color:rgba(107,90,207,.3) transparent;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.settings-body::-webkit-scrollbar{width:6px}
+.settings-body::-webkit-scrollbar-track{background:transparent}
+.settings-body::-webkit-scrollbar-thumb{background:rgba(107,90,207,.25);border-radius:3px}
+.settings-body::-webkit-scrollbar-thumb:hover{background:rgba(107,90,207,.45)}
+.settings-group{margin-bottom:1.3rem}
+.settings-group:last-child{margin-bottom:.6rem}
+.settings-group.hidden{display:none!important}
+.settings-group-title{font-size:.72rem;font-weight:600;color:#8A8AB5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.7rem;display:flex;align-items:center;gap:.4rem}
+.settings-group-title i{font-size:.7rem;opacity:.8}
+body.dark .settings-group-title{color:#7A7AA0}
+.segmented{display:flex;background:rgba(0,0,0,.05);border-radius:.8rem;padding:.25rem;gap:.2rem;position:relative}
+body.dark .segmented{background:rgba(255,255,255,.05)}
+.segment-btn{flex:1;padding:.55rem .6rem;border:none;background:transparent;border-radius:.6rem;font-family:inherit;font-size:.78rem;font-weight:500;color:#6A6A92;cursor:pointer;transition:all .35s var(--ease-out);display:flex;align-items:center;justify-content:center;gap:.35rem;outline:none;position:relative;z-index:1}
+.segment-btn.hidden{display:none}
+.segment-btn i{font-size:.8rem;transition:transform .4s var(--ease-spring)}
+.segment-btn:hover{color:var(--accent)}
+.segment-btn:hover i{transform:scale(1.15)}
+.segment-btn.active{background:rgba(255,255,255,.95);color:var(--accent);box-shadow:0 2px 8px rgba(80,60,160,.12)}
+.segment-btn.active i{transform:scale(1.1)}
+body.dark .segment-btn{color:#9A96B8}
+body.dark .segment-btn.active{background:rgba(60,55,90,.95);color:#88ccff;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:.7rem .2rem;border-radius:.6rem;transition:background .3s ease}
+.toggle-row:hover{background:rgba(107,90,207,.04)}
+body.dark .toggle-row:hover{background:rgba(136,204,255,.06)}
+.toggle-label{display:flex;align-items:center;gap:.6rem;font-size:.83rem;color:#4A4A6E;font-weight:500}
+body.dark .toggle-label{color:#C4C0DC}
+.toggle-label i{width:1.2rem;text-align:center;color:var(--accent);font-size:.85rem}
+.toggle-switch{position:relative;width:44px;height:24px;border-radius:24px;background:rgba(0,0,0,.12);border:none;cursor:pointer;transition:background .35s var(--ease-smooth);outline:none;flex-shrink:0;padding:0}
+body.dark .toggle-switch{background:rgba(255,255,255,.15)}
+.toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.2);transition:transform .4s var(--ease-spring)}
+.toggle-switch.active{background:var(--accent)}
+.toggle-switch.active::after{transform:translateX(20px)}
+.settings-actions{display:flex;gap:.6rem;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(0,0,0,.06)}
+body.dark .settings-actions{border-top-color:rgba(255,255,255,.08)}
+.settings-action{flex:1;padding:.7rem;border-radius:.7rem;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.6);font-family:inherit;font-size:.8rem;font-weight:500;color:#4A4A6E;cursor:pointer;transition:all .35s var(--ease-out);display:flex;align-items:center;justify-content:center;gap:.4rem;outline:none}
+.settings-action:hover{background:rgba(107,90,207,.1);color:var(--accent);border-color:rgba(107,90,207,.3);transform:translateY(-2px)}
+.settings-action:active{transform:translateY(0) scale(.97);transition-duration:.1s}
+.settings-action i{font-size:.8rem}
+body.dark .settings-action{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);color:#B8B4D8}
+body.dark .settings-action:hover{background:rgba(136,204,255,.12);color:#88ccff;border-color:rgba(136,204,255,.3)}
+
+.livedl-overlay{position:fixed;inset:0;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);z-index:300;display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;visibility:hidden;transition:opacity .3s var(--ease-smooth),background .3s var(--ease-smooth),backdrop-filter .3s var(--ease-smooth),visibility .3s ease}
+.livedl-overlay.active{opacity:1;visibility:visible;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.livedl-box{width:min(420px,100%);background:rgba(255,255,255,.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.7);border-radius:1.2rem;box-shadow:0 24px 60px rgba(80,60,160,.3);padding:1.5rem 1.5rem 1.2rem;transform:scale(.92) translateY(10px);opacity:0;transition:transform .4s var(--ease-spring),opacity .3s var(--ease-smooth)}
+.livedl-overlay.active .livedl-box{transform:scale(1) translateY(0);opacity:1}
+body.dark .livedl-box{background:rgba(30,28,50,.95);border-color:rgba(255,255,255,.1);box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.livedl-title{font-size:1rem;font-weight:700;color:#1A1A2E;margin-bottom:.4rem;display:flex;align-items:center;gap:.5rem}
+.livedl-title i{font-size:.95rem;color:var(--accent)}
+body.dark .livedl-title{color:#E8E6F0}
+.livedl-subtitle{font-size:.78rem;color:#8A8AB5;margin-bottom:1.2rem;line-height:1.5}
+body.dark .livedl-subtitle{color:#9A96B8}
+.livedl-options{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1rem}
+.livedl-option{display:flex;align-items:center;gap:.9rem;padding:.9rem 1rem;border-radius:.9rem;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.6);cursor:pointer;transition:all .3s var(--ease-out);outline:none;font-family:inherit;text-align:left;width:100%}
+.livedl-option:hover{border-color:rgba(107,90,207,.4);background:rgba(107,90,207,.06);transform:translateY(-2px);box-shadow:0 8px 20px rgba(80,60,160,.12)}
+.livedl-option:active{transform:translateY(0) scale(.98);transition-duration:.1s}
+body.dark .livedl-option{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08)}
+body.dark .livedl-option:hover{background:rgba(136,204,255,.08);border-color:rgba(136,204,255,.3);box-shadow:0 8px 20px rgba(0,0,0,.4)}
+.livedl-option-icon{width:42px;height:42px;border-radius:.7rem;background:rgba(107,90,207,.12);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;transition:background .3s ease,transform .35s var(--ease-spring)}
+.livedl-option:hover .livedl-option-icon{background:rgba(107,90,207,.2);transform:scale(1.08)}
+body.dark .livedl-option-icon{background:rgba(136,204,255,.14);color:#88ccff}
+body.dark .livedl-option:hover .livedl-option-icon{background:rgba(136,204,255,.22)}
+.livedl-option-text{flex:1;min-width:0}
+.livedl-option-name{font-size:.88rem;font-weight:600;color:#1A1A2E;line-height:1.3;margin-bottom:.15rem}
+body.dark .livedl-option-name{color:#E8E6F0}
+.livedl-option-desc{font-size:.72rem;color:#8A8AB5;line-height:1.4}
+body.dark .livedl-option-desc{color:#9A96B8}
+.livedl-option-arrow{font-size:.75rem;color:#B8B4D8;flex-shrink:0;transition:transform .3s var(--ease-spring)}
+.livedl-option:hover .livedl-option-arrow{transform:translateX(3px);color:var(--accent)}
+.livedl-cancel{width:100%;padding:.7rem;border-radius:.7rem;border:1px solid rgba(0,0,0,.08);background:transparent;font-family:inherit;font-size:.82rem;font-weight:500;color:#6A6A92;cursor:pointer;transition:all .3s var(--ease-out);outline:none}
+.livedl-cancel:hover{background:rgba(0,0,0,.05);color:#1A1A2E}
+body.dark .livedl-cancel{border-color:rgba(255,255,255,.08);color:#9A96B8}
+body.dark .livedl-cancel:hover{background:rgba(255,255,255,.06);color:#E8E6F0}
+
+.pwd-overlay{position:fixed;inset:0;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);z-index:400;display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;visibility:hidden;transition:opacity .3s var(--ease-smooth),background .3s var(--ease-smooth),backdrop-filter .3s var(--ease-smooth),visibility .3s ease}
+.pwd-overlay.active{opacity:1;visibility:visible;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.pwd-box{width:min(400px,100%);background:rgba(255,255,255,.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.7);border-radius:1.3rem;box-shadow:0 24px 60px rgba(80,60,160,.3);padding:1.8rem 1.6rem 1.4rem;transform:scale(.92) translateY(10px);opacity:0;transition:transform .4s var(--ease-spring),opacity .3s var(--ease-smooth)}
+.pwd-overlay.active .pwd-box{transform:scale(1) translateY(0);opacity:1}
+.pwd-box.shake{animation:pwdShake .5s var(--ease-out)}
+@keyframes pwdShake{0%,100%{transform:scale(1) translateY(0) translateX(0)}20%{transform:scale(1) translateY(0) translateX(-10px)}40%{transform:scale(1) translateY(0) translateX(10px)}60%{transform:scale(1) translateY(0) translateX(-6px)}80%{transform:scale(1) translateY(0) translateX(6px)}}
+body.dark .pwd-box{background:rgba(30,28,50,.95);border-color:rgba(255,255,255,.1);box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.pwd-icon{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(107,90,207,.15),rgba(160,130,230,.1));display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--accent);margin:0 auto 1rem}
+body.dark .pwd-icon{background:linear-gradient(135deg,rgba(136,204,255,.12),rgba(107,90,207,.1))}
+.pwd-title{font-size:1.05rem;font-weight:700;color:#1A1A2E;text-align:center;margin-bottom:.3rem}
+body.dark .pwd-title{color:#E8E6F0}
+.pwd-sub{font-size:.78rem;color:#8A8AB5;text-align:center;margin-bottom:1.3rem;line-height:1.5;word-break:break-word}
+body.dark .pwd-sub{color:#9A96B8}
+.pwd-input{width:100%;padding:.9rem 1.1rem;border-radius:60px;border:1px solid rgba(0,0,0,.1);background:rgba(255,255,255,.7);font-family:inherit;font-size:1rem;color:#1A1A2E;outline:none;transition:all .3s var(--ease-smooth);text-align:center;letter-spacing:.02em}
+.pwd-input::placeholder{color:#B8B4D8;letter-spacing:normal;font-weight:400}
+.pwd-input:focus{border-color:rgba(107,90,207,.5);background:#fff;box-shadow:0 0 0 4px rgba(107,90,207,.12)}
+.pwd-input:focus::placeholder{color:#C8C4E0}
+.pwd-input.error{border-color:#E85D5D;box-shadow:0 0 0 4px rgba(232,93,93,.12)}
+body.dark .pwd-input{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);color:#E8E6F0}
+body.dark .pwd-input::placeholder{color:#7A7AA0}
+body.dark .pwd-input:focus{background:rgba(255,255,255,.1);box-shadow:0 0 0 4px rgba(136,204,255,.12)}
+.pwd-error{font-size:.75rem;color:#E85D5D;text-align:center;margin-top:.6rem;min-height:1.2em;font-weight:500}
+.pwd-actions{display:flex;gap:.6rem;margin-top:1.2rem}
+.pwd-cancel,.pwd-confirm{flex:1;padding:.75rem;border-radius:.8rem;border:none;font-family:inherit;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .3s var(--ease-out);outline:none}
+.pwd-cancel{background:rgba(0,0,0,.05);color:#6A6A92}
+.pwd-cancel:hover{background:rgba(0,0,0,.08);color:#1A1A2E}
+body.dark .pwd-cancel{background:rgba(255,255,255,.05);color:#9A96B8}
+body.dark .pwd-cancel:hover{background:rgba(255,255,255,.1);color:#E8E6F0}
+.pwd-confirm{background:linear-gradient(135deg,#6B5ACF,#8F7BE0);color:#fff;box-shadow:0 4px 14px rgba(107,90,207,.35)}
+.pwd-confirm:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(107,90,207,.45)}
+.pwd-confirm:active{transform:translateY(0) scale(.97)}
+.pwd-confirm:disabled{opacity:.6;cursor:not-allowed;transform:none}
+body.dark .pwd-confirm{background:linear-gradient(135deg,#5aa8e0,#88ccff);box-shadow:0 4px 14px rgba(136,204,255,.3)}
+
+.photo-item.decrypt-failed::after{content:'\f071';font-family:'Font Awesome 7 Free';font-weight:900;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#E85D5D;font-size:1.2rem;z-index:2;background:rgba(232,93,93,.08)}
+
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px) scale(.9);background:rgba(28,26,44,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:.8rem 2.5rem;border-radius:60px;color:#EFEAFF;font-size:.9rem;font-weight:500;border:1px solid rgba(255,255,255,.08);box-shadow:0 16px 40px rgba(0,0,0,.3);opacity:0;transition:opacity .45s var(--ease-spring),transform .45s var(--ease-spring);z-index:1000;pointer-events:none;white-space:nowrap;min-width:200px;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+.toast i{margin-right:.5rem;font-size:1rem}
+.toast .fa-check-circle{color:#4ade80}
+.toast .fa-info-circle{color:#60a5fa}
+.toast .fa-lock{color:#fbbf24}
+
+@media (max-width:900px){
+    .album-grid.layout-list .album-cover{width:150px;min-height:110px}
+    .album-grid.layout-list .album-cover-locked i{font-size:1.4rem}
+}
+@media (max-width:560px){
+    .container{padding:4.5rem 1.2rem 2rem}
+    .album-grid.layout-list .album-cover{width:110px;min-height:90px}
+    .album-grid.layout-list .album-cover-locked i{font-size:1.2rem}
+    .album-grid.layout-list .album-info{padding:.7rem .9rem}
+    .top-buttons{top:14px;left:14px;right:14px}
+    .back-btn{padding:.4rem 1rem .4rem .8rem;font-size:.75rem}
+    .icon-btn{width:42px;height:42px;font-size:1.1rem}
+    .detail-title{font-size:1.15rem}
+    .detail-back{top:68px;left:calc(max((100vw - 1280px) / 2, 0px) + 1.2rem);width:40px;height:40px;font-size:.9rem}
+    body.detail-active.hide-top-back .detail-back{top:14px}
+    .detail-header{padding-left:56px}
+    .back-to-top-btn{bottom:20px;right:16px;width:42px;height:42px;font-size:1rem}
+    .search-bar input{padding:.8rem 3rem .8rem 2.8rem;font-size:.85rem}
+    .photo-download{width:28px;height:28px;font-size:.65rem;opacity:.85;transform:scale(1) translateY(0)}
+    .photo-live-badge{height:20px;padding:0 .45rem 0 .35rem;font-size:.55rem;top:.4rem;left:.4rem}
+    .photo-live-badge .live-dot{width:5px;height:5px}
+    .photo-live-badge .live-text::after{font-size:.55rem}
+    .settings-panel{padding:0;border-radius:1.2rem}
+    .settings-header{padding:1.1rem 1.2rem .9rem}
+    .settings-body{padding:1rem 1.2rem 1rem}
+    .segment-btn{padding:.5rem .3rem;font-size:.72rem;gap:.25rem}
+    .segment-btn i{font-size:.7rem}
+    .livedl-box{padding:1.3rem 1.2rem 1rem}
+    .livedl-option{padding:.8rem .9rem;gap:.75rem}
+    .livedl-option-icon{width:38px;height:38px;font-size:1rem}
+    .livedl-option-name{font-size:.84rem}
+    .livedl-option-desc{font-size:.68rem}
+    .pwd-box{padding:1.5rem 1.2rem 1.1rem;border-radius:1.1rem}
+    .pwd-icon{width:56px;height:56px;font-size:1.3rem}
+    .pwd-title{font-size:.98rem}
+    .pwd-sub{font-size:.72rem}
+    .pwd-input{padding:.8rem 1rem;font-size:.95rem}
+    .pwd-cancel,.pwd-confirm{padding:.7rem;font-size:.82rem}
+}
+
+@media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="glow-soft"></div>
+<div class="glow-soft-2"></div>
+
+<div class="top-buttons">
+    <div class="left">
+        <a href="javascript:history.back()" class="back-btn" id="topBackBtn"><i class="fas fa-arrow-left"></i> 返回</a>
+    </div>
+    <div class="right">
+        <button class="icon-btn" id="settingsBtn" title="显示设置"><i class="fas fa-sliders"></i></button>
+        <button class="icon-btn" id="themeToggle" title="切换主题"><i class="fas fa-moon" id="themeIcon"></i></button>
+    </div>
+</div>
+
+<button class="detail-back" id="detailBack"><i class="fas fa-arrow-left"></i></button>
+<button class="back-to-top-btn" id="backToTopBtn" title="返回顶部" aria-label="返回顶部"><i class="fas fa-arrow-up"></i></button>
+
+<div class="container" id="mainContainer">
+    <div id="listView" class="list-view">
+        <div class="search-bar" id="searchBar">
+            <i class="fas fa-magnifying-glass search-icon"></i>
+            <input type="text" id="searchInput" placeholder="搜索相册、用户、日期、地点、概括" autocomplete="off">
+            <button class="clear-btn" id="clearBtn" type="button" aria-label="清空"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="stats-row" id="statsRow">
+            <i class="fas fa-images"></i>
+            <span id="statsText">加载中</span>
+        </div>
+        <div class="album-grid layout-grid" id="albumGrid"></div>
+    </div>
+
+    <div id="detailView" class="detail-view">
+        <div class="detail-header">
+            <div class="detail-info">
+                <div class="detail-title" id="detailTitle"></div>
+                <div class="detail-desc" id="detailDesc"></div>
+                <div class="album-meta detail-meta" id="detailMeta"></div>
+            </div>
+        </div>
+        <div class="photo-grid layout-grid" id="photoGrid"></div>
+    </div>
+</div>
+
+<div class="settings-overlay" id="settingsOverlay">
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-header">
+            <div class="settings-title"><i class="fas fa-gear"></i> 显示设置</div>
+            <button class="settings-close" id="settingsClose" aria-label="关闭"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="settings-body">
+            <div class="settings-group" data-settings-group="albumLayout">
+                <div class="settings-group-title"><i class="fas fa-table-cells-large"></i> 相册布局</div>
+                <div class="segmented" data-group="albumLayout">
+                    <button class="segment-btn" data-value="grid"><i class="fas fa-table-cells-large"></i> 网格</button>
+                    <button class="segment-btn" data-value="masonry"><i class="fas fa-layer-group"></i> 瀑布流</button>
+                    <button class="segment-btn" data-value="list"><i class="fas fa-list"></i> 列表</button>
+                </div>
+            </div>
+            <div class="settings-group" data-settings-group="albumCols">
+                <div class="settings-group-title"><i class="fas fa-calculator"></i> 相册列数</div>
+                <div class="segmented" data-group="albumCols">
+                    <button class="segment-btn" data-value="2">2 列</button>
+                    <button class="segment-btn" data-value="3">3 列</button>
+                    <button class="segment-btn" data-value="4">4 列</button>
+                </div>
+            </div>
+            <div class="settings-group" data-settings-group="photoLayout">
+                <div class="settings-group-title"><i class="fas fa-image"></i> 图片布局</div>
+                <div class="segmented" data-group="photoLayout">
+                    <button class="segment-btn" data-value="grid"><i class="fas fa-table-cells-large"></i> 网格</button>
+                    <button class="segment-btn" data-value="masonry"><i class="fas fa-layer-group"></i> 瀑布流</button>
+                </div>
+            </div>
+            <div class="settings-group" data-settings-group="photoCols">
+                <div class="settings-group-title"><i class="fas fa-calculator"></i> 图片列数</div>
+                <div class="segmented" data-group="photoCols">
+                    <button class="segment-btn" data-value="1">1 列</button>
+                    <button class="segment-btn" data-value="2">2 列</button>
+                    <button class="segment-btn" data-value="3">3 列</button>
+                    <button class="segment-btn" data-value="4">4 列</button>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title"><i class="fas fa-eye"></i> 显示内容</div>
+                <div class="toggle-row">
+                    <div class="toggle-label"><i class="fas fa-align-left"></i> 显示相册描述</div>
+                    <button class="toggle-switch" data-toggle="desc" aria-label="显示描述"></button>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-label"><i class="fas fa-info-circle"></i> 显示相册信息</div>
+                    <button class="toggle-switch" data-toggle="meta" aria-label="显示信息"></button>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-label"><i class="fas fa-download"></i> 显示下载按钮</div>
+                    <button class="toggle-switch" data-toggle="download" aria-label="显示下载按钮"></button>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-label"><i class="fas fa-font"></i> 显示图片 alt</div>
+                    <button class="toggle-switch" data-toggle="alt" aria-label="显示图片 alt"></button>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-label"><i class="fas fa-camera"></i> 显示 EXIF 信息</div>
+                    <button class="toggle-switch" data-toggle="exif" aria-label="显示 EXIF"></button>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title"><i class="fas fa-video"></i> Live 图</div>
+                <div class="toggle-row">
+                    <div class="toggle-label"><i class="fas fa-play-circle"></i> 启用 Live 播放</div>
+                    <button class="toggle-switch" data-toggle="live" aria-label="启用 Live 播放"></button>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-label"><i class="fas fa-tag"></i> 显示 LIVE 徽章</div>
+                    <button class="toggle-switch" data-toggle="liveBadge" aria-label="显示 LIVE 徽章"></button>
+                </div>
+                <div class="settings-group-title" style="margin-top:1rem;margin-bottom:.5rem"><i class="fas fa-download"></i> Live 图下载默认行为</div>
+                <div class="segmented" data-group="liveDownload">
+                    <button class="segment-btn" data-value="ask">每次询问</button>
+                    <button class="segment-btn" data-value="cover">封面</button>
+                    <button class="segment-btn" data-value="live">Live 视频</button>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-group-title"><i class="fas fa-magic"></i> 动效</div>
+                <div class="toggle-row">
+                    <div class="toggle-label"><i class="fas fa-wand-magic-sparkles"></i> 启用动画</div>
+                    <button class="toggle-switch" data-toggle="anim" aria-label="启用动画"></button>
+                </div>
+            </div>
+            <div class="settings-actions">
+                <button class="settings-action" id="settingsReset"><i class="fas fa-rotate-left"></i> 恢复默认</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="livedl-overlay" id="liveDlOverlay">
+    <div class="livedl-box">
+        <div class="livedl-title"><i class="fas fa-video"></i> 选择下载方式</div>
+        <div class="livedl-subtitle">这是一张 Live 图，你想下载哪个？</div>
+        <div class="livedl-options">
+            <button class="livedl-option" id="liveDlCover">
+                <div class="livedl-option-icon"><i class="fas fa-image"></i></div>
+                <div class="livedl-option-text">
+                    <div class="livedl-option-name">下载封面</div>
+                    <div class="livedl-option-desc">静态图片，体积小</div>
+                </div>
+                <i class="fas fa-chevron-right livedl-option-arrow"></i>
+            </button>
+            <button class="livedl-option" id="liveDlLive">
+                <div class="livedl-option-icon"><i class="fas fa-file-video"></i></div>
+                <div class="livedl-option-text">
+                    <div class="livedl-option-name">下载 Live 视频</div>
+                    <div class="livedl-option-desc">完整的 Live 动态片段</div>
+                </div>
+                <i class="fas fa-chevron-right livedl-option-arrow"></i>
+            </button>
+        </div>
+        <button class="livedl-cancel" id="liveDlCancel">取消</button>
+    </div>
+</div>
+
+<div class="pwd-overlay" id="pwdOverlay">
+    <div class="pwd-box" id="pwdBox">
+        <div class="pwd-icon"><i class="fas fa-lock"></i></div>
+        <div class="pwd-title">输入密码</div>
+        <div class="pwd-sub" id="pwdSub">这个相册是加密的</div>
+        <input type="password" id="pwdInput" class="pwd-input" placeholder="输入相册密码" autocomplete="off">
+        <div class="pwd-error" id="pwdError"></div>
+        <div class="pwd-actions">
+            <button class="pwd-cancel" id="pwdCancel">取消</button>
+            <button class="pwd-confirm" id="pwdConfirm">解锁</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/assets/markdown/markdown.js"></script>
+<script>
+(function(){
+    var IMG_BASE = '';
+
+    var allAlbums = [];
+    var filteredAlbums = [];
+    var currentAlbum = null;
+    var currentKey = null;
+    var isNavigating = false;
+    var STORAGE_KEY = 'ks-album-prefs';
+    var ITERATIONS = 250000;
+    var defaultPrefs = {
+        albumLayout: 'grid',
+        albumCols: '3',
+        photoLayout: 'grid',
+        photoCols: '2',
+        desc: true,
+        meta: true,
+        download: true,
+        alt: true,
+        exif: true,
+        live: true,
+        liveBadge: true,
+        liveDownload: 'ask',
+        anim: true
+    };
+    var prefs = loadPrefs();
+
+    var detailBlobUrls = [];
+    var pendingAlbum = null;
+    var pendingDownload = null;
+    var isScrollingToTop = false;
+
+    var supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    var mainContainer = document.getElementById('mainContainer');
+    var listView = document.getElementById('listView');
+    var detailView = document.getElementById('detailView');
+    var gridEl = document.getElementById('albumGrid');
+    var searchBar = document.getElementById('searchBar');
+    var searchInput = document.getElementById('searchInput');
+    var clearBtn = document.getElementById('clearBtn');
+    var statsRow = document.getElementById('statsRow');
+    var statsText = document.getElementById('statsText');
+    var detailBack = document.getElementById('detailBack');
+    var detailTitle = document.getElementById('detailTitle');
+    var detailDesc = document.getElementById('detailDesc');
+    var detailMeta = document.getElementById('detailMeta');
+    var photoGrid = document.getElementById('photoGrid');
+    var settingsBtn = document.getElementById('settingsBtn');
+    var settingsOverlay = document.getElementById('settingsOverlay');
+    var settingsClose = document.getElementById('settingsClose');
+    var settingsReset = document.getElementById('settingsReset');
+    var liveDlOverlay = document.getElementById('liveDlOverlay');
+    var liveDlCover = document.getElementById('liveDlCover');
+    var liveDlLive = document.getElementById('liveDlLive');
+    var liveDlCancel = document.getElementById('liveDlCancel');
+    var backToTopBtn = document.getElementById('backToTopBtn');
+    var pwdOverlay = document.getElementById('pwdOverlay');
+    var pwdBox = document.getElementById('pwdBox');
+    var pwdInput = document.getElementById('pwdInput');
+    var pwdError = document.getElementById('pwdError');
+    var pwdSub = document.getElementById('pwdSub');
+    var pwdConfirm = document.getElementById('pwdConfirm');
+    var pwdCancel = document.getElementById('pwdCancel');
+
+    var themeToggle = document.getElementById('themeToggle');
+    var themeIcon = document.getElementById('themeIcon');
+    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var currentTheme = localStorage.getItem('ks-theme') || (prefersDark ? 'dark' : 'light');
+    function setTheme(t){
+        document.body.classList.toggle('dark', t === 'dark');
+        themeIcon.className = t === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        localStorage.setItem('ks-theme', t);
+        currentTheme = t;
+    }
+    setTheme(currentTheme);
+    themeToggle.addEventListener('click', function(){ setTheme(currentTheme === 'dark' ? 'light' : 'dark'); });
+
+    function resolveImageUrl(src){
+        if(!src) return '';
+        if(/^(https?:)?\/\//i.test(src)) return src;
+        if(/^data:/i.test(src)) return src;
+        if(/^blob:/i.test(src)) return src;
+        return IMG_BASE + src;
+    }
+
+    function loadPrefs(){
+        try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            if(!raw) return Object.assign({}, defaultPrefs);
+            return Object.assign({}, defaultPrefs, JSON.parse(raw));
+        } catch(e){
+            return Object.assign({}, defaultPrefs);
+        }
+    }
+    function savePrefs(){
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs)); } catch(e){}
+    }
+
+    function getContentWidth(){
+        if(!mainContainer) return window.innerWidth;
+        var styles = getComputedStyle(mainContainer);
+        var pl = parseFloat(styles.paddingLeft) || 0;
+        var pr = parseFloat(styles.paddingRight) || 0;
+        var w = mainContainer.getBoundingClientRect().width - pl - pr;
+        return Math.max(1, w);
+    }
+
+    function calcMaxCols(minColWidth, hardMax){
+        var gap = 13;
+        var avail = getContentWidth();
+        var n = Math.floor((avail + gap) / (minColWidth + gap));
+        return Math.max(1, Math.min(hardMax, n));
+    }
+
+    function getMaxAlbumCols(){ return calcMaxCols(220, 4); }
+    function getMaxPhotoCols(){ return calcMaxCols(85, 4); }
+
+    function applyColsVisibility(groupName, maxCols){
+        var group = document.querySelector('.segmented[data-group="' + groupName + '"]');
+        if(!group) return;
+        var groupContainer = group.closest('.settings-group');
+        var visibleCount = 0;
+        group.querySelectorAll('.segment-btn').forEach(function(btn){
+            var v = parseInt(btn.getAttribute('data-value'), 10);
+            if(v <= maxCols){
+                btn.classList.remove('hidden');
+                visibleCount++;
+            } else {
+                btn.classList.add('hidden');
+            }
+        });
+        if(groupContainer){
+            groupContainer.classList.toggle('hidden', visibleCount <= 1);
+        }
+    }
+
+    function updateSettingsVisibility(){
+        applyColsVisibility('albumCols', getMaxAlbumCols());
+        applyColsVisibility('photoCols', getMaxPhotoCols());
+    }
+
+    function autoFixPrefs(){
+        var maxAlbumCols = getMaxAlbumCols();
+        var maxPhotoCols = getMaxPhotoCols();
+        var changed = false;
+        if(parseInt(prefs.albumCols, 10) > maxAlbumCols){
+            prefs.albumCols = String(Math.max(1, maxAlbumCols));
+            changed = true;
+        }
+        if(parseInt(prefs.photoCols, 10) > maxPhotoCols){
+            prefs.photoCols = String(Math.max(1, maxPhotoCols));
+            changed = true;
+        }
+        if(changed) savePrefs();
+    }
+
+    function applyGridLayout(el, layout, cols, maxCols){
+        var effectiveCols = Math.min(parseInt(cols, 10) || 3, maxCols);
+        if(effectiveCols < 1) effectiveCols = 1;
+
+        el.classList.remove('layout-grid','layout-masonry','layout-list');
+        el.classList.remove('cols-1','cols-2','cols-3','cols-4');
+        el.classList.add('layout-' + layout);
+        el.classList.add('cols-' + effectiveCols);
+
+        el.style.gridTemplateColumns = '';
+        el.style.columnCount = '';
+        el.style.gap = '';
+        el.style.columnGap = '';
+
+        if(layout === 'grid'){
+            el.style.display = 'grid';
+            el.style.gridTemplateColumns = 'repeat(' + effectiveCols + ', 1fr)';
+            el.style.gap = '.8rem';
+        } else if(layout === 'masonry'){
+            el.style.display = 'block';
+            el.style.columnCount = effectiveCols;
+            el.style.columnGap = '.8rem';
+        } else {
+            el.style.display = 'flex';
+            el.style.flexDirection = 'column';
+            el.style.gap = '.6rem';
+        }
+    }
+
+    function applyPrefs(){
+        autoFixPrefs();
+
+        document.body.classList.toggle('hide-desc', !prefs.desc);
+        document.body.classList.toggle('hide-meta', !prefs.meta);
+        document.body.classList.toggle('hide-download', !prefs.download);
+        document.body.classList.toggle('hide-alt', !prefs.alt);
+        document.body.classList.toggle('hide-exif', !prefs.exif);
+        document.body.classList.toggle('hide-live-badge', !prefs.liveBadge);
+        document.body.classList.toggle('no-anim', !prefs.anim);
+
+        var maxAlbumCols = getMaxAlbumCols();
+        var maxPhotoCols = getMaxPhotoCols();
+
+        applyGridLayout(gridEl, prefs.albumLayout, prefs.albumCols, maxAlbumCols);
+        applyGridLayout(photoGrid, prefs.photoLayout, prefs.photoCols, maxPhotoCols);
+
+        if(prefs.albumLayout === 'grid') gridEl.style.gap = '1.2rem';
+        if(prefs.albumLayout === 'masonry') gridEl.style.columnGap = '1.2rem';
+        if(prefs.albumLayout === 'list') gridEl.style.gap = '.8rem';
+        if(prefs.photoLayout === 'grid') photoGrid.style.gap = '.8rem';
+
+        document.querySelectorAll('.segmented').forEach(function(group){
+            var g = group.getAttribute('data-group');
+            group.querySelectorAll('.segment-btn').forEach(function(btn){
+                btn.classList.toggle('active', String(prefs[g]) === btn.getAttribute('data-value'));
+            });
+        });
+        document.querySelectorAll('.toggle-switch').forEach(function(sw){
+            var t = sw.getAttribute('data-toggle');
+            sw.classList.toggle('active', !!prefs[t]);
+        });
+
+        updateSettingsVisibility();
+    }
+
+    function openSettings(){
+        settingsOverlay.classList.add('active');
+        settingsBtn.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeSettings(){
+        settingsOverlay.classList.remove('active');
+        settingsBtn.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function bindSettings(){
+        document.querySelectorAll('.segmented').forEach(function(group){
+            var g = group.getAttribute('data-group');
+            group.querySelectorAll('.segment-btn').forEach(function(btn){
+                btn.addEventListener('click', function(){
+                    prefs[g] = btn.getAttribute('data-value');
+                    savePrefs();
+                    applyPrefs();
+                });
+            });
+        });
+
+        document.querySelectorAll('.toggle-switch').forEach(function(sw){
+            sw.addEventListener('click', function(){
+                var t = sw.getAttribute('data-toggle');
+                prefs[t] = !prefs[t];
+                savePrefs();
+                applyPrefs();
+                if(currentAlbum && detailView.classList.contains('active')){
+                    if(currentAlbum.encrypted){
+                        if(currentAlbum._decryptedData){
+                            renderEncryptedDetailView(currentAlbum, currentAlbum._decryptedData);
+                        }
+                    } else {
+                        renderDetailView(currentAlbum);
+                    }
+                }
+            });
+        });
+
+        settingsBtn.addEventListener('click', openSettings);
+        settingsClose.addEventListener('click', closeSettings);
+        settingsOverlay.addEventListener('click', function(e){
+            if(e.target === settingsOverlay) closeSettings();
+        });
+        settingsReset.addEventListener('click', function(){
+            prefs = Object.assign({}, defaultPrefs);
+            savePrefs();
+            applyPrefs();
+            if(currentAlbum && detailView.classList.contains('active')){
+                if(currentAlbum.encrypted){
+                    if(currentAlbum._decryptedData){
+                        renderEncryptedDetailView(currentAlbum, currentAlbum._decryptedData);
+                    }
+                } else {
+                    renderDetailView(currentAlbum);
+                }
+            }
+            showToast('已恢复默认', 'fa-check-circle');
+        });
+        document.addEventListener('keydown', function(e){
+            if(e.key === 'Escape' && settingsOverlay.classList.contains('active')){
+                closeSettings();
+            }
+        });
+    }
+
+    var resizeTimer = null;
+    window.addEventListener('resize', function(){
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function(){ applyPrefs(); }, 150);
+    });
+
+    var scrollRaf = null;
+    function updateScrollUI(){
+        var y = window.scrollY || window.pageYOffset || 0;
+        var isDetail = detailView.classList.contains('active');
+        document.body.classList.toggle('hide-top-back', isDetail && y > 60);
+        if(!isScrollingToTop){
+            backToTopBtn.classList.toggle('show', y > 400);
+        }
+    }
+    window.addEventListener('scroll', function(){
+        if(scrollRaf) return;
+        scrollRaf = requestAnimationFrame(function(){
+            updateScrollUI();
+            scrollRaf = null;
+        });
+    }, {passive:true});
+
+    function scrollToTopAnimated(){
+        if(isScrollingToTop) return;
+        var startY = window.scrollY || window.pageYOffset || 0;
+        if(startY === 0){
+            backToTopBtn.classList.remove('show');
+            return;
+        }
+        isScrollingToTop = true;
+        var startTime = performance.now();
+        var duration = 400;
+        function step(now){
+            var t = Math.min((now - startTime) / duration, 1);
+            var ease = 1 - Math.pow(1 - t, 3);
+            window.scrollTo(0, startY * (1 - ease));
+            if(t < 1){
+                requestAnimationFrame(step);
+            } else {
+                window.scrollTo(0, 0);
+                isScrollingToTop = false;
+                backToTopBtn.classList.remove('show');
+            }
+        }
+        requestAnimationFrame(step);
+    }
+
+    backToTopBtn.addEventListener('click', scrollToTopAnimated);
+
+    function showToast(msg, icon){
+        icon = icon || 'fa-info-circle';
+        var t = document.getElementById('toast');
+        t.innerHTML = '<i class="fas ' + icon + '"></i> ' + msg;
+        t.classList.add('show');
+        clearTimeout(t._hideTimer);
+        t._hideTimer = setTimeout(function(){ t.classList.remove('show'); }, 2000);
+    }
+
+    function escapeHtml(text){
+        if(!text) return '';
+        var d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
+    }
+
+    function renderMd(text){
+        if(!text) return '';
+        if(window.KSMarkdown && window.KSMarkdown.renderMarkdown){
+            return window.KSMarkdown.renderMarkdown(text);
+        }
+        return escapeHtml(text);
+    }
+
+    function attachImageLoad(wrapper, img){
+        function done(){
+            wrapper.classList.add('loaded');
+            img.classList.add('loaded');
+        }
+        if(img.complete && img.naturalWidth !== 0){
+            requestAnimationFrame(done);
+        } else {
+            img.addEventListener('load', done, {once:true});
+            img.addEventListener('error', done, {once:true});
+        }
+    }
+
+    function getThumb(item){ return item.thumb || item.src; }
+    function getCover(album){
+        if(album.cover) return album.cover;
+        if(album.images && album.images[0]) return getThumb(album.images[0]);
+        return '';
+    }
+
+    function pad2(n){ return n < 10 ? '0' + n : String(n); }
+    function fmtNum(n){
+        if(typeof n !== 'number') return String(n);
+        return Number.isInteger(n) ? String(n) : n.toFixed(1);
+    }
+
+    function normalizeExif(raw){
+        if(!raw) return null;
+        var out = {};
+        var camera = [raw.Make, raw.Model].filter(Boolean).join(' ').trim();
+        if(camera) out.camera = camera;
+        if(raw.LensModel) out.lens = String(raw.LensModel).trim();
+        if(raw.FNumber) out.aperture = 'f/' + fmtNum(raw.FNumber);
+        if(raw.ExposureTime){
+            var t = raw.ExposureTime;
+            if(typeof t === 'number'){
+                if(t >= 1) out.shutter = fmtNum(t) + 's';
+                else out.shutter = '1/' + Math.round(1 / t) + 's';
+            } else {
+                out.shutter = String(t) + 's';
+            }
+        }
+        if(raw.ISO) out.iso = 'ISO ' + raw.ISO;
+        if(raw.FocalLength) out.focal = fmtNum(raw.FocalLength) + 'mm';
+        if(raw.DateTimeOriginal){
+            var d = raw.DateTimeOriginal;
+            if(d instanceof Date && !isNaN(d)){
+                out.date = d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+            } else if(typeof d === 'string'){
+                out.date = d;
+            }
+        }
+        return Object.keys(out).length ? out : null;
+    }
+
+    function fetchExifFromImage(url){
+        return new Promise(function(resolve){
+            if(typeof exifr === 'undefined'){ resolve(null); return; }
+            if(!url){ resolve(null); return; }
+            exifr.parse(url, {
+                pick: ['Make','Model','LensModel','FNumber','ExposureTime','ISO','FocalLength','DateTimeOriginal'],
+                translateValues: false,
+                reviveValues: false,
+                silentErrors: true
+            }).then(function(raw){
+                resolve(normalizeExif(raw));
+            }).catch(function(){ resolve(null); });
+        });
+    }
+
+    function buildExifTagsHtml(exif){
+        if(!exif) return '';
+        var tags = [];
+        if(exif.camera) tags.push(exif.camera);
+        if(exif.lens) tags.push(exif.lens);
+        if(exif.focal) tags.push(exif.focal);
+        if(exif.aperture) tags.push(exif.aperture);
+        if(exif.shutter) tags.push(exif.shutter);
+        if(exif.iso) tags.push(exif.iso);
+        if(exif.date) tags.push(exif.date);
+        if(!tags.length) return '';
+        var html = '<div class="pio-exif">';
+        tags.forEach(function(t){
+            html += '<span class="pio-exif-item">' + escapeHtml(t) + '</span>';
+        });
+        html += '</div>';
+        return html;
+    }
+
+    function buildInfoOverlayHtml(alt, exif){
+        var hasAlt = alt && alt.length;
+        var exifHtml = buildExifTagsHtml(exif);
+        if(!hasAlt && !exifHtml) return '';
+        var html = '<div class="photo-info-overlay">';
+        if(hasAlt) html += '<div class="pio-alt">' + escapeHtml(alt) + '</div>';
+        html += exifHtml;
+        html += '</div>';
+        return html;
+    }
+
+    function bufToBase64(buf){
+        var bytes = new Uint8Array(buf);
+        var bin = '';
+        for(var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin);
+    }
+    function base64ToBuf(b64){
+        var binary = atob(b64);
+        var bytes = new Uint8Array(binary.length);
+        for(var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return bytes;
+    }
+
+    async function deriveKey(password, salt, usages){
+        var enc = new TextEncoder();
+        var km = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+        return crypto.subtle.deriveKey(
+            { name:'PBKDF2', salt: salt, iterations: ITERATIONS, hash:'SHA-256' },
+            km,
+            { name:'AES-GCM', length:256 },
+            false,
+            usages
+        );
+    }
+
+    async function decryptPayload(entry, password){
+        var salt = base64ToBuf(entry.salt);
+        var iv = base64ToBuf(entry.iv);
+        var ct = base64ToBuf(entry.payload);
+        var key = await deriveKey(password, salt, ['decrypt']);
+        var pt = await crypto.subtle.decrypt({ name:'AES-GCM', iv: iv }, key, ct);
+        return { key: key, data: JSON.parse(new TextDecoder().decode(pt)) };
+    }
+
+    async function decryptImageBlob(src, ivBase64, key){
+        var url = resolveImageUrl(src);
+        var res = await fetch(url);
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        var ct = await res.arrayBuffer();
+        var iv = base64ToBuf(ivBase64);
+        var pt = await crypto.subtle.decrypt({ name:'AES-GCM', iv: iv }, key, ct);
+        return new Blob([pt]);
+    }
+
+    function updateStats(){
+        var albumCount = filteredAlbums.length;
+        var photoCount = 0;
+        filteredAlbums.forEach(function(a){
+            if(!a.encrypted && a.images) photoCount += a.images.length;
+        });
+        var hasFilter = searchInput.value.trim().length > 0;
+        statsRow.classList.add('updating');
+        setTimeout(function(){ statsRow.classList.remove('updating'); }, 300);
+        if(albumCount === 0){
+            statsText.textContent = hasFilter ? '没有匹配的相册' : '还没有相册';
+        } else if(photoCount === 0){
+            statsText.innerHTML = '共 ' + albumCount + ' 个相册' + (hasFilter ? '（已筛选）' : '');
+        } else {
+            statsText.innerHTML = '共 ' + albumCount + ' 个相册 <span class="sep">·</span> ' + photoCount + ' 张照片' + (hasFilter ? '（已筛选）' : '');
+        }
+    }
+
+    function loadAlbums(){
+        fetch('albums/albums.json', {cache:'no-cache'})
+            .then(function(res){
+                if(!res.ok) throw new Error('加载失败');
+                return res.json();
+            })
+            .then(function(data){
+                allAlbums = (data.albums || []).filter(function(a){ return a.delete !== true; });
+                allAlbums.sort(function(a, b){
+                    var oa = a.order || 0;
+                    var ob = b.order || 0;
+                    if(oa !== ob) return ob - oa;
+                    return (b.date || '').localeCompare(a.date || '');
+                });
+                applyFilter('');
+                handleRoute();
+                setTimeout(applyPrefs, 50);
+            })
+            .catch(function(err){
+                console.error(err);
+                gridEl.innerHTML = '<div class="empty-state"><i class="far fa-frown"></i><p>加载相册失败</p></div>';
+            });
+    }
+
+    function applyFilter(keyword){
+        var k = (keyword || '').trim().toLowerCase();
+        if(!k){
+            filteredAlbums = allAlbums.slice();
+        } else {
+            filteredAlbums = allAlbums.filter(function(a){
+                var fields = [
+                    a.title || '',
+                    a.user || 'ks',
+                    a.date || '',
+                    a.desc || '',
+                    a.location || ''
+                ].join(' ').toLowerCase();
+                return fields.indexOf(k) !== -1;
+            });
+        }
+        renderGrid();
+        updateStats();
+    }
+
+    function renderGrid(){
+        if(filteredAlbums.length === 0){
+            gridEl.innerHTML = '<div class="empty-state"><i class="fas fa-images"></i><p>没有找到相册</p></div>';
+            return;
+        }
+        var html = '';
+        filteredAlbums.forEach(function(album, idx){
+            html += buildCard(album, idx);
+        });
+        gridEl.innerHTML = html;
+
+        gridEl.querySelectorAll('.album-card').forEach(function(card){
+            card.style.animationDelay = (card.getAttribute('data-idx') * 55) + 'ms';
+            card.addEventListener('click', function(){
+                var idx = parseInt(card.getAttribute('data-idx'), 10);
+                openAlbumDetail(filteredAlbums[idx]);
+            });
+            var cover = card.querySelector('.album-cover');
+            var img = cover ? cover.querySelector('img') : null;
+            if(cover && img) attachImageLoad(cover, img);
+        });
+    }
+
+    function buildCard(album, idx){
+        var coverHtml = '';
+        if(album.encrypted){
+            coverHtml = '<div class="album-cover-locked"><i class="fas fa-lock"></i><span>加密相册，请解密查看～</span></div>';
+        } else {
+            var first = getCover(album);
+            if(first){
+                coverHtml = '<span class="cover-skeleton"></span><img src="' + escapeHtml(resolveImageUrl(first)) + '" alt="" loading="lazy">';
+            } else {
+                coverHtml = '<div class="album-cover-locked"><i class="fas fa-image"></i><span>暂无图片</span></div>';
+            }
+        }
+
+        var meta = '';
+        meta += '<span><i class="fas fa-user"></i> ' + escapeHtml(album.user || 'ks') + '</span>';
+        if(album.date) meta += '<span><i class="fas fa-calendar"></i> ' + escapeHtml(album.date) + '</span>';
+        if(album.location) meta += '<span><i class="fas fa-location-dot"></i> ' + escapeHtml(album.location) + '</span>';
+        if(!album.encrypted && album.images){
+            meta += '<span><i class="fas fa-image"></i> ' + album.images.length + ' 张</span>';
+        } else if(album.encrypted){
+            meta += '<span><i class="fas fa-lock"></i> 加密</span>';
+        }
+
+        var desc = (!album.encrypted && album.desc) ? '<div class="album-desc">' + renderMd(album.desc) + '</div>' : '';
+
+        return '<div class="album-card" data-idx="' + idx + '">' +
+            '<div class="album-cover">' + coverHtml + '</div>' +
+            '<div class="album-info">' +
+                '<div class="album-title">' + escapeHtml(album.title || '无标题') + '</div>' +
+                desc +
+                '<div class="album-meta">' + meta + '</div>' +
+            '</div>' +
+        '</div>';
+    }
+
+    function setHash(hash){
+        isNavigating = true;
+        if(hash) location.hash = hash;
+        else history.replaceState(null, '', location.pathname + location.search);
+        setTimeout(function(){ isNavigating = false; }, 50);
+    }
+
+    function openAlbumDetail(album){
+        if(album.encrypted){
+            pendingAlbum = album;
+            pwdSub.textContent = '「' + (album.title || '相册') + '」需要密码';
+            openPwd();
+            return;
+        }
+        if(!album.images || album.images.length === 0){
+            showToast('这个相册还没有图片', 'fa-image');
+            return;
+        }
+        if(location.hash !== '#album=' + encodeURIComponent(album.id)){
+            setHash('#album=' + encodeURIComponent(album.id));
+        }
+        currentAlbum = album;
+        renderDetailView(album);
+    }
+
+    function openPwd(){
+        pwdOverlay.classList.add('active');
+        pwdInput.value = '';
+        pwdError.textContent = '';
+        pwdInput.classList.remove('error');
+        setTimeout(function(){ pwdInput.focus(); }, 100);
+    }
+    function closePwd(){
+        pwdOverlay.classList.remove('active');
+        pwdInput.value = '';
+        pwdError.textContent = '';
+        pwdInput.classList.remove('error');
+        pendingAlbum = null;
+    }
+
+    async function tryUnlock(){
+        if(!pendingAlbum) return;
+        var pwd = pwdInput.value;
+        if(!pwd){
+            pwdError.textContent = '请输入密码';
+            pwdInput.classList.add('error');
+            return;
+        }
+        pwdConfirm.disabled = true;
+        pwdConfirm.textContent = '解密中...';
+        try {
+            var result = await decryptPayload(pendingAlbum, pwd);
+            var album = pendingAlbum;
+            currentAlbum = album;
+            currentKey = result.key;
+            album._decryptedData = result.data;
+            closePwd();
+            if(location.hash !== '#album=' + encodeURIComponent(album.id)){
+                setHash('#album=' + encodeURIComponent(album.id));
+            }
+            renderEncryptedDetailView(album, result.data);
+            showToast('解锁成功', 'fa-check-circle');
+        } catch(e){
+            console.error('解密失败', e);
+            pwdError.textContent = '密码错误，解不开';
+            pwdInput.classList.add('error');
+            pwdBox.classList.remove('shake');
+            void pwdBox.offsetWidth;
+            pwdBox.classList.add('shake');
+            setTimeout(function(){ pwdInput.select(); }, 100);
+        } finally {
+            pwdConfirm.disabled = false;
+            pwdConfirm.textContent = '解锁';
+        }
+    }
+
+    function renderDetailView(album){
+        var meta = '';
+        meta += '<span><i class="fas fa-user"></i> ' + escapeHtml(album.user || 'ks') + '</span>';
+        if(album.date) meta += '<span><i class="fas fa-calendar"></i> ' + escapeHtml(album.date) + '</span>';
+        if(album.location) meta += '<span><i class="fas fa-location-dot"></i> ' + escapeHtml(album.location) + '</span>';
+        meta += '<span><i class="fas fa-image"></i> ' + album.images.length + ' 张</span>';
+
+        buildDetailPage(
+            album.title || '无标题',
+            album.desc ? renderMd(album.desc) : '',
+            meta,
+            album.images,
+            false
+        );
+    }
+
+    function renderEncryptedDetailView(album, data){
+        var images = data.images || [];
+        var meta = '';
+        meta += '<span><i class="fas fa-user"></i> ' + escapeHtml(album.user || 'ks') + '</span>';
+        if(data.date) meta += '<span><i class="fas fa-calendar"></i> ' + escapeHtml(data.date) + '</span>';
+        else if(album.date) meta += '<span><i class="fas fa-calendar"></i> ' + escapeHtml(album.date) + '</span>';
+        if(data.location) meta += '<span><i class="fas fa-location-dot"></i> ' + escapeHtml(data.location) + '</span>';
+        meta += '<span><i class="fas fa-image"></i> ' + images.length + ' 张</span>';
+        meta += '<span><i class="fas fa-lock"></i> 已解密</span>';
+
+        buildDetailPage(
+            album.title || '无标题',
+            data.desc ? renderMd(data.desc) : '',
+            meta,
+            images,
+            true
+        );
+    }
+
+    function buildDetailPage(title, descHtml, meta, images, isEncrypted){
+        detailTitle.textContent = title;
+        detailDesc.innerHTML = descHtml;
+        detailMeta.innerHTML = meta;
+
+        var photoHtml = '';
+        images.forEach(function(item, i){
+            var altText = item.alt || '';
+            var infoHtml = buildInfoOverlayHtml(altText, item.exif || null);
+            var hasLive = !!item.live && prefs.live && !isEncrypted;
+            var liveBadge = hasLive ? '<button class="photo-live-badge" type="button" aria-label="播放或停止"><span class="live-dot"></span><span class="live-text"></span></button>' : '';
+            var videoTag = hasLive ? '<video class="photo-video" data-src="' + escapeHtml(item.live) + '" muted playsinline preload="none"></video>' : '';
+            var dlTitle = hasLive ? '下载 (封面 / Live)' : '下载原图';
+            photoHtml += '<div class="photo-item' + (hasLive ? ' is-live' : '') + '" data-idx="' + i + '">' +
+                '<span class="photo-skeleton"></span>' +
+                '<img class="photo-img" alt="' + escapeHtml(altText) + '" loading="lazy">' +
+                videoTag +
+                liveBadge +
+                '<button class="photo-download" data-idx="' + i + '" title="' + dlTitle + '" aria-label="' + dlTitle + '"><i class="fas fa-download"></i></button>' +
+                infoHtml +
+            '</div>';
+        });
+        photoGrid.innerHTML = photoHtml;
+
+        photoGrid.querySelectorAll('.photo-item').forEach(function(el){
+            var i = parseInt(el.getAttribute('data-idx'), 10);
+            var item = images[i];
+            var isLive = !!item.live && prefs.live && !isEncrypted;
+            var videoEl = el.querySelector('.photo-video');
+            var badgeEl = el.querySelector('.photo-live-badge');
+            el.style.animationDelay = (i * 40) + 'ms';
+
+            var img = el.querySelector('.photo-img');
+
+            if(isEncrypted){
+                loadEncryptedImage(el, img, item, i);
+            } else {
+                img.src = escapeHtml(resolveImageUrl(getThumb(item)));
+                if(img) attachImageLoad(el, img);
+            }
+
+            el.addEventListener('click', function(e){
+                if(e.target.closest('.photo-download')) return;
+                if(e.target.closest('.photo-live-badge')) return;
+                openLightbox(i);
+            });
+
+            if(isLive && videoEl){
+                var srcLoaded = false;
+                el._liveLocked = false;
+
+                var loadAndPlay = function(){
+                    if(!srcLoaded){
+                        videoEl.src = resolveImageUrl(videoEl.getAttribute('data-src'));
+                        videoEl.load();
+                        srcLoaded = true;
+                    }
+                    var p = videoEl.play();
+                    if(p && p.catch) p.catch(function(){});
+                    el.classList.add('is-playing');
+                };
+                var stopLive = function(){
+                    try { videoEl.pause(); videoEl.currentTime = 0; } catch(e){}
+                    el.classList.remove('is-playing');
+                };
+
+                videoEl.addEventListener('ended', function(){
+                    el._liveLocked = false;
+                    stopLive();
+                });
+
+                if(supportsHover){
+                    el.addEventListener('mouseenter', function(){
+                        if(el._liveLocked) return;
+                        loadAndPlay();
+                    });
+                    el.addEventListener('mouseleave', function(){
+                        if(el._liveLocked) return;
+                        stopLive();
+                    });
+                }
+
+                if(badgeEl){
+                    badgeEl.addEventListener('click', function(e){
+                        e.stopPropagation();
+                        e.preventDefault();
+                        if(el._liveLocked){
+                            el._liveLocked = false;
+                            stopLive();
+                        } else {
+                            el._liveLocked = true;
+                            loadAndPlay();
+                        }
+                    });
+                    badgeEl.addEventListener('touchstart', function(e){
+                        e.stopPropagation();
+                    }, {passive:true});
+                    badgeEl.addEventListener('touchend', function(e){
+                        e.stopPropagation();
+                    }, {passive:true});
+                }
+            }
+
+            if(!isEncrypted && !item.exif && !item._exifTried){
+                item._exifTried = true;
+                el.addEventListener('mouseenter', function onEnter(){
+                    el.removeEventListener('mouseenter', onEnter);
+                    fetchExifFromImage(resolveImageUrl(item.src)).then(function(exif){
+                        if(exif){
+                            item.exif = exif;
+                            var overlay = el.querySelector('.photo-info-overlay');
+                            var newHtml = buildInfoOverlayHtml(item.alt || '', exif);
+                            if(overlay){
+                                overlay.outerHTML = newHtml;
+                            } else {
+                                el.insertAdjacentHTML('beforeend', newHtml);
+                            }
+                        }
+                    });
+                }, {once:true});
+            }
+        });
+
+        photoGrid.querySelectorAll('.photo-download').forEach(function(btn){
+            btn.addEventListener('click', function(e){
+                e.stopPropagation();
+                var i = parseInt(btn.getAttribute('data-idx'), 10);
+                if(isEncrypted){
+                    var item = images[i];
+                    if(item._blobUrl){
+                        doDownloadBlob(item._blobUrl, (currentAlbum.title || 'photo') + '_' + (i + 1) + '.jpg');
+                    } else {
+                        showToast('图片还没解密完', 'fa-info-circle');
+                    }
+                } else {
+                    handleDownloadClick(images[i], currentAlbum, i);
+                }
+            });
+        });
+
+        applyGridLayout(photoGrid, prefs.photoLayout, prefs.photoCols, getMaxPhotoCols());
+        if(prefs.photoLayout === 'grid') photoGrid.style.gap = '.8rem';
+
+        listView.classList.add('hidden');
+        detailView.classList.add('active');
+        document.body.classList.add('detail-active');
+        window.scrollTo({top:0, behavior:'smooth'});
+        requestAnimationFrame(updateScrollUI);
+    }
+
+    async function loadEncryptedImage(el, img, item, idx){
+        try {
+            var blob = await decryptImageBlob(item.src, item.iv, currentKey);
+            var url = URL.createObjectURL(blob);
+            detailBlobUrls.push(url);
+            item._blobUrl = url;
+            img.onload = function(){ el.classList.add('loaded'); };
+            img.onerror = function(){ el.classList.add('decrypt-failed'); };
+            img.src = url;
+        } catch(e){
+            console.error('解密图片失败', item.src, e);
+            el.classList.add('decrypt-failed');
+        }
+    }
+
+    function doDownloadBlob(url, filename){
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('开始下载', 'fa-check-circle');
+    }
+
+    function handleDownloadClick(item, album, index){
+        if(!item) return;
+        if(item.live){
+            if(prefs.liveDownload === 'cover'){
+                doDownload(resolveImageUrl(item.src), album, index, false);
+            } else if(prefs.liveDownload === 'live'){
+                doDownload(resolveImageUrl(item.live), album, index, true);
+            } else {
+                pendingDownload = { item: item, album: album, index: index };
+                liveDlOverlay.classList.add('active');
+            }
+        } else {
+            doDownload(resolveImageUrl(item.src), album, index, false);
+        }
+    }
+
+    function doDownload(url, album, index, isLive){
+        if(!url) return;
+        var ext = isLive ? '.mp4' : '.jpg';
+        try {
+            var match = url.match(/\.(jpg|jpeg|png|gif|webp|avif|mp4|mov|m4v|webm|ogv)(\?|$)/i);
+            if(match) ext = '.' + match[1].toLowerCase();
+        } catch(e){}
+        var suffix = isLive ? '_live' : '';
+        var filename = (album.title || 'photo') + '_' + (index + 1) + suffix + ext;
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast(isLive ? '开始下载 Live 视频' : '开始下载封面', 'fa-check-circle');
+    }
+
+    function closeLiveDl(){
+        liveDlOverlay.classList.remove('active');
+        pendingDownload = null;
+    }
+
+    liveDlCover.addEventListener('click', function(){
+        if(!pendingDownload) return;
+        var p = pendingDownload;
+        closeLiveDl();
+        doDownload(resolveImageUrl(p.item.src), p.album, p.index, false);
+    });
+
+    liveDlLive.addEventListener('click', function(){
+        if(!pendingDownload) return;
+        var p = pendingDownload;
+        closeLiveDl();
+        doDownload(resolveImageUrl(p.item.live), p.album, p.index, true);
+    });
+
+    liveDlCancel.addEventListener('click', closeLiveDl);
+    liveDlOverlay.addEventListener('click', function(e){
+        if(e.target === liveDlOverlay) closeLiveDl();
+    });
+
+    function openLightbox(index){
+        if(!currentAlbum) return;
+        var imgs;
+        if(currentAlbum._decryptedData){
+            imgs = currentAlbum._decryptedData.images.map(function(item){
+                return { src: item._blobUrl || '', alt: item.alt || '' };
+            });
+        } else {
+            imgs = currentAlbum.images.map(function(item){
+                return { src: resolveImageUrl(item.src), alt: item.alt || '' };
+            });
+        }
+        if(window.KSMarkdown && window.KSMarkdown.openLightbox){
+            window.KSMarkdown.openLightbox(imgs, index);
+        } else {
+            showToast('灯箱模块未加载', 'fa-exclamation-circle');
+        }
+    }
+
+    function revokeDetailBlobs(){
+        detailBlobUrls.forEach(function(u){ URL.revokeObjectURL(u); });
+        detailBlobUrls = [];
+    }
+
+    function closeDetail(){
+        if(location.hash) setHash('');
+        detailView.classList.remove('active');
+        listView.classList.remove('hidden');
+        currentAlbum = null;
+        currentKey = null;
+        photoGrid.innerHTML = '';
+        revokeDetailBlobs();
+        document.body.classList.remove('detail-active');
+        document.body.classList.remove('hide-top-back');
+        updateScrollUI();
+    }
+
+    function handleRoute(){
+        if(isNavigating) return;
+        var match = location.hash.match(/^#album=([^&]+)/);
+        if(match){
+            var id = decodeURIComponent(match[1]);
+            var album = allAlbums.find(function(a){ return a.id === id; });
+            if(album && !album.encrypted){
+                currentAlbum = album;
+                renderDetailView(album);
+                return;
+            }
+            if(album && album.encrypted){
+                pendingAlbum = album;
+                pwdSub.textContent = '「' + (album.title || '相册') + '」需要密码';
+                openPwd();
+                return;
+            }
+        }
+        if(detailView.classList.contains('active')){
+            detailView.classList.remove('active');
+            listView.classList.remove('hidden');
+            currentAlbum = null;
+            currentKey = null;
+            photoGrid.innerHTML = '';
+            revokeDetailBlobs();
+            document.body.classList.remove('detail-active');
+            document.body.classList.remove('hide-top-back');
+        }
+    }
+
+    detailBack.addEventListener('click', closeDetail);
+
+    pwdCancel.addEventListener('click', closePwd);
+    pwdConfirm.addEventListener('click', tryUnlock);
+    pwdInput.addEventListener('keydown', function(e){
+        if(e.key === 'Enter') tryUnlock();
+        if(e.key === 'Escape') closePwd();
+    });
+    pwdOverlay.addEventListener('click', function(e){
+        if(e.target === pwdOverlay) closePwd();
+    });
+
+    clearBtn.addEventListener('click', function(){
+        searchInput.value = '';
+        searchBar.classList.remove('has-value');
+        applyFilter('');
+        searchInput.focus();
+    });
+
+    var searchTimer = null;
+    searchInput.addEventListener('input', function(){
+        searchBar.classList.toggle('has-value', searchInput.value.length > 0);
+        clearTimeout(searchTimer);
+        var val = searchInput.value;
+        searchTimer = setTimeout(function(){ applyFilter(val); }, 150);
+    });
+
+    document.addEventListener('keydown', function(e){
+        if(e.key === 'Escape'){
+            if(pwdOverlay.classList.contains('active')){
+                closePwd();
+                return;
+            }
+            if(liveDlOverlay.classList.contains('active')){
+                closeLiveDl();
+                return;
+            }
+            if(settingsOverlay.classList.contains('active')) return;
+            if(document.querySelector('.lightbox-overlay.active')) return;
+            if(detailView.classList.contains('active')){
+                e.preventDefault();
+                closeDetail();
+            }
+        }
+    });
+
+    window.addEventListener('hashchange', handleRoute);
+
+    applyPrefs();
+    bindSettings();
+    loadAlbums();
+    updateScrollUI();
+})();
+</script>
+</body>
+</html>

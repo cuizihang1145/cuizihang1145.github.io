@@ -13,6 +13,7 @@
       "title": "测试使用",
       "user": "ks",
       "desc": "测试使用喔，这里支持`markdown`…Ai还是太发达了喵",
+      "tags": ["测试", "瞎搞"],
       "images": [
         { "src": "https://s41.ax1x.com/2026/09/13/pnm9HmT.png", "alt": "我都等不及了😱", "exif": { "camera": "搬运", "lens": "滚木" } },
         { "src": "https://s41.ax1x.com/2026/09/13/pnm9b0U.png", "alt": "你只是想发这张图而已" },

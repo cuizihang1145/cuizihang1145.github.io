@@ -740,7 +740,7 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
 <script src="/assets/markdown/markdown.js"></script>
 <script>
 (function(){
-    var IMG_BASE = '';
+    var IMG_BASE = 'albums/';
 
     var allAlbums = [];
     var filteredAlbums = [];
@@ -1322,6 +1322,14 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
         return bytes;
     }
 
+    async function gunzipStr(buf){
+        var ds = new DecompressionStream('gzip');
+        var writer = ds.writable.getWriter();
+        writer.write(buf);
+        writer.close();
+        return await new Response(ds.readable).text();
+    }
+
     async function deriveKey(password, salt, usages){
         var enc = new TextEncoder();
         var km = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
@@ -1340,7 +1348,8 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
         var ct = base64ToBuf(entry.payload);
         var key = await deriveKey(password, salt, ['decrypt']);
         var pt = await crypto.subtle.decrypt({ name:'AES-GCM', iv: iv }, key, ct);
-        return { key: key, data: JSON.parse(new TextDecoder().decode(pt)) };
+        var text = await gunzipStr(pt);
+        return { key: key, data: JSON.parse(text) };
     }
 
     async function decryptImageBlob(src, ivBase64, key){

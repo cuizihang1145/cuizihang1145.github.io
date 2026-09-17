@@ -40,5 +40,12 @@
     "desc": "心生妙趣，乐享无限创意生活！",
     "logo": "https://old.okoki.cn/avtar.jpg",
     "feed": ""
+  },
+  {
+    "name": "里世界",
+    "url": "https://leenet.xyz",
+    "desc": "Welcome To The World Of Lee",
+    "logo": "https://leenet.xyz/avatar.png",
+    "feed": "https://leenet.xyz/feed.xml"
   }
 ]

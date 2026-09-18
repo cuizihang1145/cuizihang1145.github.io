@@ -1,1136 +1,175 @@
-(function (global) {
-  'use strict';
-
-  function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  function markdownToPlainText(md) {
-    if (!md) return '';
-    let text = md;
-    text = text.replace(/```[\s\S]*?```/g, '');
-    text = text.replace(/`([^`]+)`/g, '$1');
-    text = text.replace(/!video\[[^\]]*\]\([^)]*\)/g, '');
-    text = text.replace(/!\[[^\]]*\]\([^)]*\)/g, '');
-    text = text.replace(/!audio\[[^\]]*\]\([^)]*\)/g, '');
-    text = text.replace(/\*\*(.*?)\*\*/g, '$1');
-    text = text.replace(/\*([^*]+)\*/g, '$1');
-    text = text.replace(/~~(.*?)~~/g, '$1');
-    text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
-    text = text.replace(/^#{1,6}\s+/gm, '');
-    text = text.replace(/^-\s+/gm, '');
-    text = text.replace(/^\d+\.\s+/gm, '');
-    text = text.replace(/^>\s+/gm, '');
-    text = text.replace(/^---$/gm, '');
-    text = text.replace(/\n/g, ' ');
-    text = text.replace(/\s{2,}/g, ' ');
-    return text.trim();
-  }
-
-  function countWords(md) {
-    if (!md) return 0;
-    const text = md
-      .replace(/```[\s\S]*?```/g, '')
-      .replace(/`[^`]+`/g, '')
-      .replace(/!video\[[^\]]*\]\([^)]*\)/g, '')
-      .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
-      .replace(/!audio\[[^\]]*\]\([^)]*\)/g, '')
-      .replace(/\*\*(.*?)\*\*/g, '$1')
-      .replace(/\*([^*]+)\*/g, '$1')
-      .replace(/~~(.*?)~~/g, '$1')
-      .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-      .replace(/^#{1,6}\s+/gm, '')
-      .replace(/^-\s+/gm, '')
-      .replace(/^\d+\.\s+/gm, '')
-      .replace(/^>\s+/gm, '')
-      .replace(/^---$/gm, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-    return text.length;
-  }
-
-  function renderMarkdown(md) {
-    if (!md) return '';
-
-    const escMap = {};
-    let escCounter = 0;
-    md = md.replace(/\\([\\`*_{}\[\]()#+\-.!|$])/g, function (match, char) {
-      const key = '\uE000' + (escCounter++) + '\uE001';
-      escMap[key] = char;
-      return key;
-    });
-
-    const safeTags = [];
-    const footnotes = {};
-    let footnoteCounter = 0;
-    const footnoteIdMap = {};
-
-    function getFootnoteId(key) {
-      if (!footnoteIdMap[key]) {
-        footnoteCounter++;
-        footnoteIdMap[key] = footnoteCounter;
-      }
-      return footnoteIdMap[key];
-    }
-
-    function restoreEscapes(text) {
-      let r = text;
-      for (const [key, char] of Object.entries(escMap)) {
-        r = r.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), char);
-      }
-      return r;
-    }
-
-    function renderAudioBadge(src) {
-      const map = [
-        { domain: 'soundcloud.com', icon: 'fa-soundcloud', label: 'SoundCloud', cls: 'source-soundcloud' },
-        { domain: 'bandcamp.com', icon: 'fa-bandcamp', label: 'Bandcamp', cls: 'source-bandcamp' },
-        { domain: 'spotify.com', icon: 'fa-spotify', label: 'Spotify', cls: 'source-spotify' },
-        { domain: 'apple.com', icon: 'fa-apple', label: 'Apple Music', cls: 'source-apple' },
-        { domain: 'tidal.com', icon: 'fa-tidal', label: 'Tidal', cls: 'source-tidal' },
-        { domain: 'deezer.com', icon: 'fa-deezer', label: 'Deezer', cls: 'source-deezer' },
-        { domain: 'pandora.com', icon: 'fa-pandora', label: 'Pandora', cls: 'source-pandora' },
-        { domain: 'mixcloud.com', icon: 'fa-mixcloud', label: 'Mixcloud', cls: 'source-mixcloud' },
-        { domain: 'youtube.com', icon: 'fa-youtube', label: 'YouTube Music', cls: 'source-youtube' },
-        { domain: 'amazon.com', icon: 'fa-amazon', label: 'Amazon Music', cls: 'source-amazon' },
-      ];
-      try {
-        const host = new URL(src).hostname.replace(/^www\./, '');
-        for (const item of map) {
-          if (host === item.domain || host.endsWith('.' + item.domain)) {
-            return '<span class="audio-source-badge ' + item.cls + '"><i class="fab ' + item.icon + '"></i> ' + item.label + '</span>';
-          }
-        }
-      } catch (e) {}
-      return '';
-    }
-
-    function renderAudio(title, src, cover) {
-      const escapedTitle = escapeHtml(title);
-      const escapedSrc = escapeHtml(src);
-      const escapedCover = escapeHtml(cover || '');
-      if (src.includes('music.163.com')) {
-        const loadingId = 'audio-loading-' + Math.random().toString(36).slice(2, 9);
-        return '<div class="netease-wrapper">' +
-          '<div class="embed-loading" id="' + loadingId + '"><i class="fas fa-spinner fa-spin"></i></div>' +
-          '<iframe src="' + escapedSrc + '" scrolling="no" frameborder="0" onload="this.classList.add(\'loaded\'); document.getElementById(\'' + loadingId + '\').classList.add(\'hidden\');"></iframe>' +
-          '</div>';
-      }
-      const badge = renderAudioBadge(src);
-      const coverHtml = cover
-        ? '<div class="audio-cover" style="background-image:url(' + escapedCover + ');background-size:contain;background-position:center;background-repeat:no-repeat;background-color:#f0f0f0;position:relative;overflow:hidden;"><img src="' + escapedCover + '" alt="' + escapedTitle + '" loading="lazy" style="display:block;width:100%;height:100%;opacity:0;position:absolute;top:0;left:0;pointer-events:auto;z-index:2;" /></div>'
-        : '<div class="audio-cover"><span class="fallback-icon"><i class="fas fa-music"></i></span></div>';
-      return '<div class="audio-card">' +
-        badge +
-        coverHtml +
-        '<div class="audio-info"><div class="audio-title">' + escapedTitle + '</div></div>' +
-        '<div class="audio-player"><audio controls src="' + escapedSrc + '" preload="metadata"></audio></div>' +
-        '<button class="info-btn" data-audio-title="' + escapedTitle + '" data-audio-src="' + escapedSrc + '" data-cover-src="' + escapedCover + '"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button>' +
-        '</div>';
-    }
-
-    function renderInline(text) {
-      let html = text;
-
-      html = html.replace(/<([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s<>]+)>/g, '<a href="$1">$1</a>');
-
-      const tagMap = {};
-      let tagIndex = 0;
-      html = html.replace(/<[^>]+>/g, function (match) {
-        const key = '\uE002' + (tagIndex++) + '\uE003';
-        tagMap[key] = match;
-        return key;
-      });
-
-      html = html.replace(/<([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)>(.*?)<\/\1>/gs, function (match, tag, attrs, content) {
-        if (safeTags.includes(tag.toLowerCase())) {
-          return '<' + tag + attrs + '>' + renderInline(content) + '</' + tag + '>';
-        }
-        return match;
-      });
-
-      html = html.replace(/<br\s*\/?>/gi, '<br>');
-
-      html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,
-        function (match, alt, src, title, w, h) {
-          let style = '';
-          if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
-          else if (w) style = ' style="width:' + w + 'px; height:auto;"';
-          else if (h) style = ' style="height:' + h + 'px; width:auto;"';
-          const titleAttr = title ? ' title="' + escapeHtml(title) + '"' : '';
-          return '<img src="' + escapeHtml(src) + '" alt="' + escapeHtml(alt) + '" loading="lazy"' + style + titleAttr + ' />';
-        });
-
-      html = html.replace(
-        /!video\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,
-        function (match, desc, src, title, w, h) {
-          let style = '';
-          if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
-          else if (w) style = ' style="width:' + w + 'px; height:auto;"';
-          else if (h) style = ' style="height:' + h + 'px; width:auto;"';
-          const descHtml = desc ? '<div class="video-alt-text">' + renderInline(desc) + '</div>' : '';
-
-          const youtubeMatch = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-          if (youtubeMatch) {
-            return '<div class="video-placeholder" data-video-loading="1"><div class="video-loading"><i class="fas fa-spinner fa-spin"></i></div><iframe src="https://www.youtube.com/embed/' + youtubeMatch[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
-          }
-          const bilibiliMatch = src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
-          if (bilibiliMatch) {
-            return '<div class="video-placeholder" data-video-loading="1"><div class="video-loading"><i class="fas fa-spinner fa-spin"></i></div><iframe src="https://player.bilibili.com/player.html?bvid=' + bilibiliMatch[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
-          }
-          return '<div class="video-placeholder"><video src="' + escapeHtml(src) + '" controls' + style + '></video>' + descHtml + '</div>';
-        });
-
-      html = html.replace(/!audio\[([^\]]*)\]\(([^)]*)\)/g, function (match, title, srcAndCover) {
-        const parts = srcAndCover.split(/\s+=\s*/);
-        const src = parts[0].trim();
-        const cover = parts.length > 1 ? parts[1].trim() : '';
-        return renderAudio(title, src, cover);
-      });
-
-      const codePlaceholders = [];
-      html = html.replace(/`([^`]+)`/g, function (match, code) {
-        const key = '\uE004' + (codePlaceholders.length) + '\uE005';
-        codePlaceholders.push(code);
-        return key;
-      });
-
-      html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-      html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
-
-      html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-      html = html.replace(/\[\^([^\]]+)\]/g, function (match, key) {
-        const id = getFootnoteId(key);
-        return '<sup class="footnote-ref"><a data-footnote-ref="' + id + '">' + id + '</a></sup>';
-      });
-
-      html = html.replace(/\uE004(\d+)\uE005/g, function (match, index) {
-        return '<code>' + escapeHtml(codePlaceholders[parseInt(index)]) + '</code>';
-      });
-
-      html = restoreEscapes(html);
-      for (const key in tagMap) {
-        if (Object.prototype.hasOwnProperty.call(tagMap, key)) {
-          html = html.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), tagMap[key]);
-        }
-      }
-      return html;
-    }
-
-    function renderBlock(content) {
-      if (!content) return '';
-      const lines = content.split('\n');
-      let result = '';
-      let inList = false;
-      let listStack = [];
-      let paragraph = [];
-
-      function flushList() {
-        if (!inList) return;
-        let html = '';
-        for (let i = listStack.length - 1; i >= 0; i--) {
-          const list = listStack[i];
-          const tag = list.type === 'ol' ? 'ol' : 'ul';
-          const cls = list.type === 'task' ? ' class="task-list"' : '';
-          const startAttr = (list.type === 'ol' && list.start !== null && list.start !== 1) ? ' start="' + list.start + '"' : '';
-          html = '<' + tag + cls + startAttr + '>\n' + list.items.join('\n') + '\n</' + tag + '>\n' + html;
-        }
-        result += html;
-        inList = false;
-        listStack = [];
-      }
-
-      function flushParagraph() {
-        if (paragraph.length > 0) {
-          result += '<p>' + paragraph.map(line => renderInline(line)).join('<br>') + '</p>\n';
-          paragraph = [];
-        }
-      }
-
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-
-        if (line.trim() === '') {
-          flushList();
-          flushParagraph();
-          result += '\n';
-          continue;
-        }
-
-        if (/^CODEBLOCK_\d+$/.test(line.trim())) {
-          flushList();
-          flushParagraph();
-          result += line.trim() + '\n';
-          continue;
-        }
-
-        const footnoteDefMatch = line.match(/^\[\^([^\]]+)\]:\s*(.*)/);
-        if (footnoteDefMatch) {
-          flushList();
-          flushParagraph();
-          const fnId = getFootnoteId(footnoteDefMatch[1]);
-          footnotes[fnId] = { key: footnoteDefMatch[1], content: footnoteDefMatch[2] };
-          continue;
-        }
-
-        const blockquoteMatch = line.match(/^(>+)\s?(.*)/);
-        if (blockquoteMatch) {
-          flushList();
-          flushParagraph();
-          const quoteLines = [];
-          let j = i;
-          while (j < lines.length) {
-            const qm = lines[j].match(/^((?:>\s*)+)(.*)/);
-            if (qm) {
-              quoteLines.push({ level: (qm[1].match(/>/g) || []).length, content: qm[2] });
-              j++;
-            } else if (lines[j].trim() === '') break;
-            else break;
-          }
-          i = j - 1;
-
-          function buildLevel(startIdx, currentLevel) {
-            let html = '';
-            let k = startIdx;
-            while (k < quoteLines.length) {
-              if (quoteLines[k].level < currentLevel) break;
-              if (quoteLines[k].level === currentLevel) {
-                const parts = [];
-                while (k < quoteLines.length && quoteLines[k].level === currentLevel) {
-                  parts.push(renderInline(quoteLines[k].content));
-                  k++;
-                }
-                html += parts.join('<br>');
-              } else if (quoteLines[k].level > currentLevel) {
-                const nested = buildLevel(k, quoteLines[k].level);
-                html += nested.html;
-                k = nested.newIndex;
-              }
-            }
-            return { html: '<blockquote>' + html + '</blockquote>', newIndex: k };
-          }
-
-          const minLevel = Math.min(...quoteLines.map(q => q.level));
-          result += buildLevel(0, minLevel).html + '\n';
-          continue;
-        }
-
-        const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
-        if (headingMatch) {
-          flushList();
-          flushParagraph();
-          result += '<h' + headingMatch[1].length + '>' + renderInline(headingMatch[2]) + '</h' + headingMatch[1].length + '>\n';
-          continue;
-        }
-
-        if (/^---$/.test(line.trim()) || /^\*\*\*$/.test(line.trim()) || /^___$/.test(line.trim())) {
-          flushList();
-          flushParagraph();
-          result += '<hr />\n';
-          continue;
-        }
-
-        const tableLineMatch = line.match(/^\|(.+)\|$/);
-        if (tableLineMatch) {
-          flushList();
-          flushParagraph();
-          const tableRows = [];
-          let j = i;
-          while (j < lines.length) {
-            const tmatch = lines[j].match(/^\|(.+)\|$/);
-            if (tmatch) { tableRows.push(tmatch[1]); j++; }
-            else break;
-          }
-          i = j - 1;
-          if (tableRows.length >= 2) {
-            const headerCells = tableRows[0].split('|').map(c => c.trim());
-            const alignRow = tableRows[1].split('|').map(c => c.trim());
-            const isAlignRow = alignRow.every(c => /^:?-+:?$/.test(c));
-            const dataStart = isAlignRow ? 2 : 1;
-            const alignments = isAlignRow ? alignRow.map(c => /^:-+:$/.test(c) ? 'center' : /^-+:$/.test(c) ? 'right' : 'left') : headerCells.map(() => 'left');
-
-            let tableHtml = '<table><thead><tr>';
-            headerCells.forEach((cell, ci) => {
-              tableHtml += '<th style="text-align:' + alignments[ci] + ';">' + renderInline(cell) + '</th>';
-            });
-            tableHtml += '</tr></thead><tbody>';
-            for (let ri = dataStart; ri < tableRows.length; ri++) {
-              const rowCells = tableRows[ri].split('|').map(c => c.trim());
-              tableHtml += '<tr>';
-              for (let rci = 0; rci < headerCells.length; rci++) {
-                const cell = rci < rowCells.length ? rowCells[rci] : '';
-                tableHtml += '<td style="text-align:' + alignments[rci] + ';">' + renderInline(cell) + '</td>';
-              }
-              tableHtml += '</tr>';
-            }
-            tableHtml += '</tbody></table>';
-            result += tableHtml + '\n';
-            continue;
-          }
-        }
-
-        const listMatch = line.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
-        if (listMatch) {
-          flushParagraph();
-          const indent = listMatch[1].length;
-          const marker = listMatch[2];
-          let listContent = listMatch[3];
-          const isTask = listContent.match(/^\[([ x])\]\s+(.*)/);
-          const taskChecked = isTask ? isTask[1] === 'x' : false;
-          const taskContent = isTask ? isTask[2] : listContent;
-          const isOrdered = /^\d+\.$/.test(marker);
-          const listType = isOrdered ? 'ol' : (isTask ? 'task' : 'ul');
-          const currentLevel = Math.floor(indent / 2);
-
-          if (!inList) {
-            inList = true;
-            listStack = [{ type: listType, items: [], level: currentLevel, start: isOrdered ? parseInt(marker) : null }];
-          } else {
-            while (listStack.length > 0 && listStack[listStack.length - 1].level > currentLevel) {
-              const last = listStack.pop();
-              if (listStack.length > 0 && last.items.length > 0) {
-                listStack[listStack.length - 1].items.push(last.items.join(''));
-              }
-            }
-            if (listStack.length === 0 || listStack[listStack.length - 1].level < currentLevel) {
-              listStack.push({ type: listType, items: [], level: currentLevel, start: isOrdered ? parseInt(marker) : null });
-            }
-          }
-
-          const itemHtml = isTask
-            ? '<li data-checked="' + (taskChecked ? 'true' : 'false') + '">' + renderInline(taskContent) + '</li>'
-            : '<li>' + renderInline(listContent) + '</li>';
-          listStack[listStack.length - 1].items.push(itemHtml);
-
-          const subItems = [];
-          let k = i + 1;
-          while (k < lines.length) {
-            const nm = lines[k].match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
-            if (nm && parseInt(nm[1].length) > indent) {
-              const subContent = nm[3];
-              const subTask = subContent.match(/^\[([ x])\]\s+(.*)/);
-              subItems.push(subTask
-                ? '<li data-checked="' + (subTask[1] === 'x' ? 'true' : 'false') + '">' + renderInline(subTask[2]) + '</li>'
-                : '<li>' + renderInline(subContent) + '</li>');
-              k++;
-            } else break;
-          }
-
-          if (subItems.length > 0) {
-            const hasCheckbox = subItems.some(item => item.includes('data-checked'));
-            const subHtml = '<ul class="' + (hasCheckbox ? 'task-list' : '') + '">\n' + subItems.join('\n') + '\n</ul>';
-            const currentList = listStack[listStack.length - 1];
-            currentList.items[currentList.items.length - 1] = currentList.items[currentList.items.length - 1].replace(/<\/li>$/, subHtml + '</li>');
-          }
-          i = k - 1;
-          continue;
-        }
-
-        if (inList) {
-          flushList();
-        }
-
-        const dlMatch = line.match(/^([^:]+):\s+(.*)/);
-        if (dlMatch && i + 1 < lines.length && lines[i + 1].match(/^:\s+/)) {
-          flushParagraph();
-          const term = renderInline(dlMatch[1]);
-          const defs = [];
-          i++;
-          while (i < lines.length && lines[i].match(/^:\s+/)) {
-            defs.push(renderInline(lines[i].replace(/^:\s+/, '')));
-            i++;
-          }
-          while (i < lines.length && lines[i].trim() === '') i++;
-          result += '<dl><dt>' + term + '</dt>' + defs.map(d => '<dd>' + d + '</dd>').join('') + '</dl>\n';
-          continue;
-        }
-
-        paragraph.push(line);
-      }
-
-      if (inList) flushList();
-      flushParagraph();
-      return result;
-    }
-
-    const codeBlockRegex = /^(\s*)```(\w*)\s*\n([\s\S]*?)\1```/gm;
-    const codeBlocks = [];
-    let codeIndex = 0;
-    md = md.replace(codeBlockRegex, function (match, indent, lang, code) {
-      const id = 'CODEBLOCK_' + (codeIndex++);
-      codeBlocks.push({ id: id, lang: lang, code: code.replace(/^\n+|\n+$/g, '') });
-      return id;
-    });
-
-    let html = renderBlock(md);
-
-    codeBlocks.forEach((block, b) => {
-      const copyId = 'code-' + Date.now() + '-' + b;
-      const lines = block.code.split('\n');
-      const lineCount = lines.length;
-      let maxLineLength = 0;
-      let totalChars = 0;
-      lines.forEach(line => {
-        maxLineLength = Math.max(maxLineLength, line.length);
-        totalChars += line.length;
-      });
-      totalChars += lineCount > 0 ? lineCount - 1 : 0;
-
-      let codeHtml = '';
-      lines.forEach((line, j) => {
-        codeHtml += '<span class="code-line"><span class="line-number">' + (j + 1) + '</span><span class="hljs">' + escapeHtml(line) + '</span></span>';
-      });
-
-      const statsHtml = '<span>' + lineCount + ' 行</span> · <span>' + maxLineLength + ' 列</span> · <span>' + totalChars + ' 字符</span>';
-      const codeBlockHtml =
-        '<div class="code-block-wrapper" id="cbw-' + copyId + '">' +
-        '<div class="code-block-header">' +
-        '<span class="lang-label">' + escapeHtml(block.lang || 'text') + '</span>' +
-        '<span class="code-stats">' + statsHtml + '</span>' +
-        '<span class="header-actions">' +
-        '<button class="copy-btn" data-copy="' + copyId + '"><i class="fas fa-copy"></i> 复制</button>' +
-        '<button class="collapse-btn" data-target="cbw-' + copyId + '"><i class="fas fa-chevron-up"></i></button>' +
-        '</span>' +
-        '</div>' +
-        '<div class="code-block-body-wrapper">' +
-        '<div class="code-block-body" id="code-body-' + copyId + '">' + codeHtml + '</div>' +
-        '</div>' +
-        '</div>';
-      html = html.replace(block.id, codeBlockHtml);
-    });
-
-    if (Object.keys(footnotes).length > 0) {
-      let footnotesHtml = '<div class="footnotes">';
-      for (let fnId = 1; fnId <= footnoteCounter; fnId++) {
-        if (footnotes[fnId]) {
-          footnotesHtml += '<div class="footnote-def" id="footnote-def-' + fnId + '">';
-          footnotesHtml += '<a class="footnote-back" data-footnote-back="' + fnId + '">↩</a> ';
-          footnotesHtml += '<span class="footnote-number">[' + fnId + ']</span> ';
-          footnotesHtml += renderInline(footnotes[fnId].content);
-          footnotesHtml += '</div>';
-        }
-      }
-      footnotesHtml += '</div>';
-      html += footnotesHtml;
-    }
-
-    return html.replace(/\n{3,}/g, '\n\n');
-  }
-
-  function initImageLazyLoad(container) {
-    container.querySelectorAll('.img-placeholder').forEach(function (wrapper) {
-      const img = wrapper.querySelector('img');
-      if (!img) return;
-      const done = () => {
-        wrapper.classList.add('loaded');
-        img.classList.add('loaded');
-        const loading = wrapper.querySelector('.img-loading');
-        if (loading) loading.style.display = 'none';
-      };
-      if (img.complete && img.naturalWidth !== 0) {
-        done();
-      } else {
-        img.addEventListener('load', done);
-        img.addEventListener('error', done);
-      }
-    });
-  }
-
-  function initVideoLazyLoad(container) {
-    container.querySelectorAll('.video-placeholder[data-video-loading]').forEach(function (wrapper) {
-      const iframe = wrapper.querySelector('iframe');
-      const loading = wrapper.querySelector('.video-loading');
-      if (!iframe || !loading) return;
-      let hidden = false;
-      let loaded = false;
-      const MIN_DISPLAY = 400;
-      const startTime = Date.now();
-
-      function hideLoading() {
-        if (hidden) return;
-        hidden = true;
-        const elapsed = Date.now() - startTime;
-        const delay = Math.max(0, MIN_DISPLAY - elapsed);
-        setTimeout(function () {
-          wrapper.classList.add('loaded');
-          loading.style.display = 'none';
-        }, delay);
-      }
-
-      function markLoaded() {
-        if (loaded) return;
-        loaded = true;
-        hideLoading();
-      }
-
-      try {
-        if (iframe.contentWindow && iframe.contentWindow.document &&
-            iframe.contentWindow.document.readyState === 'complete') {
-          markLoaded();
-          return;
-        }
-      } catch (e) {}
-
-      iframe.addEventListener('load', markLoaded);
-      iframe.addEventListener('error', markLoaded);
-
-      setTimeout(function () {
-        if (!loaded) markLoaded();
-      }, 8000);
-    });
-  }
-
-  function initCodeHighlight(container) {
-    if (!global.hljs) return;
-    container.querySelectorAll('.code-line .hljs').forEach(el => {
-      try { global.hljs.highlightElement(el); } catch (e) {}
-    });
-  }
-
-  function wrapImagesInPlaceholders(container) {
-    container.querySelectorAll('img').forEach(img => {
-      if (img.closest('.img-placeholder')) return;
-      const wrapper = document.createElement('div');
-      wrapper.className = 'img-placeholder';
-      wrapper.innerHTML = '<span class="img-loading"><i class="fas fa-spinner fa-spin"></i></span>';
-      img.parentNode.insertBefore(wrapper, img);
-      wrapper.appendChild(img);
-      const alt = img.getAttribute('alt') || '';
-      if (alt) {
-        const altSpan = document.createElement('span');
-        altSpan.className = 'img-alt-text';
-        altSpan.textContent = alt;
-        wrapper.appendChild(altSpan);
-      }
-    });
-  }
-
-  let lbIsOpen = false;
-
-  function openLightbox(images, index) {
-    if (!images || images.length === 0 || lbIsOpen) return;
-    lbIsOpen = true;
-    let currentIndex = index || 0;
-
-    const progressEl = document.createElement('div');
-    progressEl.className = 'lightbox-progress';
-    progressEl.innerHTML = '<div class="lb-progress-bar"></div>';
-    document.body.appendChild(progressEl);
-    const progressBarEl = progressEl.querySelector('.lb-progress-bar');
-
-    const existing = document.querySelector('.lightbox-overlay');
-    if (existing) existing.remove();
-
-    const overlay = document.createElement('div');
-    overlay.className = 'lightbox-overlay';
-    overlay.innerHTML =
-      '<button class="lightbox-close">&times;</button>' +
-      '<button class="lightbox-nav prev"><i class="fas fa-chevron-left"></i></button>' +
-      '<button class="lightbox-nav next"><i class="fas fa-chevron-right"></i></button>' +
-      '<button class="lightbox-play"><i class="fas fa-play"></i></button>' +
-      '<div class="lightbox-container">' +
-      '<div class="lightbox-img-wrapper"><img src="" alt="" /></div>' +
-      '<div class="lightbox-alt"></div>' +
-      '</div>' +
-      '<div class="lightbox-counter"></div>';
-    document.body.appendChild(overlay);
-    document.body.style.overflow = 'hidden';
-
-    const imgWrapper = overlay.querySelector('.lightbox-img-wrapper');
-    const img = overlay.querySelector('img');
-    const altEl = overlay.querySelector('.lightbox-alt');
-    const counterEl = overlay.querySelector('.lightbox-counter');
-    const prevBtn = overlay.querySelector('.lightbox-nav.prev');
-    const nextBtn = overlay.querySelector('.lightbox-nav.next');
-    const playBtn = overlay.querySelector('.lightbox-play');
-    const closeBtn = overlay.querySelector('.lightbox-close');
-
-    let scale = 1;
-    let translateX = 0;
-    let translateY = 0;
-    let isDragging = false;
-    let mouseDown = false;
-    let mouseStartX = 0, mouseStartY = 0, mouseLastX = 0, mouseLastY = 0;
-    let touchStartDist = 0, touchStartScale = 1, touchStartX = 0, touchStartY = 0, touchLastX = 0, touchLastY = 0;
-    let playIntervalId = null;
-    let progressAnimId = null;
-    let isPlaying = false;
-    const PLAY_DELAY = 3000;
-
-    function updateLightbox() {
-      const data = images[currentIndex];
-      if (!data) return;
-      img.src = data.src;
-      img.alt = data.alt || '';
-      altEl.textContent = data.alt || '';
-      counterEl.textContent = (currentIndex + 1) + ' / ' + images.length;
-      prevBtn.disabled = images.length <= 1 || isPlaying;
-      nextBtn.disabled = images.length <= 1 || isPlaying;
-      scale = 1;
-      translateX = 0;
-      translateY = 0;
-      img.style.transition = 'none';
-      img.style.transform = 'scale(1) translate(0px, 0px)';
-      progressBarEl.style.width = '0%';
-      progressEl.classList.toggle('active', isPlaying);
-      updatePlayButtonState();
-    }
-
-    function updatePlayButtonState() {
-      if (images.length <= 1) {
-        playBtn.disabled = true;
-        playBtn.innerHTML = '<i class="fas fa-play"></i>';
-        return;
-      }
-      if (currentIndex === images.length - 1 && !isPlaying) {
-        playBtn.disabled = true;
-        playBtn.innerHTML = '<i class="fas fa-play"></i>';
-        return;
-      }
-      playBtn.disabled = false;
-      playBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
-    }
-
-    function stopPlayback() {
-      isPlaying = false;
-      if (playIntervalId) { clearInterval(playIntervalId); playIntervalId = null; }
-      if (progressAnimId) { cancelAnimationFrame(progressAnimId); progressAnimId = null; }
-      prevBtn.disabled = images.length <= 1;
-      nextBtn.disabled = images.length <= 1;
-      progressEl.classList.remove('active');
-      progressBarEl.style.width = '0%';
-      updatePlayButtonState();
-    }
-
-    function startProgressAnimation() {
-      if (progressAnimId) cancelAnimationFrame(progressAnimId);
-      progressBarEl.style.width = '0%';
-      const startTime = performance.now();
-      function updateProgress(now) {
-        if (!isPlaying) return;
-        const progress = Math.min(((now - startTime) / PLAY_DELAY) * 100, 100);
-        progressBarEl.style.width = progress + '%';
-        if (progress < 100) progressAnimId = requestAnimationFrame(updateProgress);
-      }
-      progressAnimId = requestAnimationFrame(updateProgress);
-    }
-
-    function startPlayback() {
-      if (isPlaying || images.length <= 1 || currentIndex === images.length - 1) return;
-      isPlaying = true;
-      prevBtn.disabled = true;
-      nextBtn.disabled = true;
-      progressEl.classList.add('active');
-      updatePlayButtonState();
-      startProgressAnimation();
-      playIntervalId = setInterval(() => {
-        if (!isPlaying) return;
-        if (currentIndex < images.length - 1) {
-          currentIndex++;
-          updateLightbox();
-          startProgressAnimation();
-        } else {
-          stopPlayback();
-        }
-      }, PLAY_DELAY);
-    }
-
-    function togglePlay() {
-      if (images.length <= 1) return;
-      if (isPlaying) stopPlayback();
-      else startPlayback();
-    }
-
-    function closeLightbox() {
-      if (!lbIsOpen) return;
-      lbIsOpen = false;
-      isPlaying = false;
-      if (playIntervalId) { clearInterval(playIntervalId); playIntervalId = null; }
-      if (progressAnimId) { cancelAnimationFrame(progressAnimId); progressAnimId = null; }
-      if (progressEl.parentNode) progressEl.remove();
-      overlay.classList.remove('active');
-      setTimeout(() => {
-        if (overlay.parentNode) overlay.remove();
-        document.body.style.overflow = '';
-        document.removeEventListener('keydown', escHandler);
-      }, 350);
-    }
-
-    function escHandler(e) {
-      if (e.key === 'Escape') closeLightbox();
-      if (e.key === 'ArrowLeft' && !isPlaying && images.length > 1) {
-        e.preventDefault();
-        currentIndex = (currentIndex - 1 + images.length) % images.length;
-        updateLightbox();
-      }
-      if (e.key === 'ArrowRight' && !isPlaying && images.length > 1) {
-        e.preventDefault();
-        currentIndex = (currentIndex + 1) % images.length;
-        updateLightbox();
-      }
-    }
-
-    img.addEventListener('wheel', function (e) {
-      e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.1 : 0.1;
-      const newScale = Math.min(Math.max(0.5, scale + delta), 5);
-      const rect = img.getBoundingClientRect();
-      const ratioX = (e.clientX - rect.left) / rect.width;
-      const ratioY = (e.clientY - rect.top) / rect.height;
-      const oldScale = scale;
-      scale = newScale;
-      translateX += (1 - newScale / oldScale) * (rect.width / 2 - rect.width * ratioX);
-      translateY += (1 - newScale / oldScale) * (rect.height / 2 - rect.height * ratioY);
-      img.style.transition = 'none';
-      img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
-    }, { passive: false });
-
-    imgWrapper.addEventListener('touchstart', function (e) {
-      if (e.touches.length === 2) {
-        const t = e.touches;
-        touchStartDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
-        touchStartScale = scale;
-      } else if (e.touches.length === 1) {
-        isDragging = true;
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-        touchLastX = translateX;
-        touchLastY = translateY;
-        imgWrapper.style.cursor = 'grabbing';
-      }
-    }, { passive: true });
-
-    imgWrapper.addEventListener('touchmove', function (e) {
-      if (e.touches.length === 2) {
-        const t = e.touches;
-        const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
-        scale = Math.min(Math.max(0.5, touchStartScale * (dist / touchStartDist)), 5);
-      } else if (e.touches.length === 1 && isDragging) {
-        translateX = touchLastX + (e.touches[0].clientX - touchStartX);
-        translateY = touchLastY + (e.touches[0].clientY - touchStartY);
-      }
-      img.style.transition = 'none';
-      img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
-    }, { passive: true });
-
-    imgWrapper.addEventListener('touchend', function () {
-      isDragging = false;
-      imgWrapper.style.cursor = 'grab';
-      if (scale < 1) { scale = 1; translateX = 0; translateY = 0; }
-      if (scale > 3) { scale = 3; }
-      if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) { translateX = 0; translateY = 0; }
-      img.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
-      img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
-    });
-
-    imgWrapper.addEventListener('mousedown', function (e) {
-      mouseDown = true;
-      mouseStartX = e.clientX;
-      mouseStartY = e.clientY;
-      mouseLastX = translateX;
-      mouseLastY = translateY;
-      imgWrapper.style.cursor = 'grabbing';
-      e.preventDefault();
-    });
-
-    document.addEventListener('mousemove', function (e) {
-      if (!mouseDown) return;
-      translateX = mouseLastX + (e.clientX - mouseStartX);
-      translateY = mouseLastY + (e.clientY - mouseStartY);
-      img.style.transition = 'none';
-      img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
-    });
-
-    document.addEventListener('mouseup', function () {
-      if (!mouseDown) return;
-      mouseDown = false;
-      imgWrapper.style.cursor = 'grab';
-      if (scale < 1) { scale = 1; translateX = 0; translateY = 0; }
-      if (scale > 3) { scale = 3; }
-      if (Math.abs(translateX) > 300 || Math.abs(translateY) > 300) { translateX = 0; translateY = 0; }
-      img.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
-      img.style.transform = 'scale(' + scale + ') translate(' + translateX + 'px, ' + translateY + 'px)';
-    });
-
-    closeBtn.addEventListener('click', closeLightbox);
-    overlay.addEventListener('click', function (e) {
-      if (e.target === this) closeLightbox();
-    });
-    prevBtn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      if (isPlaying) stopPlayback();
-      if (images.length > 1) {
-        currentIndex = (currentIndex - 1 + images.length) % images.length;
-        updateLightbox();
-      }
-    });
-    nextBtn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      if (isPlaying) stopPlayback();
-      if (images.length > 1) {
-        currentIndex = (currentIndex + 1) % images.length;
-        updateLightbox();
-      }
-    });
-    playBtn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      togglePlay();
-    });
-
-    document.addEventListener('keydown', escHandler);
-    updateLightbox();
-    requestAnimationFrame(() => overlay.classList.add('active'));
-  }
-
-  function mountMarkdown(container, markdownText) {
-    if (!container) return;
-    container.innerHTML = renderMarkdown(markdownText || '');
-    container.classList.add('markdown-body');
-    wrapImagesInPlaceholders(container);
-    initImageLazyLoad(container);
-    initVideoLazyLoad(container);
-    initCodeHighlight(container);
-    bindImageLightbox(container);
-    return container;
-  }
-
-  function bindImageLightbox(container) {
-    const images = [];
-    container.querySelectorAll('.img-placeholder img').forEach(img => {
-      const src = img.getAttribute('src');
-      if (src) {
-        images.push({ src, alt: img.getAttribute('alt') || '' });
-      }
-    });
-    container.querySelectorAll('.img-placeholder img').forEach((img, index) => {
-      img.style.cursor = 'pointer';
-      img.addEventListener('click', function (e) {
-        e.stopPropagation();
-        openLightbox(images, index);
-      });
-    });
-  }
-
-  function openAudioInfo(btn) {
-    const title = btn.dataset.audioTitle || '未知标题';
-    const coverSrc = btn.dataset.coverSrc || '';
-    const audioSrc = btn.dataset.audioSrc || '';
-
-    const card = btn.closest('.audio-card');
-    let source = '未知来源';
-    if (card) {
-      const badge = card.querySelector('.audio-source-badge');
-      if (badge) source = badge.textContent.trim();
-    }
-
-    document.querySelectorAll('.cover-modal-overlay').forEach(el => el.remove());
-
-    const overlay = document.createElement('div');
-    overlay.className = 'cover-modal-overlay';
-    const modal = document.createElement('div');
-    modal.className = 'cover-modal';
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'cover-modal-close';
-    closeBtn.textContent = '×';
-    modal.appendChild(closeBtn);
-
-    const content = document.createElement('div');
-    content.className = 'modal-content';
-
-    if (coverSrc) {
-      const img = document.createElement('img');
-      img.src = coverSrc;
-      img.alt = title;
-      content.appendChild(img);
-    }
-
-    function addField(label, value) {
-      const field = document.createElement('div');
-      field.className = 'field';
-      const labelSpan = document.createElement('span');
-      labelSpan.className = 'label';
-      labelSpan.textContent = label;
-      const valueSpan = document.createElement('span');
-      valueSpan.className = 'value';
-
-      if (value.startsWith('http')) {
-        const a = document.createElement('a');
-        a.href = value;
-        a.target = '_blank';
-        a.textContent = value;
-        valueSpan.appendChild(a);
-        field.appendChild(labelSpan);
-        field.appendChild(valueSpan);
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'copy-btn-modal';
-        copyBtn.dataset.copy = value;
-        copyBtn.innerHTML = '<span class="copy-text">复制</span><span class="copied-text">已复制</span>';
-        copyBtn.addEventListener('click', function() {
-          navigator.clipboard.writeText(value).then(() => {
-            this.classList.add('copied');
-            setTimeout(() => this.classList.remove('copied'), 1500);
-          }).catch(() => {
-            const ta = document.createElement('textarea');
-            ta.value = value;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            ta.remove();
-            this.classList.add('copied');
-            setTimeout(() => this.classList.remove('copied'), 1500);
-          });
-        });
-        field.appendChild(copyBtn);
-      } else {
-        valueSpan.textContent = value;
-        field.appendChild(labelSpan);
-        field.appendChild(valueSpan);
-      }
-      content.appendChild(field);
-    }
-
-    addField('标题', title);
-    addField('来源', source);
-    if (coverSrc) addField('封面', coverSrc);
-    if (audioSrc) addField('音频', audioSrc);
-
-    modal.appendChild(content);
-    overlay.appendChild(modal);
-    document.body.appendChild(overlay);
-    requestAnimationFrame(() => overlay.classList.add('active'));
-
-    const close = () => {
-      overlay.classList.remove('active');
-      setTimeout(() => overlay.remove(), 300);
-    };
-    closeBtn.addEventListener('click', close);
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) close();
-    });
-  }
-
-  document.addEventListener('click', function(e) {
-    const btn = e.target.closest('.audio-card .info-btn');
-    if (btn) {
-      e.preventDefault();
-      openAudioInfo(btn);
-    }
-  });
-
-  function scrollToFootnote(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const targetY = el.getBoundingClientRect().top + window.scrollY - 80;
-    const startY = window.scrollY || window.pageYOffset;
-    const distance = targetY - startY;
-    if (Math.abs(distance) < 5) return;
-    const duration = 350;
-    const startTime = performance.now();
-    function step(now) {
-      const progress = Math.min((now - startTime) / duration, 1);
-      const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-      window.scrollTo(0, startY + distance * ease);
-      if (progress < 1) requestAnimationFrame(step);
-      else window.scrollTo(0, targetY);
-    }
-    requestAnimationFrame(step);
-  }
-
-  document.addEventListener('click', function (e) {
-    const footnoteRef = e.target.closest('[data-footnote-ref]');
-    if (footnoteRef) {
-      e.preventDefault();
-      scrollToFootnote('footnote-def-' + footnoteRef.getAttribute('data-footnote-ref'));
-      return;
-    }
-
-    const footnoteBack = e.target.closest('[data-footnote-back]');
-    if (footnoteBack) {
-      e.preventDefault();
-      const backId = footnoteBack.getAttribute('data-footnote-back');
-      const refLink = document.querySelector('[data-footnote-ref="' + backId + '"]');
-      if (refLink) {
-        const targetY = refLink.getBoundingClientRect().top + window.scrollY - 80;
-        const startY = window.scrollY || window.pageYOffset;
-        const distance = targetY - startY;
-        if (Math.abs(distance) < 5) return;
-        const duration = 350;
-        const startTime = performance.now();
-        function step(now) {
-          const progress = Math.min((now - startTime) / duration, 1);
-          const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-          window.scrollTo(0, startY + distance * ease);
-          if (progress < 1) requestAnimationFrame(step);
-          else window.scrollTo(0, targetY);
-        }
-        requestAnimationFrame(step);
-      }
-      return;
-    }
-
-    const copyBtn = e.target.closest('.copy-btn');
-    if (copyBtn) {
-      const targetId = copyBtn.dataset.copy;
-      const wrapper = document.getElementById('cbw-' + targetId);
-      if (!wrapper) return;
-      let text = '';
-      wrapper.querySelectorAll('.code-line').forEach(function(line) {
-        const clone = line.cloneNode(true);
-        const lineNum = clone.querySelector('.line-number');
-        if (lineNum) lineNum.remove();
-        text += clone.textContent + '\n';
-      });
-      text = text.replace(/\n$/, '');
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.left = '-9999px';
-      ta.style.top = '0';
-      ta.style.width = '1px';
-      ta.style.height = '1px';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      try {
-        const success = document.execCommand('copy');
-        if (success) {
-          copyBtn.innerHTML = '<i class="fas fa-check"></i> 已复制';
-          copyBtn.classList.add('copied');
-          setTimeout(function() {
-            copyBtn.innerHTML = '<i class="fas fa-copy"></i> 复制';
-            copyBtn.classList.remove('copied');
-          }, 2000);
-        }
-      } catch (err) {}
-      document.body.removeChild(ta);
-      return;
-    }
-
-    const collapseBtn = e.target.closest('.collapse-btn');
-    if (collapseBtn) {
-      const targetId = collapseBtn.dataset.target;
-      const wrapper = document.getElementById(targetId);
-      if (!wrapper) return;
-      const icon = collapseBtn.querySelector('i');
-      wrapper.classList.toggle('collapsed');
-      icon.className = wrapper.classList.contains('collapsed') ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
-      return;
-    }
-  });
-
-  global.KSMarkdown = {
-    renderMarkdown: renderMarkdown,
-    mountMarkdown: mountMarkdown,
-    markdownToPlainText: markdownToPlainText,
-    countWords: countWords,
-    openLightbox: openLightbox,
-    initImageLazyLoad: initImageLazyLoad,
-    initVideoLazyLoad: initVideoLazyLoad,
-    initCodeHighlight: initCodeHighlight
-  };
+(function(global){'use strict';
+var esc=t=>{if(!t)return'';var d=document.createElement('div');d.textContent=t;return d.innerHTML};
+function mdPlain(md){if(!md)return'';return md.replace(/```[\s\S]*?```/g,'').replace(/`([^`]+)`/g,'$1').replace(/!video\[[^\]]*\]\([^)]*\)/g,'').replace(/!\[[^\]]*\]\([^)]*\)/g,'').replace(/!audio\[[^\]]*\]\([^)]*\)/g,'').replace(/\*\*(.*?)\*\*/g,'$1').replace(/\*([^*]+)\*/g,'$1').replace(/~~(.*?)~~/g,'$1').replace(/\[([^\]]*)\]\([^)]*\)/g,'$1').replace(/^#{1,6}\s+/gm,'').replace(/^-\s+/gm,'').replace(/^\d+\.\s+/gm,'').replace(/^>\s+/gm,'').replace(/^---$/gm,'').replace(/\n/g,' ').replace(/\s{2,}/g,' ').trim()}
+function cnt(md){if(!md)return 0;return md.replace(/```[\s\S]*?```/g,'').replace(/`[^`]+`/g,'').replace(/!video\[[^\]]*\]\([^)]*\)/g,'').replace(/!\[[^\]]*\]\([^)]*\)/g,'').replace(/!audio\[[^\]]*\]\([^)]*\)/g,'').replace(/\*\*(.*?)\*\*/g,'$1').replace(/\*([^*]+)\*/g,'$1').replace(/~~(.*?)~~/g,'$1').replace(/\[([^\]]*)\]\([^)]*\)/g,'$1').replace(/^#{1,6}\s+/gm,'').replace(/^-\s+/gm,'').replace(/^\d+\.\s+/gm,'').replace(/^>\s+/gm,'').replace(/^---$/gm,'').replace(/\s+/g,' ').trim().length}
+function render(md){
+if(!md)return'';
+var em={},ec=0;md=md.replace(/\\([\\`*_{}\[\]()#+\-.!|$])/g,(m,c)=>{var k='\uE000'+(ec++)+'\uE001';em[k]=c;return k});
+var fn={},fc=0,fm={};
+var gfi=k=>{if(!fm[k]){fc++;fm[k]=fc}return fm[k]};
+var re=t=>{var r=t;for(var[k,c]of Object.entries(em))r=r.replace(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'),c);return r};
+function rAB(src){var m=[['soundcloud.com','fa-soundcloud','SoundCloud','source-soundcloud'],['bandcamp.com','fa-bandcamp','Bandcamp','source-bandcamp'],['spotify.com','fa-spotify','Spotify','source-spotify'],['apple.com','fa-apple','Apple Music','source-apple'],['tidal.com','fa-tidal','Tidal','source-tidal'],['deezer.com','fa-deezer','Deezer','source-deezer'],['pandora.com','fa-pandora','Pandora','source-pandora'],['mixcloud.com','fa-mixcloud','Mixcloud','source-mixcloud'],['youtube.com','fa-youtube','YouTube Music','source-youtube'],['amazon.com','fa-amazon','Amazon Music','source-amazon']];try{var h=new URL(src).hostname.replace(/^www\./,'');for(var i of m)if(h===i[0]||h.endsWith('.'+i[0]))return'<span class="audio-source-badge '+i[3]+'"><i class="fab '+i[1]+'"></i> '+i[2]+'</span>'}catch(e){}return''}
+function rA(t,s,c){var et=esc(t),es=esc(s),ec=esc(c||'');if(s.includes('music.163.com')){var id='audio-loading-'+Math.random().toString(36).slice(2,9);return'<div class="netease-wrapper"><div class="embed-loading" id="'+id+'"><i class="fas fa-spinner fa-spin"></i></div><iframe src="'+es+'" scrolling="no" frameborder="0" onload="this.classList.add(\'loaded\'); document.getElementById(\''+id+'\').classList.add(\'hidden\');"></iframe></div>'}var b=rAB(s);var cv=c?'<div class="audio-cover" style="background-image:url('+ec+');background-size:contain;background-position:center;background-repeat:no-repeat;background-color:#f0f0f0;position:relative;overflow:hidden;"><img src="'+ec+'" alt="'+et+'" loading="lazy" style="display:block;width:100%;height:100%;opacity:0;position:absolute;top:0;left:0;pointer-events:auto;z-index:2;" /></div>':'<div class="audio-cover"><span class="fallback-icon"><i class="fas fa-music"></i></span></div>';return'<div class="audio-card">'+b+cv+'<div class="audio-info"><div class="audio-title">'+et+'</div></div><div class="audio-player"><audio controls src="'+es+'" preload="metadata"></audio></div><button class="info-btn" data-audio-title="'+et+'" data-audio-src="'+es+'" data-cover-src="'+ec+'"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></button></div>'}
+function rI(t){
+var h=t;
+h=h.replace(/<([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s<>]+)>/g,'<a href="$1">$1</a>');
+var tm={},ti=0;h=h.replace(/<[^>]+>/g,m=>{var k='\uE002'+(ti++)+'\uE003';tm[k]=m;return k});
+h=h.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,(m,alt,src,ti2,w,hh)=>{var s='';if(w&&hh)s=' style="width:'+w+'px; height:'+hh+'px;"';else if(w)s=' style="width:'+w+'px; height:auto;"';else if(hh)s=' style="height:'+hh+'px; width:auto;"';return'<img src="'+esc(src)+'" alt="'+esc(alt)+'" loading="lazy"'+s+(ti2?' title="'+esc(ti2)+'"':'')+' />'});
+h=h.replace(/!video\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,(m,d,src,ti2,w,hh)=>{var s='';if(w&&hh)s=' style="width:'+w+'px; height:'+hh+'px;"';else if(w)s=' style="width:'+w+'px; height:auto;"';else if(hh)s=' style="height:'+hh+'px; width:auto;"';var dh=d?'<div class="video-alt-text">'+rI(d)+'</div>':'';var y=src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);if(y)return'<div class="video-placeholder" data-video-loading="1"><div class="video-loading"><i class="fas fa-spinner fa-spin"></i></div><iframe src="https://www.youtube.com/embed/'+y[1]+'" frameborder="0" allowfullscreen'+s+'></iframe>'+dh+'</div>';var b=src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);if(b)return'<div class="video-placeholder" data-video-loading="1"><div class="video-loading"><i class="fas fa-spinner fa-spin"></i></div><iframe src="https://player.bilibili.com/player.html?bvid='+b[1]+'" frameborder="0" allowfullscreen'+s+'></iframe>'+dh+'</div>';return'<div class="video-placeholder"><video src="'+esc(src)+'" controls'+s+'></video>'+dh+'</div>'});
+h=h.replace(/!audio\[([^\]]*)\]\(([^)]*)\)/g,(m,t,sc)=>{var p=sc.split(/\s+=\s*/);return rA(t,p[0].trim(),p.length>1?p[1].trim():'')});
+var cp=[];h=h.replace(/`([^`]+)`/g,(m,c)=>{var k='\uE004'+cp.length+'\uE005';cp.push(c);return k});
+h=h.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*([^*]+)\*/g,'<em>$1</em>').replace(/~~(.*?)~~/g,'<del>$1</del>');
+h=h.replace(/\[([^\]]*)\]\(([^)]*)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+h=h.replace(/\[\^([^\]]+)\]/g,(m,k)=>'<sup class="footnote-ref"><a data-footnote-ref="'+gfi(k)+'">'+gfi(k)+'</a></sup>');
+h=h.replace(/\uE004(\d+)\uE005/g,(m,i)=>'<code>'+esc(cp[+i])+'</code>');
+h=re(h);
+for(var k in tm)if(Object.prototype.hasOwnProperty.call(tm,k))h=h.replace(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'g'),tm[k]);
+return h}
+function rB(content){
+if(!content)return'';
+var lines=content.split('\n'),res='',inL=false,stk=[],para=[];
+function fL(){if(!inL)return;var h='';for(var i=stk.length-1;i>=0;i--){var l=stk[i],tg=l.type==='ol'?'ol':'ul',cl=l.type==='task'?' class="task-list"':'',sa=l.type==='ol'&&l.start!==null&&l.start!==1?' start="'+l.start+'"':'';h='<'+tg+cl+sa+'>\n'+l.items.join('\n')+'\n</'+tg+'>\n'+h}res+=h;inL=false;stk=[]}
+function fP(){if(para.length){res+='<p>'+para.map(l=>rI(l)).join('<br>')+'</p>\n';para=[]}}
+for(var i=0;i<lines.length;i++){
+var line=lines[i];
+if(line.trim()===''){fL();fP();res+='\n';continue}
+if(/^CODEBLOCK_\d+$/.test(line.trim())){fL();fP();res+=line.trim()+'\n';continue}
+var fdm=line.match(/^\[\^([^\]]+)\]:\s*(.*)/);
+if(fdm){fL();fP();fn[gfi(fdm[1])]={key:fdm[1],content:fdm[2]};continue}
+var bq=line.match(/^(>+)\s?(.*)/);
+if(bq){fL();fP();var ql=[],j=i;while(j<lines.length){var qm=lines[j].match(/^((?:>\s*)+)(.*)/);if(qm){ql.push({level:(qm[1].match(/>/g)||[]).length,content:qm[2]});j++}else if(lines[j].trim()==='')break;else break}i=j-1;
+(function bL(si,cl){var h='',k=si;while(k<ql.length){if(ql[k].level<cl)break;if(ql[k].level===cl){var p=[];while(k<ql.length&&ql[k].level===cl){p.push(rI(ql[k].content));k++}h+=p.join('<br>')}else if(ql[k].level>cl){var n=bL(k,ql[k].level);h+=n.html;k=n.newIndex}}bL.last={html:'<blockquote>'+h+'</blockquote>',newIndex:k};})(0,Math.min.apply(null,ql.map(q=>q.level)));
+res+=bL.last.html+'\n';continue}
+var hm=line.match(/^(#{1,6})\s+(.*)/);
+if(hm){fL();fP();res+='<h'+hm[1].length+'>'+rI(hm[2])+'</h'+hm[1].length+'>\n';continue}
+if(/^---$/.test(line.trim())||/^\*\*\*$/.test(line.trim())||/^___$/.test(line.trim())){fL();fP();res+='<hr />\n';continue}
+var tlm=line.match(/^\|(.+)\|$/);
+if(tlm){fL();fP();var tr=[],j=i;while(j<lines.length){var tm2=lines[j].match(/^\|(.+)\|$/);if(tm2){tr.push(tm2[1]);j++}else break}i=j-1;
+if(tr.length>=2){var hc=tr[0].split('|').map(c=>c.trim()),ar=tr[1].split('|').map(c=>c.trim()),ia=ar.every(c=>/^:?-+:?$/.test(c)),ds=ia?2:1,al=ia?ar.map(c=>/^:-+:$/.test(c)?'center':/^-+:$/.test(c)?'right':'left'):hc.map(()=>'left');
+var th='<table><thead><tr>';hc.forEach((c,ci)=>{th+='<th style="text-align:'+al[ci]+';">'+rI(c)+'</th>'});th+='</tr></thead><tbody>';
+for(var ri=ds;ri<tr.length;ri++){var rc=tr[ri].split('|').map(c=>c.trim());th+='<tr>';for(var rci=0;rci<hc.length;rci++){th+='<td style="text-align:'+al[rci]+';">'+rI(rci<rc.length?rc[rci]:'')+'</td>'}th+='</tr>'}
+th+='</tbody></table>';res+=th+'\n';continue}}
+var lm=line.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
+if(lm){fP();var ind=lm[1].length,mk=lm[2],lc=lm[3],it=lc.match(/^\[([ x])\]\s+(.*)/),tc=it?it[1]==='x':false,tct=it?it[2]:lc,io=/^\d+\.$/.test(mk),lt=io?'ol':it?'task':'ul',clv=Math.floor(ind/2);
+if(!inL){inL=true;stk=[{type:lt,items:[],level:clv,start:io?parseInt(mk):null}]}else{while(stk.length>0&&stk[stk.length-1].level>clv){var last=stk.pop();if(stk.length>0&&last.items.length>0)stk[stk.length-1].items.push(last.items.join(''))}if(stk.length===0||stk[stk.length-1].level<clv)stk.push({type:lt,items:[],level:clv,start:io?parseInt(mk):null})}
+var ih=it?'<li data-checked="'+(tc?'true':'false')+'">'+rI(tct)+'</li>':'<li>'+rI(lc)+'</li>';
+stk[stk.length-1].items.push(ih);
+var si=[],k=i+1;
+while(k<lines.length){var nm=lines[k].match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);if(nm&&parseInt(nm[1].length)>ind){var sc=nm[3],st=sc.match(/^\[([ x])\]\s+(.*)/);si.push(st?'<li data-checked="'+(st[1]==='x'?'true':'false')+'">'+rI(st[2])+'</li>':'<li>'+rI(sc)+'</li>');k++}else break}
+if(si.length>0){var hb=si.some(x=>x.includes('data-checked')),sh='<ul class="'+(hb?'task-list':'')+'">\n'+si.join('\n')+'\n</ul>';var cur=stk[stk.length-1];cur.items[cur.items.length-1]=cur.items[cur.items.length-1].replace(/<\/li>$/,sh+'</li>')}
+i=k-1;continue}
+if(inL)fL();
+var dm=line.match(/^([^:]+):\s+(.*)/);
+if(dm&&i+1<lines.length&&lines[i+1].match(/^:\s+/)){fP();var term=rI(dm[1]),defs=[];i++;while(i<lines.length&&lines[i].match(/^:\s+/)){defs.push(rI(lines[i].replace(/^:\s+/,'')));i++}while(i<lines.length&&lines[i].trim()==='')i++;res+='<dl><dt>'+term+'</dt>'+defs.map(d=>'<dd>'+d+'</dd>').join('')+'</dl>\n';continue}
+para.push(line)}
+if(inL)fL();fP();return res}
+var cb=[],ci2=0;
+md=md.replace(/^(\s*)```(\w*)\s*\n([\s\S]*?)\1```/gm,(m,ind,lang,code)=>{var id='CODEBLOCK_'+(ci2++);cb.push({id:id,lang:lang,code:code.replace(/^\n+|\n+$/g,'')});return id});
+var html=rB(md);
+cb.forEach((b,bi)=>{
+var cid='code-'+Date.now()+'-'+bi,ls=b.code.split('\n'),lc=ls.length,ml=0,tot=0;
+ls.forEach(l=>{ml=Math.max(ml,l.length);tot+=l.length});tot+=lc>0?lc-1:0;
+var ch='';ls.forEach((l,j)=>{ch+='<span class="code-line"><span class="line-number">'+(j+1)+'</span><span class="hljs">'+esc(l)+'</span></span>'});
+html=html.replace(b.id,'<div class="code-block-wrapper" id="cbw-'+cid+'"><div class="code-block-header"><span class="lang-label">'+esc(b.lang||'text')+'</span><span class="code-stats"><span>'+lc+' 行</span> · <span>'+ml+' 列</span> · <span>'+tot+' 字符</span></span><span class="header-actions"><button class="copy-btn" data-copy="'+cid+'"><i class="fas fa-copy"></i> 复制</button><button class="collapse-btn" data-target="cbw-'+cid+'"><i class="fas fa-chevron-up"></i></button></span></div><div class="code-block-body-wrapper"><div class="code-block-body" id="code-body-'+cid+'">'+ch+'</div></div></div>')});
+if(Object.keys(fn).length>0){var fh='<div class="footnotes">';for(var fi=1;fi<=fc;fi++){if(fn[fi])fh+='<div class="footnote-def" id="footnote-def-'+fi+'"><a class="footnote-back" data-footnote-back="'+fi+'">↩</a> <span class="footnote-number">['+fi+']</span> '+rI(fn[fi].content)+'</div>'}fh+='</div>';html+=fh}
+return html.replace(/\n{3,}/g,'\n\n')}
+
+function lazyImg(c){c.querySelectorAll('.img-placeholder').forEach(w=>{var i=w.querySelector('img');if(!i)return;var d=()=>{w.classList.add('loaded');i.classList.add('loaded');var l=w.querySelector('.img-loading');if(l)l.style.display='none'};if(i.complete&&i.naturalWidth!==0)d();else{i.addEventListener('load',d);i.addEventListener('error',d)}})}
+
+function lazyVid(c){c.querySelectorAll('.video-placeholder[data-video-loading]').forEach(w=>{var f=w.querySelector('iframe'),l=w.querySelector('.video-loading');if(!f||!l)return;var h=false,ld=false,md=400,st=Date.now();function hd(){if(h)return;h=true;var el=Date.now()-st,dl=Math.max(0,md-el);setTimeout(()=>{w.classList.add('loaded');l.style.display='none'},dl)}function ml(){if(ld)return;ld=true;hd()}try{if(f.contentWindow&&f.contentWindow.document&&f.contentWindow.document.readyState==='complete'){ml();return}}catch(e){}f.addEventListener('load',ml);f.addEventListener('error',ml);setTimeout(()=>{if(!ld)ml()},8000)})}
+
+function hljsInit(c){if(!global.hljs)return;c.querySelectorAll('.code-line .hljs').forEach(e=>{try{global.hljs.highlightElement(e)}catch(_){}})}
+
+function wrapImg(c){c.querySelectorAll('img').forEach(i=>{if(i.closest('.img-placeholder'))return;var w=document.createElement('div');w.className='img-placeholder';w.innerHTML='<span class="img-loading"><i class="fas fa-spinner fa-spin"></i></span>';i.parentNode.insertBefore(w,i);w.appendChild(i);var a=i.getAttribute('alt')||'';if(a){var s=document.createElement('span');s.className='img-alt-text';s.textContent=a;w.appendChild(s)}})}
+
+var __lbCache=new Map(),__lbMax=40;
+function __lbGet(src){if(__lbCache.has(src)){var v=__lbCache.get(src);__lbCache.delete(src);__lbCache.set(src,v);return v}var p=fetch(src,{mode:'cors',credentials:'omit'}).then(r=>r.ok?r.blob():Promise.reject()).then(b=>b.type.startsWith('image/')?URL.createObjectURL(b):null).catch(()=>null);__lbCache.set(src,p);while(__lbCache.size>__lbMax){var k=__lbCache.keys().next().value,v2=__lbCache.get(k);__lbCache.delete(k);Promise.resolve(v2).then(u=>{if(u)URL.revokeObjectURL(u)})}return p}
+
+var lbOpen=false;
+function lb(images,index){
+if(!images||images.length===0||lbOpen)return;
+lbOpen=true;var ci=index||0;
+var pe=document.createElement('div');pe.className='lightbox-progress';pe.innerHTML='<div class="lb-progress-bar"></div>';document.body.appendChild(pe);var pb=pe.querySelector('.lb-progress-bar');
+var ex=document.querySelector('.lightbox-overlay');if(ex)ex.remove();
+var ov=document.createElement('div');ov.className='lightbox-overlay';
+ov.innerHTML='<button class="lightbox-close">&times;</button><button class="lightbox-nav prev"><i class="fas fa-chevron-left"></i></button><button class="lightbox-nav next"><i class="fas fa-chevron-right"></i></button><button class="lightbox-play"><i class="fas fa-play"></i></button><div class="lightbox-container"><div class="lightbox-img-wrapper"><img src="" alt="" /></div><div class="lightbox-alt"></div></div><div class="lightbox-counter"></div>';
+document.body.appendChild(ov);document.body.style.overflow='hidden';
+var iw=ov.querySelector('.lightbox-img-wrapper'),im=ov.querySelector('img'),ae=ov.querySelector('.lightbox-alt'),ce=ov.querySelector('.lightbox-counter'),pv=ov.querySelector('.lightbox-nav.prev'),nx=ov.querySelector('.lightbox-nav.next'),pl=ov.querySelector('.lightbox-play'),cl=ov.querySelector('.lightbox-close');
+var sc=1,tx=0,ty=0,idg=false,md2=false,msx=0,msy=0,mlx=0,mly=0,tsd=0,tss=1,tsx=0,tsy=0,tlx=0,tly=0,pid=null,paid=null,ip=false,PD=3000;
+var seq=0;
+function upd(){
+var d=images[ci];if(!d)return;
+var my=++seq;
+im.src=(d.el&&d.el.currentSrc)?d.el.currentSrc:d.src;
+im.alt=d.alt||'';ae.textContent=d.alt||'';ce.textContent=(ci+1)+' / '+images.length;
+pv.disabled=images.length<=1||ip;nx.disabled=images.length<=1||ip;
+sc=1;tx=0;ty=0;im.style.transition='none';im.style.transform='scale(1) translate(0px, 0px)';
+pb.style.width='0%';pe.classList.toggle('active',ip);upb();
+if(d.src&&!d.src.startsWith('blob:')){__lbGet(d.src).then(u=>{if(u&&my===seq)im.src=u})}
+}
+function upb(){if(images.length<=1){pl.disabled=true;pl.innerHTML='<i class="fas fa-play"></i>';return}if(ci===images.length-1&&!ip){pl.disabled=true;pl.innerHTML='<i class="fas fa-play"></i>';return}pl.disabled=false;pl.innerHTML=ip?'<i class="fas fa-pause"></i>':'<i class="fas fa-play"></i>'}
+function stp(){ip=false;if(pid){clearInterval(pid);pid=null}if(paid){cancelAnimationFrame(paid);paid=null}pv.disabled=images.length<=1;nx.disabled=images.length<=1;pe.classList.remove('active');pb.style.width='0%';upb()}
+function spa(){if(paid)cancelAnimationFrame(paid);pb.style.width='0%';var s=performance.now();function u(n){if(!ip)return;var p=Math.min((n-s)/PD*100,100);pb.style.width=p+'%';if(p<100)paid=requestAnimationFrame(u)}paid=requestAnimationFrame(u)}
+function spl(){if(ip||images.length<=1||ci===images.length-1)return;ip=true;pv.disabled=true;nx.disabled=true;pe.classList.add('active');upb();spa();pid=setInterval(()=>{if(!ip)return;if(ci<images.length-1){ci++;upd();spa()}else stp()},PD)}
+function tg(){if(images.length<=1)return;ip?stp():spl()}
+function cls(){if(!lbOpen)return;lbOpen=false;ip=false;if(pid){clearInterval(pid);pid=null}if(paid){cancelAnimationFrame(paid);paid=null}if(pe.parentNode)pe.remove();ov.classList.remove('active');setTimeout(()=>{if(ov.parentNode)ov.remove();document.body.style.overflow='';document.removeEventListener('keydown',eh)},350)}
+function eh(e){if(e.key==='Escape')cls();if(e.key==='ArrowLeft'&&!ip&&images.length>1){e.preventDefault();ci=(ci-1+images.length)%images.length;upd()}if(e.key==='ArrowRight'&&!ip&&images.length>1){e.preventDefault();ci=(ci+1)%images.length;upd()}}
+im.addEventListener('wheel',e=>{e.preventDefault();var dl=e.deltaY>0?-0.1:0.1,nsc=Math.min(Math.max(0.5,sc+dl),5),r=im.getBoundingClientRect(),rx=(e.clientX-r.left)/r.width,ry=(e.clientY-r.top)/r.height,os=sc;sc=nsc;tx+=(1-nsc/os)*(r.width/2-r.width*rx);ty+=(1-nsc/os)*(r.height/2-r.height*ry);im.style.transition='none';im.style.transform='scale('+sc+') translate('+tx+'px, '+ty+'px)'},{passive:false});
+iw.addEventListener('touchstart',e=>{if(e.touches.length===2){var t=e.touches;tsd=Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);tss=sc}else if(e.touches.length===1){idg=true;tsx=e.touches[0].clientX;tsy=e.touches[0].clientY;tlx=tx;tly=ty;iw.style.cursor='grabbing'}},{passive:true});
+iw.addEventListener('touchmove',e=>{if(e.touches.length===2){var t=e.touches,d=Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);sc=Math.min(Math.max(0.5,tss*(d/tsd)),5)}else if(e.touches.length===1&&idg){tx=tlx+(e.touches[0].clientX-tsx)/sc;ty=tly+(e.touches[0].clientY-tsy)/sc}im.style.transition='none';im.style.transform='scale('+sc+') translate('+tx+'px, '+ty+'px)'},{passive:true});
+iw.addEventListener('touchend',()=>{idg=false;iw.style.cursor='grab';if(sc<1){sc=1;tx=0;ty=0}if(sc>3)sc=3;if(Math.abs(tx)>300||Math.abs(ty)>300){tx=0;ty=0}im.style.transition='transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';im.style.transform='scale('+sc+') translate('+tx+'px, '+ty+'px)'});
+iw.addEventListener('mousedown',e=>{md2=true;msx=e.clientX;msy=e.clientY;mlx=tx;mly=ty;iw.style.cursor='grabbing';e.preventDefault()});
+document.addEventListener('mousemove',e=>{if(!md2)return;tx=mlx+(e.clientX-msx)/sc;ty=mly+(e.clientY-msy)/sc;im.style.transition='none';im.style.transform='scale('+sc+') translate('+tx+'px, '+ty+'px)'});
+document.addEventListener('mouseup',()=>{if(!md2)return;md2=false;iw.style.cursor='grab';if(sc<1){sc=1;tx=0;ty=0}if(sc>3)sc=3;if(Math.abs(tx)>300||Math.abs(ty)>300){tx=0;ty=0}im.style.transition='transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';im.style.transform='scale('+sc+') translate('+tx+'px, '+ty+'px)'});
+cl.addEventListener('click',cls);
+ov.addEventListener('click',function(e){if(e.target===this)cls()});
+pv.addEventListener('click',e=>{e.stopPropagation();if(ip)stp();if(images.length>1){ci=(ci-1+images.length)%images.length;upd()}});
+nx.addEventListener('click',e=>{e.stopPropagation();if(ip)stp();if(images.length>1){ci=(ci+1)%images.length;upd()}});
+pl.addEventListener('click',e=>{e.stopPropagation();tg()});
+document.addEventListener('keydown',eh);
+upd();requestAnimationFrame(()=>ov.classList.add('active'))}
+
+function mount(c,md){if(!c)return;c.innerHTML=render(md||'');c.classList.add('markdown-body');wrapImg(c);lazyImg(c);lazyVid(c);hljsInit(c);bindLB(c);return c}
+
+function bindLB(c){var imgs=[];c.querySelectorAll('.img-placeholder img').forEach(i=>{var s=i.getAttribute('src');if(s)imgs.push({src:s,alt:i.getAttribute('alt')||'',el:i});if(s&&!s.startsWith('blob:')){i.addEventListener('load',()=>{__lbGet(s)},{once:true})}});c.querySelectorAll('.img-placeholder img').forEach((i,ix)=>{i.style.cursor='pointer';i.addEventListener('click',e=>{e.stopPropagation();lb(imgs,ix)})})}
+
+function audioInfo(btn){
+var title=btn.dataset.audioTitle||'未知标题',cs=btn.dataset.coverSrc||'',as=btn.dataset.audioSrc||'',card=btn.closest('.audio-card'),src='未知来源';
+if(card){var b=card.querySelector('.audio-source-badge');if(b)src=b.textContent.trim()}
+document.querySelectorAll('.cover-modal-overlay').forEach(e=>e.remove());
+var ov=document.createElement('div');ov.className='cover-modal-overlay';
+var md=document.createElement('div');md.className='cover-modal';
+var cb=document.createElement('button');cb.className='cover-modal-close';cb.textContent='×';md.appendChild(cb);
+var ct=document.createElement('div');ct.className='modal-content';
+if(cs){var im=document.createElement('img');im.src=cs;im.alt=title;ct.appendChild(im)}
+function af(label,val){
+var f=document.createElement('div');f.className='field';
+var ls=document.createElement('span');ls.className='label';ls.textContent=label;
+var vs=document.createElement('span');vs.className='value';
+if(val.startsWith('http')){
+var a=document.createElement('a');a.href=val;a.target='_blank';a.textContent=val;vs.appendChild(a);
+f.appendChild(ls);f.appendChild(vs);
+var cbm=document.createElement('button');cbm.className='copy-btn-modal';cbm.dataset.copy=val;cbm.innerHTML='<span class="copy-text">复制</span><span class="copied-text">已复制</span>';
+cbm.addEventListener('click',function(){navigator.clipboard.writeText(val).then(()=>{this.classList.add('copied');setTimeout(()=>this.classList.remove('copied'),1500)}).catch(()=>{var ta=document.createElement('textarea');ta.value=val;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();this.classList.add('copied');setTimeout(()=>this.classList.remove('copied'),1500)})});
+f.appendChild(cbm)
+}else{vs.textContent=val;f.appendChild(ls);f.appendChild(vs)}
+ct.appendChild(f)}
+af('标题',title);af('来源',src);if(cs)af('封面',cs);if(as)af('音频',as);
+md.appendChild(ct);ov.appendChild(md);document.body.appendChild(ov);
+requestAnimationFrame(()=>ov.classList.add('active'));
+var cl=()=>{ov.classList.remove('active');setTimeout(()=>ov.remove(),300)};
+cb.addEventListener('click',cl);
+ov.addEventListener('click',e=>{if(e.target===ov)cl()})}
+
+document.addEventListener('click',e=>{var b=e.target.closest('.audio-card .info-btn');if(b){e.preventDefault();audioInfo(b)}});
+
+function sTF(id){var el=document.getElementById(id);if(!el)return;var ty=el.getBoundingClientRect().top+window.scrollY-80,sy=window.scrollY||window.pageYOffset,d=ty-sy;if(Math.abs(d)<5)return;var du=350,st=performance.now();function stp(n){var p=Math.min((n-st)/du,1),e=p<0.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;window.scrollTo(0,sy+d*e);if(p<1)requestAnimationFrame(stp);else window.scrollTo(0,ty)}requestAnimationFrame(stp)}
+
+document.addEventListener('click',function(e){
+var fr=e.target.closest('[data-footnote-ref]');if(fr){e.preventDefault();sTF('footnote-def-'+fr.getAttribute('data-footnote-ref'));return}
+var fb=e.target.closest('[data-footnote-back]');if(fb){e.preventDefault();var bid=fb.getAttribute('data-footnote-back'),rl=document.querySelector('[data-footnote-ref="'+bid+'"]');if(rl){var ty=rl.getBoundingClientRect().top+window.scrollY-80,sy=window.scrollY||window.pageYOffset,d=ty-sy;if(Math.abs(d)<5)return;var du=350,st=performance.now();function stp(n){var p=Math.min((n-st)/du,1),e2=p<0.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;window.scrollTo(0,sy+d*e2);if(p<1)requestAnimationFrame(stp);else window.scrollTo(0,ty)}requestAnimationFrame(stp)}return}
+var cpb=e.target.closest('.copy-btn');if(cpb){var tid=cpb.dataset.copy,w=document.getElementById('cbw-'+tid);if(!w)return;var txt='';w.querySelectorAll('.code-line').forEach(l=>{var cl2=l.cloneNode(true),ln=cl2.querySelector('.line-number');if(ln)ln.remove();txt+=cl2.textContent+'\n'});txt=txt.replace(/\n$/,'');var ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';document.body.appendChild(ta);ta.focus();ta.select();try{if(document.execCommand('copy')){cpb.innerHTML='<i class="fas fa-check"></i> 已复制';cpb.classList.add('copied');setTimeout(()=>{cpb.innerHTML='<i class="fas fa-copy"></i> 复制';cpb.classList.remove('copied')},2000)}}catch(_){}document.body.removeChild(ta);return}
+var clb=e.target.closest('.collapse-btn');if(clb){var tid2=clb.dataset.target,w2=document.getElementById(tid2);if(!w2)return;var ic=clb.querySelector('i');w2.classList.toggle('collapsed');ic.className=w2.classList.contains('collapsed')?'fas fa-chevron-down':'fas fa-chevron-up';return}});
+
+global.KSMarkdown={renderMarkdown:render,mountMarkdown:mount,markdownToPlainText:mdPlain,countWords:cnt,openLightbox:lb,initImageLazyLoad:lazyImg,initVideoLazyLoad:lazyVid,initCodeHighlight:hljsInit};
 })(window);

@@ -16,18 +16,10 @@
 <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{
-    --accent:#6B5ACF;
-    --accent-2:#8F7BE0;
-    --accent-glow:rgba(107,90,207,.35);
-    --ease-out:cubic-bezier(.22,1,.36,1);
-    --ease-spring:cubic-bezier(.34,1.56,.64,1);
-    --ease-smooth:cubic-bezier(.4,0,.2,1);
-}
+:root{--accent:#6B5ACF;--accent-2:#8F7BE0;--accent-glow:rgba(107,90,207,.35);--ease-out:cubic-bezier(.22,1,.36,1);--ease-spring:cubic-bezier(.34,1.56,.64,1);--ease-smooth:cubic-bezier(.4,0,.2,1)}
 body{font-family:'Inter',-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#FAFAFE;color:#1A1A2E;line-height:1.8;min-height:100vh;transition:background .6s var(--ease-smooth),color .4s var(--ease-smooth);overflow-x:hidden}
 body.dark{background:#14131F;color:#E8E6F0;--accent:#88ccff;--accent-2:#A9DEFF;--accent-glow:rgba(136,204,255,.4)}
 body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important;transition-delay:0s!important}
-
 .bg-glow{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-2;background:radial-gradient(circle at 30% 30%,#F6F2FF,#FFFFFF);transition:background .8s var(--ease-smooth)}
 body.dark .bg-glow{background:radial-gradient(circle at 30% 30%,#28253D,#0E0D18)}
 .glow-soft{position:fixed;width:70vw;height:70vw;background:radial-gradient(circle,rgba(160,130,230,.15),rgba(210,190,255,0) 70%);border-radius:50%;top:-25vh;right:-20vw;z-index:-1;filter:blur(80px);animation:floatGlow 20s infinite alternate var(--ease-smooth);pointer-events:none}
@@ -36,9 +28,7 @@ body.dark .glow-soft{background:radial-gradient(circle,rgba(120,100,200,.20),rgb
 body.dark .glow-soft-2{background:radial-gradient(circle,rgba(90,70,160,.15),rgba(30,20,60,0) 70%)}
 @keyframes floatGlow{0%{transform:translate(0,0) scale(1);opacity:.3}100%{transform:translate(5%,8%) scale(1.2);opacity:.7}}
 @keyframes floatGlow2{0%{transform:translate(0,0) scale(1);opacity:.2}100%{transform:translate(-6%,-5%) scale(1.3);opacity:.6}}
-
 .container{max-width:1280px;margin:0 auto;padding:5rem 1.8rem 3rem;position:relative;min-height:100vh}
-
 .top-buttons{position:fixed;top:20px;left:20px;right:20px;z-index:50;display:flex;justify-content:space-between;align-items:center;pointer-events:none;opacity:0;animation:fadeSlideDown .7s var(--ease-out) .05s forwards}
 @keyframes fadeSlideDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
 .top-buttons .left,.top-buttons .right{pointer-events:auto;display:flex;align-items:center;gap:.5rem}
@@ -50,7 +40,6 @@ body.dark .glow-soft-2{background:radial-gradient(circle,rgba(90,70,160,.15),rgb
 body.dark .back-btn{background:rgba(30,28,50,.7);border-color:rgba(255,255,255,.08);color:#D0CAF0;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 body.dark .back-btn:hover{background:rgba(50,45,80,.85)}
 body.hide-top-back .back-btn{opacity:0;transform:translateY(-24px);pointer-events:none}
-
 .icon-btn{background:rgba(255,255,255,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.8);border-radius:60px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#4F4F78;cursor:pointer;transition:all .45s var(--ease-spring);box-shadow:0 6px 20px rgba(80,60,160,.10);outline:none;position:relative}
 .icon-btn:hover{transform:scale(1.08) rotate(15deg);box-shadow:0 12px 32px rgba(80,60,160,.24)}
 .icon-btn:active{transform:scale(.92) rotate(-8deg);transition-duration:.12s}
@@ -58,7 +47,6 @@ body.hide-top-back .back-btn{opacity:0;transform:translateY(-24px);pointer-event
 body.dark .icon-btn{background:rgba(30,28,50,.7);border-color:rgba(255,255,255,.08);color:#D0CAF0;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 body.dark .icon-btn:hover{background:rgba(50,45,80,.85)}
 body.dark .icon-btn.active{background:rgba(136,204,255,.18);border-color:rgba(136,204,255,.4);color:#88ccff}
-
 .detail-back{position:fixed;top:82px;left:calc(max((100vw - 1280px) / 2, 0px) + 1.8rem);z-index:60;background:rgba(255,255,255,.6);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.8);border-radius:60px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:#4F4F78;cursor:pointer;outline:none;box-shadow:0 6px 20px rgba(80,60,160,.10);opacity:0;visibility:hidden;transition:top .4s var(--ease-out),opacity .3s var(--ease-smooth),visibility .3s ease,background .3s ease,box-shadow .3s ease,color .3s ease,transform .3s var(--ease-out);transform:translateY(-6px)}
 body.detail-active .detail-back{opacity:1;visibility:visible;transform:translateY(0)}
 body.detail-active.hide-top-back .detail-back{top:20px}
@@ -68,7 +56,6 @@ body.detail-active.hide-top-back .detail-back{top:20px}
 .detail-back:hover i{transform:translateX(-3px)}
 body.dark .detail-back{background:rgba(30,28,50,.7);border-color:rgba(255,255,255,.08);color:#D0CAF0;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 body.dark .detail-back:hover{background:rgba(50,45,80,.9)}
-
 .back-to-top-btn{position:fixed;bottom:30px;right:24px;z-index:48;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.8);color:#4F4F78;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(80,60,160,.10);outline:none;padding:0;opacity:0;visibility:hidden;transform:translateY(16px) scale(.9);transition:opacity .35s var(--ease-smooth),transform .4s var(--ease-spring),visibility .35s ease,background .25s ease,box-shadow .25s ease}
 .back-to-top-btn.show{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
 .back-to-top-btn:hover{background:rgba(255,255,255,.9);box-shadow:0 12px 28px rgba(80,60,160,.22);transform:translateY(-3px) scale(1.05)}
@@ -77,7 +64,6 @@ body.dark .detail-back:hover{background:rgba(50,45,80,.9)}
 .back-to-top-btn:hover i{transform:translateY(-3px)}
 body.dark .back-to-top-btn{background:rgba(30,28,50,.7);border-color:rgba(255,255,255,.08);color:#D0CAF0;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 body.dark .back-to-top-btn:hover{background:rgba(50,45,80,.9)}
-
 .search-bar{position:relative;max-width:640px;margin:0 auto 1rem;animation:fadeSlideUp .7s var(--ease-out) .15s backwards}
 @keyframes fadeSlideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 .search-bar::before{content:'';position:absolute;inset:-2px;border-radius:62px;background:linear-gradient(120deg,transparent 0%,rgba(107,90,207,.5) 25%,rgba(160,130,230,.5) 50%,rgba(107,90,207,.5) 75%,transparent 100%);background-size:200% 100%;opacity:0;transition:opacity .5s var(--ease-smooth);pointer-events:none;z-index:0;filter:blur(6px)}
@@ -97,13 +83,11 @@ body.dark .search-bar input{background:rgba(30,28,50,.7);border-color:rgba(255,2
 body.dark .search-bar input:focus{background:rgba(40,38,65,.9);box-shadow:0 8px 32px rgba(0,0,0,.35)}
 body.dark .search-bar input::placeholder{color:#7A7AA0}
 body.dark .search-bar .search-icon{color:#7A7AA0}
-
 .stats-row{display:flex;align-items:center;justify-content:center;gap:.5rem;font-size:.72rem;color:#8A8AB5;margin-bottom:1.5rem;transition:color .3s ease;animation:fadeSlideUp .7s var(--ease-out) .2s backwards;min-height:1.2em}
 body.dark .stats-row{color:#7A7AA0}
 .stats-row i{font-size:.7rem;opacity:.75;transition:transform .4s var(--ease-spring)}
 .stats-row.updating i{transform:scale(1.3)}
 .stats-row .sep{opacity:.4;margin:0 .1rem}
-
 .album-grid{display:grid;gap:1.2rem}
 .album-grid.layout-grid{align-items:stretch}
 .album-grid.layout-masonry{display:block;column-gap:1.2rem}
@@ -117,14 +101,12 @@ body.dark .stats-row{color:#7A7AA0}
 .album-grid.layout-list .album-cover-locked{gap:0}
 .album-grid.layout-list .album-cover-locked i{font-size:1.6rem}
 .album-grid.layout-list .album-cover-locked span{display:none}
-
 .album-card{position:relative;border-radius:1rem;overflow:hidden;background:rgba(255,255,255,.6);border:1px solid rgba(0,0,0,.08);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 4px 16px rgba(80,60,160,.06);cursor:pointer;transition:transform .5s var(--ease-out),box-shadow .5s var(--ease-out),background .4s var(--ease-smooth),border-color .4s var(--ease-smooth);opacity:0;animation:cardIn .6s var(--ease-out) forwards;will-change:transform;display:flex;flex-direction:column;height:100%}
 @keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
 .album-card:hover{transform:translateY(-6px) scale(1.015);box-shadow:0 20px 44px rgba(80,60,160,.20)}
 .album-card:active{transform:translateY(-2px) scale(.995);transition-duration:.15s}
 body.dark .album-card{background:rgba(30,28,50,.7);border-color:rgba(255,255,255,.08)}
 body.dark .album-card:hover{background:rgba(50,45,80,.85);box-shadow:0 20px 44px rgba(0,0,0,.45)}
-
 .album-cover{position:relative;aspect-ratio:4/3;overflow:hidden;background:linear-gradient(135deg,rgba(107,90,207,.15),rgba(160,130,230,.1));flex-shrink:0}
 .album-grid.layout-masonry .album-cover{aspect-ratio:auto;height:180px}
 .album-cover .cover-skeleton{position:absolute;inset:0;background:linear-gradient(110deg,rgba(107,90,207,.06) 30%,rgba(160,130,230,.15) 50%,rgba(107,90,207,.06) 70%);background-size:200% 100%;animation:shimmer 1.6s linear infinite;opacity:1;transition:opacity .5s var(--ease-smooth);z-index:1}
@@ -133,18 +115,15 @@ body.dark .album-card:hover{background:rgba(50,45,80,.85);box-shadow:0 20px 44px
 .album-cover img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transform:scale(1.08);transition:opacity .7s var(--ease-smooth),transform 1s var(--ease-out);will-change:opacity,transform;position:absolute;inset:0;z-index:0}
 .album-cover.loaded img{opacity:1;transform:scale(1)}
 .album-card:hover .album-cover.loaded img{transform:scale(1.08)}
-
 .album-cover-locked{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;background:linear-gradient(135deg,rgba(107,90,207,.18),rgba(160,130,230,.12));color:#6B5ACF;z-index:2;padding:.5rem;text-align:center}
 body.dark .album-cover-locked{color:#88ccff;background:linear-gradient(135deg,rgba(136,204,255,.12),rgba(107,90,207,.1))}
 .album-cover-locked i{font-size:2rem;animation:lockPulse 3s ease-in-out infinite}
 @keyframes lockPulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.08);opacity:1}}
 .album-cover-locked span{font-size:.75rem;font-weight:500;letter-spacing:.02em;line-height:1.4}
-
 .album-info{padding:.9rem 1.1rem 1rem;position:relative;z-index:2;flex:1;display:flex;flex-direction:column}
 .album-title{font-size:.95rem;font-weight:600;color:#1A1A2E;margin-bottom:.35rem;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;word-break:break-word;transition:color .3s ease}
 body.dark .album-title{color:#E8E6F0}
 .album-card:hover .album-title{color:var(--accent)}
-
 .album-desc{font-size:.76rem;color:#6A6A92;margin-bottom:.5rem;line-height:1.55;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word;transition:color .3s ease}
 body.dark .album-desc{color:#9A96B8}
 .album-desc p{margin:0;font-size:inherit;color:inherit;line-height:inherit}
@@ -156,32 +135,26 @@ body.dark .album-desc a{color:#88ccff}
 .album-desc code{font-family:'JetBrains Mono','Courier New',monospace;font-size:.9em;background:rgba(0,0,0,.06);padding:.05rem .3rem;border-radius:3px;color:#D14C4C}
 body.dark .album-desc code{background:rgba(255,255,255,.06);color:#E8A87C}
 .album-desc del{color:#8A8AB5;text-decoration:line-through}
-
 .album-meta{display:flex;flex-wrap:wrap;gap:.3rem .8rem;font-size:.68rem;color:#8A8AB5;margin-top:auto}
 body.dark .album-meta{color:#7A7AA0}
 .album-meta span{display:inline-flex;align-items:center;gap:.3rem;transition:color .3s ease}
 .album-card:hover .album-meta span{color:#6A6A92}
 body.dark .album-card:hover .album-meta span{color:#B8B4D8}
 .album-meta i{font-size:.65rem;opacity:.8}
-
 body.hide-desc .album-desc{display:none!important}
 body.hide-meta .album-meta{display:none!important}
 body.hide-download .photo-download{display:none!important}
 body.hide-alt .pio-alt{display:none!important}
 body.hide-exif .pio-exif{display:none!important}
 body.hide-live-badge .photo-live-badge{display:none!important}
-
 .empty-state{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5rem 1rem;color:#8A8AB5;text-align:center;width:100%}
 .empty-state i{font-size:2.4rem;opacity:.4;margin-bottom:1rem}
 .empty-state p{font-size:.85rem}
-
 .list-view{transition:opacity .4s var(--ease-smooth),transform .4s var(--ease-smooth)}
 .list-view.hidden{display:none}
-
 .detail-view{display:none}
 .detail-view.active{display:block;animation:detailIn .55s var(--ease-out)}
 @keyframes detailIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-
 .detail-header{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.5rem;padding:0 0 1.2rem 64px;border-bottom:1px solid rgba(0,0,0,.06);pointer-events:none}
 body.dark .detail-header{border-bottom-color:rgba(255,255,255,.06)}
 .detail-header .detail-info{pointer-events:auto}
@@ -199,25 +172,20 @@ body.dark .detail-desc strong{color:#C8C0F0}
 body.dark .detail-desc a{color:#88ccff}
 .detail-desc code{font-family:'JetBrains Mono','Courier New',monospace;font-size:.9em;background:rgba(0,0,0,.06);padding:.05rem .3rem;border-radius:3px;color:#D14C4C}
 body.dark .detail-desc code{background:rgba(255,255,255,.06);color:#E8A87C}
-
 body.hide-desc .detail-desc{display:none!important}
 body.hide-meta .detail-meta{display:none!important}
-
 .photo-grid{display:grid;gap:.8rem}
 .photo-grid.layout-masonry{display:block;column-gap:.8rem}
 .photo-grid.layout-masonry .photo-item{display:block;width:100%;margin-bottom:.8rem;aspect-ratio:auto;break-inside:avoid;-webkit-column-break-inside:avoid}
-
 .photo-item{position:relative;aspect-ratio:1;overflow:hidden;border-radius:.7rem;cursor:pointer;background:rgba(0,0,0,.04);transition:transform .45s var(--ease-out),box-shadow .45s var(--ease-out),filter .15s ease;opacity:0;animation:photoIn .55s var(--ease-out) forwards;will-change:transform;container-type:inline-size}
 @keyframes photoIn{from{opacity:0;transform:scale(.88) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .photo-item:hover{transform:translateY(-4px) scale(1.03);box-shadow:0 14px 32px rgba(80,60,160,.22);z-index:2}
 .photo-item:active{filter:brightness(.96)}
 body.dark .photo-item{background:rgba(255,255,255,.04)}
 body.dark .photo-item:hover{box-shadow:0 14px 32px rgba(0,0,0,.5)}
-
-.photo-item .photo-skeleton{position:absolute;inset:0;background:linear-gradient(110deg,rgba(107,90,207,.06) 30%,rgba(160,130,230,.15) 50%,rgba(107,90,207,.06) 70%);background-size:200% 100%;animation:shimmer 1.6s linear infinite;opacity:1;transition:opacity .5s var(--ease-smooth);z-index:1}
+.photo-item .photo-skeleton{position:absolute;inset:0;width:100%;height:100%;background:linear-gradient(110deg,rgba(107,90,207,.06) 30%,rgba(160,130,230,.15) 50%,rgba(107,90,207,.06) 70%);background-size:200% 100%;animation:shimmer 1.6s linear infinite;opacity:1;transition:opacity .5s var(--ease-smooth);z-index:1}
 body.dark .photo-item .photo-skeleton{background:linear-gradient(110deg,rgba(136,204,255,.05) 30%,rgba(136,204,255,.12) 50%,rgba(136,204,255,.05) 70%);background-size:200% 100%}
 .photo-item.loaded .photo-skeleton{opacity:0;pointer-events:none}
-
 .photo-item .photo-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transform:scale(1.15);transition:opacity .7s var(--ease-smooth),transform 1.2s var(--ease-out);will-change:opacity,transform;z-index:0}
 .photo-item .photo-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .35s var(--ease-smooth);pointer-events:none;z-index:1}
 .photo-item.loaded .photo-img{opacity:1;transform:scale(1)}
@@ -225,94 +193,40 @@ body.dark .photo-item .photo-skeleton{background:linear-gradient(110deg,rgba(136
 .photo-item.is-live.is-playing .photo-img{opacity:0}
 .photo-item.is-live.is-playing .photo-video{opacity:1}
 .photo-item.is-live:hover.loaded .photo-img{transform:scale(1)}
-
-.photo-grid.cols-1 .photo-item{aspect-ratio:auto;background:transparent}
+.photo-grid.cols-1 .photo-item{aspect-ratio:auto;background:transparent;min-height:120px}
 .photo-grid.cols-1 .photo-item .photo-img{position:static;width:100%;height:auto;aspect-ratio:auto;object-fit:cover;transform:scale(1)}
 .photo-grid.cols-1 .photo-item .photo-video{position:absolute;inset:0;width:100%;height:100%}
 .photo-grid.cols-1 .photo-item.loaded .photo-img{opacity:1;transform:scale(1)}
 .photo-grid.cols-1 .photo-item:hover.loaded .photo-img{transform:scale(1.01)}
 .photo-grid.cols-1 .photo-item.is-live.is-playing .photo-img{opacity:0}
-.photo-grid.cols-1 .photo-item .photo-skeleton{position:relative;inset:auto;display:block;width:100%;aspect-ratio:4/3;opacity:1;transition:opacity .3s var(--ease-smooth)}
-.photo-grid.cols-1 .photo-item.loaded .photo-skeleton{display:none}
-
-.photo-grid.layout-masonry:not(.cols-1) .photo-item{aspect-ratio:auto;background:transparent;position:relative;overflow:hidden}
+.photo-grid.layout-masonry:not(.cols-1) .photo-item{aspect-ratio:auto;background:transparent;position:relative;overflow:hidden;min-height:120px}
 .photo-grid.layout-masonry:not(.cols-1) .photo-item .photo-img{position:static;display:block;width:100%;height:auto;object-fit:cover;opacity:0;transform:none;transition:opacity .5s var(--ease-smooth)}
 .photo-grid.layout-masonry:not(.cols-1) .photo-item.loaded .photo-img{opacity:1;transform:none}
 .photo-grid.layout-masonry:not(.cols-1) .photo-item:hover.loaded .photo-img{transform:scale(1.04)}
 .photo-grid.layout-masonry:not(.cols-1) .photo-item.is-live.is-playing .photo-img{opacity:0}
 .photo-grid.layout-masonry:not(.cols-1) .photo-item .photo-video{position:absolute;inset:0;width:100%;height:100%}
-.photo-grid.layout-masonry:not(.cols-1) .photo-item .photo-skeleton{position:relative;inset:auto;display:block;width:100%;aspect-ratio:4/3;opacity:1}
-.photo-grid.layout-masonry:not(.cols-1) .photo-item.loaded .photo-skeleton{display:none}
-
 .photo-download{position:absolute;top:.5rem;right:.5rem;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:none;color:#fff;font-size:.75rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(.6) translateY(-6px);transition:opacity .35s var(--ease-smooth),transform .4s var(--ease-spring),background .25s ease;outline:none;z-index:6;padding:0}
 .photo-item:hover .photo-download{opacity:1;transform:scale(1) translateY(0)}
 .photo-download:hover{background:rgba(107,90,207,.9);transform:scale(1.15) translateY(0)}
 .photo-download:active{transform:scale(.9) translateY(0);transition-duration:.1s}
-
-.photo-live-badge{
-    position:absolute;
-    top:.5rem;
-    left:.5rem;
-    height:24px;
-    padding:0 .55rem 0 .45rem;
-    border-radius:50px;
-    background:rgba(0,0,0,.55);
-    backdrop-filter:blur(8px);
-    -webkit-backdrop-filter:blur(8px);
-    color:#fff;
-    font-size:.6rem;
-    font-weight:700;
-    letter-spacing:.08em;
-    display:flex;
-    align-items:center;
-    gap:.35rem;
-    z-index:7;
-    pointer-events:auto;
-    cursor:pointer;
-    border:none;
-    outline:none;
-    font-family:inherit;
-    box-shadow:0 2px 8px rgba(0,0,0,.25);
-    transition:background .3s ease,box-shadow .3s ease,transform .3s var(--ease-spring);
-    -webkit-tap-highlight-color:transparent;
-}
+.photo-live-badge{position:absolute;top:.5rem;left:.5rem;height:24px;padding:0 .55rem 0 .45rem;border-radius:50px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;font-size:.6rem;font-weight:700;letter-spacing:.08em;display:flex;align-items:center;gap:.35rem;z-index:7;pointer-events:auto;cursor:pointer;border:none;outline:none;font-family:inherit;box-shadow:0 2px 8px rgba(0,0,0,.25);transition:background .3s ease,box-shadow .3s ease,transform .3s var(--ease-spring);-webkit-tap-highlight-color:transparent}
 .photo-live-badge:hover{background:rgba(0,0,0,.75);transform:scale(1.05)}
 .photo-live-badge:active{transform:scale(.95);transition-duration:.1s}
-.photo-live-badge .live-dot{
-    width:6px;
-    height:6px;
-    border-radius:50%;
-    background:#ff3b30;
-    box-shadow:0 0 6px rgba(255,59,48,.8);
-    animation:livePulse 1.6s ease-in-out infinite;
-    flex-shrink:0;
-    transition:background .25s ease,border-radius .25s ease,box-shadow .25s ease,transform .25s ease;
-}
+.photo-live-badge .live-dot{width:6px;height:6px;border-radius:50%;background:#ff3b30;box-shadow:0 0 6px rgba(255,59,48,.8);animation:livePulse 1.6s ease-in-out infinite;flex-shrink:0;transition:background .25s ease,border-radius .25s ease,box-shadow .25s ease,transform .25s ease}
 @keyframes livePulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
 .photo-live-badge .live-text{line-height:1;display:inline-flex;align-items:center;gap:.25rem}
 .photo-live-badge .live-text::after{content:'LIVE';font-size:.6rem}
-
 .photo-item.is-live.is-playing .photo-live-badge{background:rgba(255,59,48,.9);box-shadow:0 2px 12px rgba(255,59,48,.5);transform:scale(1.05)}
 .photo-item.is-live.is-playing .photo-live-badge:hover{background:rgba(255,59,48,1);transform:scale(1.1)}
-.photo-item.is-live.is-playing .photo-live-badge .live-dot{
-    border-radius:2px;
-    animation:none;
-    opacity:1;
-    transform:scale(1);
-    box-shadow:0 0 0 rgba(0,0,0,0);
-    background:#fff;
-}
+.photo-item.is-live.is-playing .photo-live-badge .live-dot{border-radius:2px;animation:none;opacity:1;transform:scale(1);box-shadow:0 0 0 rgba(0,0,0,0);background:#fff}
 .photo-item.is-live.is-playing .photo-live-badge .live-text::after{content:'STOP';letter-spacing:.06em}
-
 .photo-info-overlay{position:absolute;right:1.5cqw;bottom:1.5cqw;display:flex;flex-direction:column;align-items:flex-end;gap:0.8cqw;max-width:calc(100% - 3cqw);pointer-events:none;z-index:5}
 .photo-info-overlay .pio-alt{background:rgba(0,0,0,.68);color:#fff;font-size:.7rem;font-size:max(3px,3.2cqw);font-weight:500;line-height:1.3;padding:.28rem .65rem;padding:max(1px,.9cqw) max(2px,2.2cqw);border-radius:.5rem;border-radius:max(2px,1.2cqw);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 4px 12px rgba(0,0,0,.25);opacity:0;transform:translateY(2cqw);transition:opacity .3s var(--ease-smooth),transform .35s var(--ease-spring)}
 .photo-info-overlay .pio-exif{display:flex;flex-wrap:wrap;gap:.25rem;gap:0.6cqw;justify-content:flex-end;max-width:100%;opacity:0;transform:translateY(2cqw);transition:opacity .3s var(--ease-smooth),transform .35s var(--ease-spring)}
-.photo-item:hover .pio-alt,
-.photo-item:hover .pio-exif{opacity:1;transform:translateY(0)}
+.photo-item:hover .pio-alt,.photo-item:hover .pio-exif{opacity:1;transform:translateY(0)}
 .photo-item.always-alt .pio-alt{opacity:1;transform:translateY(0)}
 .photo-item.always-exif .pio-exif{opacity:1;transform:translateY(0)}
 .photo-info-overlay .pio-exif-item{background:rgba(0,0,0,.55);color:#fff;font-size:.62rem;font-size:max(2.5px,2.6cqw);font-weight:500;line-height:1.3;padding:.18rem .5rem;padding:max(.8px,.7cqw) max(1.5px,1.8cqw);border-radius:.4rem;border-radius:max(1.5px,1cqw);white-space:nowrap;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(0,0,0,.2);letter-spacing:.01em}
-
 .settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);z-index:200;opacity:0;visibility:hidden;transition:opacity .35s var(--ease-smooth),background .35s var(--ease-smooth),backdrop-filter .35s var(--ease-smooth),visibility .35s ease}
 .settings-overlay.active{opacity:1;visibility:visible;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .settings-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);width:min(480px,calc(100vw - 2rem));max-height:85vh;background:rgba(255,255,255,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.7);border-radius:1.4rem;box-shadow:0 24px 60px rgba(80,60,160,.28);z-index:201;opacity:0;visibility:hidden;transition:opacity .35s var(--ease-smooth),transform .45s var(--ease-spring),visibility .35s ease;display:flex;flex-direction:column;overflow:hidden}
@@ -371,7 +285,6 @@ body.dark .settings-actions{border-top-color:rgba(255,255,255,.08)}
 .settings-action i{font-size:.8rem}
 body.dark .settings-action{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);color:#B8B4D8}
 body.dark .settings-action:hover{background:rgba(136,204,255,.12);color:#88ccff;border-color:rgba(136,204,255,.3)}
-
 .livedl-overlay{position:fixed;inset:0;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);z-index:300;display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;visibility:hidden;transition:opacity .3s var(--ease-smooth),background .3s var(--ease-smooth),backdrop-filter .3s var(--ease-smooth),visibility .3s ease}
 .livedl-overlay.active{opacity:1;visibility:visible;background:rgba(0,0,0,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .livedl-box{width:min(420px,100%);background:rgba(255,255,255,.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.7);border-radius:1.2rem;box-shadow:0 24px 60px rgba(80,60,160,.3);padding:1.5rem 1.5rem 1.2rem;transform:scale(.92) translateY(10px);opacity:0;transition:transform .4s var(--ease-spring),opacity .3s var(--ease-smooth)}
@@ -403,7 +316,6 @@ body.dark .livedl-option-desc{color:#9A96B8}
 .livedl-cancel:hover{background:rgba(0,0,0,.05);color:#1A1A2E}
 body.dark .livedl-cancel{border-color:rgba(255,255,255,.08);color:#9A96B8}
 body.dark .livedl-cancel:hover{background:rgba(255,255,255,.06);color:#E8E6F0}
-
 .pwd-overlay{position:fixed;inset:0;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);z-index:400;display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;visibility:hidden;transition:opacity .3s var(--ease-smooth),background .3s var(--ease-smooth),backdrop-filter .3s var(--ease-smooth),visibility .3s ease}
 .pwd-overlay.active{opacity:1;visibility:visible;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .pwd-box{width:min(400px,100%);background:rgba(255,255,255,.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.7);border-radius:1.3rem;box-shadow:0 24px 60px rgba(80,60,160,.3);padding:1.8rem 1.6rem 1.4rem;transform:scale(.92) translateY(10px);opacity:0;transition:transform .4s var(--ease-spring),opacity .3s var(--ease-smooth)}
@@ -437,7 +349,6 @@ body.dark .pwd-cancel:hover{background:rgba(255,255,255,.1);color:#E8E6F0}
 .pwd-confirm:active{transform:translateY(0) scale(.97)}
 .pwd-confirm:disabled{opacity:.6;cursor:not-allowed;transform:none}
 body.dark .pwd-confirm{background:linear-gradient(135deg,#5aa8e0,#88ccff);box-shadow:0 4px 14px rgba(136,204,255,.3)}
-
 .confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);z-index:450;display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;visibility:hidden;transition:opacity .3s var(--ease-smooth),background .3s var(--ease-smooth),backdrop-filter .3s var(--ease-smooth),visibility .3s ease}
 .confirm-overlay.active{opacity:1;visibility:visible;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .confirm-box{width:min(360px,100%);background:rgba(255,255,255,.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.7);border-radius:1.3rem;box-shadow:0 24px 60px rgba(80,60,160,.3);padding:1.8rem 1.6rem 1.4rem;transform:scale(.92) translateY(10px);opacity:0;transition:transform .4s var(--ease-spring),opacity .3s var(--ease-smooth);text-align:center}
@@ -459,19 +370,15 @@ body.dark .confirm-cancel:hover{background:rgba(255,255,255,.1);color:#E8E6F0}
 .confirm-ok:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(107,90,207,.45)}
 .confirm-ok:active{transform:translateY(0) scale(.97)}
 body.dark .confirm-ok{background:linear-gradient(135deg,#5aa8e0,#88ccff);box-shadow:0 4px 14px rgba(136,204,255,.3)}
-
 .photo-item.decrypt-failed::after{content:'\f071';font-family:'Font Awesome 7 Free';font-weight:900;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#E85D5D;font-size:1.2rem;z-index:2;background:rgba(232,93,93,.08)}
-
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px) scale(.9);background:rgba(28,26,44,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:.8rem 2.5rem;border-radius:60px;color:#EFEAFF;font-size:.9rem;font-weight:500;border:1px solid rgba(255,255,255,.08);box-shadow:0 16px 40px rgba(0,0,0,.3);opacity:0;transition:opacity .45s var(--ease-spring),transform .45s var(--ease-spring);z-index:1000;pointer-events:none;white-space:nowrap;min-width:200px;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
 .toast i{margin-right:.5rem;font-size:1rem}
 .toast .fa-check-circle{color:#4ade80}
 .toast .fa-info-circle{color:#60a5fa}
 .toast .fa-lock{color:#fbbf24}
-
 #waline-comments{max-width:100%;margin:2rem 0 1rem;padding-top:1.5rem;border-top:1px solid rgba(0,0,0,.06);transition:border-color .3s ease}
 body.dark #waline-comments{border-top-color:rgba(255,255,255,.06)}
-
 .album-tags{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.5rem}
 .album-tag{display:inline-block;font-size:.65rem;font-weight:500;color:#6B5ACF;background:rgba(107,90,207,.10);padding:.1rem .55rem;border-radius:40px;user-select:none}
 body.dark .album-tag{color:#88ccff;background:rgba(136,204,255,.10)}
@@ -481,13 +388,8 @@ body.dark .detail-tag{color:#88ccff;background:rgba(136,204,255,.10)}
 .detail-tag:hover{background:rgba(107,90,207,.20);transform:scale(1.04)}
 body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
 .detail-tag i{font-size:.6rem;opacity:.7}
-
 #footer-root{margin-top:1rem}
-
-@media (max-width:900px){
-    .album-grid.layout-list .album-cover{width:150px;min-height:110px}
-    .album-grid.layout-list .album-cover-locked i{font-size:1.4rem}
-}
+@media (max-width:900px){.album-grid.layout-list .album-cover{width:150px;min-height:110px}.album-grid.layout-list .album-cover-locked i{font-size:1.4rem}}
 @media (max-width:560px){
     .container{padding:4.5rem 1.2rem 2rem}
     .album-grid.layout-list .album-cover{width:110px;min-height:90px}
@@ -528,10 +430,7 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
     .confirm-sub{font-size:.72rem}
     .confirm-cancel,.confirm-ok{padding:.7rem;font-size:.82rem}
 }
-
-@media (prefers-reduced-motion: reduce){
-    *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
-}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
@@ -741,1422 +640,105 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
 <script>
 (function(){
     var IMG_BASE = 'albums/';
-
-    var allAlbums = [];
-    var filteredAlbums = [];
-    var currentAlbum = null;
-    var currentKey = null;
-    var isNavigating = false;
-    var STORAGE_KEY = 'ks-album-prefs';
-    var ITERATIONS = 250000;
-    var listScrollY = 0;
-    var pendingRestoreScroll = false;
-    var defaultPrefs = {
-        albumLayout: 'grid',
-        albumCols: '3',
-        photoLayout: 'grid',
-        photoCols: '2',
-        desc: true,
-        meta: true,
-        download: true,
-        alt: true,
-        altAlways: false,
-        exif: true,
-        exifAlways: false,
-        live: true,
-        liveBadge: true,
-        liveDownload: 'ask',
-        anim: true
-    };
+    var allAlbums = [], filteredAlbums = [], currentAlbum = null, currentKey = null, isNavigating = false;
+    var STORAGE_KEY = 'ks-album-prefs', ITERATIONS = 250000;
+    var listScrollY = 0, pendingRestoreScroll = false;
+    var defaultPrefs = {albumLayout:'grid',albumCols:'3',photoLayout:'grid',photoCols:'2',desc:true,meta:true,download:true,alt:true,altAlways:false,exif:true,exifAlways:false,live:true,liveBadge:true,liveDownload:'ask',anim:true};
     var prefs = loadPrefs();
-
-    var detailBlobUrls = [];
-    var pendingAlbum = null;
-    var pendingDownload = null;
-    var isScrollingToTop = false;
-
-    var walineInstance = null;
-    var walinePath = null;
-    var walineReqId = 0;
-
+    var detailBlobUrls = [], pendingAlbum = null, pendingDownload = null, isScrollingToTop = false;
+    var walineInstance = null, walinePath = null, walineReqId = 0;
     var supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-    var mainContainer = document.getElementById('mainContainer');
-    var listView = document.getElementById('listView');
-    var detailView = document.getElementById('detailView');
-    var gridEl = document.getElementById('albumGrid');
-    var searchBar = document.getElementById('searchBar');
-    var searchInput = document.getElementById('searchInput');
-    var clearBtn = document.getElementById('clearBtn');
-    var statsRow = document.getElementById('statsRow');
-    var statsText = document.getElementById('statsText');
-    var detailBack = document.getElementById('detailBack');
-    var detailTitle = document.getElementById('detailTitle');
-    var detailDesc = document.getElementById('detailDesc');
-    var detailMeta = document.getElementById('detailMeta');
-    var photoGrid = document.getElementById('photoGrid');
-    var settingsBtn = document.getElementById('settingsBtn');
-    var settingsOverlay = document.getElementById('settingsOverlay');
-    var settingsClose = document.getElementById('settingsClose');
-    var settingsReset = document.getElementById('settingsReset');
-    var liveDlOverlay = document.getElementById('liveDlOverlay');
-    var liveDlCover = document.getElementById('liveDlCover');
-    var liveDlLive = document.getElementById('liveDlLive');
-    var liveDlCancel = document.getElementById('liveDlCancel');
-    var backToTopBtn = document.getElementById('backToTopBtn');
-    var pwdOverlay = document.getElementById('pwdOverlay');
-    var pwdBox = document.getElementById('pwdBox');
-    var pwdInput = document.getElementById('pwdInput');
-    var pwdError = document.getElementById('pwdError');
-    var pwdSub = document.getElementById('pwdSub');
-    var pwdConfirm = document.getElementById('pwdConfirm');
-    var pwdCancel = document.getElementById('pwdCancel');
-    var topBackBtn = document.getElementById('topBackBtn');
-    var confirmOverlay = document.getElementById('confirmOverlay');
-    var confirmCancel = document.getElementById('confirmCancel');
-    var confirmOk = document.getElementById('confirmOk');
-
-    var themeToggle = document.getElementById('themeToggle');
-    var themeIcon = document.getElementById('themeIcon');
+    var mainContainer = document.getElementById('mainContainer'), listView = document.getElementById('listView'), detailView = document.getElementById('detailView'), gridEl = document.getElementById('albumGrid'), searchBar = document.getElementById('searchBar'), searchInput = document.getElementById('searchInput'), clearBtn = document.getElementById('clearBtn'), statsRow = document.getElementById('statsRow'), statsText = document.getElementById('statsText'), detailBack = document.getElementById('detailBack'), detailTitle = document.getElementById('detailTitle'), detailDesc = document.getElementById('detailDesc'), detailMeta = document.getElementById('detailMeta'), photoGrid = document.getElementById('photoGrid'), settingsBtn = document.getElementById('settingsBtn'), settingsOverlay = document.getElementById('settingsOverlay'), settingsClose = document.getElementById('settingsClose'), settingsReset = document.getElementById('settingsReset'), liveDlOverlay = document.getElementById('liveDlOverlay'), liveDlCover = document.getElementById('liveDlCover'), liveDlLive = document.getElementById('liveDlLive'), liveDlCancel = document.getElementById('liveDlCancel'), backToTopBtn = document.getElementById('backToTopBtn'), pwdOverlay = document.getElementById('pwdOverlay'), pwdBox = document.getElementById('pwdBox'), pwdInput = document.getElementById('pwdInput'), pwdError = document.getElementById('pwdError'), pwdSub = document.getElementById('pwdSub'), pwdConfirm = document.getElementById('pwdConfirm'), pwdCancel = document.getElementById('pwdCancel'), topBackBtn = document.getElementById('topBackBtn'), confirmOverlay = document.getElementById('confirmOverlay'), confirmCancel = document.getElementById('confirmCancel'), confirmOk = document.getElementById('confirmOk');
+    var themeToggle = document.getElementById('themeToggle'), themeIcon = document.getElementById('themeIcon');
     var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     var currentTheme = localStorage.getItem('ks-theme') || (prefersDark ? 'dark' : 'light');
-    function setTheme(t){
-        document.body.classList.toggle('dark', t === 'dark');
-        themeIcon.className = t === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-        localStorage.setItem('ks-theme', t);
-        currentTheme = t;
-    }
+    function setTheme(t){ document.body.classList.toggle('dark', t==='dark'); themeIcon.className = t==='dark'?'fas fa-sun':'fas fa-moon'; localStorage.setItem('ks-theme',t); currentTheme=t; }
     setTheme(currentTheme);
-    themeToggle.addEventListener('click', function(){ setTheme(currentTheme === 'dark' ? 'light' : 'dark'); });
-
-    function resolveImageUrl(src){
-        if(!src) return '';
-        if(/^(https?:)?\/\//i.test(src)) return src;
-        if(/^data:/i.test(src)) return src;
-        if(/^blob:/i.test(src)) return src;
-        return IMG_BASE + src;
-    }
-
-    function loadPrefs(){
-        try {
-            var raw = localStorage.getItem(STORAGE_KEY);
-            if(!raw) return Object.assign({}, defaultPrefs);
-            return Object.assign({}, defaultPrefs, JSON.parse(raw));
-        } catch(e){
-            return Object.assign({}, defaultPrefs);
-        }
-    }
-    function savePrefs(){
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs)); } catch(e){}
-    }
-
-    function getContentWidth(){
-        if(!mainContainer) return window.innerWidth;
-        var styles = getComputedStyle(mainContainer);
-        var pl = parseFloat(styles.paddingLeft) || 0;
-        var pr = parseFloat(styles.paddingRight) || 0;
-        var w = mainContainer.getBoundingClientRect().width - pl - pr;
-        return Math.max(1, w);
-    }
-
-    function calcMaxCols(minColWidth, hardMax){
-        var gap = 13;
-        var avail = getContentWidth();
-        var n = Math.floor((avail + gap) / (minColWidth + gap));
-        return Math.max(1, Math.min(hardMax, n));
-    }
-
-    function getMaxAlbumCols(){ return calcMaxCols(220, 4); }
-    function getMaxPhotoCols(){ return calcMaxCols(85, 4); }
-
-    function applyColsVisibility(groupName, maxCols){
-        var group = document.querySelector('.segmented[data-group="' + groupName + '"]');
-        if(!group) return;
-        var groupContainer = group.closest('.settings-group');
-        var visibleCount = 0;
-        group.querySelectorAll('.segment-btn').forEach(function(btn){
-            var v = parseInt(btn.getAttribute('data-value'), 10);
-            if(v <= maxCols){
-                btn.classList.remove('hidden');
-                visibleCount++;
-            } else {
-                btn.classList.add('hidden');
-            }
-        });
-        if(groupContainer){
-            groupContainer.classList.toggle('hidden', visibleCount <= 1);
-        }
-    }
-
-    function updateSettingsVisibility(){
-        applyColsVisibility('albumCols', getMaxAlbumCols());
-        applyColsVisibility('photoCols', getMaxPhotoCols());
-    }
-
-    function autoFixPrefs(){
-        var maxAlbumCols = getMaxAlbumCols();
-        var maxPhotoCols = getMaxPhotoCols();
-        var changed = false;
-        if(parseInt(prefs.albumCols, 10) > maxAlbumCols){
-            prefs.albumCols = String(Math.max(1, maxAlbumCols));
-            changed = true;
-        }
-        if(parseInt(prefs.photoCols, 10) > maxPhotoCols){
-            prefs.photoCols = String(Math.max(1, maxPhotoCols));
-            changed = true;
-        }
-        if(changed) savePrefs();
-    }
-
-    function applyGridLayout(el, layout, cols, maxCols){
-        var effectiveCols = Math.min(parseInt(cols, 10) || 3, maxCols);
-        if(effectiveCols < 1) effectiveCols = 1;
-
-        el.classList.remove('layout-grid','layout-masonry','layout-list');
-        el.classList.remove('cols-1','cols-2','cols-3','cols-4');
-        el.classList.add('layout-' + layout);
-        el.classList.add('cols-' + effectiveCols);
-
-        el.style.gridTemplateColumns = '';
-        el.style.columnCount = '';
-        el.style.gap = '';
-        el.style.columnGap = '';
-
-        if(layout === 'grid'){
-            el.style.display = 'grid';
-            el.style.gridTemplateColumns = 'repeat(' + effectiveCols + ', 1fr)';
-            el.style.gap = '.8rem';
-        } else if(layout === 'masonry'){
-            el.style.display = 'block';
-            el.style.columnCount = effectiveCols;
-            el.style.columnGap = '.8rem';
-        } else {
-            el.style.display = 'flex';
-            el.style.flexDirection = 'column';
-            el.style.gap = '.6rem';
-        }
-    }
-
-    function updateConflictStates(){
-        var altAlwaysSw = document.querySelector('[data-toggle="altAlways"]');
-        if(altAlwaysSw){
-            var altRow = altAlwaysSw.closest('.toggle-row');
-            if(!prefs.alt){
-                altRow.classList.add('disabled');
-                altAlwaysSw.classList.remove('active');
-            } else {
-                altRow.classList.remove('disabled');
-                altAlwaysSw.classList.toggle('active', !!prefs.altAlways);
-            }
-        }
-
-        var exifAlwaysSw = document.querySelector('[data-toggle="exifAlways"]');
-        if(exifAlwaysSw){
-            var exifRow = exifAlwaysSw.closest('.toggle-row');
-            if(!prefs.exif){
-                exifRow.classList.add('disabled');
-                exifAlwaysSw.classList.remove('active');
-            } else {
-                exifRow.classList.remove('disabled');
-                exifAlwaysSw.classList.toggle('active', !!prefs.exifAlways);
-            }
-        }
-
-        var liveBadgeSw = document.querySelector('[data-toggle="liveBadge"]');
-        if(liveBadgeSw){
-            var badgeRow = liveBadgeSw.closest('.toggle-row');
-            if(!prefs.live){
-                badgeRow.classList.add('disabled');
-                liveBadgeSw.classList.remove('active');
-            } else {
-                badgeRow.classList.remove('disabled');
-                liveBadgeSw.classList.toggle('active', !!prefs.liveBadge);
-            }
-        }
-
-        var liveDlSeg = document.querySelector('.segmented[data-group="liveDownload"]');
-        if(liveDlSeg){
-            if(!prefs.download){
-                liveDlSeg.classList.add('disabled');
-            } else {
-                liveDlSeg.classList.remove('disabled');
-            }
-        }
-
-        var albumColsGroup = document.querySelector('.settings-group[data-settings-group="albumCols"]');
-        if(albumColsGroup){
-            if(prefs.albumLayout === 'list'){
-                albumColsGroup.classList.add('disabled');
-            } else {
-                albumColsGroup.classList.remove('disabled');
-            }
-        }
-    }
-
-    function applyPrefs(){
-        autoFixPrefs();
-
-        document.body.classList.toggle('hide-desc', !prefs.desc);
-        document.body.classList.toggle('hide-meta', !prefs.meta);
-        document.body.classList.toggle('hide-download', !prefs.download);
-        document.body.classList.toggle('hide-alt', !prefs.alt);
-        document.body.classList.toggle('hide-exif', !prefs.exif);
-        document.body.classList.toggle('hide-live-badge', !prefs.liveBadge);
-        document.body.classList.toggle('no-anim', !prefs.anim);
-
-        var maxAlbumCols = getMaxAlbumCols();
-        var maxPhotoCols = getMaxPhotoCols();
-
-        applyGridLayout(gridEl, prefs.albumLayout, prefs.albumCols, maxAlbumCols);
-        applyGridLayout(photoGrid, prefs.photoLayout, prefs.photoCols, maxPhotoCols);
-
-        if(prefs.albumLayout === 'grid') gridEl.style.gap = '1.2rem';
-        if(prefs.albumLayout === 'masonry') gridEl.style.columnGap = '1.2rem';
-        if(prefs.albumLayout === 'list') gridEl.style.gap = '.8rem';
-        if(prefs.photoLayout === 'grid') photoGrid.style.gap = '.8rem';
-
-        document.querySelectorAll('.segmented').forEach(function(group){
-            var g = group.getAttribute('data-group');
-            group.querySelectorAll('.segment-btn').forEach(function(btn){
-                btn.classList.toggle('active', String(prefs[g]) === btn.getAttribute('data-value'));
-            });
-        });
-        document.querySelectorAll('.toggle-switch').forEach(function(sw){
-            var t = sw.getAttribute('data-toggle');
-            sw.classList.toggle('active', !!prefs[t]);
-        });
-
-        updateSettingsVisibility();
-        updateConflictStates();
-    }
-
-    function openSettings(){
-        settingsOverlay.classList.add('active');
-        settingsBtn.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-    function closeSettings(){
-        settingsOverlay.classList.remove('active');
-        settingsBtn.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-
-    function openConfirm(){
-        confirmOverlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-    function closeConfirm(){
-        confirmOverlay.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-
-    topBackBtn.addEventListener('click', function(e){
-        e.preventDefault();
-        openConfirm();
-    });
-    confirmCancel.addEventListener('click', closeConfirm);
-    confirmOk.addEventListener('click', function(){
-        location.href = 'index.html';
-    });
-    confirmOverlay.addEventListener('click', function(e){
-        if(e.target === confirmOverlay) closeConfirm();
-    });
-
-    function bindSettings(){
-        document.querySelectorAll('.segmented').forEach(function(group){
-            var g = group.getAttribute('data-group');
-            group.querySelectorAll('.segment-btn').forEach(function(btn){
-                btn.addEventListener('click', function(){
-                    if(group.classList.contains('disabled')) return;
-                    prefs[g] = btn.getAttribute('data-value');
-                    savePrefs();
-                    applyPrefs();
-                });
-            });
-        });
-
-        document.querySelectorAll('.toggle-switch').forEach(function(sw){
-            sw.addEventListener('click', function(){
-                var row = sw.closest('.toggle-row');
-                if(row && row.classList.contains('disabled')) return;
-                var t = sw.getAttribute('data-toggle');
-                prefs[t] = !prefs[t];
-                savePrefs();
-                applyPrefs();
-                if(currentAlbum && detailView.classList.contains('active')){
-                    if(currentAlbum.encrypted){
-                        if(currentAlbum._decryptedData){
-                            renderEncryptedDetailView(currentAlbum, currentAlbum._decryptedData);
-                        }
-                    } else {
-                        renderDetailView(currentAlbum);
-                    }
-                }
-            });
-        });
-
-        settingsBtn.addEventListener('click', openSettings);
-        settingsClose.addEventListener('click', closeSettings);
-        settingsOverlay.addEventListener('click', function(e){
-            if(e.target === settingsOverlay) closeSettings();
-        });
-        settingsReset.addEventListener('click', function(){
-            prefs = Object.assign({}, defaultPrefs);
-            savePrefs();
-            applyPrefs();
-            if(currentAlbum && detailView.classList.contains('active')){
-                if(currentAlbum.encrypted){
-                    if(currentAlbum._decryptedData){
-                        renderEncryptedDetailView(currentAlbum, currentAlbum._decryptedData);
-                    }
-                } else {
-                    renderDetailView(currentAlbum);
-                }
-            }
-            showToast('已恢复默认', 'fa-check-circle');
-        });
-        document.addEventListener('keydown', function(e){
-            if(e.key === 'Escape' && settingsOverlay.classList.contains('active')){
-                closeSettings();
-            }
-        });
-    }
-
-    var resizeTimer = null;
-    window.addEventListener('resize', function(){
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function(){ applyPrefs(); }, 150);
-    });
-
-    var scrollRaf = null;
-    function updateScrollUI(){
-        var y = window.scrollY || window.pageYOffset || 0;
-        var isDetail = detailView.classList.contains('active');
-        document.body.classList.toggle('hide-top-back', isDetail && y > 60);
-        if(!isScrollingToTop){
-            backToTopBtn.classList.toggle('show', y > 400);
-        }
-    }
-    window.addEventListener('scroll', function(){
-        if(scrollRaf) return;
-        scrollRaf = requestAnimationFrame(function(){
-            updateScrollUI();
-            scrollRaf = null;
-        });
-    }, {passive:true});
-
-    function scrollToTopAnimated(){
-        if(isScrollingToTop) return;
-        var startY = window.scrollY || window.pageYOffset || 0;
-        if(startY === 0){
-            backToTopBtn.classList.remove('show');
-            return;
-        }
-        isScrollingToTop = true;
-        var startTime = performance.now();
-        var duration = 400;
-        function step(now){
-            var t = Math.min((now - startTime) / duration, 1);
-            var ease = 1 - Math.pow(1 - t, 3);
-            window.scrollTo(0, startY * (1 - ease));
-            if(t < 1){
-                requestAnimationFrame(step);
-            } else {
-                window.scrollTo(0, 0);
-                isScrollingToTop = false;
-                backToTopBtn.classList.remove('show');
-            }
-        }
-        requestAnimationFrame(step);
-    }
-
-    backToTopBtn.addEventListener('click', scrollToTopAnimated);
-
-    function restoreListScroll(){
-        if(!pendingRestoreScroll) return;
-        pendingRestoreScroll = false;
-        var target = listScrollY;
-        requestAnimationFrame(function(){
-            window.scrollTo(0, target);
-            requestAnimationFrame(function(){
-                window.scrollTo(0, target);
-                updateScrollUI();
-            });
-        });
-    }
-
-    function showToast(msg, icon){
-        icon = icon || 'fa-info-circle';
-        var t = document.getElementById('toast');
-        t.innerHTML = '<i class="fas ' + icon + '"></i> ' + msg;
-        t.classList.add('show');
-        clearTimeout(t._hideTimer);
-        t._hideTimer = setTimeout(function(){ t.classList.remove('show'); }, 2000);
-    }
-
-    function escapeHtml(text){
-        if(!text) return '';
-        var d = document.createElement('div');
-        d.textContent = text;
-        return d.innerHTML;
-    }
-
-    function renderMd(text){
-        if(!text) return '';
-        if(window.KSMarkdown && window.KSMarkdown.renderMarkdown){
-            return window.KSMarkdown.renderMarkdown(text);
-        }
-        return escapeHtml(text);
-    }
-
-    function attachImageLoad(wrapper, img){
-        function done(){
-            wrapper.classList.add('loaded');
-            img.classList.add('loaded');
-        }
-        if(img.complete && img.naturalWidth !== 0){
-            requestAnimationFrame(done);
-        } else {
-            img.addEventListener('load', done, {once:true});
-            img.addEventListener('error', done, {once:true});
-        }
-    }
-
-    function getThumb(item){ return item.thumb || item.src; }
-    function getCover(album){
-        if(album.cover) return album.cover;
-        if(album.images && album.images[0]) return getThumb(album.images[0]);
-        return '';
-    }
-
-    function pad2(n){ return n < 10 ? '0' + n : String(n); }
-    function fmtNum(n){
-        if(typeof n !== 'number') return String(n);
-        return Number.isInteger(n) ? String(n) : n.toFixed(1);
-    }
-
-    function normalizeExif(raw){
-        if(!raw) return null;
-        var out = {};
-        var camera = [raw.Make, raw.Model].filter(Boolean).join(' ').trim();
-        if(camera) out.camera = camera;
-        if(raw.LensModel) out.lens = String(raw.LensModel).trim();
-        if(raw.FNumber) out.aperture = 'f/' + fmtNum(raw.FNumber);
-        if(raw.ExposureTime){
-            var t = raw.ExposureTime;
-            if(typeof t === 'number'){
-                if(t >= 1) out.shutter = fmtNum(t) + 's';
-                else out.shutter = '1/' + Math.round(1 / t) + 's';
-            } else {
-                out.shutter = String(t) + 's';
-            }
-        }
-        if(raw.ISO) out.iso = 'ISO ' + raw.ISO;
-        if(raw.FocalLength) out.focal = fmtNum(raw.FocalLength) + 'mm';
-        if(raw.DateTimeOriginal){
-            var d = raw.DateTimeOriginal;
-            if(d instanceof Date && !isNaN(d)){
-                out.date = d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
-            } else if(typeof d === 'string'){
-                out.date = d;
-            }
-        }
-        return Object.keys(out).length ? out : null;
-    }
-
-    function fetchExifFromImage(url){
-        return new Promise(function(resolve){
-            if(typeof exifr === 'undefined'){ resolve(null); return; }
-            if(!url){ resolve(null); return; }
-            exifr.parse(url, {
-                pick: ['Make','Model','LensModel','FNumber','ExposureTime','ISO','FocalLength','DateTimeOriginal'],
-                translateValues: false,
-                reviveValues: false,
-                silentErrors: true
-            }).then(function(raw){
-                resolve(normalizeExif(raw));
-            }).catch(function(){ resolve(null); });
-        });
-    }
-
-    function buildExifTagsHtml(exif){
-        if(!exif) return '';
-        var tags = [];
-        if(exif.camera) tags.push(exif.camera);
-        if(exif.lens) tags.push(exif.lens);
-        if(exif.focal) tags.push(exif.focal);
-        if(exif.aperture) tags.push(exif.aperture);
-        if(exif.shutter) tags.push(exif.shutter);
-        if(exif.iso) tags.push(exif.iso);
-        if(exif.date) tags.push(exif.date);
-        if(!tags.length) return '';
-        var html = '<div class="pio-exif">';
-        tags.forEach(function(t){
-            html += '<span class="pio-exif-item">' + escapeHtml(t) + '</span>';
-        });
-        html += '</div>';
-        return html;
-    }
-
-    function buildInfoOverlayHtml(alt, exif){
-        var hasAlt = alt && alt.length;
-        var exifHtml = buildExifTagsHtml(exif);
-        if(!hasAlt && !exifHtml) return '';
-        var html = '<div class="photo-info-overlay">';
-        if(hasAlt) html += '<div class="pio-alt">' + escapeHtml(alt) + '</div>';
-        html += exifHtml;
-        html += '</div>';
-        return html;
-    }
-
-    function bufToBase64(buf){
-        var bytes = new Uint8Array(buf);
-        var bin = '';
-        for(var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-        return btoa(bin);
-    }
-    function base64ToBuf(b64){
-        var binary = atob(b64);
-        var bytes = new Uint8Array(binary.length);
-        for(var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-        return bytes;
-    }
-
-    async function gunzipStr(buf){
-        var ds = new DecompressionStream('gzip');
-        var writer = ds.writable.getWriter();
-        writer.write(buf);
-        writer.close();
-        return await new Response(ds.readable).text();
-    }
-
-    async function deriveKey(password, salt, usages){
-        var enc = new TextEncoder();
-        var km = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
-        return crypto.subtle.deriveKey(
-            { name:'PBKDF2', salt: salt, iterations: ITERATIONS, hash:'SHA-256' },
-            km,
-            { name:'AES-GCM', length:256 },
-            false,
-            usages
-        );
-    }
-
-    async function decryptPayload(entry, password){
-        var salt = base64ToBuf(entry.salt);
-        var iv = base64ToBuf(entry.iv);
-        var ct = base64ToBuf(entry.payload);
-        var key = await deriveKey(password, salt, ['decrypt']);
-        var pt = await crypto.subtle.decrypt({ name:'AES-GCM', iv: iv }, key, ct);
-        var text = await gunzipStr(pt);
-        return { key: key, data: JSON.parse(text) };
-    }
-
-    async function decryptImageBlob(src, ivBase64, key){
-        var url = resolveImageUrl(src);
-        var res = await fetch(url);
-        if(!res.ok) throw new Error('HTTP ' + res.status);
-        var ct = await res.arrayBuffer();
-        var iv = base64ToBuf(ivBase64);
-        var pt = await crypto.subtle.decrypt({ name:'AES-GCM', iv: iv }, key, ct);
-        return new Blob([pt]);
-    }
-
-    function updateStats(){
-        var albumCount = filteredAlbums.length;
-        var photoCount = 0;
-        filteredAlbums.forEach(function(a){
-            if(!a.encrypted && a.images) photoCount += a.images.length;
-        });
-        var hasFilter = searchInput.value.trim().length > 0;
-        statsRow.classList.add('updating');
-        setTimeout(function(){ statsRow.classList.remove('updating'); }, 300);
-        if(albumCount === 0){
-            statsText.textContent = hasFilter ? '没有匹配的相册' : '还没有相册';
-        } else if(photoCount === 0){
-            statsText.innerHTML = '共 ' + albumCount + ' 个相册' + (hasFilter ? '（已筛选）' : '');
-        } else {
-            statsText.innerHTML = '共 ' + albumCount + ' 个相册 <span class="sep">·</span> ' + photoCount + ' 张照片' + (hasFilter ? '（已筛选）' : '');
-        }
-    }
-
-    function loadAlbums(){
-        fetch('albums/albums.json', {cache:'no-cache'})
-            .then(function(res){
-                if(!res.ok) throw new Error('加载失败');
-                return res.json();
-            })
-            .then(function(data){
-                allAlbums = (data.albums || []).filter(function(a){ return a.delete !== true; });
-                allAlbums.sort(function(a, b){
-                    var oa = a.order || 0;
-                    var ob = b.order || 0;
-                    if(oa !== ob) return ob - oa;
-                    return (b.date || '').localeCompare(a.date || '');
-                });
-                applyFilter('');
-                handleRoute();
-                setTimeout(applyPrefs, 50);
-            })
-            .catch(function(err){
-                console.error(err);
-                gridEl.innerHTML = '<div class="empty-state"><i class="far fa-frown"></i><p>加载相册失败</p></div>';
-            });
-    }
-
-    function applyFilter(keyword){
-        var k = (keyword || '').trim().toLowerCase();
-        if(!k){
-            filteredAlbums = allAlbums.slice();
-        } else {
-            filteredAlbums = allAlbums.filter(function(a){
-                var tags = (a.tags || []).join(' ');
-                var fields = [
-                    a.title || '',
-                    a.user || 'ks',
-                    a.date || '',
-                    a.desc || '',
-                    a.location || '',
-                    tags
-                ].join(' ').toLowerCase();
-                return fields.indexOf(k) !== -1;
-            });
-        }
-        renderGrid();
-        updateStats();
-    }
-
-    function renderGrid(){
-        if(filteredAlbums.length === 0){
-            gridEl.innerHTML = '<div class="empty-state"><i class="fas fa-images"></i><p>没有找到相册</p></div>';
-            return;
-        }
-        var html = '';
-        filteredAlbums.forEach(function(album, idx){
-            html += buildCard(album, idx);
-        });
-        gridEl.innerHTML = html;
-
-        gridEl.querySelectorAll('.album-card').forEach(function(card){
-            card.style.animationDelay = (card.getAttribute('data-idx') * 55) + 'ms';
-            card.addEventListener('click', function(){
-                var idx = parseInt(card.getAttribute('data-idx'), 10);
-                openAlbumDetail(filteredAlbums[idx]);
-            });
-            var cover = card.querySelector('.album-cover');
-            var img = cover ? cover.querySelector('img') : null;
-            if(cover && img) attachImageLoad(cover, img);
-        });
-    }
-
-    function buildCard(album, idx){
-        var coverHtml = '';
-        if(album.encrypted){
-            coverHtml = '<div class="album-cover-locked"><i class="fas fa-lock"></i><span>加密相册，请解密查看～</span></div>';
-        } else {
-            var first = getCover(album);
-            if(first){
-                coverHtml = '<span class="cover-skeleton"></span><img src="' + escapeHtml(resolveImageUrl(first)) + '" alt="" loading="lazy">';
-            } else {
-                coverHtml = '<div class="album-cover-locked"><i class="fas fa-image"></i><span>暂无图片</span></div>';
-            }
-        }
-
-        var meta = '';
-        meta += '<span><i class="fas fa-user"></i> ' + escapeHtml(album.user || 'ks') + '</span>';
-        if(album.date) meta += '<span><i class="fas fa-calendar"></i> ' + escapeHtml(album.date) + '</span>';
-        if(album.location) meta += '<span><i class="fas fa-location-dot"></i> ' + escapeHtml(album.location) + '</span>';
-        if(!album.encrypted && album.images){
-            meta += '<span><i class="fas fa-image"></i> ' + album.images.length + ' 张</span>';
-        } else if(album.encrypted){
-            meta += '<span><i class="fas fa-lock"></i> 加密</span>';
-        }
-
-        var desc = '';
-        if(album.encrypted){
-            desc = '<div class="album-desc">这个相册被加密保护，输入正确密码即可解锁查看完整内容。解锁后可以浏览其中的全部照片与 Live 图，自由切换布局，查看 EXIF 拍摄信息，也能把喜欢的原图下载收藏。</div>';
-        } else if(album.desc){
-            desc = '<div class="album-desc">' + renderMd(album.desc) + '</div>';
-        }
-
-        var tags = (!album.encrypted && album.tags) ? album.tags : [];
-        var tagsHtml = '';
-        if(tags.length > 0){
-            tagsHtml = '<div class="album-tags">';
-            tags.forEach(function(tag){
-                tagsHtml += '<span class="album-tag">' + escapeHtml(tag) + '</span>';
-            });
-            tagsHtml += '</div>';
-        }
-
-        return '<div class="album-card" data-idx="' + idx + '">' +
-            '<div class="album-cover">' + coverHtml + '</div>' +
-            '<div class="album-info">' +
-                '<div class="album-title">' + escapeHtml(album.title || '无标题') + '</div>' +
-                desc +
-                tagsHtml +
-                '<div class="album-meta">' + meta + '</div>' +
-            '</div>' +
-        '</div>';
-    }
-
-    function setHash(hash){
-        isNavigating = true;
-        if(hash) location.hash = hash;
-        else history.replaceState(null, '', location.pathname + location.search);
-        setTimeout(function(){ isNavigating = false; }, 50);
-    }
-
-    function openAlbumDetail(album){
-        listScrollY = window.scrollY || window.pageYOffset || 0;
-        if(album.encrypted){
-            pendingAlbum = album;
-            pwdSub.textContent = '「' + (album.title || '相册') + '」需要密码';
-            openPwd();
-            return;
-        }
-        if(!album.images || album.images.length === 0){
-            showToast('这个相册还没有图片', 'fa-image');
-            return;
-        }
-        if(location.hash !== '#album=' + encodeURIComponent(album.id)){
-            setHash('#album=' + encodeURIComponent(album.id));
-        }
-        currentAlbum = album;
-        renderDetailView(album);
-    }
-
-    function openPwd(){
-        pwdOverlay.classList.add('active');
-        pwdInput.value = '';
-        pwdError.textContent = '';
-        pwdInput.classList.remove('error');
-        setTimeout(function(){ pwdInput.focus(); }, 100);
-    }
-    function closePwd(){
-        pwdOverlay.classList.remove('active');
-        pwdInput.value = '';
-        pwdError.textContent = '';
-        pwdInput.classList.remove('error');
-        pendingAlbum = null;
-    }
-
-    async function tryUnlock(){
-        if(!pendingAlbum) return;
-        var pwd = pwdInput.value;
-        if(!pwd){
-            pwdError.textContent = '请输入密码';
-            pwdInput.classList.add('error');
-            return;
-        }
-        pwdConfirm.disabled = true;
-        pwdConfirm.textContent = '解密中...';
-        try {
-            var result = await decryptPayload(pendingAlbum, pwd);
-            var album = pendingAlbum;
-            currentAlbum = album;
-            currentKey = result.key;
-            album._decryptedData = result.data;
-            closePwd();
-            if(location.hash !== '#album=' + encodeURIComponent(album.id)){
-                setHash('#album=' + encodeURIComponent(album.id));
-            }
-            renderEncryptedDetailView(album, result.data);
-            showToast('解锁成功', 'fa-check-circle');
-        } catch(e){
-            console.error('解密失败', e);
-            pwdError.textContent = '密码错误，解不开';
-            pwdInput.classList.add('error');
-            pwdBox.classList.remove('shake');
-            void pwdBox.offsetWidth;
-            pwdBox.classList.add('shake');
-            setTimeout(function(){ pwdInput.select(); }, 100);
-        } finally {
-            pwdConfirm.disabled = false;
-            pwdConfirm.textContent = '解锁';
-        }
-    }
-
-    function renderDetailView(album){
-        var meta = '';
-        meta += '<span><i class="fas fa-user"></i> ' + escapeHtml(album.user || 'ks') + '</span>';
-        if(album.date) meta += '<span><i class="fas fa-calendar"></i> ' + escapeHtml(album.date) + '</span>';
-        if(album.location) meta += '<span><i class="fas fa-location-dot"></i> ' + escapeHtml(album.location) + '</span>';
-        meta += '<span><i class="fas fa-image"></i> ' + album.images.length + ' 张</span>';
-
-        var descHtml = album.desc ? renderMd(album.desc) : '';
-        var tagsHtml = '';
-        if(album.tags && album.tags.length > 0){
-            tagsHtml = '<div class="detail-tags">';
-            album.tags.forEach(function(tag){
-                tagsHtml += '<span class="detail-tag" data-tag="' + escapeHtml(tag) + '"><i class="fas fa-tag"></i> ' + escapeHtml(tag) + '</span>';
-            });
-            tagsHtml += '</div>';
-        }
-
-        buildDetailPage(
-            album.title || '无标题',
-            descHtml + tagsHtml,
-            meta,
-            album.images,
-            false
-        );
-    }
-
-    function renderEncryptedDetailView(album, data){
-        var images = data.images || [];
-        var meta = '';
-        meta += '<span><i class="fas fa-user"></i> ' + escapeHtml(album.user || 'ks') + '</span>';
-        if(data.date) meta += '<span><i class="fas fa-calendar"></i> ' + escapeHtml(data.date) + '</span>';
-        else if(album.date) meta += '<span><i class="fas fa-calendar"></i> ' + escapeHtml(album.date) + '</span>';
-        if(data.location) meta += '<span><i class="fas fa-location-dot"></i> ' + escapeHtml(data.location) + '</span>';
-        meta += '<span><i class="fas fa-image"></i> ' + images.length + ' 张</span>';
-        meta += '<span><i class="fas fa-lock"></i> 已解密</span>';
-
-        var descHtml = data.desc ? renderMd(data.desc) : '';
-        var tagsHtml = '';
-        if(data.tags && data.tags.length > 0){
-            tagsHtml = '<div class="detail-tags">';
-            data.tags.forEach(function(tag){
-                tagsHtml += '<span class="detail-tag" data-tag="' + escapeHtml(tag) + '"><i class="fas fa-tag"></i> ' + escapeHtml(tag) + '</span>';
-            });
-            tagsHtml += '</div>';
-        }
-
-        buildDetailPage(
-            album.title || '无标题',
-            descHtml + tagsHtml,
-            meta,
-            images,
-            true
-        );
-    }
-
-    function buildDetailPage(title, descHtml, meta, images, isEncrypted){
-        detailTitle.textContent = title;
-        detailDesc.innerHTML = descHtml;
-        detailMeta.innerHTML = meta;
-
-        var photoHtml = '';
-        images.forEach(function(item, i){
-            var altText = item.alt || '';
-            var infoHtml = buildInfoOverlayHtml(altText, item.exif || null);
-            var hasLive = !!item.live && prefs.live && !isEncrypted;
-            var liveBadge = hasLive ? '<button class="photo-live-badge" type="button" aria-label="播放或停止"><span class="live-dot"></span><span class="live-text"></span></button>' : '';
-            var videoTag = hasLive ? '<video class="photo-video" data-src="' + escapeHtml(item.live) + '" muted playsinline preload="none"></video>' : '';
-            var dlTitle = hasLive ? '下载 (封面 / Live)' : '下载原图';
-            var itemClass = 'photo-item' + (hasLive ? ' is-live' : '');
-            if(prefs.alt && prefs.altAlways && altText) itemClass += ' always-alt';
-            if(prefs.exif && prefs.exifAlways && item.exif) itemClass += ' always-exif';
-            photoHtml += '<div class="' + itemClass + '" data-idx="' + i + '">' +
-                '<span class="photo-skeleton"></span>' +
-                '<img class="photo-img" alt="' + escapeHtml(altText) + '" loading="lazy">' +
-                videoTag +
-                liveBadge +
-                '<button class="photo-download" data-idx="' + i + '" title="' + dlTitle + '" aria-label="' + dlTitle + '"><i class="fas fa-download"></i></button>' +
-                infoHtml +
-            '</div>';
-        });
-        photoGrid.innerHTML = photoHtml;
-
-        photoGrid.querySelectorAll('.photo-item').forEach(function(el){
-            var i = parseInt(el.getAttribute('data-idx'), 10);
-            var item = images[i];
-            var isLive = !!item.live && prefs.live && !isEncrypted;
-            var videoEl = el.querySelector('.photo-video');
-            var badgeEl = el.querySelector('.photo-live-badge');
-            el.style.animationDelay = (i * 40) + 'ms';
-
-            var img = el.querySelector('.photo-img');
-
-            if(isEncrypted){
-                loadEncryptedImage(el, img, item, i);
-            } else {
-                img.src = escapeHtml(resolveImageUrl(getThumb(item)));
-                if(img) attachImageLoad(el, img);
-            }
-
-            el.addEventListener('click', function(e){
-                if(e.target.closest('.photo-download')) return;
-                if(e.target.closest('.photo-live-badge')) return;
-                openLightbox(i);
-            });
-
-            if(isLive && videoEl){
-                var srcLoaded = false;
-                el._liveLocked = false;
-
-                var loadAndPlay = function(){
-                    if(!srcLoaded){
-                        videoEl.src = resolveImageUrl(videoEl.getAttribute('data-src'));
-                        videoEl.load();
-                        srcLoaded = true;
-                    }
-                    var p = videoEl.play();
-                    if(p && p.catch) p.catch(function(){});
-                    el.classList.add('is-playing');
-                };
-                var stopLive = function(){
-                    try { videoEl.pause(); videoEl.currentTime = 0; } catch(e){}
-                    el.classList.remove('is-playing');
-                };
-
-                videoEl.addEventListener('ended', function(){
-                    el._liveLocked = false;
-                    stopLive();
-                });
-
-                if(supportsHover){
-                    el.addEventListener('mouseenter', function(){
-                        if(el._liveLocked) return;
-                        loadAndPlay();
-                    });
-                    el.addEventListener('mouseleave', function(){
-                        if(el._liveLocked) return;
-                        stopLive();
-                    });
-                }
-
-                if(badgeEl){
-                    badgeEl.addEventListener('click', function(e){
-                        e.stopPropagation();
-                        e.preventDefault();
-                        if(el._liveLocked){
-                            el._liveLocked = false;
-                            stopLive();
-                        } else {
-                            el._liveLocked = true;
-                            loadAndPlay();
-                        }
-                    });
-                    badgeEl.addEventListener('touchstart', function(e){
-                        e.stopPropagation();
-                    }, {passive:true});
-                    badgeEl.addEventListener('touchend', function(e){
-                        e.stopPropagation();
-                    }, {passive:true});
-                }
-            }
-
-            if(!isEncrypted && !item.exif && !item._exifTried){
-                if(prefs.exifAlways){
-                    item._exifTried = true;
-                    fetchExifFromImage(resolveImageUrl(item.src)).then(function(exif){
-                        if(exif){
-                            item.exif = exif;
-                            var overlay = el.querySelector('.photo-info-overlay');
-                            var newHtml = buildInfoOverlayHtml(item.alt || '', exif);
-                            if(overlay){
-                                overlay.outerHTML = newHtml;
-                            } else {
-                                el.insertAdjacentHTML('beforeend', newHtml);
-                            }
-                            if(prefs.exif && prefs.exifAlways){
-                                el.classList.add('always-exif');
-                            }
-                        }
-                    });
-                } else {
-                    item._exifTried = true;
-                    el.addEventListener('mouseenter', function onEnter(){
-                        el.removeEventListener('mouseenter', onEnter);
-                        fetchExifFromImage(resolveImageUrl(item.src)).then(function(exif){
-                            if(exif){
-                                item.exif = exif;
-                                var overlay = el.querySelector('.photo-info-overlay');
-                                var newHtml = buildInfoOverlayHtml(item.alt || '', exif);
-                                if(overlay){
-                                    overlay.outerHTML = newHtml;
-                                } else {
-                                    el.insertAdjacentHTML('beforeend', newHtml);
-                                }
-                            }
-                        });
-                    }, {once:true});
-                }
-            }
-        });
-
-        photoGrid.querySelectorAll('.photo-download').forEach(function(btn){
-            btn.addEventListener('click', function(e){
-                e.stopPropagation();
-                var i = parseInt(btn.getAttribute('data-idx'), 10);
-                if(isEncrypted){
-                    var item = images[i];
-                    if(item._blobUrl){
-                        doDownloadBlob(item._blobUrl, (currentAlbum.title || 'photo') + '_' + (i + 1) + '.jpg');
-                    } else {
-                        showToast('图片还没解密完', 'fa-info-circle');
-                    }
-                } else {
-                    handleDownloadClick(images[i], currentAlbum, i);
-                }
-            });
-        });
-
-        applyGridLayout(photoGrid, prefs.photoLayout, prefs.photoCols, getMaxPhotoCols());
-        if(prefs.photoLayout === 'grid') photoGrid.style.gap = '.8rem';
-
-        listView.classList.add('hidden');
-        detailView.classList.add('active');
-        document.body.classList.add('detail-active');
-        window.scrollTo({top:0, behavior:'smooth'});
-        requestAnimationFrame(updateScrollUI);
-
-        detailDesc.querySelectorAll('.detail-tag').forEach(function(el){
-            el.addEventListener('click', function(e){
-                e.preventDefault();
-                e.stopPropagation();
-                var tag = this.getAttribute('data-tag');
-                if(!tag) return;
-                listScrollY = 0;
-                closeDetail();
-                searchInput.value = tag;
-                searchBar.classList.add('has-value');
-                applyFilter(tag);
-                window.scrollTo({top:0, behavior:'smooth'});
-            });
-        });
-
-        setTimeout(function(){
-            if(currentAlbum) refreshWaline(currentAlbum.id);
-        }, 200);
-    }
-
-    async function loadEncryptedImage(el, img, item, idx){
-        try {
-            var blob = await decryptImageBlob(item.src, item.iv, currentKey);
-            var url = URL.createObjectURL(blob);
-            detailBlobUrls.push(url);
-            item._blobUrl = url;
-            img.onload = function(){ el.classList.add('loaded'); };
-            img.onerror = function(){ el.classList.add('decrypt-failed'); };
-            img.src = url;
-        } catch(e){
-            console.error('解密图片失败', item.src, e);
-            el.classList.add('decrypt-failed');
-        }
-    }
-
-    function doDownloadBlob(url, filename){
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        showToast('开始下载', 'fa-check-circle');
-    }
-
-    function handleDownloadClick(item, album, index){
-        if(!item) return;
-        if(item.live){
-            if(prefs.liveDownload === 'cover'){
-                doDownload(resolveImageUrl(item.src), album, index, false);
-            } else if(prefs.liveDownload === 'live'){
-                doDownload(resolveImageUrl(item.live), album, index, true);
-            } else {
-                pendingDownload = { item: item, album: album, index: index };
-                liveDlOverlay.classList.add('active');
-            }
-        } else {
-            doDownload(resolveImageUrl(item.src), album, index, false);
-        }
-    }
-
-    function doDownload(url, album, index, isLive){
-        if(!url) return;
-        var ext = isLive ? '.mp4' : '.jpg';
-        try {
-            var match = url.match(/\.(jpg|jpeg|png|gif|webp|avif|mp4|mov|m4v|webm|ogv)(\?|$)/i);
-            if(match) ext = '.' + match[1].toLowerCase();
-        } catch(e){}
-        var suffix = isLive ? '_live' : '';
-        var filename = (album.title || 'photo') + '_' + (index + 1) + suffix + ext;
-        var a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.target = '_blank';
-        a.rel = 'noopener';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        showToast(isLive ? '开始下载 Live 视频' : '开始下载封面', 'fa-check-circle');
-    }
-
-    function closeLiveDl(){
-        liveDlOverlay.classList.remove('active');
-        pendingDownload = null;
-    }
-
-    liveDlCover.addEventListener('click', function(){
-        if(!pendingDownload) return;
-        var p = pendingDownload;
-        closeLiveDl();
-        doDownload(resolveImageUrl(p.item.src), p.album, p.index, false);
-    });
-
-    liveDlLive.addEventListener('click', function(){
-        if(!pendingDownload) return;
-        var p = pendingDownload;
-        closeLiveDl();
-        doDownload(resolveImageUrl(p.item.live), p.album, p.index, true);
-    });
-
-    liveDlCancel.addEventListener('click', closeLiveDl);
-    liveDlOverlay.addEventListener('click', function(e){
-        if(e.target === liveDlOverlay) closeLiveDl();
-    });
-
-    function compressImage(file, maxSize, quality){
-        return new Promise(function(resolve, reject){
-            var reader = new FileReader();
-            reader.onload = function(e){
-                var img = new Image();
-                img.onload = function(){
-                    var canvas = document.createElement('canvas');
-                    var w = img.width, h = img.height;
-                    if(w > h){
-                        if(w > maxSize){ h = h * maxSize / w; w = maxSize; }
-                    } else {
-                        if(h > maxSize){ w = w * maxSize / h; h = maxSize; }
-                    }
-                    canvas.width = w;
-                    canvas.height = h;
-                    var ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
-                    canvas.toBlob(function(blob){
-                        resolve(new File([blob], file.name, { type: 'image/jpeg' }));
-                    }, 'image/jpeg', quality);
-                };
-                img.onerror = reject;
-                img.src = e.target.result;
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    }
-
-    function refreshWaline(albumId){
-        var path = '/album/' + albumId;
-        var el = document.getElementById('waline-comments');
-        if(!el) return;
-
-        if(walineInstance && walinePath === path) return;
-
-        var reqId = ++walineReqId;
-
-        if(walineInstance && typeof walineInstance.destroy === 'function'){
-            try { walineInstance.destroy(); } catch(e){}
-        }
-        walineInstance = null;
-        walinePath = null;
-        el.innerHTML = '';
-
-        import('/assets/waline.js').then(function(module){
-            if(reqId !== walineReqId) return;
-            var init = module.init;
-            walineInstance = init({
-                el: '#waline-comments',
-                serverURL: 'https://comment.cuizi.top',
-                lang: 'zh-CN',
-                path: path,
-                dark: 'body.dark',
-                imageUploader: function(file){
-                    return new Promise(function(resolve, reject){
-                        var uploadFile = file;
-                        var shouldCompress = !['image/gif','image/svg+xml'].includes(file.type);
-                        var doUpload = function(f){
-                            var reader = new FileReader();
-                            reader.onload = function(){
-                                var base64 = reader.result.split(',')[1];
-                                fetch('https://comment.cuizi.top/api/upload', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ image: base64, filename: file.name })
-                                }).then(function(resp){ return resp.json(); })
-                                  .then(function(data){ resolve(data.url); })
-                                  .catch(reject);
-                            };
-                            reader.readAsDataURL(f);
-                        };
-                        if(shouldCompress){
-                            compressImage(file, 720, 0.8).then(doUpload).catch(reject);
-                        } else {
-                            doUpload(uploadFile);
-                        }
-                    });
-                },
-                emoji: [
-                    'https://unpkg.com/@waline/emojis@1.4.0/alus',
-                    'https://unpkg.com/@waline/emojis@1.4.0/bilibili',
-                    'https://unpkg.com/@waline/emojis@1.4.0/bmoji',
-                    'https://unpkg.com/@waline/emojis@1.4.0/qq',
-                    'https://unpkg.com/@waline/emojis@1.4.0/tieba'
-                ],
-                requiredMeta: ['nick','mail'],
-                locale: {
-                    placeholder: '邮箱用于接收邮件回复，不会展示给其他人。欢迎评论捏',
-                    sofa: '还没有人评论哦！来抢个沙发吧~',
-                    submit: '发射!',
-                    nick: '昵称*',
-                    mail: '邮箱*',
-                    link: '网站'
-                }
-            });
-            walinePath = path;
-        }).catch(function(err){
-            console.error('Waline 加载失败:', err);
-        });
-    }
-
-    function openLightbox(index){
-        if(!currentAlbum) return;
-        var newHash = '#album=' + encodeURIComponent(currentAlbum.id) + '&photo=' + index;
-        if(location.hash !== newHash){
-            isNavigating = true;
-            location.hash = newHash;
-            setTimeout(function(){ isNavigating = false; }, 50);
-        }
-        var imgs;
-        if(currentAlbum._decryptedData){
-            imgs = currentAlbum._decryptedData.images.map(function(item){
-                return { src: item._blobUrl || '', alt: item.alt || '' };
-            });
-        } else {
-            imgs = currentAlbum.images.map(function(item){
-                return { src: resolveImageUrl(item.src), alt: item.alt || '' };
-            });
-        }
-        if(window.KSMarkdown && window.KSMarkdown.openLightbox){
-            window.KSMarkdown.openLightbox(imgs, index);
-        } else {
-            showToast('灯箱模块未加载', 'fa-exclamation-circle');
-        }
-    }
-
-    function revokeDetailBlobs(){
-        detailBlobUrls.forEach(function(u){ URL.revokeObjectURL(u); });
-        detailBlobUrls = [];
-    }
-
-    function closeDetail(){
-        if(location.hash) setHash('');
-        detailView.classList.remove('active');
-        listView.classList.remove('hidden');
-        currentAlbum = null;
-        currentKey = null;
-        photoGrid.innerHTML = '';
-        revokeDetailBlobs();
-        document.body.classList.remove('detail-active');
-        document.body.classList.remove('hide-top-back');
-        pendingRestoreScroll = true;
-        restoreListScroll();
-        updateScrollUI();
-    }
-
-    function handleRoute(){
-        if(isNavigating) return;
-        var match = location.hash.match(/^#album=([^&]+)/);
-        if(match){
-            var id = decodeURIComponent(match[1]);
-            var album = allAlbums.find(function(a){ return a.id === id; });
-            if(album && !album.encrypted){
-                currentAlbum = album;
-                renderDetailView(album);
-                return;
-            }
-            if(album && album.encrypted){
-                pendingAlbum = album;
-                pwdSub.textContent = '「' + (album.title || '相册') + '」需要密码';
-                openPwd();
-                return;
-            }
-        }
-        if(detailView.classList.contains('active')){
-            detailView.classList.remove('active');
-            listView.classList.remove('hidden');
-            currentAlbum = null;
-            currentKey = null;
-            photoGrid.innerHTML = '';
-            revokeDetailBlobs();
-            document.body.classList.remove('detail-active');
-            document.body.classList.remove('hide-top-back');
-            pendingRestoreScroll = true;
-            restoreListScroll();
-            updateScrollUI();
-        }
-    }
-
-    detailBack.addEventListener('click', closeDetail);
-
-    pwdCancel.addEventListener('click', closePwd);
-    pwdConfirm.addEventListener('click', tryUnlock);
-    pwdInput.addEventListener('keydown', function(e){
-        if(e.key === 'Enter') tryUnlock();
-        if(e.key === 'Escape') closePwd();
-    });
-    pwdOverlay.addEventListener('click', function(e){
-        if(e.target === pwdOverlay) closePwd();
-    });
-
-    clearBtn.addEventListener('click', function(){
-        searchInput.value = '';
-        searchBar.classList.remove('has-value');
-        applyFilter('');
-        searchInput.focus();
-    });
-
-    var searchTimer = null;
-    searchInput.addEventListener('input', function(){
-        searchBar.classList.toggle('has-value', searchInput.value.length > 0);
-        clearTimeout(searchTimer);
-        var val = searchInput.value;
-        searchTimer = setTimeout(function(){ applyFilter(val); }, 150);
-    });
-
-    document.addEventListener('keydown', function(e){
-        if(e.key === 'Escape'){
-            if(confirmOverlay.classList.contains('active')){
-                closeConfirm();
-                return;
-            }
-            if(pwdOverlay.classList.contains('active')){
-                closePwd();
-                return;
-            }
-            if(liveDlOverlay.classList.contains('active')){
-                closeLiveDl();
-                return;
-            }
-            if(settingsOverlay.classList.contains('active')) return;
-            if(document.querySelector('.lightbox-overlay.active')) return;
-            if(detailView.classList.contains('active')){
-                e.preventDefault();
-                closeDetail();
-            }
-        }
-    });
-
-    window.addEventListener('hashchange', function(){
-        if(isNavigating) return;
-        var hasLightbox = !!document.querySelector('.lightbox-overlay.active');
-        var hasPhotoInHash = /[&]photo=/.test(location.hash);
-        if(hasLightbox && !hasPhotoInHash){
-            var escEvent = new KeyboardEvent('keydown', {
-                key: 'Escape',
-                code: 'Escape',
-                keyCode: 27,
-                which: 27,
-                bubbles: true,
-                cancelable: true
-            });
-            document.dispatchEvent(escEvent);
-            return;
-        }
-        handleRoute();
-    });
-
+    themeToggle.addEventListener('click', function(){ setTheme(currentTheme==='dark'?'light':'dark'); });
+    function resolveImageUrl(src){ if(!src) return ''; if(/^(https?:)?\/\//i.test(src)) return src; if(/^data:/i.test(src)) return src; if(/^blob:/i.test(src)) return src; return IMG_BASE+src; }
+    function loadPrefs(){ try{ var raw = localStorage.getItem(STORAGE_KEY); if(!raw) return Object.assign({},defaultPrefs); return Object.assign({},defaultPrefs,JSON.parse(raw)); }catch(e){ return Object.assign({},defaultPrefs); } }
+    function savePrefs(){ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(prefs)); }catch(e){} }
+    function getContentWidth(){ if(!mainContainer) return window.innerWidth; var s=getComputedStyle(mainContainer); return Math.max(1,mainContainer.getBoundingClientRect().width-(parseFloat(s.paddingLeft)||0)-(parseFloat(s.paddingRight)||0)); }
+    function calcMaxCols(minColWidth,hardMax){ var gap=13,avail=getContentWidth(); return Math.max(1,Math.min(hardMax,Math.floor((avail+gap)/(minColWidth+gap)))); }
+    function getMaxAlbumCols(){ return calcMaxCols(220,4); }
+    function getMaxPhotoCols(){ return calcMaxCols(85,4); }
+    function applyColsVisibility(groupName,maxCols){ var group=document.querySelector('.segmented[data-group="'+groupName+'"]'); if(!group) return; var gc=group.closest('.settings-group'),vc=0; group.querySelectorAll('.segment-btn').forEach(function(btn){ var v=parseInt(btn.getAttribute('data-value'),10); if(v<=maxCols){ btn.classList.remove('hidden'); vc++; } else { btn.classList.add('hidden'); } }); if(gc) gc.classList.toggle('hidden',vc<=1); }
+    function updateSettingsVisibility(){ applyColsVisibility('albumCols',getMaxAlbumCols()); applyColsVisibility('photoCols',getMaxPhotoCols()); }
+    function autoFixPrefs(){ var ma=getMaxAlbumCols(),mp=getMaxPhotoCols(),c=false; if(parseInt(prefs.albumCols,10)>ma){ prefs.albumCols=String(Math.max(1,ma)); c=true; } if(parseInt(prefs.photoCols,10)>mp){ prefs.photoCols=String(Math.max(1,mp)); c=true; } if(c) savePrefs(); }
+    function applyGridLayout(el,layout,cols,maxCols){ var ec=Math.min(parseInt(cols,10)||3,maxCols); if(ec<1) ec=1; el.classList.remove('layout-grid','layout-masonry','layout-list','cols-1','cols-2','cols-3','cols-4'); el.classList.add('layout-'+layout,'cols-'+ec); el.style.gridTemplateColumns=''; el.style.columnCount=''; el.style.gap=''; el.style.columnGap=''; if(layout==='grid'){ el.style.display='grid'; el.style.gridTemplateColumns='repeat('+ec+', 1fr)'; el.style.gap='.8rem'; } else if(layout==='masonry'){ el.style.display='block'; el.style.columnCount=ec; el.style.columnGap='.8rem'; } else { el.style.display='flex'; el.style.flexDirection='column'; el.style.gap='.6rem'; } }
+    function updateConflictStates(){ var as=document.querySelector('[data-toggle="altAlways"]'); if(as){ var ar=as.closest('.toggle-row'); if(!prefs.alt){ ar.classList.add('disabled'); as.classList.remove('active'); } else { ar.classList.remove('disabled'); as.classList.toggle('active',!!prefs.altAlways); } } var es=document.querySelector('[data-toggle="exifAlways"]'); if(es){ var er=es.closest('.toggle-row'); if(!prefs.exif){ er.classList.add('disabled'); es.classList.remove('active'); } else { er.classList.remove('disabled'); es.classList.toggle('active',!!prefs.exifAlways); } } var lb=document.querySelector('[data-toggle="liveBadge"]'); if(lb){ var br=lb.closest('.toggle-row'); if(!prefs.live){ br.classList.add('disabled'); lb.classList.remove('active'); } else { br.classList.remove('disabled'); lb.classList.toggle('active',!!prefs.liveBadge); } } var ld=document.querySelector('.segmented[data-group="liveDownload"]'); if(ld){ if(!prefs.download){ ld.classList.add('disabled'); } else { ld.classList.remove('disabled'); } } var ac=document.querySelector('.settings-group[data-settings-group="albumCols"]'); if(ac){ if(prefs.albumLayout==='list'){ ac.classList.add('disabled'); } else { ac.classList.remove('disabled'); } } }
+    function applyPrefs(){ autoFixPrefs(); document.body.classList.toggle('hide-desc',!prefs.desc); document.body.classList.toggle('hide-meta',!prefs.meta); document.body.classList.toggle('hide-download',!prefs.download); document.body.classList.toggle('hide-alt',!prefs.alt); document.body.classList.toggle('hide-exif',!prefs.exif); document.body.classList.toggle('hide-live-badge',!prefs.liveBadge); document.body.classList.toggle('no-anim',!prefs.anim); var ma=getMaxAlbumCols(),mp=getMaxPhotoCols(); applyGridLayout(gridEl,prefs.albumLayout,prefs.albumCols,ma); applyGridLayout(photoGrid,prefs.photoLayout,prefs.photoCols,mp); if(prefs.albumLayout==='grid') gridEl.style.gap='1.2rem'; if(prefs.albumLayout==='masonry') gridEl.style.columnGap='1.2rem'; if(prefs.albumLayout==='list') gridEl.style.gap='.8rem'; if(prefs.photoLayout==='grid') photoGrid.style.gap='.8rem'; document.querySelectorAll('.segmented').forEach(function(group){ var g=group.getAttribute('data-group'); group.querySelectorAll('.segment-btn').forEach(function(btn){ btn.classList.toggle('active',String(prefs[g])===btn.getAttribute('data-value')); }); }); document.querySelectorAll('.toggle-switch').forEach(function(sw){ var t=sw.getAttribute('data-toggle'); sw.classList.toggle('active',!!prefs[t]); }); updateSettingsVisibility(); updateConflictStates(); }
+    function openSettings(){ settingsOverlay.classList.add('active'); settingsBtn.classList.add('active'); document.body.style.overflow='hidden'; }
+    function closeSettings(){ settingsOverlay.classList.remove('active'); settingsBtn.classList.remove('active'); document.body.style.overflow=''; }
+    function openConfirm(){ confirmOverlay.classList.add('active'); document.body.style.overflow='hidden'; }
+    function closeConfirm(){ confirmOverlay.classList.remove('active'); document.body.style.overflow=''; }
+    topBackBtn.addEventListener('click',function(e){ e.preventDefault(); openConfirm(); });
+    confirmCancel.addEventListener('click',closeConfirm);
+    confirmOk.addEventListener('click',function(){ location.href='index.html'; });
+    confirmOverlay.addEventListener('click',function(e){ if(e.target===confirmOverlay) closeConfirm(); });
+    function bindSettings(){ document.querySelectorAll('.segmented').forEach(function(group){ var g=group.getAttribute('data-group'); group.querySelectorAll('.segment-btn').forEach(function(btn){ btn.addEventListener('click',function(){ if(group.classList.contains('disabled')) return; prefs[g]=btn.getAttribute('data-value'); savePrefs(); applyPrefs(); }); }); }); document.querySelectorAll('.toggle-switch').forEach(function(sw){ sw.addEventListener('click',function(){ var row=sw.closest('.toggle-row'); if(row&&row.classList.contains('disabled')) return; var t=sw.getAttribute('data-toggle'); prefs[t]=!prefs[t]; savePrefs(); applyPrefs(); if(currentAlbum&&detailView.classList.contains('active')){ if(currentAlbum.encrypted){ if(currentAlbum._decryptedData) renderEncryptedDetailView(currentAlbum,currentAlbum._decryptedData); } else { renderDetailView(currentAlbum); } } }); }); settingsBtn.addEventListener('click',openSettings); settingsClose.addEventListener('click',closeSettings); settingsOverlay.addEventListener('click',function(e){ if(e.target===settingsOverlay) closeSettings(); }); settingsReset.addEventListener('click',function(){ prefs=Object.assign({},defaultPrefs); savePrefs(); applyPrefs(); if(currentAlbum&&detailView.classList.contains('active')){ if(currentAlbum.encrypted){ if(currentAlbum._decryptedData) renderEncryptedDetailView(currentAlbum,currentAlbum._decryptedData); } else { renderDetailView(currentAlbum); } } showToast('已恢复默认','fa-check-circle'); }); document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&settingsOverlay.classList.contains('active')) closeSettings(); }); }
+    var resizeTimer=null; window.addEventListener('resize',function(){ clearTimeout(resizeTimer); resizeTimer=setTimeout(function(){ applyPrefs(); },150); });
+    var scrollRaf=null; function updateScrollUI(){ var y=window.scrollY||window.pageYOffset||0; var isDetail=detailView.classList.contains('active'); document.body.classList.toggle('hide-top-back',isDetail&&y>60); if(!isScrollingToTop) backToTopBtn.classList.toggle('show',y>400); }
+    window.addEventListener('scroll',function(){ if(scrollRaf) return; scrollRaf=requestAnimationFrame(function(){ updateScrollUI(); scrollRaf=null; }); },{passive:true});
+    function scrollToTopAnimated(){ if(isScrollingToTop) return; var s=window.scrollY||window.pageYOffset||0; if(s===0){ backToTopBtn.classList.remove('show'); return; } isScrollingToTop=true; var st=performance.now(),d=400; function step(n){ var t=Math.min((n-st)/d,1),e=1-Math.pow(1-t,3); window.scrollTo(0,s*(1-e)); if(t<1) requestAnimationFrame(step); else { window.scrollTo(0,0); isScrollingToTop=false; backToTopBtn.classList.remove('show'); } } requestAnimationFrame(step); }
+    backToTopBtn.addEventListener('click',scrollToTopAnimated);
+    function restoreListScroll(){ if(!pendingRestoreScroll) return; pendingRestoreScroll=false; var t=listScrollY; requestAnimationFrame(function(){ window.scrollTo(0,t); requestAnimationFrame(function(){ window.scrollTo(0,t); updateScrollUI(); }); }); }
+    function showToast(msg,icon){ icon=icon||'fa-info-circle'; var t=document.getElementById('toast'); t.innerHTML='<i class="fas '+icon+'"></i> '+msg; t.classList.add('show'); clearTimeout(t._hideTimer); t._hideTimer=setTimeout(function(){ t.classList.remove('show'); },2000); }
+    function escapeHtml(text){ if(!text) return ''; var d=document.createElement('div'); d.textContent=text; return d.innerHTML; }
+    function renderMd(text){ if(!text) return ''; if(window.KSMarkdown&&window.KSMarkdown.renderMarkdown) return window.KSMarkdown.renderMarkdown(text); return escapeHtml(text); }
+    function attachImageLoad(wrapper,img){ function done(){ wrapper.classList.add('loaded'); img.classList.add('loaded'); } if(img.complete&&img.naturalWidth!==0) requestAnimationFrame(done); else { img.addEventListener('load',done,{once:true}); img.addEventListener('error',done,{once:true}); } }
+    function getThumb(item){ return item.thumb||item.src; }
+    function getCover(album){ if(album.cover) return album.cover; if(album.images&&album.images[0]) return getThumb(album.images[0]); return ''; }
+    function pad2(n){ return n<10?'0'+n:String(n); }
+    function fmtNum(n){ if(typeof n!=='number') return String(n); return Number.isInteger(n)?String(n):n.toFixed(1); }
+    function normalizeExif(raw){ if(!raw) return null; var out={}; var c=[raw.Make,raw.Model].filter(Boolean).join(' ').trim(); if(c) out.camera=c; if(raw.LensModel) out.lens=String(raw.LensModel).trim(); if(raw.FNumber) out.aperture='f/'+fmtNum(raw.FNumber); if(raw.ExposureTime){ var t=raw.ExposureTime; if(typeof t==='number'){ if(t>=1) out.shutter=fmtNum(t)+'s'; else out.shutter='1/'+Math.round(1/t)+'s'; } else out.shutter=String(t)+'s'; } if(raw.ISO) out.iso='ISO '+raw.ISO; if(raw.FocalLength) out.focal=fmtNum(raw.FocalLength)+'mm'; if(raw.DateTimeOriginal){ var d=raw.DateTimeOriginal; if(d instanceof Date&&!isNaN(d)) out.date=d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+' '+pad2(d.getHours())+':'+pad2(d.getMinutes()); else if(typeof d==='string') out.date=d; } return Object.keys(out).length?out:null; }
+    function fetchExifFromImage(url){ return new Promise(function(resolve){ if(typeof exifr==='undefined'||!url){ resolve(null); return; } exifr.parse(url,{pick:['Make','Model','LensModel','FNumber','ExposureTime','ISO','FocalLength','DateTimeOriginal'],translateValues:false,reviveValues:false,silentErrors:true}).then(function(raw){ resolve(normalizeExif(raw)); }).catch(function(){ resolve(null); }); }); }
+    function buildExifTagsHtml(exif){ if(!exif) return ''; var tags=[]; if(exif.camera) tags.push(exif.camera); if(exif.lens) tags.push(exif.lens); if(exif.focal) tags.push(exif.focal); if(exif.aperture) tags.push(exif.aperture); if(exif.shutter) tags.push(exif.shutter); if(exif.iso) tags.push(exif.iso); if(exif.date) tags.push(exif.date); if(!tags.length) return ''; var html='<div class="pio-exif">'; tags.forEach(function(t){ html+='<span class="pio-exif-item">'+escapeHtml(t)+'</span>'; }); html+='</div>'; return html; }
+    function buildInfoOverlayHtml(alt,exif){ var ha=alt&&alt.length,eh=buildExifTagsHtml(exif); if(!ha&&!eh) return ''; var html='<div class="photo-info-overlay">'; if(ha) html+='<div class="pio-alt">'+escapeHtml(alt)+'</div>'; html+=eh; html+='</div>'; return html; }
+    function bufToBase64(buf){ var b=new Uint8Array(buf),bin=''; for(var i=0;i<b.length;i++) bin+=String.fromCharCode(b[i]); return btoa(bin); }
+    function base64ToBuf(b64){ var bin=atob(b64),b=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) b[i]=bin.charCodeAt(i); return b; }
+    async function gunzipStr(buf){ var ds=new DecompressionStream('gzip'),w=ds.writable.getWriter(); w.write(buf); w.close(); return await new Response(ds.readable).text(); }
+    async function deriveKey(password,salt,usages){ var enc=new TextEncoder(),km=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveKey']); return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:ITERATIONS,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,usages); }
+    async function decryptPayload(entry,password){ var salt=base64ToBuf(entry.salt),iv=base64ToBuf(entry.iv),ct=base64ToBuf(entry.payload),key=await deriveKey(password,salt,['decrypt']),pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,ct),text=await gunzipStr(pt); return {key:key,data:JSON.parse(text)}; }
+    async function decryptImageBlob(src,ivBase64,key){ var url=resolveImageUrl(src),res=await fetch(url); if(!res.ok) throw new Error('HTTP '+res.status); var ct=await res.arrayBuffer(),iv=base64ToBuf(ivBase64),pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,ct); return new Blob([pt]); }
+    function updateStats(){ var ac=filteredAlbums.length,pc=0; filteredAlbums.forEach(function(a){ if(!a.encrypted&&a.images) pc+=a.images.length; }); var hf=searchInput.value.trim().length>0; statsRow.classList.add('updating'); setTimeout(function(){ statsRow.classList.remove('updating'); },300); if(ac===0){ statsText.textContent=hf?'没有匹配的相册':'还没有相册'; } else if(pc===0){ statsText.innerHTML='共 '+ac+' 个相册'+(hf?'（已筛选）':''); } else { statsText.innerHTML='共 '+ac+' 个相册 <span class="sep">·</span> '+pc+' 张照片'+(hf?'（已筛选）':''); } }
+    function loadAlbums(){ fetch('albums/albums.json',{cache:'no-cache'}).then(function(res){ if(!res.ok) throw new Error('加载失败'); return res.json(); }).then(function(data){ allAlbums=(data.albums||[]).filter(function(a){ return a.delete!==true; }); allAlbums.sort(function(a,b){ var oa=a.order||0,ob=b.order||0; if(oa!==ob) return ob-oa; return (b.date||'').localeCompare(a.date||''); }); applyFilter(''); handleRoute(); setTimeout(applyPrefs,50); }).catch(function(err){ console.error(err); gridEl.innerHTML='<div class="empty-state"><i class="far fa-frown"></i><p>加载相册失败</p></div>'; }); }
+    function applyFilter(keyword){ var k=(keyword||'').trim().toLowerCase(); if(!k){ filteredAlbums=allAlbums.slice(); } else { filteredAlbums=allAlbums.filter(function(a){ var tags=(a.tags||[]).join(' '); return [a.title||'',a.user||'ks',a.date||'',a.desc||'',a.location||'',tags].join(' ').toLowerCase().indexOf(k)!==-1; }); } renderGrid(); updateStats(); }
+    function renderGrid(){ if(filteredAlbums.length===0){ gridEl.innerHTML='<div class="empty-state"><i class="fas fa-images"></i><p>没有找到相册</p></div>'; return; } var html=''; filteredAlbums.forEach(function(album,idx){ html+=buildCard(album,idx); }); gridEl.innerHTML=html; gridEl.querySelectorAll('.album-card').forEach(function(card){ card.style.animationDelay=(card.getAttribute('data-idx')*55)+'ms'; card.addEventListener('click',function(){ var idx=parseInt(card.getAttribute('data-idx'),10); openAlbumDetail(filteredAlbums[idx]); }); var cover=card.querySelector('.album-cover'),img=cover?cover.querySelector('img'):null; if(cover&&img) attachImageLoad(cover,img); }); }
+    function buildCard(album,idx){ var ch=''; if(album.encrypted){ ch='<div class="album-cover-locked"><i class="fas fa-lock"></i><span>加密相册，请解密查看～</span></div>'; } else { var first=getCover(album); if(first){ ch='<span class="cover-skeleton"></span><img src="'+escapeHtml(resolveImageUrl(first))+'" alt="" loading="lazy">'; } else { ch='<div class="album-cover-locked"><i class="fas fa-image"></i><span>暂无图片</span></div>'; } } var meta='<span><i class="fas fa-user"></i> '+escapeHtml(album.user||'ks')+'</span>'; if(album.date) meta+='<span><i class="fas fa-calendar"></i> '+escapeHtml(album.date)+'</span>'; if(album.location) meta+='<span><i class="fas fa-location-dot"></i> '+escapeHtml(album.location)+'</span>'; if(!album.encrypted&&album.images) meta+='<span><i class="fas fa-image"></i> '+album.images.length+' 张</span>'; else if(album.encrypted) meta+='<span><i class="fas fa-lock"></i> 加密</span>'; var desc=''; if(album.encrypted){ desc='<div class="album-desc">这个相册被加密保护，输入正确密码即可解锁查看完整内容。解锁后可以浏览其中的全部照片与 Live 图，自由切换布局，查看 EXIF 拍摄信息，也能把喜欢的原图下载收藏。</div>'; } else if(album.desc){ desc='<div class="album-desc">'+renderMd(album.desc)+'</div>'; } var tags=(!album.encrypted&&album.tags)?album.tags:[],th=''; if(tags.length>0){ th='<div class="album-tags">'; tags.forEach(function(tag){ th+='<span class="album-tag">'+escapeHtml(tag)+'</span>'; }); th+='</div>'; } return '<div class="album-card" data-idx="'+idx+'"><div class="album-cover">'+ch+'</div><div class="album-info"><div class="album-title">'+escapeHtml(album.title||'无标题')+'</div>'+desc+th+'<div class="album-meta">'+meta+'</div></div></div>'; }
+    function setHash(hash){ isNavigating=true; if(hash) location.hash=hash; else history.replaceState(null,'',location.pathname+location.search); setTimeout(function(){ isNavigating=false; },50); }
+    function openAlbumDetail(album){ listScrollY=window.scrollY||window.pageYOffset||0; if(album.encrypted){ pendingAlbum=album; pwdSub.textContent='「'+(album.title||'相册')+'」需要密码'; openPwd(); return; } if(!album.images||album.images.length===0){ showToast('这个相册还没有图片','fa-image'); return; } if(location.hash!=='#album='+encodeURIComponent(album.id)) setHash('#album='+encodeURIComponent(album.id)); currentAlbum=album; renderDetailView(album); }
+    function openPwd(){ pwdOverlay.classList.add('active'); pwdInput.value=''; pwdError.textContent=''; pwdInput.classList.remove('error'); setTimeout(function(){ pwdInput.focus(); },100); }
+    function closePwd(){ pwdOverlay.classList.remove('active'); pwdInput.value=''; pwdError.textContent=''; pwdInput.classList.remove('error'); pendingAlbum=null; }
+    async function tryUnlock(){ if(!pendingAlbum) return; var pwd=pwdInput.value; if(!pwd){ pwdError.textContent='请输入密码'; pwdInput.classList.add('error'); return; } pwdConfirm.disabled=true; pwdConfirm.textContent='解密中...'; try{ var result=await decryptPayload(pendingAlbum,pwd),album=pendingAlbum; currentAlbum=album; currentKey=result.key; album._decryptedData=result.data; closePwd(); if(location.hash!=='#album='+encodeURIComponent(album.id)) setHash('#album='+encodeURIComponent(album.id)); renderEncryptedDetailView(album,result.data); showToast('解锁成功','fa-check-circle'); }catch(e){ console.error('解密失败',e); pwdError.textContent='密码错误，解不开'; pwdInput.classList.add('error'); pwdBox.classList.remove('shake'); void pwdBox.offsetWidth; pwdBox.classList.add('shake'); setTimeout(function(){ pwdInput.select(); },100); }finally{ pwdConfirm.disabled=false; pwdConfirm.textContent='解锁'; } }
+    function renderDetailView(album){ var meta='<span><i class="fas fa-user"></i> '+escapeHtml(album.user||'ks')+'</span>'; if(album.date) meta+='<span><i class="fas fa-calendar"></i> '+escapeHtml(album.date)+'</span>'; if(album.location) meta+='<span><i class="fas fa-location-dot"></i> '+escapeHtml(album.location)+'</span>'; meta+='<span><i class="fas fa-image"></i> '+album.images.length+' 张</span>'; var dh=album.desc?renderMd(album.desc):'',th=''; if(album.tags&&album.tags.length>0){ th='<div class="detail-tags">'; album.tags.forEach(function(tag){ th+='<span class="detail-tag" data-tag="'+escapeHtml(tag)+'"><i class="fas fa-tag"></i> '+escapeHtml(tag)+'</span>'; }); th+='</div>'; } buildDetailPage(album.title||'无标题',dh+th,meta,album.images,false); }
+    function renderEncryptedDetailView(album,data){ var images=data.images||[],meta='<span><i class="fas fa-user"></i> '+escapeHtml(album.user||'ks')+'</span>'; if(data.date) meta+='<span><i class="fas fa-calendar"></i> '+escapeHtml(data.date)+'</span>'; else if(album.date) meta+='<span><i class="fas fa-calendar"></i> '+escapeHtml(album.date)+'</span>'; if(data.location) meta+='<span><i class="fas fa-location-dot"></i> '+escapeHtml(data.location)+'</span>'; meta+='<span><i class="fas fa-image"></i> '+images.length+' 张</span><span><i class="fas fa-lock"></i> 已解密</span>'; var dh=data.desc?renderMd(data.desc):'',th=''; if(data.tags&&data.tags.length>0){ th='<div class="detail-tags">'; data.tags.forEach(function(tag){ th+='<span class="detail-tag" data-tag="'+escapeHtml(tag)+'"><i class="fas fa-tag"></i> '+escapeHtml(tag)+'</span>'; }); th+='</div>'; } buildDetailPage(album.title||'无标题',dh+th,meta,images,true); }
+    function buildDetailPage(title,descHtml,meta,images,isEncrypted){ detailTitle.textContent=title; detailDesc.innerHTML=descHtml; detailMeta.innerHTML=meta; var photoHtml=''; images.forEach(function(item,i){ var at=item.alt||'',ih=buildInfoOverlayHtml(at,item.exif||null),hl=!!item.live&&prefs.live&&!isEncrypted,lb=hl?'<button class="photo-live-badge" type="button" aria-label="播放或停止"><span class="live-dot"></span><span class="live-text"></span></button>':'',vt=hl?'<video class="photo-video" data-src="'+escapeHtml(item.live)+'" muted playsinline preload="none"></video>':'',dt=hl?'下载 (封面 / Live)':'下载原图',ic='photo-item'+(hl?' is-live':''); if(prefs.alt&&prefs.altAlways&&at) ic+=' always-alt'; if(prefs.exif&&prefs.exifAlways&&item.exif) ic+=' always-exif'; photoHtml+='<div class="'+ic+'" data-idx="'+i+'"><span class="photo-skeleton"></span><img class="photo-img" alt="'+escapeHtml(at)+'" loading="lazy">'+vt+lb+'<button class="photo-download" data-idx="'+i+'" title="'+dt+'" aria-label="'+dt+'"><i class="fas fa-download"></i></button>'+ih+'</div>'; }); photoGrid.innerHTML=photoHtml; photoGrid.querySelectorAll('.photo-item').forEach(function(el){ var i=parseInt(el.getAttribute('data-idx'),10),item=images[i],il=!!item.live&&prefs.live&&!isEncrypted,ve=el.querySelector('.photo-video'),be=el.querySelector('.photo-live-badge'); el.style.animationDelay=(i*40)+'ms'; var img=el.querySelector('.photo-img'); if(isEncrypted) loadEncryptedImage(el,img,item,i); else { img.src=escapeHtml(resolveImageUrl(getThumb(item))); if(img) attachImageLoad(el,img); } el.addEventListener('click',function(e){ if(e.target.closest('.photo-download')||e.target.closest('.photo-live-badge')) return; openLightbox(i); }); if(il&&ve){ var sl=false; el._liveLocked=false; var lp=function(){ if(!sl){ ve.src=resolveImageUrl(ve.getAttribute('data-src')); ve.load(); sl=true; } var p=ve.play(); if(p&&p.catch) p.catch(function(){}); el.classList.add('is-playing'); }; var st=function(){ try{ ve.pause(); ve.currentTime=0; }catch(e){} el.classList.remove('is-playing'); }; ve.addEventListener('ended',function(){ el._liveLocked=false; st(); }); if(supportsHover){ el.addEventListener('mouseenter',function(){ if(el._liveLocked) return; lp(); }); el.addEventListener('mouseleave',function(){ if(el._liveLocked) return; st(); }); } if(be){ be.addEventListener('click',function(e){ e.stopPropagation(); e.preventDefault(); if(el._liveLocked){ el._liveLocked=false; st(); }else{ el._liveLocked=true; lp(); } }); be.addEventListener('touchstart',function(e){ e.stopPropagation(); },{passive:true}); be.addEventListener('touchend',function(e){ e.stopPropagation(); },{passive:true}); } } if(!isEncrypted&&!item.exif&&!item._exifTried){ if(prefs.exifAlways){ item._exifTried=true; fetchExifFromImage(resolveImageUrl(item.src)).then(function(exif){ if(exif){ item.exif=exif; var ov=el.querySelector('.photo-info-overlay'),nh=buildInfoOverlayHtml(item.alt||'',exif); if(ov) ov.outerHTML=nh; else el.insertAdjacentHTML('beforeend',nh); if(prefs.exif&&prefs.exifAlways) el.classList.add('always-exif'); } }); }else{ item._exifTried=true; el.addEventListener('mouseenter',function oe(){ el.removeEventListener('mouseenter',oe); fetchExifFromImage(resolveImageUrl(item.src)).then(function(exif){ if(exif){ item.exif=exif; var ov=el.querySelector('.photo-info-overlay'),nh=buildInfoOverlayHtml(item.alt||'',exif); if(ov) ov.outerHTML=nh; else el.insertAdjacentHTML('beforeend',nh); } }); },{once:true}); } } }); photoGrid.querySelectorAll('.photo-download').forEach(function(btn){ btn.addEventListener('click',function(e){ e.stopPropagation(); var i=parseInt(btn.getAttribute('data-idx'),10); if(isEncrypted){ var item=images[i]; if(item._blobUrl) doDownloadBlob(item._blobUrl,(currentAlbum.title||'photo')+'_'+(i+1)+'.jpg'); else showToast('图片还没解密完','fa-info-circle'); } else handleDownloadClick(images[i],currentAlbum,i); }); }); applyGridLayout(photoGrid,prefs.photoLayout,prefs.photoCols,getMaxPhotoCols()); if(prefs.photoLayout==='grid') photoGrid.style.gap='.8rem'; listView.classList.add('hidden'); detailView.classList.add('active'); document.body.classList.add('detail-active'); window.scrollTo({top:0,behavior:'smooth'}); requestAnimationFrame(updateScrollUI); detailDesc.querySelectorAll('.detail-tag').forEach(function(el){ el.addEventListener('click',function(e){ e.preventDefault(); e.stopPropagation(); var tag=this.getAttribute('data-tag'); if(!tag) return; listScrollY=0; closeDetail(); searchInput.value=tag; searchBar.classList.add('has-value'); applyFilter(tag); window.scrollTo({top:0,behavior:'smooth'}); }); }); setTimeout(function(){ if(currentAlbum) refreshWaline(currentAlbum.id); },200); }
+    async function loadEncryptedImage(el,img,item,idx){ try{ var blob=await decryptImageBlob(item.src,item.iv,currentKey),url=URL.createObjectURL(blob); detailBlobUrls.push(url); item._blobUrl=url; img.onload=function(){ el.classList.add('loaded'); }; img.onerror=function(){ el.classList.add('decrypt-failed'); }; img.src=url; }catch(e){ console.error('解密图片失败',item.src,e); el.classList.add('decrypt-failed'); } }
+    function doDownloadBlob(url,filename){ var a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast('开始下载','fa-check-circle'); }
+    function handleDownloadClick(item,album,index){ if(!item) return; if(item.live){ if(prefs.liveDownload==='cover') doDownload(resolveImageUrl(item.src),album,index,false); else if(prefs.liveDownload==='live') doDownload(resolveImageUrl(item.live),album,index,true); else { pendingDownload={item:item,album:album,index:index}; liveDlOverlay.classList.add('active'); } } else doDownload(resolveImageUrl(item.src),album,index,false); }
+    function doDownload(url,album,index,isLive){ if(!url) return; var ext=isLive?'.mp4':'.jpg'; try{ var m=url.match(/\.(jpg|jpeg|png|gif|webp|avif|mp4|mov|m4v|webm|ogv)(\?|$)/i); if(m) ext='.'+m[1].toLowerCase(); }catch(e){} var sf=isLive?'_live':'',fn=(album.title||'photo')+'_'+(index+1)+sf+ext,a=document.createElement('a'); a.href=url; a.download=fn; a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast(isLive?'开始下载 Live 视频':'开始下载封面','fa-check-circle'); }
+    function closeLiveDl(){ liveDlOverlay.classList.remove('active'); pendingDownload=null; }
+    liveDlCover.addEventListener('click',function(){ if(!pendingDownload) return; var p=pendingDownload; closeLiveDl(); doDownload(resolveImageUrl(p.item.src),p.album,p.index,false); });
+    liveDlLive.addEventListener('click',function(){ if(!pendingDownload) return; var p=pendingDownload; closeLiveDl(); doDownload(resolveImageUrl(p.item.live),p.album,p.index,true); });
+    liveDlCancel.addEventListener('click',closeLiveDl);
+    liveDlOverlay.addEventListener('click',function(e){ if(e.target===liveDlOverlay) closeLiveDl(); });
+    function compressImage(file,maxSize,quality){ return new Promise(function(resolve,reject){ var reader=new FileReader(); reader.onload=function(e){ var img=new Image(); img.onload=function(){ var canvas=document.createElement('canvas'),w=img.width,h=img.height; if(w>h){ if(w>maxSize){ h=h*maxSize/w; w=maxSize; } }else{ if(h>maxSize){ w=w*maxSize/h; h=maxSize; } } canvas.width=w; canvas.height=h; var ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h); canvas.toBlob(function(blob){ resolve(new File([blob],file.name,{type:'image/jpeg'})); },'image/jpeg',quality); }; img.onerror=reject; img.src=e.target.result; }; reader.onerror=reject; reader.readAsDataURL(file); }); }
+    function refreshWaline(albumId){ var path='/album/'+albumId,el=document.getElementById('waline-comments'); if(!el) return; if(walineInstance&&walinePath===path) return; var reqId=++walineReqId; if(walineInstance&&typeof walineInstance.destroy==='function'){ try{ walineInstance.destroy(); }catch(e){} } walineInstance=null; walinePath=null; el.innerHTML=''; import('/assets/waline.js').then(function(module){ if(reqId!==walineReqId) return; var init=module.init; walineInstance=init({el:'#waline-comments',serverURL:'https://comment.cuizi.top',lang:'zh-CN',path:path,dark:'body.dark',imageUploader:function(file){ return new Promise(function(resolve,reject){ var uploadFile=file,shouldCompress=!['image/gif','image/svg+xml'].includes(file.type),doUpload=function(f){ var reader=new FileReader(); reader.onload=function(){ var base64=reader.result.split(',')[1]; fetch('https://comment.cuizi.top/api/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:base64,filename:file.name})}).then(function(resp){ return resp.json(); }).then(function(data){ resolve(data.url); }).catch(reject); }; reader.readAsDataURL(f); }; if(shouldCompress) compressImage(file,720,0.8).then(doUpload).catch(reject); else doUpload(uploadFile); }); },emoji:['https://unpkg.com/@waline/emojis@1.4.0/alus','https://unpkg.com/@waline/emojis@1.4.0/bilibili','https://unpkg.com/@waline/emojis@1.4.0/bmoji','https://unpkg.com/@waline/emojis@1.4.0/qq','https://unpkg.com/@waline/emojis@1.4.0/tieba'],requiredMeta:['nick','mail'],locale:{placeholder:'邮箱用于接收邮件回复，不会展示给其他人。欢迎评论捏',sofa:'还没有人评论哦！来抢个沙发吧~',submit:'发射!',nick:'昵称*',mail:'邮箱*',link:'网站'}}); walinePath=path; }).catch(function(err){ console.error('Waline 加载失败:',err); }); }
+    function openLightbox(index){ if(!currentAlbum) return; var nh='#album='+encodeURIComponent(currentAlbum.id)+'&photo='+index; if(location.hash!==nh){ isNavigating=true; location.hash=nh; setTimeout(function(){ isNavigating=false; },50); } var imgs; if(currentAlbum._decryptedData) imgs=currentAlbum._decryptedData.images.map(function(item){ return {src:item._blobUrl||'',alt:item.alt||''}; }); else imgs=currentAlbum.images.map(function(item){ return {src:resolveImageUrl(item.src),alt:item.alt||''}; }); if(window.KSMarkdown&&window.KSMarkdown.openLightbox) window.KSMarkdown.openLightbox(imgs,index); else showToast('灯箱模块未加载','fa-exclamation-circle'); }
+    function revokeDetailBlobs(){ detailBlobUrls.forEach(function(u){ URL.revokeObjectURL(u); }); detailBlobUrls=[]; }
+    function closeDetail(){ if(location.hash) setHash(''); detailView.classList.remove('active'); listView.classList.remove('hidden'); currentAlbum=null; currentKey=null; photoGrid.innerHTML=''; revokeDetailBlobs(); document.body.classList.remove('detail-active'); document.body.classList.remove('hide-top-back'); pendingRestoreScroll=true; restoreListScroll(); updateScrollUI(); }
+    function handleRoute(){ if(isNavigating) return; var match=location.hash.match(/^#album=([^&]+)/); if(match){ var id=decodeURIComponent(match[1]),album=allAlbums.find(function(a){ return a.id===id; }); if(album&&!album.encrypted){ currentAlbum=album; renderDetailView(album); return; } if(album&&album.encrypted){ pendingAlbum=album; pwdSub.textContent='「'+(album.title||'相册')+'」需要密码'; openPwd(); return; } } if(detailView.classList.contains('active')){ detailView.classList.remove('active'); listView.classList.remove('hidden'); currentAlbum=null; currentKey=null; photoGrid.innerHTML=''; revokeDetailBlobs(); document.body.classList.remove('detail-active'); document.body.classList.remove('hide-top-back'); pendingRestoreScroll=true; restoreListScroll(); updateScrollUI(); } }
+    detailBack.addEventListener('click',closeDetail);
+    pwdCancel.addEventListener('click',closePwd);
+    pwdConfirm.addEventListener('click',tryUnlock);
+    pwdInput.addEventListener('keydown',function(e){ if(e.key==='Enter') tryUnlock(); if(e.key==='Escape') closePwd(); });
+    pwdOverlay.addEventListener('click',function(e){ if(e.target===pwdOverlay) closePwd(); });
+    clearBtn.addEventListener('click',function(){ searchInput.value=''; searchBar.classList.remove('has-value'); applyFilter(''); searchInput.focus(); });
+    var searchTimer=null;
+    searchInput.addEventListener('input',function(){ searchBar.classList.toggle('has-value',searchInput.value.length>0); clearTimeout(searchTimer); var val=searchInput.value; searchTimer=setTimeout(function(){ applyFilter(val); },150); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ if(confirmOverlay.classList.contains('active')){ closeConfirm(); return; } if(pwdOverlay.classList.contains('active')){ closePwd(); return; } if(liveDlOverlay.classList.contains('active')){ closeLiveDl(); return; } if(settingsOverlay.classList.contains('active')) return; if(document.querySelector('.lightbox-overlay.active')) return; if(detailView.classList.contains('active')){ e.preventDefault(); closeDetail(); } } });
+    window.addEventListener('hashchange',function(){ if(isNavigating) return; var hasLightbox=!!document.querySelector('.lightbox-overlay.active'),hasPhotoInHash=/[&]photo=/.test(location.hash); if(hasLightbox&&!hasPhotoInHash){ var escEvent=new KeyboardEvent('keydown',{key:'Escape',code:'Escape',keyCode:27,which:27,bubbles:true,cancelable:true}); document.dispatchEvent(escEvent); return; } handleRoute(); });
     applyPrefs();
     bindSettings();
     loadAlbums();

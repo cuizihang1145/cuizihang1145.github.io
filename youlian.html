@@ -945,7 +945,7 @@
             mathLastRefreshTime = Date.now();
             document.getElementById('mathQuestion').textContent = data.question;
             document.getElementById('mathInput').value = '';
-            document.getElementById('mathInput').focus();
+            document.getElementById('mathInput').focus({ preventScroll: true });
             document.getElementById('mathStatus').className = 'math-status';
             document.getElementById('mathStatus').textContent = '请计算并填写答案';
         } catch (_) {

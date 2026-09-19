@@ -47,5 +47,12 @@
     "desc": "Welcome To The World Of Lee",
     "logo": "https://leenet.xyz/avatar.png",
     "feed": "https://leenet.xyz/feed.xml"
+  },
+  {
+    "name": "开往",
+    "url": "https://www.travellings.cn/",
+    "desc": "让传统友链“活跃”，让网页相互接力，让流量相互流动，让网络开放起来",
+    "logo": "",
+    "feed": ""
   }
 ]

@@ -48,8 +48,10 @@
         body.dark .welcome-tag { color:#B0ACD0; background:rgba(40,35,70,0.5); border-color:rgba(255,255,255,0.06); }
         .welcome-tag i { margin-right:0.4rem; color:#A89FD0; }
         body.dark .welcome-tag i { color:#8F7BE0; }
-        .travellings-icon-link { position:absolute; top:0.25rem; right:0; color:inherit; font-size:1.15rem; text-decoration:none; transition:opacity 0.2s ease; line-height:1; }
+        .travellings-icon-link { position:absolute; top:0.1rem; right:0; text-decoration:none; transition:opacity 0.2s ease; line-height:1; display:flex; align-items:center; justify-content:center; }
         .travellings-icon-link:hover { opacity:0.6; }
+        .travellings-icon-link img { width:2rem; height:2rem; display:block; object-fit:contain; }
+        body.dark .travellings-icon-link img { filter:brightness(0) invert(1); }
         .theme-toggle { position:fixed; top:20px; right:24px; z-index:50; background:rgba(255,255,255,0.6); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.8); border-radius:60px; width:48px; height:48px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; color:#4F4F78; cursor:pointer; transition:0.3s ease; box-shadow:0 6px 20px rgba(80,60,160,0.10); user-select:none; }
         .theme-toggle:hover { transform:scale(1.05) rotate(8deg); background:rgba(255,255,255,0.85); box-shadow:0 10px 28px rgba(80,60,160,0.18); }
         body.dark .theme-toggle { background:rgba(30,28,50,0.7); border-color:rgba(255,255,255,0.08); color:#D0CAF0; box-shadow:0 6px 20px rgba(0,0,0,0.3); }
@@ -342,7 +344,6 @@
         .weather-error .retry-btn:hover { background:#E57373; color:#fff; }
         .weather-hidden { display:none !important; }
         @media (max-width:600px) { .progress-card,.weather-card { padding:1.4rem; } .weather-grid { grid-template-columns:1fr; gap:0.15rem 0; } .pollutants-row { grid-column:1 !important; } .weather-grid .wg-item { font-size:0.78rem; } .weather-temp-row .temp-current { font-size:2.2rem; } .progress-item { gap:0.3rem; } .progress-item .progress-label { font-size:0.75rem; min-width:3rem; } .progress-item .progress-detail { font-size:0.7rem; margin-left:0; width:100%; text-align:right; } .holiday-box { font-size:0.85rem; padding:0.6rem 1rem; } }
-
         .skeleton-list { display:flex; flex-direction:column; gap:0.8rem; }
         .skeleton-item { background:rgba(255,255,255,0.5); backdrop-filter:blur(8px); border-radius:1.2rem; padding:1rem 1.4rem; border:1px solid rgba(255,255,255,0.3); box-shadow:0 2px 8px rgba(0,0,0,0.04); transition:box-shadow 0.2s; text-align:left; }
         body.dark .skeleton-item { background:rgba(40,38,65,0.4); border-color:rgba(255,255,255,0.05); box-shadow:0 2px 8px rgba(0,0,0,0.2); }
@@ -371,14 +372,12 @@
     <div class="bg-glow"></div>
     <div class="glow-soft"></div>
     <div class="glow-soft-2"></div>
-
     <div class="theme-toggle" id="themeToggle" role="button" aria-label="切换深色/亮色模式">
         <i class="fas fa-moon"></i>
     </div>
     <button class="back-to-top-btn" id="backToTopBtn" aria-label="回到顶部">
         <i class="fas fa-arrow-up"></i>
     </button>
-
     <div class="container">
         <div class="site-header">
             <div class="avatar">
@@ -388,11 +387,10 @@
                 <div class="header-inner">
                     <h1 class="site-title">ks</h1>
                     <div class="welcome-tag"><i class="far fa-smile"></i> Hi，这里是 ks 的个人站点</div>
-                    <a href="https://www.travellings.cn/go.html" target="_blank" rel="noopener" class="travellings-icon-link" aria-label="开往"><i class="fas fa-train-subway"></i></a>
+                    <a href="https://www.travellings.cn/go.html" target="_blank" rel="noopener" class="travellings-icon-link" aria-label="开往"><img src="/assets/img/kaiwang.svg" alt="开往" /></a>
                 </div>
             </div>
         </div>
-
         <div class="nav-wrapper" id="navWrapper">
             <div class="nav-slider no-transition" id="navSlider"></div>
             <div class="nav-scroll" id="navScroll">
@@ -404,22 +402,17 @@
                 </div>
             </div>
         </div>
-
         <div id="appContent">
             <div class="content-placeholder" id="homePlaceholder">
                 <div class="placeholder-icon"><i class="far fa-compass"></i></div>
                 <div class="placeholder-text">这里暂时安静</div>
             </div>
         </div>
-
         <div id="footer-root"></div>
     </div>
-
     <div id="toastMsg" class="toast"></div>
-
     <script>
         var toast = document.getElementById('toastMsg');
-
         function showMessage(text) {
             toast.style.opacity = '1';
             toast.innerText = text;
@@ -427,7 +420,6 @@
                 toast.style.opacity = '0';
             }, 1500);
         }
-
         fetch('/assets/footer.html')
             .then(function(res) {
                 if (!res.ok) throw new Error('加载失败');
@@ -437,12 +429,10 @@
                 document.getElementById('footer-root').innerHTML = html;
             })
             .catch(function() {});
-
         var themeToggle = document.getElementById('themeToggle');
         var icon = themeToggle.querySelector('i');
         var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         var currentTheme = localStorage.getItem('ks-theme') || (prefersDark ? 'dark' : 'light');
-
         function setTheme(theme) {
             document.body.classList.toggle('dark', theme === 'dark');
             icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
@@ -453,7 +443,6 @@
         themeToggle.addEventListener('click', function() {
             setTheme(currentTheme === 'dark' ? 'light' : 'dark');
         });
-
         var backToTopBtn = document.getElementById('backToTopBtn');
         var isScrollingToTop = false;
         window.addEventListener('scroll', function() {
@@ -464,13 +453,11 @@
                 backToTopBtn.classList.remove('show');
             }
         });
-
         function fastScrollToTop() {
             var startY = window.scrollY || window.pageYOffset;
             if (startY === 0) return;
             var duration = 300;
             var startTime = performance.now();
-
             function step(currentTime) {
                 var elapsed = currentTime - startTime;
                 var progress = Math.min(elapsed / duration, 1);
@@ -496,12 +483,10 @@
             backToTopBtn.classList.add('disabled');
             fastScrollToTop();
         });
-
         var navLinks = document.querySelectorAll('.nav a');
         var navSlider = document.getElementById('navSlider');
         var navWrapper = document.getElementById('navWrapper');
         var navScroll = document.getElementById('navScroll');
-
         function updateSlider(activeLink) {
             var wrapperRect = navWrapper.getBoundingClientRect();
             var linkRect = activeLink.getBoundingClientRect();
@@ -527,9 +512,7 @@
                 if (active) updateSlider(active);
             }, 100);
         });
-
         var SOFTWARE_STATE_KEY = 'software_folded_state';
-
         function getStoredState() {
             try {
                 return sessionStorage.getItem(SOFTWARE_STATE_KEY) === 'true';
@@ -537,13 +520,11 @@
                 return false;
             }
         }
-
         function setStoredState(isOpen) {
             try {
                 sessionStorage.setItem(SOFTWARE_STATE_KEY, String(isOpen));
             } catch (e) {}
         }
-
         function applySoftwareState(forceState) {
             var toggle = document.getElementById('softwareToggle');
             var list = document.getElementById('softwareList');
@@ -558,7 +539,6 @@
                 arrow.classList.remove('open');
             }
         }
-
         function bindSoftwareToggle() {
             var toggle = document.getElementById('softwareToggle');
             var list = document.getElementById('softwareList');
@@ -586,10 +566,8 @@
                 setStoredState(isCurrentlyOpen);
             });
         }
-
         var recommendHTML =
             '<div class="content-placeholder" style="justify-content:flex-start;padding-top:0.2rem;"><div class="link-grid"><a href="youlian.html" class="link-card"><span class="link-label"><i class="fas fa-link" style="color:#6B5ACF;"></i> 友链</span><span class="link-arrow"><i class="fas fa-arrow-right"></i></span></a><a href="album.html" class="link-card"><span class="link-label"><i class="fas fa-images" style="color:#8F7BE0;"></i> 相册</span><span class="link-arrow"><i class="fas fa-arrow-right"></i></span></a><a href="muqin.html" class="link-card"><span class="link-label"><i class="fas fa-heart" style="color:#E88BB0;"></i> 母亲节庆祝页面</span><span class="link-arrow"><i class="fas fa-arrow-right"></i></span></a><a href="fuqin.html" class="link-card"><span class="link-label"><i class="fas fa-star" style="color:#6E9FDF;"></i> 父亲节庆祝页面</span><span class="link-arrow"><i class="fas fa-arrow-right"></i></span></a><div style="display:flex;flex-direction:column;gap:0.5rem;width:100%;"><div class="software-toggle-card" id="softwareToggle"><span class="link-label"><i class="fas fa-box" style="color:#8F7BE0;"></i> 下载软件</span><span class="icon-arrow" id="softwareArrow"><i class="fas fa-chevron-down"></i></span></div><div class="software-list" id="softwareList"><a href="nordownload.html" class="software-item" id="norLink"><span class="item-label"><i class="fas fa-clock" style="color:#6E9FDF;"></i> nor叔</span><span class="item-arrow"><i class="fas fa-arrow-right"></i></span></a><a href="zhuanhuandownload.html" class="software-item" id="zhuanhuanLink"><span class="item-label"><i class="fas fa-font" style="color:#E88BB0;"></i> 特殊字符转换器</span><span class="item-arrow"><i class="fas fa-arrow-right"></i></span></a></div></div></div><div style="margin-top:1.6rem;font-size:0.75rem;color:#AEAECB;letter-spacing:0.2px;transition:color 0.3s ease;"><i class="far fa-clock"></i> 保持好奇，保持诚实</div></div>';
-
         var allArticles = [];
         var currentFilter = 'newest';
         var currentPage = 1;
@@ -597,7 +575,6 @@
         var PAGE_SIZE = 10;
         var PRELOAD_PAGES = 4;
         var loadedCount = 0;
-
         function countWords(markdown) {
             if (!markdown) return 0;
             var text = markdown.replace(/```[\s\S]*?```/g, '')
@@ -619,13 +596,11 @@
                 .trim();
             return text.length;
         }
-
         function saveArticleState() {
             sessionStorage.setItem('articlePage', currentPage);
             sessionStorage.setItem('articleFilter', currentFilter);
             sessionStorage.setItem('articleKeyword', currentKeyword);
         }
-
         function loadArticleState() {
             var page = sessionStorage.getItem('articlePage');
             var filter = sessionStorage.getItem('articleFilter');
@@ -634,19 +609,16 @@
             if (filter) currentFilter = filter;
             if (keyword !== null) currentKeyword = keyword;
         }
-
         function getUrlParam(name) {
             var url = new URL(window.location.href);
             return url.searchParams.get(name);
         }
-
         function escapeHtml(text) {
             if (!text) return '';
             var div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
-
         function highlightText(text, keyword) {
             if (!keyword || !text) return text;
             var kw = escapeHtml(keyword);
@@ -655,7 +627,6 @@
                 return '<span class="highlight">' + match + '</span>';
             });
         }
-
         function markdownToPlainText(md) {
             if (!md) return '';
             var text = md;
@@ -676,7 +647,6 @@
             text = text.replace(/\n{3,}/g, '\n\n');
             return text.trim();
         }
-
         function getPreviewAroundMatch(content, keyword, contextLength) {
             contextLength = contextLength || 80;
             var plainText = markdownToPlainText(content);
@@ -710,7 +680,6 @@
             }
             return preview;
         }
-
         function renderPreviewMarkdown(text) {
             if (!text) return '';
             var html = escapeHtml(text);
@@ -720,7 +689,6 @@
             html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
             return html;
         }
-
         function getDisplayArticles(filtered) {
             var total = filtered.length;
             var loadLimit = Math.min(total, loadedCount + PAGE_SIZE * PRELOAD_PAGES);
@@ -729,7 +697,6 @@
             }
             return filtered.slice(0, loadedCount);
         }
-
         function checkAndLoadMore(filtered, page) {
             var total = filtered.length;
             var loadedPages = Math.ceil(loadedCount / PAGE_SIZE);
@@ -740,7 +707,6 @@
             }
             return false;
         }
-
         function renderArticleList(filtered, kw, page, noScroll) {
             var list = document.querySelector('.articles-list');
             var countEl = document.querySelector('.result-count');
@@ -775,7 +741,6 @@
                 var wordCount = countWords(content);
                 var readTimeDisplay;
                 var wordDisplay;
-
                 if (wordCount === 0) {
                     readTimeDisplay = '114514分钟';
                     wordDisplay = '没有字哦';
@@ -784,7 +749,6 @@
                     readTimeDisplay = readTime === 1 ? '1分钟' : readTime + '分钟';
                     wordDisplay = wordCount + '字';
                 }
-
                 var titleHtml = highlightText(escapeHtml(title), kw);
                 var previewText = getPreviewAroundMatch(content, kw);
                 var previewHtml = renderPreviewMarkdown(previewText);
@@ -806,7 +770,6 @@
                     '</span></div></div>';
             });
             list.innerHTML = html;
-
             list.querySelectorAll('.article-item').forEach(function(el) {
                 el.addEventListener('click', function() {
                     var id = this.dataset.id;
@@ -875,10 +838,8 @@
             }
             saveArticleState();
         }
-
         var searchInputGlobal = null;
         var searchClearBtnGlobal = null;
-
         function updateClearBtn() {
             if (searchInputGlobal && searchClearBtnGlobal) {
                 if (searchInputGlobal.value.length > 0) {
@@ -888,16 +849,13 @@
                 }
             }
         }
-
         function applySearch(keyword) {
             var kw = keyword.trim().toLowerCase();
             currentKeyword = keyword.trim();
-
             if (searchInputGlobal) {
                 searchInputGlobal.value = keyword.trim();
             }
             updateClearBtn();
-
             var searchPool = (window._allArticlesForSearch && window._allArticlesForSearch.length > 0)
                 ? window._allArticlesForSearch
                 : allArticles;
@@ -925,14 +883,12 @@
             currentPage = 1;
             saveArticleState();
         }
-
         function renderArticles() {
             var urlTag = getUrlParam('tag');
             if (urlTag) {
                 currentKeyword = urlTag;
                 sessionStorage.setItem('articleKeyword', urlTag);
             }
-
             var container = document.getElementById('appContent');
             container.innerHTML =
                 '<div class="content-placeholder" style="justify-content:flex-start;padding-top:0.2rem;width:100%;"><div class="articles-container"><a href="shuoshuo.html" class="shuoshuo-banner" id="shuoshuoBanner"><span class="banner-left"><i class="fas fa-comment-dots"></i><span>来看看说说吧～</span></span><span class="banner-arrow"><i class="fas fa-arrow-right"></i></span></a><div class="articles-toolbar"><div class="search-wrap"><i class="fas fa-search"></i><input class="articles-search-input" type="text" placeholder="搜索文章..." autocomplete="off" value="' +
@@ -961,12 +917,10 @@
                 }).join('') +
                 '</div>' +
                 '</div><div class="pagination" id="pagination"></div></div></div>';
-
             searchInputGlobal = container.querySelector('.articles-search-input');
             searchClearBtnGlobal = document.getElementById('searchClearBtn');
             var filterBtns = container.querySelectorAll('.filter-btn');
             var list = container.querySelector('.articles-list');
-
             var urlPage = getUrlParam('page');
             if (urlPage) {
                 sessionStorage.setItem('articlePage', urlPage);
@@ -984,9 +938,7 @@
             });
             setTimeout(updateClearBtn, 50);
             loadedCount = 0;
-
             var initialTag = urlTag || '';
-
             fetch('articles/meta.json', { cache: 'no-cache' })
                 .then(function(response) {
                     if (!response.ok) throw new Error('meta.json 不存在');
@@ -1062,7 +1014,6 @@
                     list.innerHTML =
                         '<div class="no-result"><i class="far fa-frown"></i> 加载文章数据失败<br><span style="font-size:0.8rem;">请稍后再试或刷新网页…</span></div>';
                 });
-
             searchInputGlobal.addEventListener('input', function() {
                 applySearch(this.value);
                 updateClearBtn();
@@ -1106,7 +1057,6 @@
                 });
             }
         }
-
         function openHomeDB() {
             return new Promise(function(resolve, reject) {
                 var req = indexedDB.open('ks_blog_home', 1);
@@ -1120,7 +1070,6 @@
                 req.onerror = function() { reject(req.error); };
             });
         }
-
         function getHomeState(key) {
             return openHomeDB().then(function(db) {
                 return new Promise(function(resolve, reject) {
@@ -1132,7 +1081,6 @@
                 });
             });
         }
-
         function setHomeState(key, value) {
             return openHomeDB().then(function(db) {
                 return new Promise(function(resolve, reject) {
@@ -1144,7 +1092,6 @@
                 });
             });
         }
-
         function getDaysDiffForBanner(dateStr) {
             if (!dateStr) return null;
             var parts = dateStr.split('-');
@@ -1160,7 +1107,6 @@
             if (diffDays < 0) return null;
             return diffDays;
         }
-
         function getLatestShuoshuo() {
             return fetch('shuoshuo.json', { cache: 'no-cache' })
                 .then(function(res) {
@@ -1184,7 +1130,6 @@
                     return null;
                 });
         }
-
         function updateBannerNewTag() {
             var banner = document.getElementById('shuoshuoBanner');
             if (!banner) return;
@@ -1203,7 +1148,6 @@
                 });
             }).catch(function() {});
         }
-
         function bindBannerClick() {
             var banner = document.getElementById('shuoshuoBanner');
             if (!banner) return;
@@ -1222,15 +1166,12 @@
                 });
             });
         }
-
         var _archiveCache = null;
-
         function renderArchive() {
             var container = document.getElementById('appContent');
             container.innerHTML =
                 '<div class="content-placeholder" style="justify-content:flex-start;padding-top:0.2rem;width:100%;"><div class="archive-container"><div class="archive-folder-view" id="archiveFolderView"><div class="archive-folder-list"><div class="archive-folder-item" data-target="articles"><i class="fas fa-folder"></i> 文章<span class="folder-badge" id="articleCountBadge">0</span><span class="folder-arrow"><i class="fas fa-chevron-right"></i></span></div><div class="archive-folder-item" data-target="tags"><i class="fas fa-tags"></i> 标签<span class="folder-badge" id="tagCountBadge">0</span><span class="folder-arrow"><i class="fas fa-chevron-right"></i></span></div></div></div><div class="archive-articles-view" id="archiveArticlesView"><button class="archive-back-btn" id="archiveBackBtn"><i class="fas fa-arrow-left"></i> 返回</button><div class="archive-title" id="archiveTitle"><i class="fas fa-folder-open"></i> 全部文章</div><div id="archiveList"><div style="text-align:center;padding:2rem;color:#8A8AB5;"><i class="fas fa-spinner fa-spin"></i> 加载中...</div></div></div></div></div>';
             window._archiveViewState = 'folder';
-
             function bindArchiveEvents() {
                 document.querySelectorAll('.archive-folder-item').forEach(function(item) {
                     item.addEventListener('click', function() {
@@ -1347,7 +1288,6 @@
                     });
             }
         }
-
         function renderTagList() {
             var listEl = document.getElementById('archiveList');
             var tagMap = window._archiveTagMap || {};
@@ -1379,7 +1319,6 @@
                 });
             });
         }
-
         function renderArchiveList(articles) {
             var listEl = document.getElementById('archiveList');
             if (!listEl) return;
@@ -1471,7 +1410,6 @@
                 });
             });
         }
-
         function getCachedStats() {
             try {
                 var raw = localStorage.getItem('ks_about_stats');
@@ -1484,7 +1422,6 @@
                 return null;
             }
         }
-
         function setCachedStats(stats) {
             try {
                 localStorage.setItem('ks_about_stats', JSON.stringify({
@@ -1493,7 +1430,6 @@
                 }));
             } catch (e) {}
         }
-
         function fetchStatsAndUpdate(diffDays, carryDisplay, sameDisplay) {
             Promise.all([
                 fetch('articles/all.json', { cache: 'no-cache' }).then(function(r) {
@@ -1579,7 +1515,6 @@
                 }
             });
         }
-
         function renderAboutContent(articleCount, totalWordCount, shuoshuoCount, shuoshuoWordCount, diffDays, carryDisplay,
             sameDisplay) {
             var container = document.getElementById('appContent');
@@ -1627,7 +1562,6 @@
             updateProgress();
             getWeather();
         }
-
         function renderAbout() {
             var container = document.getElementById('appContent');
             var startDate = new Date(2026, 6, 5);
@@ -1666,17 +1600,14 @@
             }
             fetchStatsAndUpdate(diffDays, carryDisplay, sameDisplay);
         }
-
         var appContent = document.getElementById('appContent');
         var currentPageId = null;
-
         function renderRecommend() {
             appContent.innerHTML = recommendHTML;
             setTimeout(function() {
                 bindSoftwareToggle();
             }, 50);
         }
-
         function switchPage(pageId, linkElement) {
             if (pageId === currentPageId) return;
             currentPageId = pageId;
@@ -1764,14 +1695,12 @@
                 switchPage('articles', navLinks[0]);
             }
         }
-
         var holidayData = {
             "2026": { "元旦": "2026-01-01", "清明节": "2026-04-05", "劳动节": "2026-05-01", "端午节": "2026-06-19",
                 "中秋节": "2026-09-25", "国庆节": "2026-10-01" },
             "2027": { "元旦": "2027-01-01", "清明节": "2027-04-05", "劳动节": "2027-05-01", "端午节": "2027-06-09",
                 "中秋节": "2027-09-15", "国庆节": "2027-10-01" }
         };
-
         function updateProgress() {
             var now = new Date();
             var year = now.getFullYear();
@@ -1839,7 +1768,6 @@
             document.getElementById('holidayBox').innerHTML = '距离 <strong>' + nextHoliday.name + '</strong> 还有 <span class="holiday-days">' +
                 daysRemain + '</span> 天';
         }
-
         function getWeather() {
             var weatherContent = document.getElementById('weatherContent');
             if (!weatherContent) return;
@@ -1855,7 +1783,6 @@
                         '<div class="weather-error"><i class="fas fa-exclamation-circle"></i> 获取天气失败<button class="retry-btn" onclick="getWeather()">重试</button></div>';
                 });
         }
-
         function renderWeather(data) {
             var weatherContent = document.getElementById('weatherContent');
             if (!weatherContent) return;
@@ -1931,7 +1858,6 @@
                 so2 + '</span><span>CO: ' + co + '</span></span></div></div><div class="weather-update-time"><i class="fas fa-clock"></i> ' +
                 reportTime + '</div>';
         }
-
         function getUvLevel(uv) {
             if (uv === '--') return null;
             var u = parseFloat(uv);
@@ -1940,7 +1866,6 @@
             if (u <= 7) return { label: '强', class: 'badge-uv-strong' };
             return { label: '极强', class: 'badge-uv-extreme' };
         }
-
         function getAqiClass(level) {
             if (level === 1) return 'badge-aqi-good';
             if (level === 2) return 'badge-aqi-moderate';
@@ -1951,7 +1876,6 @@
             return 'badge-aqi-moderate';
         }
         window.getWeather = getWeather;
-
         (function initTagFromUrl() {
             var tag = getUrlParam('tag');
             if (tag) {
@@ -1965,7 +1889,6 @@
             }
         })();
     </script>
-
     <script charset="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js">
     </script>
     <script>

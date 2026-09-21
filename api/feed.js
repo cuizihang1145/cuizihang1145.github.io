@@ -43,6 +43,7 @@ function buildAtom(articles, baseUrl) {
   </entry>`;
   });
   return `<?xml version="1.0" encoding="UTF-8" ?>
+<?xml-stylesheet type="text/xsl" href="/assets/feed.xsl"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <id>${baseUrl}</id>
   <title>ks的博客</title>
@@ -73,6 +74,7 @@ function buildRSS(articles, baseUrl) {
   </item>`;
   });
   return `<?xml version="1.0" encoding="UTF-8" ?>
+<?xml-stylesheet type="text/xsl" href="/assets/feed.xsl"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>ks的博客</title>
@@ -135,4 +137,4 @@ export default async function handler(req, res) {
     console.error('Feed 生成失败:', error.message);
     res.status(500).send('Feed 生成失败');
   }
-}
+      }

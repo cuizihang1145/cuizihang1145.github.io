@@ -19,7 +19,7 @@ body.dark .bg-glow{background:radial-gradient(circle at 30% 30%,#28253D,#0E0D18)
 body.dark .glow-soft{background:radial-gradient(circle,rgba(120,100,200,.20),rgba(60,40,120,0) 70%)}
 .top-bar{position:fixed;top:20px;left:20px;right:20px;z-index:50;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
 .top-bar .left,.top-bar .right{pointer-events:auto;display:flex;align-items:center;gap:.5rem}
-.back-btn{background:rgba(255,255,255,.6);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.8);border-radius:60px;padding:.5rem 1.2rem .5rem 1rem;display:inline-flex;align-items:center;gap:.5rem;font-size:.85rem;font-weight:500;color:#4F4F78;text-decoration:none;transition:.25s ease;box-shadow:0 6px 20px rgba(80,60,160,.10);cursor:pointer}
+.back-btn{background:rgba(255,255,255,.6);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.8);border-radius:60px;padding:.5rem 1.2rem .5rem 1rem;display:inline-flex;align-items:center;gap:.5rem;font-size:.85rem;font-weight:500;color:#4F4F78;text-decoration:none;transition:.25s ease;box-shadow:0 6px 20px rgba(80,60,160,.10);cursor:pointer;font-family:inherit}
 .back-btn:hover{background:rgba(255,255,255,.85);transform:translateY(-2px) scale(1.02)}
 body.dark .back-btn{background:rgba(30,28,50,.7);border-color:rgba(255,255,255,.08);color:#D0CAF0;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 body.dark .back-btn:hover{background:rgba(50,45,80,.8)}
@@ -60,8 +60,8 @@ body.dark .item .desc{color:#A8A4C8}
 <div class="bg-glow"></div>
 <div class="glow-soft"></div>
 <div class="top-bar">
-<div class="left"><a class="back-btn" href="https://cuizi.top"><i class="fas fa-arrow-left"></i> 返回</a></div>
-<div class="right"><button class="theme-toggle" id="themeToggle"><i class="fas fa-moon" id="themeIcon"></i></button></div>
+<div class="left"><button class="back-btn" id="backBtn" type="button"><i class="fas fa-arrow-left"></i> 返回</button></div>
+<div class="right"><button class="theme-toggle" id="themeToggle" type="button"><i class="fas fa-moon" id="themeIcon"></i></button></div>
 </div>
 <div class="container">
 <header>
@@ -75,7 +75,23 @@ body.dark .item .desc{color:#A8A4C8}
 </div>
 </div>
 <script>
-(function(){var t=document.getElementById('themeToggle'),i=document.getElementById('themeIcon');var pd=window.matchMedia('(prefers-color-scheme: dark)').matches;var ct=localStorage.getItem('ks-theme')||(pd?'dark':'light');function s(x){document.body.classList.toggle('dark',x==='dark');i.className=x==='dark'?'fas fa-sun':'fas fa-moon';localStorage.setItem('ks-theme',x);ct=x}s(ct);t.addEventListener('click',function(){s(ct==='dark'?'light':'dark')});})();
+(function(){
+  var t=document.getElementById('themeToggle'),i=document.getElementById('themeIcon');
+  var pd=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var ct=localStorage.getItem('ks-theme')||(pd?'dark':'light');
+  function s(x){document.body.classList.toggle('dark',x==='dark');i.className=x==='dark'?'fas fa-sun':'fas fa-moon';localStorage.setItem('ks-theme',x);ct=x}
+  s(ct);
+  t.addEventListener('click',function(){s(ct==='dark'?'light':'dark')});
+  document.getElementById('backBtn').addEventListener('click',function(){
+    if(document.referrer&&document.referrer.indexOf(location.origin)===0&&window.history.length>1){
+      window.history.back();
+    }else if(window.history.length>1){
+      window.history.back();
+    }else{
+      location.href='/';
+    }
+  });
+})();
 </script>
 </body>
 </html>

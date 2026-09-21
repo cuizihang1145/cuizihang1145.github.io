@@ -75,6 +75,7 @@ body.dark .item .desc{color:#A8A4C8}
 </div>
 </div>
 <script>
+//<![CDATA[
 (function(){
   var t=document.getElementById('themeToggle'),i=document.getElementById('themeIcon');
   var pd=window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -83,7 +84,7 @@ body.dark .item .desc{color:#A8A4C8}
   s(ct);
   t.addEventListener('click',function(){s(ct==='dark'?'light':'dark')});
   document.getElementById('backBtn').addEventListener('click',function(){
-    if(document.referrer&&document.referrer.indexOf(location.origin)===0&&window.history.length>1){
+    if(document.referrer && document.referrer.indexOf(location.origin)===0 && window.history.length>1){
       window.history.back();
     }else if(window.history.length>1){
       window.history.back();
@@ -92,6 +93,7 @@ body.dark .item .desc{color:#A8A4C8}
     }
   });
 })();
+//]]>
 </script>
 </body>
 </html>

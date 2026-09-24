@@ -49,13 +49,6 @@
     "feed": "https://leenet.xyz/feed.xml"
   },
   {
-    "name": "开往",
-    "url": "https://www.travellings.cn/",
-    "desc": "让传统友链“活跃”，让网页相互接力，让流量相互流动，让网络开放起来",
-    "logo": "https://www.travellings.cn/assets/travelling.png",
-    "feed": ""
-  },
-  {
     "name": "RAGNote",
     "url": "https://ragnote.top/",
     "desc": "Life is code. I will debug it.",

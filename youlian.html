@@ -84,6 +84,14 @@
         body.dark .format-box .label { color:#88ccff; }
         .format-box .break-all { word-break:break-all; }
         .format-box .break-all .http-red { color:#E74C6F; font-weight:600; }
+        .copy-row { cursor:pointer; user-select:none; -webkit-user-select:none; border-radius:.4rem; margin:0 -.4rem; padding:0 .4rem; transition:background .2s ease; }
+        .copy-row:hover { background:rgba(107,90,207,.06); }
+        body.dark .copy-row:hover { background:rgba(136,204,255,.06); }
+        .copy-row .copy-value { transition:color .25s ease; }
+        .copy-row:hover .copy-value { color:#6B5ACF; }
+        body.dark .copy-row:hover .copy-value { color:#88ccff; }
+        .copy-row.copied .copy-value { color:#4CAF50 !important; }
+        body.dark .copy-row.copied .copy-value { color:#4ade80 !important; }
         .friends-header { margin-bottom: 0.5rem; }
         .friends-header .title { font-size:1.2rem; font-weight:600; color:#2D2D4A; margin-bottom:.2rem; transition:color .3s; }
         body.dark .friends-header .title { color:#D0CAF0; }
@@ -317,11 +325,11 @@
             如果你想交换友链，请按以下格式发送至 <a href="mailto:340313894@qq.com">340313894@qq.com</a>，或在评论区留言，我看到后会添加。
         </p>
         <div class="format-box">
-            <div><span class="label">名称：</span>ks blog</div>
-            <div><span class="label">介绍：</span>保持好奇，保持诚实。</div>
-            <div><span class="label">链接：</span><span class="break-all">https://www.cuizi.top/</span></div>
-            <div><span class="label">订阅（可选）：</span><span class="break-all">https://www.cuizi.top/rss.xml</span></div>
-            <div><span class="label">头像：</span><span class="break-all">https://www.cuizi.top/logo.png</span></div>
+            <div class="copy-row" data-copy="ks blog"><span class="label">名称：</span><span class="copy-value">ks blog</span></div>
+            <div class="copy-row" data-copy="保持好奇，保持诚实。"><span class="label">介绍：</span><span class="copy-value">保持好奇，保持诚实。</span></div>
+            <div class="copy-row" data-copy="https://www.cuizi.top/"><span class="label">链接：</span><span class="copy-value break-all">https://www.cuizi.top/</span></div>
+            <div class="copy-row" data-copy="https://www.cuizi.top/rss.xml"><span class="label">订阅（可选）：</span><span class="copy-value break-all">https://www.cuizi.top/rss.xml</span></div>
+            <div class="copy-row" data-copy="https://www.cuizi.top/logo.png"><span class="label">头像：</span><span class="copy-value break-all">https://www.cuizi.top/logo.png</span></div>
         </div>
         <div class="friends-grid" style="margin-top:1rem;">
             <div class="friend-card" id="demoFriendCard">
@@ -882,6 +890,43 @@
         clearTimeout(toast._timer);
         toast._timer = setTimeout(() => toast.classList.remove('show'), 3000);
     }
+
+    function copyText(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            return navigator.clipboard.writeText(text);
+        }
+        return new Promise(function(resolve, reject){
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                resolve();
+            } catch (err) {
+                reject(err);
+            }
+        });
+    }
+
+    document.querySelectorAll('.copy-row').forEach(function(row){
+        row.addEventListener('click', function(){
+            const value = row.getAttribute('data-copy') || '';
+            if (!value) return;
+            copyText(value).then(function(){
+                row.classList.add('copied');
+                showToast('复制成功', 'success');
+                setTimeout(function(){
+                    row.classList.remove('copied');
+                }, 1500);
+            }).catch(function(){
+                showToast('复制失败，请手动复制', 'error');
+            });
+        });
+    });
 
     const sensitiveWarning = document.getElementById('sensitiveWarning');
     const siteNameInput = document.getElementById('siteName');

@@ -105,7 +105,7 @@
       "date": "2026-09-25",
       "tags": [],
       "delete": false,
-      "content": ":::danger 第一层：危险区\n这是最外层 callout。\n\n> 引用块嵌在 callout 里\n> > 二级引用\n> > :::info 引用里的信息框\n> > ::hei\n> > 三层嵌套的黑幕，带 **加粗** 和 [链接](https://example.com)\n> > ::\n> > :::\n\n:::detail+ 第二层：默认展开的折叠\n折叠里的内容。\n\n:::war 第三层：折叠里的警告\n警告里的内容。\n\n::hei\n最深层黑幕，还有行内代码 `const x = 1`\n::\n\n- 警告里的列表\n  1. 有序嵌套\n  2. 第二项\n     - 无序再嵌套\n- [x] 任务完成\n- [ ] 任务未完成\n\n| 表头1 | 表头2 | 表头3 |\n|:---|:---:|---:|\n| 左对齐 | 居中 | 右对齐 |\n| **粗** | *斜* | `码` |\n\n```javascript\n// 折叠里的代码块\nfunction hell() {\n  return '🔥';\n}\n```\n\n:::\n\n:::\n\n还有脚注[^deep]\n\n[^deep]: 脚注内容，带 ~~删除线~~ 和 [链接](https://example.com)\n:::"
+      "content": ":::danger 第一层：危险区\n这是最外层 callout。\n\n> 引用块嵌在 callout 里\n> > 二级引用\n> > :::info 引用里的信息框\n> > ::hei\n> > 三层嵌套的黑幕，带 **加粗** 和 [链接](https://example.com)\n> > ::\n> > :::\n\n:::detail+ 第二层：默认展开的折叠\n折叠里的内容。\n\n:::war 第三层：折叠里的警告\n警告里的内容。\n\n::hei\n最深层黑幕，还有行内代码 `const x = 1`\n::\n\n- 警告里的列表\n  1. 有序嵌套\n  2. 第二项\n     - 无序再嵌套\n- [x] 任务完成\n- [ ] 任务未完成\n\n| 表头1 | 表头2 | 表头3 |\n|:---|:---:|---:|\n| 左对齐 | 居中 | 右对齐 |\n| **粗** | *斜* | `码` |\n\n```javascript\n// 折叠里的代码块\nfunction hell() {\n  return '🔥';\n}\n```\n\n:::\n\n:::\n\n还有脚注[^deep]\n\n[^deep]: 脚注内容，带 ~~删除线~~ 和 [链接](https://example.com)\n:::\n\n\n- [x] 已完成\n- [ ] 未完成"
     }
   ]
 }

@@ -1,11 +1,12 @@
 // assets/markdown/markdown-node.js
 function escapeHtml(text) {
-  if (!text) return '';
-  return text.replace(/&/g, '&amp;')
-             .replace(/</g, '&lt;')
-             .replace(/>/g, '&gt;')
-             .replace(/"/g, '&quot;')
-             .replace(/'/g, '&#039;');
+  if (text === null || text === undefined) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 function renderMarkdown(md) {
@@ -42,7 +43,7 @@ function renderMarkdown(md) {
 
   function renderInline(text) {
     let html = text;
-    html = html.replace(/<([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s<>]+)>/g, '<a href="$1">$1</a>');
+    html = html.replace(/<([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s<>]+)>/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
 
     const tagMap = {};
     let tagIndex = 0;
@@ -60,7 +61,14 @@ function renderMarkdown(md) {
     });
 
     html = html.replace(/<br\s*\/?>/gi, '<br>');
-    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    const inlineCodes = [];
+    html = html.replace(/`([^`]+)`/g, (match, code) => {
+      const key = '\uE004' + inlineCodes.length + '\uE005';
+      inlineCodes.push(code);
+      return key;
+    });
+
     html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
     html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
@@ -68,46 +76,46 @@ function renderMarkdown(md) {
     html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,
       (match, alt, src, title, w, h) => {
         let style = '';
-        if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
-        else if (w) style = ' style="width:' + w + 'px; height:auto;"';
-        else if (h) style = ' style="height:' + h + 'px; width:auto;"';
-        const titleAttr = title ? ' title="' + title + '"' : '';
-        return '<img src="' + src + '" alt="' + alt + '" loading="lazy"' + style + titleAttr + ' />';
+        if (w && h) style = ' style="width:' + w + 'px;height:' + h + 'px;"';
+        else if (w) style = ' style="width:' + w + 'px;height:auto;"';
+        else if (h) style = ' style="height:' + h + 'px;width:auto;"';
+        const titleAttr = title ? ' title="' + escapeHtml(title) + '"' : '';
+        return '<img src="' + escapeHtml(src) + '" alt="' + escapeHtml(alt) + '" loading="lazy"' + style + titleAttr + ' />';
       });
 
     html = html.replace(
       /!video\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,
       (match, desc, src, title, w, h) => {
         let style = '';
-        if (w && h) style = ' style="width:' + w + 'px; height:' + h + 'px;"';
-        else if (w) style = ' style="width:' + w + 'px; height:auto;"';
-        else if (h) style = ' style="height:' + h + 'px; width:auto;"';
-        const descHtml = desc ? '<div class="video-alt-text">' + desc + '</div>' : '';
-        const youtubeMatch = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-        if (youtubeMatch) {
-          return '<div class="video-placeholder"><iframe src="https://www.youtube.com/embed/' + youtubeMatch[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
+        if (w && h) style = ' style="width:' + w + 'px;height:' + h + 'px;"';
+        else if (w) style = ' style="width:' + w + 'px;height:auto;"';
+        else if (h) style = ' style="height:' + h + 'px;width:auto;"';
+        const descHtml = desc ? '<div class="video-alt-text">' + renderInline(desc) + '</div>' : '';
+        const yt = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+        if (yt) {
+          return '<div class="video-placeholder"><iframe src="https://www.youtube.com/embed/' + yt[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
         }
-        const bilibiliMatch = src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
-        if (bilibiliMatch) {
-          return '<div class="video-placeholder"><iframe src="https://player.bilibili.com/player.html?bvid=' + bilibiliMatch[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
+        const bl = src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
+        if (bl) {
+          return '<div class="video-placeholder"><iframe src="https://player.bilibili.com/player.html?bvid=' + bl[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
         }
-        return '<div class="video-placeholder"><video src="' + src + '" controls' + style + '></video>' + descHtml + '</div>';
+        return '<div class="video-placeholder"><video src="' + escapeHtml(src) + '" controls' + style + '></video>' + descHtml + '</div>';
       });
 
-    html = html.replace(
-      /!audio\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*([^)]+))?\)/g,
-      (match, title, src, cover, extra) => {
-        const titleAttr = title ? ' title="' + escapeHtml(title) + '"' : '';
-        const coverAttr = extra ? ' data-cover="' + escapeHtml(extra) + '"' : '';
-        return '<audio controls src="' + src + '"' + titleAttr + coverAttr + '></audio>';
-      }
-    );
+    html = html.replace(/!audio\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*([^)]+))?\)/g, (match, title, src, cover) => {
+      const t = title ? ' title="' + escapeHtml(title) + '"' : '';
+      const c = cover ? ' data-cover="' + escapeHtml(cover.trim()) + '"' : '';
+      return '<audio controls src="' + escapeHtml(src.trim()) + '"' + t + c + ' preload="metadata"></audio>';
+    });
 
     html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
     html = html.replace(/\[\^([^\]]+)\]/g, (match, key) => {
       const id = getFootnoteId(key);
       return '<sup class="footnote-ref"><a data-footnote-ref="' + id + '">' + id + '</a></sup>';
     });
+
+    html = html.replace(/\uE004(\d+)\uE005/g, (match, idx) => '<code>' + escapeHtml(inlineCodes[+idx]) + '</code>');
 
     html = restoreEscapes(html);
     for (const key in tagMap) {
@@ -156,7 +164,7 @@ function renderMarkdown(md) {
         continue;
       }
 
-      if (/^CODEBLOCK_\d+$/.test(line.trim())) {
+      if (/^CODEBLOCK_\d+$/.test(line.trim()) || /^BODYBLOCK_\d+$/.test(line.trim())) {
         flushList();
         flushParagraph();
         result += line.trim() + '\n';
@@ -246,7 +254,9 @@ function renderMarkdown(md) {
           const alignRow = tableRows[1].split('|').map(c => c.trim());
           const isAlignRow = alignRow.every(c => /^:?-+:?$/.test(c));
           const dataStart = isAlignRow ? 2 : 1;
-          const alignments = isAlignRow ? alignRow.map(c => /^:-+:$/.test(c) ? 'center' : /^-+:$/.test(c) ? 'right' : 'left') : headerCells.map(() => 'left');
+          const alignments = isAlignRow
+            ? alignRow.map(c => /^:-+:$/.test(c) ? 'center' : /^-+:$/.test(c) ? 'right' : 'left')
+            : headerCells.map(() => 'left');
 
           let tableHtml = '<table><thead><tr>';
           headerCells.forEach((cell, ci) => {
@@ -273,7 +283,7 @@ function renderMarkdown(md) {
         flushParagraph();
         const indent = listMatch[1].length;
         const marker = listMatch[2];
-        let listContent = listMatch[3];
+        const listContent = listMatch[3];
         const isTask = listContent.match(/^\[([ x])\]\s+(.*)/);
         const taskChecked = isTask ? isTask[1] === 'x' : false;
         const taskContent = isTask ? isTask[2] : listContent;
@@ -325,9 +335,7 @@ function renderMarkdown(md) {
         continue;
       }
 
-      if (inList) {
-        flushList();
-      }
+      if (inList) flushList();
 
       const dlMatch = line.match(/^([^:]+):\s+(.*)/);
       if (dlMatch && i + 1 < lines.length && lines[i + 1].match(/^:\s+/)) {
@@ -358,19 +366,96 @@ function renderMarkdown(md) {
   md = md.replace(codeBlockRegex, (match, indent, lang, code) => {
     const id = 'CODEBLOCK_' + (codeIndex++);
     codeBlocks.push({ id: id, lang: lang, code: code.replace(/^\n+|\n+$/g, '') });
-    return id;
+    return '\n\n' + id + '\n\n';
+  });
+
+  const bodyBlocks = [];
+
+  md = md.replace(/::hei[ \t]*\n([\s\S]*?)\n[ \t]*::(?!:)/g, (match, body) => {
+    const inner = body.replace(/\n/g, ' ').trim();
+    const id = 'BODYBLOCK_' + bodyBlocks.length;
+    bodyBlocks.push('<p><span class="md-hei">' + renderInline(inner) + '</span></p>');
+    return '\n\n' + id + '\n\n';
+  });
+
+  md = md.replace(/:::([a-z]+)(\+)?[ \t]*([^\n]*)\n([\s\S]*?)\n[ \t]*:::/g, (match, type, plus, title, body) => {
+    type = type.toLowerCase();
+    title = (title || '').trim();
+    let html = '';
+
+    if (type === 'tip' || type === 'info' || type === 'war' || type === 'danger') {
+      const map = {
+        tip: { i: 'fa-lightbulb', c: 'md-callout-tip', d: 'TIP' },
+        info: { i: 'fa-circle-info', c: 'md-callout-info', d: 'INFO' },
+        war: { i: 'fa-triangle-exclamation', c: 'md-callout-war', d: 'WARNING' },
+        danger: { i: 'fa-circle-exclamation', c: 'md-callout-danger', d: 'DANGER' }
+      };
+      const cfg = map[type];
+      const t = title || cfg.d;
+      html = '<div class="md-callout ' + cfg.c + '">' +
+        '<div class="md-callout-head"><i class="fas ' + cfg.i + '"></i>' + escapeHtml(t) + '</div>' +
+        '<div class="md-callout-body">' + renderBlock(body) + '</div>' +
+        '</div>';
+    } else if (type === 'detail') {
+      html = '<details class="md-detail"' + (plus ? ' open' : '') + '>' +
+        '<summary><i class="fas fa-chevron-right"></i>' + escapeHtml(title || '详情') + '</summary>' +
+        '<div class="md-detail-body">' + renderBlock(body) + '</div>' +
+        '</details>';
+    } else if (type === 'link') {
+      const fields = {};
+      body.split('\n').forEach(function (l) {
+        const idx = l.indexOf(':');
+        if (idx > 0) {
+          const k = l.slice(0, idx).trim().toLowerCase();
+          const v = l.slice(idx + 1).trim();
+          if (k && v) fields[k] = v;
+        }
+      });
+      if (!fields.url) return match;
+
+      const big = title.toLowerCase() === 'big';
+      const w = fields.website || '';
+      const ct = fields.content || '';
+      const au = fields.author || '';
+      const im = fields.img || '';
+      const u = escapeHtml(fields.url);
+
+      if (big) {
+        html = '<a class="md-link big" href="' + u + '" target="_blank" rel="noopener">' +
+          (im ? '<img class="md-link-cover" src="' + escapeHtml(im) + '" alt="" loading="lazy">' : '') +
+          '<div class="md-link-inner">' +
+          (w ? '<div class="md-link-website">' + escapeHtml(w) + '</div>' : '') +
+          (ct ? '<div class="md-link-content">' + escapeHtml(ct) + '</div>' : '') +
+          (au ? '<div class="md-link-author"><i class="fas fa-user"></i>' + escapeHtml(au) + '</div>' : '') +
+          '</div></a>';
+      } else {
+        html = '<a class="md-link" href="' + u + '" target="_blank" rel="noopener">' +
+          (im ? '<img class="md-link-thumb" src="' + escapeHtml(im) + '" alt="" loading="lazy">' : '') +
+          '<div class="md-link-body">' +
+          (w ? '<div class="md-link-website">' + escapeHtml(w) + '</div>' : '') +
+          '<div class="md-link-content">' + escapeHtml(ct || fields.url) + '</div>' +
+          (au ? '<div class="md-link-author"><i class="fas fa-user"></i>' + escapeHtml(au) + '</div>' : '') +
+          '</div></a>';
+      }
+    } else {
+      return match;
+    }
+
+    const id = 'BODYBLOCK_' + bodyBlocks.length;
+    bodyBlocks.push(html);
+    return '\n\n' + id + '\n\n';
   });
 
   let html = renderBlock(md);
 
   codeBlocks.forEach((block) => {
-    const lines = block.code.split('\n');
-    let codeHtml = '';
-    lines.forEach((line) => {
-      codeHtml += escapeHtml(line) + '\n';
-    });
-    const codeBlockHtml = `<pre><code class="language-${block.lang || 'text'}">${codeHtml}</code></pre>`;
-    html = html.replace(block.id, codeBlockHtml);
+    const codeHtml = escapeHtml(block.code);
+    const blockHtml = '<pre><code class="language-' + escapeHtml(block.lang || 'text') + '">' + codeHtml + '</code></pre>';
+    html = html.split(block.id).join(blockHtml);
+  });
+
+  bodyBlocks.forEach((content, i) => {
+    html = html.split('BODYBLOCK_' + i).join(content);
   });
 
   if (Object.keys(footnotes).length > 0) {

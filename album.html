@@ -640,6 +640,35 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
 <script>
 (function(){
     var IMG_BASE = 'albums/';
+    function stripMarkdown(md){
+        if(!md) return '';
+        md = md.replace(/^[ \t]*:::[ \t]*link(?:[ \t]+big)?[ \t]*$[\s\S]*?^[ \t]*:::[ \t]*$/gm, '');
+        md = md.replace(/^[ \t]*:::[a-z]+\+?[^\n]*$/gm, '');
+        md = md.replace(/^[ \t]*:::[ \t]*$/gm, '');
+        md = md.replace(/^[ \t]*::hei[ \t]*$/gm, '');
+        md = md.replace(/^[ \t]*::[ \t]*$/gm, '');
+        md = md.replace(/```[\s\S]*?```/g, '');
+        md = md.replace(/`([^`]+)`/g, '$1');
+        md = md.replace(/!video\[([^\]]*)\]\([^)]*\)/g, '$1');
+        md = md.replace(/!audio\[([^\]]*)\]\([^)]*\)/g, '$1');
+        md = md.replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1');
+        md = md.replace(/\[\^([^\]]+)\]:\s*(.*)/g, '$2');
+        md = md.replace(/\[\^([^\]]+)\]/g, '');
+        md = md.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+        md = md.replace(/<([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s<>]+)>/g, '$1');
+        md = md.replace(/\*\*(.+?)\*\*/g, '$1');
+        md = md.replace(/__(.+?)__/g, '$1');
+        md = md.replace(/\*(.+?)\*/g, '$1');
+        md = md.replace(/~~(.+?)~~/g, '$1');
+        md = md.replace(/^#{1,6}\s+/gm, '');
+        md = md.replace(/^[ \t]*>[ \t]?/gm, '');
+        md = md.replace(/^[ \t]*[-*+][ \t]+\[[ xX]\][ \t]+/gm, '');
+        md = md.replace(/^[ \t]*[-*+][ \t]+/gm, '');
+        md = md.replace(/^[ \t]*\d+\.[ \t]+/gm, '');
+        md = md.replace(/^[ \t]*(?:---|\*\*\*|___)[ \t]*$/gm, '');
+        md = md.replace(/\\([\\`*_{}\[\]()#+\-.!|$>~])/g, '$1');
+        return md;
+    }
     var allAlbums = [], filteredAlbums = [], currentAlbum = null, currentKey = null, isNavigating = false;
     var STORAGE_KEY = 'ks-album-prefs', ITERATIONS = 250000;
     var listScrollY = 0, pendingRestoreScroll = false;
@@ -703,7 +732,7 @@ body.dark .detail-tag:hover{background:rgba(136,204,255,.20)}
     async function decryptImageBlob(src,ivBase64,key){ var url=resolveImageUrl(src),res=await fetch(url); if(!res.ok) throw new Error('HTTP '+res.status); var ct=await res.arrayBuffer(),iv=base64ToBuf(ivBase64),pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,ct); return new Blob([pt]); }
     function updateStats(){ var ac=filteredAlbums.length,pc=0; filteredAlbums.forEach(function(a){ if(!a.encrypted&&a.images) pc+=a.images.length; }); var hf=searchInput.value.trim().length>0; statsRow.classList.add('updating'); setTimeout(function(){ statsRow.classList.remove('updating'); },300); if(ac===0){ statsText.textContent=hf?'没有匹配的相册':'还没有相册'; } else if(pc===0){ statsText.innerHTML='共 '+ac+' 个相册'+(hf?'（已筛选）':''); } else { statsText.innerHTML='共 '+ac+' 个相册 <span class="sep">·</span> '+pc+' 张照片'+(hf?'（已筛选）':''); } }
     function loadAlbums(){ fetch('albums/albums.json',{cache:'no-cache'}).then(function(res){ if(!res.ok) throw new Error('加载失败'); return res.json(); }).then(function(data){ allAlbums=(data.albums||[]).filter(function(a){ return a.delete!==true; }); allAlbums.sort(function(a,b){ var oa=a.order||0,ob=b.order||0; if(oa!==ob) return ob-oa; return (b.date||'').localeCompare(a.date||''); }); applyFilter(''); handleRoute(); setTimeout(applyPrefs,50); }).catch(function(err){ console.error(err); gridEl.innerHTML='<div class="empty-state"><i class="far fa-frown"></i><p>加载相册失败</p></div>'; }); }
-    function applyFilter(keyword){ var k=(keyword||'').trim().toLowerCase(); if(!k){ filteredAlbums=allAlbums.slice(); } else { filteredAlbums=allAlbums.filter(function(a){ var tags=(a.tags||[]).join(' '); return [a.title||'',a.user||'ks',a.date||'',a.desc||'',a.location||'',tags].join(' ').toLowerCase().indexOf(k)!==-1; }); } renderGrid(); updateStats(); }
+    function applyFilter(keyword){ var k=(keyword||'').trim().toLowerCase(); if(!k){ filteredAlbums=allAlbums.slice(); } else { filteredAlbums=allAlbums.filter(function(a){ var tags=(a.tags||[]).join(' '); return [a.title||'',a.user||'ks',a.date||'',stripMarkdown(a.desc||''),a.location||'',tags].join(' ').toLowerCase().indexOf(k)!==-1; }); } renderGrid(); updateStats(); }
     function renderGrid(){ if(filteredAlbums.length===0){ gridEl.innerHTML='<div class="empty-state"><i class="fas fa-images"></i><p>没有找到相册</p></div>'; return; } var html=''; filteredAlbums.forEach(function(album,idx){ html+=buildCard(album,idx); }); gridEl.innerHTML=html; gridEl.querySelectorAll('.album-card').forEach(function(card){ card.style.animationDelay=(card.getAttribute('data-idx')*55)+'ms'; card.addEventListener('click',function(){ var idx=parseInt(card.getAttribute('data-idx'),10); openAlbumDetail(filteredAlbums[idx]); }); var cover=card.querySelector('.album-cover'),img=cover?cover.querySelector('img'):null; if(cover&&img) attachImageLoad(cover,img); }); }
     function buildCard(album,idx){ var ch=''; if(album.encrypted){ ch='<div class="album-cover-locked"><i class="fas fa-lock"></i><span>加密相册，请解密查看～</span></div>'; } else { var first=getCover(album); if(first){ ch='<span class="cover-skeleton"></span><img src="'+escapeHtml(resolveImageUrl(first))+'" alt="" loading="lazy">'; } else { ch='<div class="album-cover-locked"><i class="fas fa-image"></i><span>暂无图片</span></div>'; } } var meta='<span><i class="fas fa-user"></i> '+escapeHtml(album.user||'ks')+'</span>'; if(album.date) meta+='<span><i class="fas fa-calendar"></i> '+escapeHtml(album.date)+'</span>'; if(album.location) meta+='<span><i class="fas fa-location-dot"></i> '+escapeHtml(album.location)+'</span>'; if(!album.encrypted&&album.images) meta+='<span><i class="fas fa-image"></i> '+album.images.length+' 张</span>'; else if(album.encrypted) meta+='<span><i class="fas fa-lock"></i> 加密</span>'; var desc=''; if(album.encrypted){ desc='<div class="album-desc">这个相册被加密保护，输入正确密码即可解锁查看完整内容。解锁后可以浏览其中的全部照片与 Live 图，自由切换布局，查看 EXIF 拍摄信息，也能把喜欢的原图下载收藏。</div>'; } else if(album.desc){ desc='<div class="album-desc">'+renderMd(album.desc)+'</div>'; } var tags=(!album.encrypted&&album.tags)?album.tags:[],th=''; if(tags.length>0){ th='<div class="album-tags">'; tags.forEach(function(tag){ th+='<span class="album-tag">'+escapeHtml(tag)+'</span>'; }); th+='</div>'; } return '<div class="album-card" data-idx="'+idx+'"><div class="album-cover">'+ch+'</div><div class="album-info"><div class="album-title">'+escapeHtml(album.title||'无标题')+'</div>'+desc+th+'<div class="album-meta">'+meta+'</div></div></div>'; }
     function setHash(hash){ isNavigating=true; if(hash) location.hash=hash; else history.replaceState(null,'',location.pathname+location.search); setTimeout(function(){ isNavigating=false; },50); }

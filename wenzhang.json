@@ -99,13 +99,6 @@
       ],
       "delete": false,
       "content": "我也是成功复活辣，只不过~~限时一天~~ 在[上一篇文章](https://www.cuizi.top/article.html?id=8)里面，还记得之前说的小何（还是贺）吗，我要说：\n![聊天截图](https://s41.ax1x.com/2026/09/19/pnMJXo6.jpg)\n神了神了，还有就是，我把这篇文章发出去的时候我就成功凑够10篇文章了喵，哈哈哈哈哈哈哈哈哈哈哈哈哈。\n\n还有就是我在一个莫名其妙的学校的企业微信里面看到了这个莫名其妙的东西，里面还有一个莫名其妙的相册，这他妈是给我干哪来了，为什么我会看到这个🤔：\n![何意味](https://s41.ax1x.com/2026/09/18/pnMPTJO.jpg)\n\n好了水完了喵，大家睡个好觉拉个[好屎](https://www.cuizi.top/article.html?id=6)\n拜拜"
-    },
-    {
-      "title": "test",
-      "date": "2026-09-25",
-      "tags": [],
-      "delete": false,
-      "content": ":::danger 第一层：危险区\n这是最外层 callout。\n\n> 引用块嵌在 callout 里\n> > 二级引用\n> > :::info 引用里的信息框\n> > ::hei\n> > 三层嵌套的黑幕，带 **加粗** 和 [链接](https://example.com)\n> > ::\n> > :::\n\n:::detail+ 第二层：默认展开的折叠\n折叠里的内容。\n\n:::war 第三层：折叠里的警告\n警告里的内容。\n\n::hei\n最深层黑幕，还有行内代码 `const x = 1`\n::\n\n- 警告里的列表\n  1. 有序嵌套\n  2. 第二项\n     - 无序再嵌套\n- [x] 任务完成\n- [ ] 任务未完成\n\n| 表头1 | 表头2 | 表头3 |\n|:---|:---:|---:|\n| 左对齐 | 居中 | 右对齐 |\n| **粗** | *斜* | `码` |\n\n```javascript\n// 折叠里的代码块\nfunction hell() {\n  return '🔥';\n}\n```\n\n:::\n\n:::\n\n还有脚注[^deep]\n\n[^deep]: 脚注内容，带 ~~删除线~~ 和 [链接](https://example.com)\n:::\n\n\n- [x] 已完成\n- [ ] 未完成"
     }
   ]
 }

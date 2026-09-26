@@ -144,5 +144,12 @@
     "tags": [],
     "delete": false,
     "content": "我有很多想说的"
+  },
+  {
+    "date": "2026-09-26",
+    "location": "",
+    "tags": [],
+    "delete": false,
+    "content": "# 终极宇宙无敌递归套娃测试（发烧限定版）\n\n> 第一层引用[^1]。\n> > 第二层引用，加点**加粗**、*斜体*、~~删除线~~、`行内代码`。\n> > > 第三层引用，塞入表格：\n> > > | 列1 | 列2 | 列3 |\n> > > | :--- | :---: | ---: |\n> > > | 嵌套 | 警告 | 牛逼 |\n\n:::info 第一层信息（递归起点）\n这里是外层信息，我们直接开始套娃。\n\n:::info 第二层信息（继续套）\n我直接把同一个组件套在自己里面。\n\n:::info 第三层信息（深不见底）\n你看，它没完没了。还要塞任务列表：\n- [x] 测试嵌套\n- [ ] 测试崩溃\n\n:::war 第四层警告（换个体位）\n这里面继续套！先放个黑幕：::hei 这是一段处于第四层嵌套里的黑幕…你点得开吗？::，再加一个链接卡片：\n:::link\nwebsite: 某个神秘博客\nurl: https://example.com\ncontent: 这是一个链接卡片，放在第四层嵌套里\nauthor: 疯子博主\n:::\n:::info 第五层信息（嵌套循环）\n为了测试递归，我在这里放一个折叠详情：\n:::detail 第六层折叠\n这里面居然还有代码块！注意反引号：\n```javascript\nfunction checkNesting(level) {\n    if (level > 5) {\n        console.log(\"你的正则表达式要爆炸了！\");\n        return \"💥\";\n    }\n    return checkNesting(level + 1);\n}\ncheckNesting(1);\n```\n:::info 第七层信息（最后一次套）\n我已经不知道这里还有没有必要，但为了测试，我放个音频和视频：\n!audio[测试音频](https://example.com/audio.mp3 = https://example.com/cover.jpg)\n!video[测试B站视频](https://www.bilibili.com/video/BV1xx411c7mD)\n:::\n:::\n:::\n:::\n:::\n:::\n:::\n\n---\n[^1]: 这是脚注1。\n[^2]: 这是脚注2。"
   }
 ]

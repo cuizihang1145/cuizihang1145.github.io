@@ -61,5 +61,12 @@
     "desc": "梁栋烨的博客网站。",
     "logo": "https://090909.top/assets/images/logo.ico",
     "feed": ""
+  },
+  {
+    "name": "胖小白",
+    "url": "https://www.fatxiaobai.top",
+    "desc": "爱健身，爱科技，爱生活",
+    "logo": "https://www.fatxiaobai.top/proxy-api/public/file/avatar/avatar.jpg",
+    "feed": ""
   }
 ]

@@ -1,4 +1,10 @@
-// assets/markdown/markdown-node.js
+const SAFE_TAGS = new Set([
+  'u', 'kbd', 'mark', 's', 'sub', 'sup', 'ins', 'del',
+  'b', 'i', 'em', 'strong', 'code', 'span'
+]);
+
+const ESCAPABLE = /[\\`*_{}\[\]()#+\-.!|$]/;
+
 function escapeHtml(text) {
   if (text === null || text === undefined) return '';
   return String(text)
@@ -9,468 +15,720 @@ function escapeHtml(text) {
     .replace(/'/g, '&#039;');
 }
 
+function escapeRe(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function createContext() {
+  return {
+    footnoteMap: Object.create(null),
+    footnoteCount: 0,
+    footnoteDefs: Object.create(null)
+  };
+}
+
+function footnoteIndex(ctx, key) {
+  if (!ctx.footnoteMap[key]) {
+    ctx.footnoteCount++;
+    ctx.footnoteMap[key] = ctx.footnoteCount;
+  }
+  return ctx.footnoteMap[key];
+}
+
+const INLINE_RULES = [
+  {
+    re: /<([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s<>]+)>/y,
+    build: (m) => ({
+      type: 'link',
+      href: m[1],
+      autolink: true,
+      children: [{ type: 'text', value: m[1] }]
+    })
+  },
+  {
+    re: /<br\s*\/?>/iy,
+    build: () => ({ type: 'hardBreak' })
+  },
+  {
+    re: /<hr\s*\/?>/iy,
+    build: () => ({ type: 'html', value: '<hr>' })
+  },
+  {
+    re: /<([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)>([\s\S]*?)<\/\1>/y,
+    build: (m, ctx) => {
+      if (!SAFE_TAGS.has(m[1].toLowerCase())) return null;
+      return {
+        type: 'safeTag',
+        tag: m[1],
+        attrs: m[2],
+        children: parseInline(m[3], ctx)
+      };
+    }
+  },
+  {
+    re: /<[^>]+>/y,
+    build: (m) => ({ type: 'html', value: m[0] })
+  },
+  {
+    re: /!\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/y,
+    build: (m) => ({
+      type: 'image',
+      alt: m[1],
+      src: m[2],
+      title: m[3] || '',
+      width: m[4] || '',
+      height: m[5] || ''
+    })
+  },
+  {
+    re: /!video\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/y,
+    build: (m, ctx) => ({
+      type: 'video',
+      alt: parseInline(m[1], ctx),
+      src: m[2],
+      title: m[3] || '',
+      width: m[4] || '',
+      height: m[5] || ''
+    })
+  },
+  {
+    re: /!audio\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*([^)]+))?\)/y,
+    build: (m) => ({
+      type: 'audio',
+      title: m[1],
+      src: (m[2] || '').trim(),
+      cover: m[3] ? m[3].trim() : ''
+    })
+  },
+  {
+    re: /`([^`]+)`/y,
+    build: (m) => ({ type: 'code', value: m[1] })
+  },
+  {
+    re: /\*\*(.*?)\*\*/y,
+    build: (m, ctx) => ({ type: 'strong', children: parseInline(m[1], ctx) })
+  },
+  {
+    re: /\*([^*]+)\*/y,
+    build: (m, ctx) => ({ type: 'emphasis', children: parseInline(m[1], ctx) })
+  },
+  {
+    re: /~~(.*?)~~/y,
+    build: (m, ctx) => ({ type: 'delete', children: parseInline(m[1], ctx) })
+  },
+  {
+    re: /\[([^\]]*)\]\(([^)]*)\)/y,
+    build: (m, ctx) => ({
+      type: 'link',
+      href: m[2],
+      autolink: false,
+      children: parseInline(m[1], ctx)
+    })
+  },
+  {
+    re: /\[\^([^\]]+)\]/y,
+    build: (m, ctx) => ({ type: 'footnoteRef', index: footnoteIndex(ctx, m[1]) })
+  }
+];
+
+function parseInline(text, ctx) {
+  const nodes = [];
+  let buf = '';
+  let i = 0;
+  const len = text.length;
+
+  const flush = () => {
+    if (buf) {
+      nodes.push({ type: 'text', value: buf });
+      buf = '';
+    }
+  };
+
+  while (i < len) {
+    if (text.charCodeAt(i) === 92 && i + 1 < len && ESCAPABLE.test(text[i + 1])) {
+      buf += text[i + 1];
+      i += 2;
+      continue;
+    }
+
+    let matched = false;
+    for (let r = 0; r < INLINE_RULES.length; r++) {
+      const rule = INLINE_RULES[r];
+      rule.re.lastIndex = i;
+      const m = rule.re.exec(text);
+      if (m && m.index === i) {
+        const node = rule.build(m, ctx);
+        if (node === null) continue;
+        flush();
+        nodes.push(node);
+        i += m[0].length;
+        matched = true;
+        break;
+      }
+    }
+    if (matched) continue;
+
+    buf += text[i];
+    i++;
+  }
+
+  flush();
+  return nodes;
+}
+
+function parseBlocks(source, ctx) {
+  const lines = source.split('\n');
+  const nodes = [];
+  let para = [];
+  let listStack = [];
+  let i = 0;
+
+  const flushPara = () => {
+    if (!para.length) return;
+    const children = [];
+    for (let k = 0; k < para.length; k++) {
+      if (k > 0) children.push({ type: 'break' });
+      const inl = parseInline(para[k], ctx);
+      for (let n = 0; n < inl.length; n++) children.push(inl[n]);
+    }
+    nodes.push({ type: 'paragraph', children });
+    para = [];
+  };
+
+  const endList = () => { listStack = []; };
+  const endAll = () => { endList(); flushPara(); };
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (line.trim() === '') {
+      endAll();
+      i++;
+      continue;
+    }
+
+    let m;
+
+    m = line.match(/^(\s*)```(\w*)[ \t]*$/);
+    if (m) {
+      const indent = m[1];
+      const lang = m[2];
+      const closeRe = new RegExp('^' + escapeRe(indent) + '```');
+      let j = i + 1;
+      while (j < lines.length && !closeRe.test(lines[j])) j++;
+      if (j < lines.length) {
+        endAll();
+        nodes.push({
+          type: 'codeBlock',
+          lang,
+          code: lines.slice(i + 1, j).join('\n').replace(/^\n+|\n+$/g, '')
+        });
+        i = j + 1;
+        continue;
+      }
+    }
+
+    m = line.match(/^:::([a-z]+)(\+)?[ \t]*([^\n]*)$/);
+    if (m) {
+      const cType = m[1].toLowerCase();
+      const cPlus = !!m[2];
+      const cTitle = m[3].trim();
+      const cBody = [];
+      let depth = 1;
+      let cj = i + 1;
+      while (cj < lines.length) {
+        if (/^:::[a-z]/.test(lines[cj])) {
+          depth++;
+        } else if (/^:::[ \t]*$/.test(lines[cj])) {
+          depth--;
+          if (depth === 0) break;
+        }
+        cBody.push(lines[cj]);
+        cj++;
+      }
+      endAll();
+      nodes.push(buildContainer(cType, cPlus, cTitle, cBody.join('\n'), ctx));
+      i = cj + 1;
+      continue;
+    }
+
+    if (/^::hei[ \t]*$/.test(line)) {
+      const hBody = [];
+      let hj = i + 1;
+      while (hj < lines.length && !/^::[ \t]*$/.test(lines[hj])) {
+        hBody.push(lines[hj]);
+        hj++;
+      }
+      endAll();
+      const hRaw = hBody.join('\n').replace(/\n/g, ' ').trim();
+      nodes.push({
+        type: 'paragraph',
+        children: [{ type: 'hei', children: parseInline(hRaw, ctx) }]
+      });
+      i = hj + 1;
+      continue;
+    }
+
+    m = line.match(/^\[\^([^\]]+)\]:\s*(.*)/);
+    if (m) {
+      endAll();
+      const idx = footnoteIndex(ctx, m[1]);
+      ctx.footnoteDefs[idx] = { key: m[1], content: m[2] };
+      i++;
+      continue;
+    }
+
+    if (line.charCodeAt(0) === 62) {
+      endAll();
+      const quoted = [];
+      while (i < lines.length && lines[i].charCodeAt(0) === 62) {
+        quoted.push(lines[i].replace(/^>[ \t]?/, ''));
+        i++;
+      }
+      nodes.push({
+        type: 'blockquote',
+        children: parseBlocks(quoted.join('\n'), ctx).children
+      });
+      continue;
+    }
+
+    m = line.match(/^(#{1,6})\s+(.*)/);
+    if (m) {
+      endAll();
+      nodes.push({
+        type: 'heading',
+        depth: m[1].length,
+        children: parseInline(m[2], ctx)
+      });
+      i++;
+      continue;
+    }
+
+    if (/^(---|\*\*\*|___)$/.test(line.trim())) {
+      endAll();
+      nodes.push({ type: 'thematicBreak' });
+      i++;
+      continue;
+    }
+
+    if (/^\|.+\|$/.test(line)) {
+      endAll();
+      const tRows = [];
+      let tj = i;
+      while (tj < lines.length && /^\|.+\|$/.test(lines[tj])) {
+        tRows.push(lines[tj].slice(1, -1));
+        tj++;
+      }
+      if (tRows.length >= 2) nodes.push(buildTable(tRows, ctx));
+      i = tj;
+      continue;
+    }
+
+    m = line.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
+    if (m) {
+      flushPara();
+
+      const lIndent = m[1].length;
+      const marker = m[2];
+      const lContent = m[3];
+      const taskMatch = lContent.match(/^\[([ x])\]\s+(.*)/);
+      const checked = taskMatch ? taskMatch[1] === 'x' : null;
+      const itemText = taskMatch ? taskMatch[2] : lContent;
+      const ordered = /^\d+\.$/.test(marker);
+      const level = Math.floor(lIndent / 2);
+
+      const item = {
+        type: 'listItem',
+        checked,
+        inline: parseInline(itemText, ctx),
+        list: null
+      };
+
+      if (!listStack.length) {
+        const rootList = {
+          type: 'list',
+          ordered,
+          start: ordered ? parseInt(marker, 10) : null,
+          task: checked !== null,
+          items: [item]
+        };
+        listStack.push({ node: rootList, level });
+        nodes.push(rootList);
+      } else {
+        while (listStack.length && listStack[listStack.length - 1].level > level) {
+          listStack.pop();
+        }
+        const top = listStack[listStack.length - 1];
+        if (!top || top.level < level) {
+          const newList = {
+            type: 'list',
+            ordered,
+            start: ordered ? parseInt(marker, 10) : null,
+            task: checked !== null,
+            items: [item]
+          };
+          listStack.push({ node: newList, level });
+          if (top) {
+            const parentItem = top.node.items[top.node.items.length - 1];
+            if (parentItem) parentItem.list = newList;
+          } else {
+            nodes.push(newList);
+          }
+        } else {
+          top.node.items.push(item);
+        }
+      }
+      i++;
+      continue;
+    }
+
+    m = line.match(/^([^:]+):\s+(.*)/);
+    if (m && i + 1 < lines.length && /^:\s+/.test(lines[i + 1])) {
+      endAll();
+      const term = parseInline(m[1], ctx);
+      const defs = [];
+      i++;
+      while (i < lines.length && /^:\s+/.test(lines[i])) {
+        defs.push(parseInline(lines[i].replace(/^:\s+/, ''), ctx));
+        i++;
+      }
+      while (i < lines.length && lines[i].trim() === '') i++;
+      nodes.push({ type: 'definitionList', term, defs });
+      continue;
+    }
+
+    if (listStack.length) endList();
+    para.push(line);
+    i++;
+  }
+
+  endAll();
+  return { type: 'root', children: nodes };
+}
+
+function buildContainer(type, plus, title, raw, ctx) {
+  if (type === 'tip' || type === 'info' || type === 'war' || type === 'danger') {
+    return {
+      type: 'callout',
+      variant: type,
+      title,
+      children: parseBlocks(raw, ctx).children
+    };
+  }
+
+  if (type === 'detail') {
+    return {
+      type: 'detail',
+      open: plus,
+      title: title || '详情',
+      children: parseBlocks(raw, ctx).children
+    };
+  }
+
+  if (type === 'link') {
+    const fields = Object.create(null);
+    raw.split('\n').forEach((l) => {
+      const idx = l.indexOf(':');
+      if (idx > 0) {
+        const k = l.slice(0, idx).trim().toLowerCase();
+        const v = l.slice(idx + 1).trim();
+        if (k && v) fields[k] = v;
+      }
+    });
+
+    if (!fields.url) {
+      return { type: 'fragment', children: parseBlocks(raw, ctx).children };
+    }
+
+    return {
+      type: 'linkCard',
+      big: title.toLowerCase() === 'big',
+      fields
+    };
+  }
+
+  return { type: 'fragment', children: parseBlocks(raw, ctx).children };
+}
+
+function buildTable(rows, ctx) {
+  const headers = rows[0].split('|').map((c) => c.trim());
+  const alignRow = rows[1].split('|').map((c) => c.trim());
+  const hasAlign = alignRow.every((c) => /^:?-+:?$/.test(c));
+  const dataStart = hasAlign ? 2 : 1;
+
+  const aligns = hasAlign
+    ? alignRow.map((c) => (/^:-+:$/.test(c) ? 'center' : /^-+:$/.test(c) ? 'right' : 'left'))
+    : headers.map(() => 'left');
+
+  const headerCells = headers.map((c, idx) => ({
+    align: aligns[idx],
+    children: parseInline(c, ctx)
+  }));
+
+  const bodyRows = [];
+  for (let r = dataStart; r < rows.length; r++) {
+    const cells = rows[r].split('|').map((c) => c.trim());
+    const row = [];
+    for (let ci = 0; ci < headers.length; ci++) {
+      row.push({
+        align: aligns[ci],
+        children: parseInline(ci < cells.length ? cells[ci] : '', ctx)
+      });
+    }
+    bodyRows.push(row);
+  }
+
+  return { type: 'table', headers: headerCells, rows: bodyRows };
+}
+
+const CALLOUT_MAP = {
+  tip:    { icon: 'fa-lightbulb',            cls: 'md-callout-tip',    label: 'TIP' },
+  info:   { icon: 'fa-circle-info',          cls: 'md-callout-info',   label: 'INFO' },
+  war:    { icon: 'fa-triangle-exclamation', cls: 'md-callout-war',    label: 'WARNING' },
+  danger: { icon: 'fa-circle-exclamation',   cls: 'md-callout-danger', label: 'DANGER' }
+};
+
+function imageStyle(node) {
+  if (node.width && node.height) return ' style="width:' + node.width + 'px;height:' + node.height + 'px;"';
+  if (node.width) return ' style="width:' + node.width + 'px;height:auto;"';
+  if (node.height) return ' style="height:' + node.height + 'px;width:auto;"';
+  return '';
+}
+
+const RENDERERS = {
+
+  root(node, ctx) {
+    return renderNodes(node.children, ctx);
+  },
+
+  fragment(node, ctx) {
+    if (node.raw !== undefined) return node.raw;
+    return renderNodes(node.children, ctx);
+  },
+
+  paragraph(node, ctx) {
+    return '<p>' + renderNodes(node.children, ctx) + '</p>\n';
+  },
+
+  'break'() { return '<br>'; },
+
+  hardBreak() { return '<br>'; },
+
+  heading(node, ctx) {
+    const tag = 'h' + node.depth;
+    return '<' + tag + '>' + renderNodes(node.children, ctx) + '</' + tag + '>\n';
+  },
+
+  thematicBreak() { return '<hr />\n'; },
+
+  blockquote(node, ctx) {
+    return '<blockquote>' + renderNodes(node.children, ctx) + '</blockquote>\n';
+  },
+
+  codeBlock(node) {
+    return '<pre><code class="language-' + escapeHtml(node.lang || 'text') + '">' + escapeHtml(node.code) + '</code></pre>\n';
+  },
+
+  list(node, ctx) {
+    const tag = node.ordered ? 'ol' : 'ul';
+    const cls = node.task ? ' class="task-list"' : '';
+    const start = (node.ordered && node.start !== null && node.start !== 1)
+      ? ' start="' + node.start + '"'
+      : '';
+    const items = [];
+    for (let i = 0; i < node.items.length; i++) items.push(renderNode(node.items[i], ctx));
+    return '<' + tag + cls + start + '>\n' + items.join('\n') + '\n</' + tag + '>\n';
+  },
+
+  listItem(node, ctx) {
+    const attr = node.checked !== null
+      ? ' data-checked="' + (node.checked ? 'true' : 'false') + '"'
+      : '';
+    let html = '<li' + attr + '>' + renderNodes(node.inline, ctx);
+    if (node.list) html += '\n' + renderNode(node.list, ctx);
+    html += '</li>';
+    return html;
+  },
+
+  table(node, ctx) {
+    let html = '<table><thead><tr>';
+    for (let i = 0; i < node.headers.length; i++) {
+      html += '<th style="text-align:' + node.headers[i].align + ';">' + renderNodes(node.headers[i].children, ctx) + '</th>';
+    }
+    html += '</tr></thead><tbody>';
+    for (let r = 0; r < node.rows.length; r++) {
+      html += '<tr>';
+      for (let c = 0; c < node.rows[r].length; c++) {
+        html += '<td style="text-align:' + node.rows[r][c].align + ';">' + renderNodes(node.rows[r][c].children, ctx) + '</td>';
+      }
+      html += '</tr>';
+    }
+    html += '</tbody></table>\n';
+    return html;
+  },
+
+  definitionList(node, ctx) {
+    let html = '<dl><dt>' + renderNodes(node.term, ctx) + '</dt>';
+    for (let i = 0; i < node.defs.length; i++) {
+      html += '<dd>' + renderNodes(node.defs[i], ctx) + '</dd>';
+    }
+    html += '</dl>\n';
+    return html;
+  },
+
+  callout(node, ctx) {
+    const cfg = CALLOUT_MAP[node.variant] || CALLOUT_MAP.info;
+    const title = node.title || cfg.label;
+    return '<div class="md-callout ' + cfg.cls + '">' +
+      '<div class="md-callout-head"><i class="fas ' + cfg.icon + '"></i>' + escapeHtml(title) + '</div>' +
+      '<div class="md-callout-body">' + renderNodes(node.children, ctx) + '</div>' +
+      '</div>\n';
+  },
+
+  detail(node, ctx) {
+    return '<details class="md-detail"' + (node.open ? ' open' : '') + '>' +
+      '<summary><i class="fas fa-chevron-right"></i>' + escapeHtml(node.title) + '</summary>' +
+      '<div class="md-detail-body">' + renderNodes(node.children, ctx) + '</div>' +
+      '</details>\n';
+  },
+
+  linkCard(node) {
+    const f = node.fields;
+    const url = escapeHtml(f.url);
+    const website = f.website || '';
+    const content = f.content || '';
+    const author = f.author || '';
+    const img = f.img || '';
+
+    if (node.big) {
+      return '<a class="md-link big" href="' + url + '" target="_blank" rel="noopener">' +
+        (img ? '<img class="md-link-cover" src="' + escapeHtml(img) + '" alt="" loading="lazy">' : '') +
+        '<div class="md-link-inner">' +
+          (website ? '<div class="md-link-website">' + escapeHtml(website) + '</div>' : '') +
+          (content ? '<div class="md-link-content">' + escapeHtml(content) + '</div>' : '') +
+          (author ? '<div class="md-link-author"><i class="fas fa-user"></i>' + escapeHtml(author) + '</div>' : '') +
+        '</div></a>\n';
+    }
+
+    return '<a class="md-link" href="' + url + '" target="_blank" rel="noopener">' +
+      (img ? '<img class="md-link-thumb" src="' + escapeHtml(img) + '" alt="" loading="lazy">' : '') +
+      '<div class="md-link-body">' +
+        (website ? '<div class="md-link-website">' + escapeHtml(website) + '</div>' : '') +
+        '<div class="md-link-content">' + escapeHtml(content || f.url) + '</div>' +
+        (author ? '<div class="md-link-author"><i class="fas fa-user"></i>' + escapeHtml(author) + '</div>' : '') +
+      '</div></a>\n';
+  },
+
+  text(node) {
+    return escapeHtml(node.value);
+  },
+
+  html(node) {
+    return node.value;
+  },
+
+  safeTag(node, ctx) {
+    return '<' + node.tag + node.attrs + '>' +
+      renderNodes(node.children, ctx) +
+      '</' + node.tag + '>';
+  },
+
+  code(node) {
+    return '<code>' + escapeHtml(node.value) + '</code>';
+  },
+
+  strong(node, ctx) {
+    return '<strong>' + renderNodes(node.children, ctx) + '</strong>';
+  },
+
+  emphasis(node, ctx) {
+    return '<em>' + renderNodes(node.children, ctx) + '</em>';
+  },
+
+  delete(node, ctx) {
+    return '<del>' + renderNodes(node.children, ctx) + '</del>';
+  },
+
+  link(node, ctx) {
+    const attrs = node.autolink ? '' : ' target="_blank" rel="noopener"';
+    return '<a href="' + node.href + '"' + attrs + '>' + renderNodes(node.children, ctx) + '</a>';
+  },
+
+  image(node) {
+    return '<img src="' + escapeHtml(node.src) + '" alt="' + escapeHtml(node.alt) + '" loading="lazy"' +
+      imageStyle(node) +
+      (node.title ? ' title="' + escapeHtml(node.title) + '"' : '') +
+      ' />';
+  },
+
+  video(node, ctx) {
+    const style = imageStyle(node);
+    const altHtml = (node.alt && node.alt.length)
+      ? '<div class="video-alt-text">' + renderNodes(node.alt, ctx) + '</div>'
+      : '';
+
+    let m = node.src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (m) {
+      return '<div class="video-placeholder"><iframe src="https://www.youtube.com/embed/' + m[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + altHtml + '</div>';
+    }
+
+    m = node.src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
+    if (m) {
+      return '<div class="video-placeholder"><iframe src="https://player.bilibili.com/player.html?bvid=' + m[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + altHtml + '</div>';
+    }
+
+    return '<div class="video-placeholder"><video src="' + escapeHtml(node.src) + '" controls' + style + '></video>' + altHtml + '</div>';
+  },
+
+  audio(node) {
+    const t = node.title ? ' title="' + escapeHtml(node.title) + '"' : '';
+    const c = node.cover ? ' data-cover="' + escapeHtml(node.cover) + '"' : '';
+    return '<audio controls src="' + escapeHtml(node.src) + '"' + t + c + ' preload="metadata"></audio>';
+  },
+
+  footnoteRef(node) {
+    return '<sup class="footnote-ref"><a data-footnote-ref="' + node.index + '">' + node.index + '</a></sup>';
+  },
+
+  hei(node, ctx) {
+    return '<span class="md-hei">' + renderNodes(node.children, ctx) + '</span>';
+  }
+};
+
+function renderNode(node, ctx) {
+  if (!node) return '';
+  const fn = RENDERERS[node.type];
+  return fn ? fn(node, ctx) : '';
+}
+
+function renderNodes(nodes, ctx) {
+  if (!nodes || !nodes.length) return '';
+  let out = '';
+  for (let i = 0; i < nodes.length; i++) out += renderNode(nodes[i], ctx);
+  return out;
+}
+
+
 function renderMarkdown(md) {
   if (!md) return '';
 
-  const escMap = {};
-  let escCounter = 0;
-  md = md.replace(/\\([\\`*_{}\[\]()#+\-.!|$])/g, (match, char) => {
-    const key = '\uE000' + (escCounter++) + '\uE001';
-    escMap[key] = char;
-    return key;
-  });
+  const ctx = createContext();
+  const ast = parseBlocks(md, ctx);
+  let html = renderNode(ast, ctx);
 
-  const safeTags = ['u', 'kbd', 'mark', 's', 'sub', 'sup', 'ins', 'del', 'b', 'i', 'em', 'strong', 'code', 'span', 'br', 'hr'];
-  const footnotes = {};
-  let footnoteCounter = 0;
-  const footnoteIdMap = {};
-
-  function getFootnoteId(key) {
-    if (!footnoteIdMap[key]) {
-      footnoteCounter++;
-      footnoteIdMap[key] = footnoteCounter;
-    }
-    return footnoteIdMap[key];
-  }
-
-  function restoreEscapes(text) {
-    let r = text;
-    for (const [key, char] of Object.entries(escMap)) {
-      r = r.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), char);
-    }
-    return r;
-  }
-
-  function renderInline(text) {
-    let html = text;
-    html = html.replace(/<([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s<>]+)>/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
-
-    const tagMap = {};
-    let tagIndex = 0;
-    html = html.replace(/<[^>]+>/g, (match) => {
-      const key = '\uE002' + (tagIndex++) + '\uE003';
-      tagMap[key] = match;
-      return key;
-    });
-
-    html = html.replace(/<([a-zA-Z][a-zA-Z0-9]*)\b([^>]*)>(.*?)<\/\1>/gs, (match, tag, attrs, content) => {
-      if (safeTags.includes(tag.toLowerCase())) {
-        return '<' + tag + attrs + '>' + renderInline(content) + '</' + tag + '>';
-      }
-      return match;
-    });
-
-    html = html.replace(/<br\s*\/?>/gi, '<br>');
-
-    const inlineCodes = [];
-    html = html.replace(/`([^`]+)`/g, (match, code) => {
-      const key = '\uE004' + inlineCodes.length + '\uE005';
-      inlineCodes.push(code);
-      return key;
-    });
-
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-    html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
-
-    html = html.replace(/!\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,
-      (match, alt, src, title, w, h) => {
-        let style = '';
-        if (w && h) style = ' style="width:' + w + 'px;height:' + h + 'px;"';
-        else if (w) style = ' style="width:' + w + 'px;height:auto;"';
-        else if (h) style = ' style="height:' + h + 'px;width:auto;"';
-        const titleAttr = title ? ' title="' + escapeHtml(title) + '"' : '';
-        return '<img src="' + escapeHtml(src) + '" alt="' + escapeHtml(alt) + '" loading="lazy"' + style + titleAttr + ' />';
-      });
-
-    html = html.replace(
-      /!video\[([^\]]*)\]\(([^)]*?)(?:\s+"([^"]*)")?(?:\s+=\s*(\d*)(?:x(\d+))?)?\)/g,
-      (match, desc, src, title, w, h) => {
-        let style = '';
-        if (w && h) style = ' style="width:' + w + 'px;height:' + h + 'px;"';
-        else if (w) style = ' style="width:' + w + 'px;height:auto;"';
-        else if (h) style = ' style="height:' + h + 'px;width:auto;"';
-        const descHtml = desc ? '<div class="video-alt-text">' + renderInline(desc) + '</div>' : '';
-        const yt = src.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-        if (yt) {
-          return '<div class="video-placeholder"><iframe src="https://www.youtube.com/embed/' + yt[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
-        }
-        const bl = src.match(/(?:bilibili\.com\/video\/)(BV[a-zA-Z0-9]+)/);
-        if (bl) {
-          return '<div class="video-placeholder"><iframe src="https://player.bilibili.com/player.html?bvid=' + bl[1] + '" frameborder="0" allowfullscreen' + style + '></iframe>' + descHtml + '</div>';
-        }
-        return '<div class="video-placeholder"><video src="' + escapeHtml(src) + '" controls' + style + '></video>' + descHtml + '</div>';
-      });
-
-    html = html.replace(/!audio\[([^\]]*)\]\(([^)]*?)(?:\s+=\s*([^)]+))?\)/g, (match, title, src, cover) => {
-      const t = title ? ' title="' + escapeHtml(title) + '"' : '';
-      const c = cover ? ' data-cover="' + escapeHtml(cover.trim()) + '"' : '';
-      return '<audio controls src="' + escapeHtml(src.trim()) + '"' + t + c + ' preload="metadata"></audio>';
-    });
-
-    html = html.replace(/\[([^\]]*)\]\(([^)]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-
-    html = html.replace(/\[\^([^\]]+)\]/g, (match, key) => {
-      const id = getFootnoteId(key);
-      return '<sup class="footnote-ref"><a data-footnote-ref="' + id + '">' + id + '</a></sup>';
-    });
-
-    html = html.replace(/\uE004(\d+)\uE005/g, (match, idx) => '<code>' + escapeHtml(inlineCodes[+idx]) + '</code>');
-
-    html = restoreEscapes(html);
-    for (const key in tagMap) {
-      html = html.replace(new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), tagMap[key]);
-    }
-    return html;
-  }
-
-  function renderBlock(content) {
-    if (!content) return '';
-    const lines = content.split('\n');
-    let result = '';
-    let inList = false;
-    let listStack = [];
-    let paragraph = [];
-
-    function flushList() {
-      if (!inList) return;
-      let html = '';
-      for (let i = listStack.length - 1; i >= 0; i--) {
-        const list = listStack[i];
-        const tag = list.type === 'ol' ? 'ol' : 'ul';
-        const cls = list.type === 'task' ? ' class="task-list"' : '';
-        const startAttr = (list.type === 'ol' && list.start !== null && list.start !== 1) ? ' start="' + list.start + '"' : '';
-        html = '<' + tag + cls + startAttr + '>\n' + list.items.join('\n') + '\n</' + tag + '>\n' + html;
-      }
-      result += html;
-      inList = false;
-      listStack = [];
-    }
-
-    function flushParagraph() {
-      if (paragraph.length > 0) {
-        result += '<p>' + paragraph.map(line => renderInline(line)).join('<br>') + '</p>\n';
-        paragraph = [];
-      }
-    }
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-
-      if (line.trim() === '') {
-        flushList();
-        flushParagraph();
-        result += '\n';
-        continue;
-      }
-
-      if (/^CODEBLOCK_\d+$/.test(line.trim()) || /^BODYBLOCK_\d+$/.test(line.trim())) {
-        flushList();
-        flushParagraph();
-        result += line.trim() + '\n';
-        continue;
-      }
-
-      const footnoteDefMatch = line.match(/^\[\^([^\]]+)\]:\s*(.*)/);
-      if (footnoteDefMatch) {
-        flushList();
-        flushParagraph();
-        const fnId = getFootnoteId(footnoteDefMatch[1]);
-        footnotes[fnId] = { key: footnoteDefMatch[1], content: footnoteDefMatch[2] };
-        continue;
-      }
-
-      const blockquoteMatch = line.match(/^(>+)\s?(.*)/);
-      if (blockquoteMatch) {
-        flushList();
-        flushParagraph();
-        const quoteLines = [];
-        let j = i;
-        while (j < lines.length) {
-          const qm = lines[j].match(/^((?:>\s*)+)(.*)/);
-          if (qm) {
-            quoteLines.push({ level: (qm[1].match(/>/g) || []).length, content: qm[2] });
-            j++;
-          } else if (lines[j].trim() === '') break;
-          else break;
-        }
-        i = j - 1;
-
-        function buildLevel(startIdx, currentLevel) {
-          let html = '';
-          let k = startIdx;
-          while (k < quoteLines.length) {
-            if (quoteLines[k].level < currentLevel) break;
-            if (quoteLines[k].level === currentLevel) {
-              const parts = [];
-              while (k < quoteLines.length && quoteLines[k].level === currentLevel) {
-                parts.push(renderInline(quoteLines[k].content));
-                k++;
-              }
-              html += parts.join('<br>');
-            } else if (quoteLines[k].level > currentLevel) {
-              const nested = buildLevel(k, quoteLines[k].level);
-              html += nested.html;
-              k = nested.newIndex;
-            }
-          }
-          return { html: '<blockquote>' + html + '</blockquote>', newIndex: k };
-        }
-
-        const minLevel = Math.min(...quoteLines.map(q => q.level));
-        result += buildLevel(0, minLevel).html + '\n';
-        continue;
-      }
-
-      const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
-      if (headingMatch) {
-        flushList();
-        flushParagraph();
-        result += '<h' + headingMatch[1].length + '>' + renderInline(headingMatch[2]) + '</h' + headingMatch[1].length + '>\n';
-        continue;
-      }
-
-      if (/^---$/.test(line.trim()) || /^\*\*\*$/.test(line.trim()) || /^___$/.test(line.trim())) {
-        flushList();
-        flushParagraph();
-        result += '<hr />\n';
-        continue;
-      }
-
-      const tableLineMatch = line.match(/^\|(.+)\|$/);
-      if (tableLineMatch) {
-        flushList();
-        flushParagraph();
-        const tableRows = [];
-        let j = i;
-        while (j < lines.length) {
-          const tmatch = lines[j].match(/^\|(.+)\|$/);
-          if (tmatch) { tableRows.push(tmatch[1]); j++; }
-          else break;
-        }
-        i = j - 1;
-        if (tableRows.length >= 2) {
-          const headerCells = tableRows[0].split('|').map(c => c.trim());
-          const alignRow = tableRows[1].split('|').map(c => c.trim());
-          const isAlignRow = alignRow.every(c => /^:?-+:?$/.test(c));
-          const dataStart = isAlignRow ? 2 : 1;
-          const alignments = isAlignRow
-            ? alignRow.map(c => /^:-+:$/.test(c) ? 'center' : /^-+:$/.test(c) ? 'right' : 'left')
-            : headerCells.map(() => 'left');
-
-          let tableHtml = '<table><thead><tr>';
-          headerCells.forEach((cell, ci) => {
-            tableHtml += '<th style="text-align:' + alignments[ci] + ';">' + renderInline(cell) + '</th>';
-          });
-          tableHtml += '</tr></thead><tbody>';
-          for (let ri = dataStart; ri < tableRows.length; ri++) {
-            const rowCells = tableRows[ri].split('|').map(c => c.trim());
-            tableHtml += '<tr>';
-            for (let rci = 0; rci < headerCells.length; rci++) {
-              const cell = rci < rowCells.length ? rowCells[rci] : '';
-              tableHtml += '<td style="text-align:' + alignments[rci] + ';">' + renderInline(cell) + '</td>';
-            }
-            tableHtml += '</tr>';
-          }
-          tableHtml += '</tbody></table>';
-          result += tableHtml + '\n';
-          continue;
-        }
-      }
-
-      const listMatch = line.match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
-      if (listMatch) {
-        flushParagraph();
-        const indent = listMatch[1].length;
-        const marker = listMatch[2];
-        const listContent = listMatch[3];
-        const isTask = listContent.match(/^\[([ x])\]\s+(.*)/);
-        const taskChecked = isTask ? isTask[1] === 'x' : false;
-        const taskContent = isTask ? isTask[2] : listContent;
-        const isOrdered = /^\d+\.$/.test(marker);
-        const listType = isOrdered ? 'ol' : (isTask ? 'task' : 'ul');
-        const currentLevel = Math.floor(indent / 2);
-
-        if (!inList) {
-          inList = true;
-          listStack = [{ type: listType, items: [], level: currentLevel, start: isOrdered ? parseInt(marker) : null }];
-        } else {
-          while (listStack.length > 0 && listStack[listStack.length - 1].level > currentLevel) {
-            const last = listStack.pop();
-            if (listStack.length > 0 && last.items.length > 0) {
-              listStack[listStack.length - 1].items.push(last.items.join(''));
-            }
-          }
-          if (listStack.length === 0 || listStack[listStack.length - 1].level < currentLevel) {
-            listStack.push({ type: listType, items: [], level: currentLevel, start: isOrdered ? parseInt(marker) : null });
-          }
-        }
-
-        const itemHtml = isTask
-          ? '<li data-checked="' + (taskChecked ? 'true' : 'false') + '">' + renderInline(taskContent) + '</li>'
-          : '<li>' + renderInline(listContent) + '</li>';
-        listStack[listStack.length - 1].items.push(itemHtml);
-
-        const subItems = [];
-        let k = i + 1;
-        while (k < lines.length) {
-          const nm = lines[k].match(/^(\s*)([-*+]|\d+\.)\s+(.*)/);
-          if (nm && parseInt(nm[1].length) > indent) {
-            const subContent = nm[3];
-            const subTask = subContent.match(/^\[([ x])\]\s+(.*)/);
-            subItems.push(subTask
-              ? '<li data-checked="' + (subTask[1] === 'x' ? 'true' : 'false') + '">' + renderInline(subTask[2]) + '</li>'
-              : '<li>' + renderInline(subContent) + '</li>');
-            k++;
-          } else break;
-        }
-
-        if (subItems.length > 0) {
-          const hasCheckbox = subItems.some(item => item.includes('data-checked'));
-          const subHtml = '<ul class="' + (hasCheckbox ? 'task-list' : '') + '">\n' + subItems.join('\n') + '\n</ul>';
-          const currentList = listStack[listStack.length - 1];
-          currentList.items[currentList.items.length - 1] = currentList.items[currentList.items.length - 1].replace(/<\/li>$/, subHtml + '</li>');
-        }
-        i = k - 1;
-        continue;
-      }
-
-      if (inList) flushList();
-
-      const dlMatch = line.match(/^([^:]+):\s+(.*)/);
-      if (dlMatch && i + 1 < lines.length && lines[i + 1].match(/^:\s+/)) {
-        flushParagraph();
-        const term = renderInline(dlMatch[1]);
-        const defs = [];
-        i++;
-        while (i < lines.length && lines[i].match(/^:\s+/)) {
-          defs.push(renderInline(lines[i].replace(/^:\s+/, '')));
-          i++;
-        }
-        while (i < lines.length && lines[i].trim() === '') i++;
-        result += '<dl><dt>' + term + '</dt>' + defs.map(d => '<dd>' + d + '</dd>').join('') + '</dl>\n';
-        continue;
-      }
-
-      paragraph.push(line);
-    }
-
-    if (inList) flushList();
-    flushParagraph();
-    return result;
-  }
-
-  const codeBlockRegex = /^(\s*)```(\w*)\s*\n([\s\S]*?)\1```/gm;
-  const codeBlocks = [];
-  let codeIndex = 0;
-  md = md.replace(codeBlockRegex, (match, indent, lang, code) => {
-    const id = 'CODEBLOCK_' + (codeIndex++);
-    codeBlocks.push({ id: id, lang: lang, code: code.replace(/^\n+|\n+$/g, '') });
-    return '\n\n' + id + '\n\n';
-  });
-
-  const bodyBlocks = [];
-
-  md = md.replace(/::hei[ \t]*\n([\s\S]*?)\n[ \t]*::(?!:)/g, (match, body) => {
-    const inner = body.replace(/\n/g, ' ').trim();
-    const id = 'BODYBLOCK_' + bodyBlocks.length;
-    bodyBlocks.push('<p><span class="md-hei">' + renderInline(inner) + '</span></p>');
-    return '\n\n' + id + '\n\n';
-  });
-
-  md = md.replace(/:::([a-z]+)(\+)?[ \t]*([^\n]*)\n([\s\S]*?)\n[ \t]*:::/g, (match, type, plus, title, body) => {
-    type = type.toLowerCase();
-    title = (title || '').trim();
-    let html = '';
-
-    if (type === 'tip' || type === 'info' || type === 'war' || type === 'danger') {
-      const map = {
-        tip: { i: 'fa-lightbulb', c: 'md-callout-tip', d: 'TIP' },
-        info: { i: 'fa-circle-info', c: 'md-callout-info', d: 'INFO' },
-        war: { i: 'fa-triangle-exclamation', c: 'md-callout-war', d: 'WARNING' },
-        danger: { i: 'fa-circle-exclamation', c: 'md-callout-danger', d: 'DANGER' }
-      };
-      const cfg = map[type];
-      const t = title || cfg.d;
-      html = '<div class="md-callout ' + cfg.c + '">' +
-        '<div class="md-callout-head"><i class="fas ' + cfg.i + '"></i>' + escapeHtml(t) + '</div>' +
-        '<div class="md-callout-body">' + renderBlock(body) + '</div>' +
+  if (ctx.footnoteCount > 0) {
+    let fh = '<div class="footnotes">';
+    for (let i = 1; i <= ctx.footnoteCount; i++) {
+      const def = ctx.footnoteDefs[i];
+      if (!def) continue;
+      fh += '<div class="footnote-def" id="footnote-def-' + i + '">' +
+        '<a class="footnote-back" data-footnote-back="' + i + '">↩</a> ' +
+        '<span class="footnote-number">[' + i + ']</span> ' +
+        renderNodes(parseInline(def.content, ctx), ctx) +
         '</div>';
-    } else if (type === 'detail') {
-      html = '<details class="md-detail"' + (plus ? ' open' : '') + '>' +
-        '<summary><i class="fas fa-chevron-right"></i>' + escapeHtml(title || '详情') + '</summary>' +
-        '<div class="md-detail-body">' + renderBlock(body) + '</div>' +
-        '</details>';
-    } else if (type === 'link') {
-      const fields = {};
-      body.split('\n').forEach(function (l) {
-        const idx = l.indexOf(':');
-        if (idx > 0) {
-          const k = l.slice(0, idx).trim().toLowerCase();
-          const v = l.slice(idx + 1).trim();
-          if (k && v) fields[k] = v;
-        }
-      });
-      if (!fields.url) return match;
-
-      const big = title.toLowerCase() === 'big';
-      const w = fields.website || '';
-      const ct = fields.content || '';
-      const au = fields.author || '';
-      const im = fields.img || '';
-      const u = escapeHtml(fields.url);
-
-      if (big) {
-        html = '<a class="md-link big" href="' + u + '" target="_blank" rel="noopener">' +
-          (im ? '<img class="md-link-cover" src="' + escapeHtml(im) + '" alt="" loading="lazy">' : '') +
-          '<div class="md-link-inner">' +
-          (w ? '<div class="md-link-website">' + escapeHtml(w) + '</div>' : '') +
-          (ct ? '<div class="md-link-content">' + escapeHtml(ct) + '</div>' : '') +
-          (au ? '<div class="md-link-author"><i class="fas fa-user"></i>' + escapeHtml(au) + '</div>' : '') +
-          '</div></a>';
-      } else {
-        html = '<a class="md-link" href="' + u + '" target="_blank" rel="noopener">' +
-          (im ? '<img class="md-link-thumb" src="' + escapeHtml(im) + '" alt="" loading="lazy">' : '') +
-          '<div class="md-link-body">' +
-          (w ? '<div class="md-link-website">' + escapeHtml(w) + '</div>' : '') +
-          '<div class="md-link-content">' + escapeHtml(ct || fields.url) + '</div>' +
-          (au ? '<div class="md-link-author"><i class="fas fa-user"></i>' + escapeHtml(au) + '</div>' : '') +
-          '</div></a>';
-      }
-    } else {
-      return match;
     }
-
-    const id = 'BODYBLOCK_' + bodyBlocks.length;
-    bodyBlocks.push(html);
-    return '\n\n' + id + '\n\n';
-  });
-
-  let html = renderBlock(md);
-
-  codeBlocks.forEach((block) => {
-    const codeHtml = escapeHtml(block.code);
-    const blockHtml = '<pre><code class="language-' + escapeHtml(block.lang || 'text') + '">' + codeHtml + '</code></pre>';
-    html = html.split(block.id).join(blockHtml);
-  });
-
-  bodyBlocks.forEach((content, i) => {
-    html = html.split('BODYBLOCK_' + i).join(content);
-  });
-
-  if (Object.keys(footnotes).length > 0) {
-    let footnotesHtml = '<div class="footnotes">';
-    for (let fnId = 1; fnId <= footnoteCounter; fnId++) {
-      if (footnotes[fnId]) {
-        footnotesHtml += '<div class="footnote-def" id="footnote-def-' + fnId + '">';
-        footnotesHtml += '<a class="footnote-back" data-footnote-back="' + fnId + '">↩</a> ';
-        footnotesHtml += '<span class="footnote-number">[' + fnId + ']</span> ';
-        footnotesHtml += renderInline(footnotes[fnId].content);
-        footnotesHtml += '</div>';
-      }
-    }
-    footnotesHtml += '</div>';
-    html += footnotesHtml;
+    fh += '</div>';
+    html += fh;
   }
 
   return html.replace(/\n{3,}/g, '\n\n');

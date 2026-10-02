@@ -577,33 +577,53 @@
         var PAGE_SIZE = 10;
         function stripExtendedSyntax(md) {
             if (!md) return '';
-            md = md.replace(/^[ \t]*:::[ \t]*link(?:[ \t]+big)?[ \t]*$[\s\S]*?^[ \t]*:::[ \t]*$/gm, '');
+            var lines = md.split('\n'), out = [], skipDepth = 0, inHei = false;
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                var m = line.match(/^[ \t]*:::([a-z]+)/);
+                if (skipDepth > 0) {
+                    if (m) skipDepth++;
+                    else if (/^[ \t]*:::[ \t]*$/.test(line)) skipDepth--;
+                    continue;
+                }
+                if (m && (m[1] === 'chat' || m[1] === 'users' || m[1] === 'link')) { skipDepth = 1; continue; }
+                if (/^[ \t]*::hei[ \t]*$/.test(line)) { inHei = true; continue; }
+                if (inHei && /^[ \t]*::[ \t]*$/.test(line)) { inHei = false; continue; }
+                out.push(line);
+            }
+            md = out.join('\n');
             md = md.replace(/^[ \t]*:::[a-z]+\+?[^\n]*$/gm, '');
             md = md.replace(/^[ \t]*:::[ \t]*$/gm, '');
-            md = md.replace(/^[ \t]*::hei[ \t]*$/gm, '');
-            md = md.replace(/^[ \t]*::[ \t]*$/gm, '');
+            md = md.replace(/::hei[ \t]+([\s\S]*?)[ \t]*::(?!:)/g, '$1');
+            md = md.replace(/```[\s\S]*?```/g, '');
+            md = md.replace(/`([^`]+)`/g, '$1');
+            md = md.replace(/!video\[[^\]]*\]\([^)]*\)/g, '');
+            md = md.replace(/!audio\[[^\]]*\]\([^)]*\)/g, '');
+            md = md.replace(/!\[[^\]]*\]\([^)]*\)/g, '');
+            md = md.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+            md = md.replace(/^\[\^[^\]]+\]:\s*.*$/gm, '');
+            md = md.replace(/\[\^[^\]]+\]/g, '');
+            md = md.replace(/^[ \t]*\[\[toc\]\][ \t]*$/gim, '');
+            md = md.replace(/==([^=]+)==/g, '$1');
+            md = md.replace(/\*\*(.*?)\*\*/g, '$1');
+            md = md.replace(/\*([^*]+)\*/g, '$1');
+            md = md.replace(/~~(.*?)~~/g, '$1');
+            md = md.replace(/\^([^\^]+)\^/g, '$1');
+            md = md.replace(/~([^~]+)~/g, '$1');
+            md = md.replace(/^#{1,6}\s+/gm, '');
+            md = md.replace(/^\s*[-*+]\s+\[[ xX]\]\s+/gm, '');
+            md = md.replace(/^\s*[-*+]\s+/gm, '');
+            md = md.replace(/^\s*\d+\.\s+/gm, '');
+            md = md.replace(/^(>[ \t]*)+/gm, '');
+            md = md.replace(/^[ \t]*(-{3,}|\*{3,}|_{3,})[ \t]*$/gm, '');
+            md = md.replace(/^[ \t]*\|[\s\-:|]+\|[ \t]*$/gm, '');
+            md = md.replace(/^[ \t]*\|(.+)\|[ \t]*$/gm, function(_, c) { return c.replace(/\|/g, ' '); });
+            md = md.replace(/^:\s+/gm, '');
             return md;
         }
         function countWords(markdown) {
             if (!markdown) return 0;
-            var text = stripExtendedSyntax(markdown).replace(/```[\s\S]*?```/g, '')
-                .replace(/`[^`]+`/g, '')
-                .replace(/!video\[[^\]]*\]\([^)]*\)/g, '')
-                .replace(/!audio\[[^\]]*\]\([^)]*\)/g, '')
-                .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
-                .replace(/\*\*(.*?)\*\*/g, '$1')
-                .replace(/\*([^*]+)\*/g, '$1')
-                .replace(/~~(.*?)~~/g, '$1')
-                .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-                .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')
-                .replace(/^#{1,6}\s+/gm, '')
-                .replace(/^-\s+/gm, '')
-                .replace(/^\d+\.\s+/gm, '')
-                .replace(/^>\s+/gm, '')
-                .replace(/^---$/gm, '')
-                .replace(/\s+/g, ' ')
-                .trim();
-            return text.length;
+            return stripExtendedSyntax(markdown).replace(/\s+/g, ' ').trim().length;
         }
         function loadPageData(n) {
             if (pageCache[n]) return Promise.resolve(pageCache[n]);
@@ -720,23 +740,7 @@
         }
         function markdownToPlainText(md) {
             if (!md) return '';
-            var text = stripExtendedSyntax(md);
-            text = text.replace(/```[\s\S]*?```/g, '');
-            text = text.replace(/`([^`]+)`/g, '$1');
-            text = text.replace(/!video\[[^\]]*\]\([^)]*\)/g, '');
-            text = text.replace(/!audio\[[^\]]*\]\([^)]*\)/g, '');
-            text = text.replace(/!\[[^\]]*\]\([^)]*\)/g, '');
-            text = text.replace(/\*\*(.*?)\*\*/g, '$1');
-            text = text.replace(/\*([^*]+)\*/g, '$1');
-            text = text.replace(/~~(.*?)~~/g, '$1');
-            text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
-            text = text.replace(/^#{1,6}\s+/gm, '');
-            text = text.replace(/^-\s+/gm, '');
-            text = text.replace(/^\d+\.\s+/gm, '');
-            text = text.replace(/^>\s+/gm, '');
-            text = text.replace(/^---$/gm, '');
-            text = text.replace(/\n{3,}/g, '\n\n');
-            return text.trim();
+            return stripExtendedSyntax(md).replace(/\s+/g, ' ').trim();
         }
         function getPreviewAroundMatch(content, keyword, contextLength) {
             contextLength = contextLength || 80;
@@ -1472,24 +1476,7 @@
                 var articleCount = articles.length;
                 var totalWordCount = 0;
                 articles.forEach(function(item) {
-                    var content = item.content || '';
-                    var text = stripExtendedSyntax(content).replace(/```[\s\S]*?```/g, '')
-                        .replace(/`[^`]+`/g, '')
-                        .replace(/!video\[[^\]]*\]\([^)]*\)/g, '')
-                        .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
-                        .replace(/\*\*(.*?)\*\*/g, '$1')
-                        .replace(/\*([^*]+)\*/g, '$1')
-                        .replace(/~~(.*?)~~/g, '$1')
-                        .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-                        .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')
-                        .replace(/^#{1,6}\s+/gm, '')
-                        .replace(/^-\s+/gm, '')
-                        .replace(/^\d+\.\s+/gm, '')
-                        .replace(/^>\s+/gm, '')
-                        .replace(/^---$/gm, '')
-                        .replace(/\s+/g, ' ')
-                        .trim();
-                    totalWordCount += text.length;
+                    totalWordCount += stripExtendedSyntax(item.content || '').replace(/\s+/g, ' ').trim().length;
                 });
                 var shuoshuo = shuoshuoData.filter(function(item) {
                     return item.delete !== true;
@@ -1497,24 +1484,7 @@
                 var shuoshuoCount = shuoshuo.length;
                 var shuoshuoWordCount = 0;
                 shuoshuo.forEach(function(item) {
-                    var content = item.content || '';
-                    var text = stripExtendedSyntax(content).replace(/```[\s\S]*?```/g, '')
-                        .replace(/`[^`]+`/g, '')
-                        .replace(/!video\[[^\]]*\]\([^)]*\)/g, '')
-                        .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
-                        .replace(/\*\*(.*?)\*\*/g, '$1')
-                        .replace(/\*([^*]+)\*/g, '$1')
-                        .replace(/~~(.*?)~~/g, '$1')
-                        .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-                        .replace(/!\[([^\]]*)\]\([^)]*\)/g, '')
-                        .replace(/^#{1,6}\s+/gm, '')
-                        .replace(/^-\s+/gm, '')
-                        .replace(/^\d+\.\s+/gm, '')
-                        .replace(/^>\s+/gm, '')
-                        .replace(/^---$/gm, '')
-                        .replace(/\s+/g, ' ')
-                        .trim();
-                    shuoshuoWordCount += text.length;
+                    shuoshuoWordCount += stripExtendedSyntax(item.content || '').replace(/\s+/g, ' ').trim().length;
                 });
                 var stats = {
                     articleCount: articleCount,

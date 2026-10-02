@@ -591,7 +591,7 @@
                         imageUploader: function(file) {
                             return new Promise(function(resolve, reject) {
                                 var uploadFile = file;
-                                var shouldCompress = !['image/gif', 'image/svg+xml'].includes(file.type);
+                                var shouldCompress = !['image/gif','image/svg+xml'].includes(file.type);
 
                                 function doUpload(f) {
                                     var reader = new FileReader();
@@ -640,26 +640,56 @@
                 else walinePreloadPromise.then(doInit).catch(function() { walineInitializedInstances[index] = false; });
             }
 
+            function stripExtendedSyntax(md) {
+                if (!md) return '';
+                var lines = md.split('\n'), out = [], skipDepth = 0, inHei = false;
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i];
+                    var m = line.match(/^[ \t]*:::([a-z]+)/);
+                    if (skipDepth > 0) {
+                        if (m) skipDepth++;
+                        else if (/^[ \t]*:::[ \t]*$/.test(line)) skipDepth--;
+                        continue;
+                    }
+                    if (m && (m[1] === 'chat' || m[1] === 'users' || m[1] === 'link')) { skipDepth = 1; continue; }
+                    if (/^[ \t]*::hei[ \t]*$/.test(line)) { inHei = true; continue; }
+                    if (inHei && /^[ \t]*::[ \t]*$/.test(line)) { inHei = false; continue; }
+                    out.push(line);
+                }
+                md = out.join('\n');
+                md = md.replace(/^[ \t]*:::[a-z]+\+?[^\n]*$/gm, '');
+                md = md.replace(/^[ \t]*:::[ \t]*$/gm, '');
+                md = md.replace(/::hei[ \t]+([\s\S]*?)[ \t]*::(?!:)/g, '$1');
+                md = md.replace(/```[\s\S]*?```/g, '');
+                md = md.replace(/`([^`]+)`/g, '$1');
+                md = md.replace(/!video\[[^\]]*\]\([^)]*\)/g, '');
+                md = md.replace(/!audio\[[^\]]*\]\([^)]*\)/g, '');
+                md = md.replace(/!\[[^\]]*\]\([^)]*\)/g, '');
+                md = md.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+                md = md.replace(/^\[\^[^\]]+\]:\s*.*$/gm, '');
+                md = md.replace(/\[\^[^\]]+\]/g, '');
+                md = md.replace(/^[ \t]*\[\[toc\]\][ \t]*$/gim, '');
+                md = md.replace(/==([^=]+)==/g, '$1');
+                md = md.replace(/\*\*(.*?)\*\*/g, '$1');
+                md = md.replace(/\*([^*]+)\*/g, '$1');
+                md = md.replace(/~~(.*?)~~/g, '$1');
+                md = md.replace(/\^([^\^]+)\^/g, '$1');
+                md = md.replace(/~([^~]+)~/g, '$1');
+                md = md.replace(/^#{1,6}\s+/gm, '');
+                md = md.replace(/^\s*[-*+]\s+\[[ xX]\]\s+/gm, '');
+                md = md.replace(/^\s*[-*+]\s+/gm, '');
+                md = md.replace(/^\s*\d+\.\s+/gm, '');
+                md = md.replace(/^(>[ \t]*)+/gm, '');
+                md = md.replace(/^[ \t]*(-{3,}|\*{3,}|_{3,})[ \t]*$/gm, '');
+                md = md.replace(/^[ \t]*\|[\s\-:|]+\|[ \t]*$/gm, '');
+                md = md.replace(/^[ \t]*\|(.+)\|[ \t]*$/gm, function(_, c) { return c.replace(/\|/g, ' '); });
+                md = md.replace(/^:\s+/gm, '');
+                return md;
+            }
+
             function markdownToPlainText(md) {
                 if (!md) return '';
-                var text = md;
-                text = text.replace(/```[\s\S]*?```/g, '');
-                text = text.replace(/`([^`]+)`/g, '$1');
-                text = text.replace(/!video\[[^\]]*\]\([^)]*\)/g, '');
-                text = text.replace(/!audio\[[^\]]*\]\([^)]*\)/g, '');
-                text = text.replace(/!\[[^\]]*\]\([^)]*\)/g, '');
-                text = text.replace(/\*\*(.*?)\*\*/g, '$1');
-                text = text.replace(/\*([^*]+)\*/g, '$1');
-                text = text.replace(/~~(.*?)~~/g, '$1');
-                text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
-                text = text.replace(/^#{1,6}\s+/gm, '');
-                text = text.replace(/^-\s+/gm, '');
-                text = text.replace(/^\d+\.\s+/gm, '');
-                text = text.replace(/^>\s+/gm, '');
-                text = text.replace(/^---$/gm, '');
-                text = text.replace(/\n/g, ' ');
-                text = text.replace(/\s{2,}/g, ' ');
-                return text.trim();
+                return stripExtendedSyntax(md).replace(/\s+/g, ' ').trim();
             }
 
             function getPlainPreview(content, maxLength) {

@@ -1,13 +1,6 @@
-import { createRequire } from 'module';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const require = createRequire(import.meta.url);
 const { renderMarkdown } = require('../assets/markdown/markdown-node.js');
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const fs = require('fs/promises');
+const path = require('path');
 
 async function loadArticles() {
   const filePath = path.join(__dirname, '..', 'articles', 'all.json');
@@ -108,7 +101,7 @@ function buildJSONFeed(articles, baseUrl) {
   };
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -139,4 +132,4 @@ export default async function handler(req, res) {
     console.error('Feed 生成失败:', error.stack || error.message);
     res.status(500).send('Feed 生成失败');
   }
-}
+};

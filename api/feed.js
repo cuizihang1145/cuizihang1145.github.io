@@ -24,6 +24,38 @@ function escapeXml(unsafe) {
   });
 }
 
+function decodeHtmlEntities(text) {
+  if (!text) return '';
+  return text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, '&');
+}
+
+function summarizeHtml(html, maxLength = 150) {
+  if (!html) return '';
+  let text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  text = decodeHtmlEntities(text);
+  if (text.length > maxLength) {
+    text = text.slice(0, maxLength).trim() + '…';
+  }
+  return text;
+}
+
+function getSummary(item) {
+  const html = renderMarkdown(item.content || '');
+  return summarizeHtml(html);
+}
+
 function buildAtom(articles, baseUrl) {
   const now = new Date().toISOString();
   let entriesXml = '';
@@ -31,15 +63,14 @@ function buildAtom(articles, baseUrl) {
     const id = `${baseUrl}/article.html?id=${item.id}`;
     const title = escapeXml(item.title || '无标题');
     const updated = new Date(item.date).toISOString();
-    const rawHtml = renderMarkdown(item.content || '');
-    const htmlContent = escapeXml(rawHtml);
+    const summary = escapeXml(getSummary(item));
     entriesXml += `
   <entry>
     <id>${id}</id>
     <title>${title}</title>
     <link href="${id}" rel="alternate" />
     <updated>${updated}</updated>
-    <content type="html">${htmlContent}</content>
+    <summary type="text">${summary}</summary>
   </entry>`;
   });
   return `<?xml version="1.0" encoding="UTF-8" ?>
@@ -63,14 +94,14 @@ function buildRSS(articles, baseUrl) {
     const title = escapeXml(item.title || '无标题');
     const link = `${baseUrl}/article.html?id=${item.id}`;
     const pubDate = new Date(item.date).toUTCString();
-    const description = renderMarkdown(item.content || '');
+    const description = escapeXml(getSummary(item));
     itemsXml += `
   <item>
     <title>${title}</title>
     <link>${link}</link>
     <guid>${link}</guid>
     <pubDate>${pubDate}</pubDate>
-    <description><![CDATA[${description}]]></description>
+    <description>${description}</description>
   </item>`;
   });
   return `<?xml version="1.0" encoding="UTF-8" ?>
@@ -89,13 +120,17 @@ function buildRSS(articles, baseUrl) {
 }
 
 function buildJSONFeed(articles, baseUrl) {
-  const items = articles.map(item => ({
-    id: `${baseUrl}/article.html?id=${item.id}`,
-    url: `${baseUrl}/article.html?id=${item.id}`,
-    title: item.title || '无标题',
-    date_published: new Date(item.date).toISOString(),
-    content_html: renderMarkdown(item.content || '')
-  }));
+  const items = articles.map(item => {
+    const summary = getSummary(item);
+    return {
+      id: `${baseUrl}/article.html?id=${item.id}`,
+      url: `${baseUrl}/article.html?id=${item.id}`,
+      title: item.title || '无标题',
+      date_published: new Date(item.date).toISOString(),
+      summary,
+      content_text: summary
+    };
+  });
   return {
     version: 'https://jsonfeed.org/version/1.1',
     title: 'ks的博客',

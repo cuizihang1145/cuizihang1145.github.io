@@ -68,5 +68,12 @@
     "desc": "爱健身，爱科技，爱生活",
     "logo": "https://www.fatxiaobai.top/proxy-api/public/file/avatar/avatar.jpg",
     "feed": ""
+  },
+  {
+    "name": "R6bandito 的笔记",
+    "url": "https://r6blog.online",
+    "desc": "嵌入式技术网站|AKB亡灵厨",
+    "logo": "https://r6blog.online/images/avatar.png",
+    "feed": "https://r6blog.online/atom.xml"
   }
 ]

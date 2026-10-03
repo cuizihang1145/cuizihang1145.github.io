@@ -107,7 +107,7 @@ module.exports = async function handler(req, res) {
   }
   try {
     const articles = await loadArticles();
-    const baseUrl = 'https://cuizi.top';
+    const baseUrl = 'https://www.cuizi.top';
     const type = req.query.type;
     if (type === 'atom') {
       const xml = buildAtom(articles, baseUrl);

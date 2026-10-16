@@ -11,6 +11,7 @@ const SITE = {
   icon: 'https://www.cuizi.top/favicon.ico'
 };
 
+const SUMMARY_LEN = 200;
 const CACHE_TTL = 60000;
 let _cache = { list: null, stamp: 0 };
 
@@ -46,6 +47,10 @@ function absolutize(html, base) {
 function pickCover(html) {
   const m = String(html).match(/<img[^>]+src=(["'])([^"']+)\1/i);
   return m ? m[2] : '';
+}
+
+function visibleLength(html) {
+  return String(html).replace(/<[^>]+>/g, '').replace(/\s+/g, '').length;
 }
 
 function truncateHtml(html, maxVisible) {
@@ -105,11 +110,14 @@ async function getArticles() {
       html = escapeXml(item.content || '');
     }
     html = absolutize(html, SITE.url);
+    const visible = visibleLength(html);
+    const isShort = visible <= SUMMARY_LEN;
     return Object.assign({}, item, {
       _html: html,
-      _summary: truncateHtml(html, 800),
+      _visible: visible,
+      _isShort: isShort,
+      _summary: isShort ? html : truncateHtml(html, SUMMARY_LEN),
       _cover: pickCover(html),
-      _length: html.replace(/<[^>]+>/g, '').length,
       _tagCount: Array.isArray(item.tags) ? item.tags.length : 0
     });
   });
@@ -147,7 +155,7 @@ function sortArticles(articles, key, order) {
         cmp = (Number(a.id) || 0) - (Number(b.id) || 0);
         break;
       case 'length':
-        cmp = (a._length || 0) - (b._length || 0);
+        cmp = (a._visible || 0) - (b._visible || 0);
         break;
       case 'tags':
         cmp = (a._tagCount || 0) - (b._tagCount || 0);
@@ -227,8 +235,12 @@ function buildAtom(articles, selfUrl, feedTitle, xsl) {
     if (Array.isArray(item.tags)) {
       for (const t of item.tags) entries += '\n    <category term="' + escapeXml(t) + '"/>';
     }
-    entries += '\n    <summary type="html">' + cdata(item._summary) + '</summary>';
-    entries += '\n    <content type="html">' + cdata(item._html) + '</content>';
+    if (item._isShort) {
+      entries += '\n    <content type="html">' + cdata(item._summary) + '</content>';
+    } else {
+      entries += '\n    <summary type="html">' + cdata(item._summary) + '</summary>';
+      entries += '\n    <content type="html">' + cdata(item._html) + '</content>';
+    }
     entries += '\n  </entry>';
   }
   return xmlHeader(xsl) +
@@ -260,8 +272,12 @@ function buildRSS(articles, selfUrl, feedTitle, xsl) {
       for (const t of item.tags) items += '\n    <category>' + escapeXml(t) + '</category>';
     }
     if (item._cover) items += '\n    <enclosure url="' + escapeXml(item._cover) + '" type="image/*" length="0"/>';
-    items += '\n    <description>' + cdata(item._summary) + '</description>';
-    items += '\n    <content:encoded>' + cdata(item._html) + '</content:encoded>';
+    if (item._isShort) {
+      items += '\n    <description>' + cdata(item._summary) + '</description>';
+    } else {
+      items += '\n    <description>' + cdata(item._summary) + '</description>';
+      items += '\n    <content:encoded>' + cdata(item._html) + '</content:encoded>';
+    }
     items += '\n  </item>';
   }
   return xmlHeader(xsl) +
@@ -285,8 +301,12 @@ function buildJSONFeed(articles, selfUrl, feedTitle) {
       date_published: new Date(item.date || Date.now()).toISOString(),
       authors: [{ name: SITE.author }]
     };
-    if (item._summary) entry.summary = item._summary;
-    entry.content_html = item._html;
+    if (item._isShort) {
+      entry.content_html = item._summary;
+    } else {
+      entry.summary = item._summary;
+      entry.content_html = item._html;
+    }
     if (item._cover) entry.image = item._cover;
     if (Array.isArray(item.tags)) entry.tags = item.tags.slice();
     return entry;

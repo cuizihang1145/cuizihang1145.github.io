@@ -2,13 +2,17 @@ const { renderMarkdown } = require('../assets/markdown/markdown-node.js');
 const fs = require('fs/promises');
 const path = require('path');
 
-async function loadArticles() {
-  const filePath = path.join(__dirname, '..', 'articles', 'all.json');
-  const raw = await fs.readFile(filePath, 'utf-8');
-  const data = JSON.parse(raw);
-  const list = Array.isArray(data.list) ? data.list : [];
-  return list.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-}
+const SITE = {
+  url: 'https://www.cuizi.top',
+  title: 'ks的博客',
+  subtitle: 'ks的个人博客。保持好奇，保持诚实。',
+  author: 'ks',
+  language: 'zh-CN',
+  icon: 'https://www.cuizi.top/favicon.ico'
+};
+
+const CACHE_TTL = 60000;
+let _cache = { list: null, stamp: 0 };
 
 function escapeXml(unsafe) {
   if (!unsafe) return '';
@@ -24,81 +28,287 @@ function escapeXml(unsafe) {
   });
 }
 
-function decodeHtmlEntities(text) {
-  if (!text) return '';
-  return text
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&apos;/g, "'")
-    .replace(/&amp;/g, '&');
+function cdata(text) {
+  if (text === null || text === undefined) return '<![CDATA[]]>';
+  return '<![CDATA[' + String(text).split(']]>').join(']]]]><![CDATA[>') + ']]>';
 }
 
-function summarizeHtml(html, maxLength = 150) {
+function absolutize(html, base) {
+  return String(html).replace(
+    /(\s(?:src|href|poster|data-src))=(["'])(?!https?:|\/\/|data:|mailto:|tel:|#|javascript:)([^"']*)\2/gi,
+    (m, attr, q, url) => {
+      const full = url.startsWith('/') ? base + url : base + '/' + url;
+      return attr + '=' + q + full + q;
+    }
+  );
+}
+
+function pickCover(html) {
+  const m = String(html).match(/<img[^>]+src=(["'])([^"']+)\1/i);
+  return m ? m[2] : '';
+}
+
+function truncateHtml(html, maxVisible) {
   if (!html) return '';
-  let text = html
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  text = decodeHtmlEntities(text);
-  if (text.length > maxLength) text = text.slice(0, maxLength).trim() + '…';
-  return text;
+  const VOID = /^(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/i;
+  const stack = [];
+  let visible = 0;
+  let out = '';
+  let i = 0;
+  const len = html.length;
+  while (i < len) {
+    if (html[i] === '<') {
+      const end = html.indexOf('>', i);
+      if (end === -1) break;
+      const tag = html.slice(i, end + 1);
+      const m = tag.match(/^<\s*(\/?)\s*([a-zA-Z][a-zA-Z0-9]*)/);
+      if (m) {
+        const isClose = !!m[1];
+        const name = m[2].toLowerCase();
+        if (isClose) {
+          for (let k = stack.length - 1; k >= 0; k--) {
+            if (stack[k] === name) { stack.splice(k, 1); break; }
+          }
+        } else if (!VOID.test(name) && !/\/\s*>$/.test(tag)) {
+          stack.push(name);
+        }
+      }
+      out += tag;
+      i = end + 1;
+    } else {
+      if (visible >= maxVisible) break;
+      out += html[i];
+      visible++;
+      i++;
+    }
+  }
+  while (stack.length) out += '</' + stack.pop() + '>';
+  return out + (i < len ? '…' : '');
 }
 
-function getSummary(item) {
-  return summarizeHtml(renderMarkdown(item.content || ''));
+async function loadArticles() {
+  const filePath = path.join(__dirname, '..', 'articles', 'all.json');
+  const raw = await fs.readFile(filePath, 'utf-8');
+  const data = JSON.parse(raw);
+  const list = Array.isArray(data.list) ? data.list : [];
+  return list.slice();
 }
 
-function buildAtom(articles, baseUrl) {
+async function getArticles() {
+  if (_cache.list && Date.now() - _cache.stamp < CACHE_TTL) return _cache.list;
+  const raw = await loadArticles();
+  const list = raw.map(item => {
+    let html;
+    try {
+      html = renderMarkdown(item.content || '');
+    } catch (e) {
+      html = escapeXml(item.content || '');
+    }
+    html = absolutize(html, SITE.url);
+    return Object.assign({}, item, {
+      _html: html,
+      _summary: truncateHtml(html, 800),
+      _cover: pickCover(html),
+      _length: html.replace(/<[^>]+>/g, '').length,
+      _tagCount: Array.isArray(item.tags) ? item.tags.length : 0
+    });
+  });
+  _cache = { list, stamp: Date.now() };
+  return list;
+}
+
+function filterArticles(articles, q) {
+  let list = articles;
+  if (q.tag) {
+    list = list.filter(a => Array.isArray(a.tags) && a.tags.indexOf(q.tag) >= 0);
+  }
+  if (q.date) {
+    list = list.filter(a => String(a.date || '').startsWith(q.date));
+  }
+  if (q.month) {
+    list = list.filter(a => String(a.date || '').startsWith(q.month));
+  }
+  if (q.year) {
+    list = list.filter(a => String(a.date || '').startsWith(q.year));
+  }
+  return list;
+}
+
+function sortArticles(articles, key, order) {
+  const dir = order === 'asc' ? 1 : -1;
+  const list = articles.slice();
+  list.sort((a, b) => {
+    let cmp = 0;
+    switch (key) {
+      case 'title':
+        cmp = String(a.title || '').localeCompare(String(b.title || ''), 'zh-Hans-CN');
+        break;
+      case 'id':
+        cmp = (Number(a.id) || 0) - (Number(b.id) || 0);
+        break;
+      case 'length':
+        cmp = (a._length || 0) - (b._length || 0);
+        break;
+      case 'tags':
+        cmp = (a._tagCount || 0) - (b._tagCount || 0);
+        break;
+      case 'date':
+      default:
+        cmp = String(a.date || '').localeCompare(String(b.date || ''));
+        break;
+    }
+    if (cmp === 0) {
+      cmp = (Number(a.id) || 0) - (Number(b.id) || 0);
+    }
+    return dir * cmp;
+  });
+  return list;
+}
+
+function paginate(articles, limit, offset) {
+  if (!limit && !offset) return articles;
+  const start = offset > 0 ? offset : 0;
+  if (limit > 0) return articles.slice(start, start + limit);
+  return articles.slice(start);
+}
+
+function buildSelfUrl(type, q) {
+  const params = ['type=' + encodeURIComponent(type)];
+  if (q.tag) params.push('tag=' + encodeURIComponent(q.tag));
+  if (q.year) params.push('year=' + encodeURIComponent(q.year));
+  if (q.month) params.push('month=' + encodeURIComponent(q.month));
+  if (q.date) params.push('date=' + encodeURIComponent(q.date));
+  if (q.sort !== 'date') params.push('sort=' + encodeURIComponent(q.sort));
+  if (q.order !== 'desc') params.push('order=' + encodeURIComponent(q.order));
+  if (q.limit > 0) params.push('limit=' + q.limit);
+  if (q.offset > 0) params.push('offset=' + q.offset);
+  return SITE.url + '/api/feed?' + params.join('&');
+}
+
+function buildFeedTitle(q) {
+  const parts = [SITE.title];
+  if (q.tag) parts.push('#' + q.tag);
+  if (q.date) parts.push(q.date);
+  else if (q.month) parts.push(q.month);
+  else if (q.year) parts.push(q.year);
+  if (q.sort === 'title') parts.push('按标题');
+  else if (q.sort === 'id') parts.push('按编号');
+  else if (q.sort === 'length') parts.push('按长度');
+  else if (q.sort === 'tags') parts.push('按标签数');
+  if (q.sort !== 'date') parts.push(q.order === 'asc' ? '升序' : '降序');
+  if (q.limit > 0) {
+    if (q.offset > 0) parts.push('第 ' + (Math.floor(q.offset / q.limit) + 1) + ' 页');
+    else parts.push('前 ' + q.limit + ' 篇');
+  }
+  return parts.join(' · ');
+}
+
+function buildAtom(articles, selfUrl, feedTitle) {
   const now = new Date().toISOString();
-  let entriesXml = '';
+  let entries = '';
   for (const item of articles) {
-    const id = baseUrl + '/article.html?id=' + item.id;
-    const title = escapeXml(item.title || '无标题');
+    const id = SITE.url + '/article.html?id=' + item.id;
     const updated = new Date(item.date || Date.now()).toISOString();
-    const summary = escapeXml(getSummary(item));
-    entriesXml += '\n  <entry>\n    <id>' + id + '</id>\n    <title>' + title + '</title>\n    <link href="' + id + '" rel="alternate" />\n    <updated>' + updated + '</updated>\n    <summary type="text">' + summary + '</summary>\n  </entry>';
+    entries += '\n  <entry>';
+    entries += '\n    <id>' + escapeXml(id) + '</id>';
+    entries += '\n    <title>' + escapeXml(item.title || '无标题') + '</title>';
+    entries += '\n    <link href="' + escapeXml(id) + '" rel="alternate" type="text/html"/>';
+    entries += '\n    <updated>' + updated + '</updated>';
+    entries += '\n    <published>' + updated + '</published>';
+    entries += '\n    <author><name>' + escapeXml(SITE.author) + '</name></author>';
+    if (item._cover) entries += '\n    <link href="' + escapeXml(item._cover) + '" rel="enclosure" type="image/*"/>';
+    if (Array.isArray(item.tags)) {
+      for (const t of item.tags) entries += '\n    <category term="' + escapeXml(t) + '"/>';
+    }
+    entries += '\n    <summary type="html">' + cdata(item._summary) + '</summary>';
+    entries += '\n    <content type="html">' + cdata(item._html) + '</content>';
+    entries += '\n  </entry>';
   }
-  return '<?xml version="1.0" encoding="UTF-8" ?>\n<?xml-stylesheet type="text/xsl" href="/assets/feed.xsl"?>\n<feed xmlns="http://www.w3.org/2005/Atom">\n  <id>' + baseUrl + '</id>\n  <title>ks的博客</title>\n  <subtitle>ks的个人博客。保持好奇，保持诚实。</subtitle>\n  <link href="' + baseUrl + '/atom.xml" rel="self" />\n  <link href="' + baseUrl + '" rel="alternate" />\n  <updated>' + now + '</updated>\n  <author><name>ks</name></author>' + entriesXml + '\n</feed>';
+  return '<?xml version="1.0" encoding="UTF-8" ?>\n' +
+    '<?xml-stylesheet type="text/xsl" href="/assets/feed.xsl"?>\n' +
+    '<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="' + SITE.language + '">\n' +
+    '  <id>' + escapeXml(selfUrl) + '</id>\n' +
+    '  <title>' + escapeXml(feedTitle) + '</title>\n' +
+    '  <subtitle>' + escapeXml(SITE.subtitle) + '</subtitle>\n' +
+    '  <link href="' + escapeXml(selfUrl) + '" rel="self" type="application/atom+xml"/>\n' +
+    '  <link href="' + escapeXml(SITE.url) + '" rel="alternate" type="text/html"/>\n' +
+    '  <updated>' + now + '</updated>\n' +
+    '  <icon>' + escapeXml(SITE.icon) + '</icon>\n' +
+    '  <author><name>' + escapeXml(SITE.author) + '</name></author>' +
+    entries + '\n</feed>';
 }
 
-function buildRSS(articles, baseUrl) {
+function buildRSS(articles, selfUrl, feedTitle) {
   const now = new Date().toUTCString();
-  let itemsXml = '';
+  let items = '';
   for (const item of articles) {
-    const title = escapeXml(item.title || '无标题');
-    const link = baseUrl + '/article.html?id=' + item.id;
+    const link = SITE.url + '/article.html?id=' + item.id;
     const pubDate = new Date(item.date || Date.now()).toUTCString();
-    const description = escapeXml(getSummary(item));
-    itemsXml += '\n  <item>\n    <title>' + title + '</title>\n    <link>' + link + '</link>\n    <guid>' + link + '</guid>\n    <pubDate>' + pubDate + '</pubDate>\n    <description>' + description + '</description>\n  </item>';
+    items += '\n  <item>';
+    items += '\n    <title>' + escapeXml(item.title || '无标题') + '</title>';
+    items += '\n    <link>' + escapeXml(link) + '</link>';
+    items += '\n    <guid isPermaLink="true">' + escapeXml(link) + '</guid>';
+    items += '\n    <pubDate>' + pubDate + '</pubDate>';
+    items += '\n    <author>' + escapeXml(SITE.author) + '</author>';
+    if (Array.isArray(item.tags)) {
+      for (const t of item.tags) items += '\n    <category>' + escapeXml(t) + '</category>';
+    }
+    if (item._cover) items += '\n    <enclosure url="' + escapeXml(item._cover) + '" type="image/*" length="0"/>';
+    items += '\n    <description>' + cdata(item._summary) + '</description>';
+    items += '\n    <content:encoded>' + cdata(item._html) + '</content:encoded>';
+    items += '\n  </item>';
   }
-  return '<?xml version="1.0" encoding="UTF-8" ?>\n<?xml-stylesheet type="text/xsl" href="/assets/feed.xsl"?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n  <channel>\n    <title>ks的博客</title>\n    <link>' + baseUrl + '</link>\n    <description>ks的个人博客。保持好奇，保持诚实。</description>\n    <language>zh-CN</language>\n    <lastBuildDate>' + now + '</lastBuildDate>\n    <atom:link href="' + baseUrl + '/rss.xml" rel="self" type="application/rss+xml" />' + itemsXml + '\n  </channel>\n</rss>';
+  return '<?xml version="1.0" encoding="UTF-8" ?>\n' +
+    '<?xml-stylesheet type="text/xsl" href="/assets/feed.xsl"?>\n' +
+    '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">\n' +
+    '  <channel>\n' +
+    '    <title>' + escapeXml(feedTitle) + '</title>\n' +
+    '    <link>' + escapeXml(SITE.url) + '</link>\n' +
+    '    <description>' + escapeXml(SITE.subtitle) + '</description>\n' +
+    '    <language>' + SITE.language + '</language>\n' +
+    '    <lastBuildDate>' + now + '</lastBuildDate>\n' +
+    '    <atom:link href="' + escapeXml(selfUrl) + '" rel="self" type="application/rss+xml"/>' +
+    items + '\n  </channel>\n</rss>';
 }
 
-function buildJSONFeed(articles, baseUrl) {
+function buildJSONFeed(articles, selfUrl, feedTitle) {
   const items = articles.map(item => {
-    const summary = getSummary(item);
-    return {
-      id: baseUrl + '/article.html?id=' + item.id,
-      url: baseUrl + '/article.html?id=' + item.id,
+    const entry = {
+      id: SITE.url + '/article.html?id=' + item.id,
+      url: SITE.url + '/article.html?id=' + item.id,
       title: item.title || '无标题',
       date_published: new Date(item.date || Date.now()).toISOString(),
-      summary: summary,
-      content_text: summary
+      authors: [{ name: SITE.author }]
     };
+    if (item._summary) entry.summary = item._summary;
+    entry.content_html = item._html;
+    if (item._cover) entry.image = item._cover;
+    if (Array.isArray(item.tags)) entry.tags = item.tags.slice();
+    return entry;
   });
   return {
     version: 'https://jsonfeed.org/version/1.1',
-    title: 'ks的博客',
-    home_page_url: baseUrl,
-    feed_url: baseUrl + '/feed.json',
-    description: 'ks的个人博客。保持好奇，保持诚实。',
-    items: items
+    title: feedTitle,
+    home_page_url: SITE.url,
+    feed_url: selfUrl,
+    description: SITE.subtitle,
+    language: SITE.language,
+    authors: [{ name: SITE.author }],
+    items
   };
+}
+
+function makeEtag(articles, type, selfUrl) {
+  const n = articles.length;
+  const first = articles[0] ? articles[0].date || '' : '';
+  const last = articles.length ? articles[articles.length - 1].date || '' : '';
+  return '"' + type + ':' + n + ':' + first + ':' + last + ':' + selfUrl + '"';
+}
+
+function pickValue(v) {
+  if (Array.isArray(v)) return v[0];
+  if (typeof v === 'string') return v;
+  return '';
 }
 
 module.exports = async function handler(req, res) {
@@ -106,28 +316,57 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
   try {
-    const articles = await loadArticles();
-    const baseUrl = 'https://www.cuizi.top';
-    const type = req.query.type;
+    const type = pickValue(req.query.type);
+    if (!['atom', 'rss', 'json'].includes(type)) {
+      return res.status(400).json({ error: 'Invalid type. Use ?type=atom, ?type=rss, or ?type=json' });
+    }
+
+    const q = {
+      tag: pickValue(req.query.tag),
+      year: pickValue(req.query.year),
+      month: pickValue(req.query.month),
+      date: pickValue(req.query.date),
+      sort: pickValue(req.query.sort) || 'date',
+      order: pickValue(req.query.order) || 'desc',
+      limit: parseInt(pickValue(req.query.limit), 10) || 0,
+      offset: parseInt(pickValue(req.query.offset), 10) || 0
+    };
+
+    if (!['date', 'title', 'id', 'length', 'tags'].includes(q.sort)) q.sort = 'date';
+    if (q.order !== 'asc') q.order = 'desc';
+    if (q.limit > 500) q.limit = 500;
+    if (q.limit < 0) q.limit = 0;
+    if (q.offset < 0) q.offset = 0;
+
+    const all = await getArticles();
+    const filtered = filterArticles(all, q);
+    const sorted = sortArticles(filtered, q.sort, q.order);
+    const sliced = paginate(sorted, q.limit, q.offset);
+
+    const selfUrl = buildSelfUrl(type, q);
+    const feedTitle = buildFeedTitle(q);
+
+    const etag = makeEtag(sliced, type, selfUrl);
+    res.setHeader('ETag', etag);
+    res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+    if (req.headers['if-none-match'] === etag) {
+      return res.status(304).end();
+    }
+
+    let body, contentType;
     if (type === 'atom') {
-      const xml = buildAtom(articles, baseUrl);
-      res.setHeader('Content-Type', 'application/atom+xml; charset=utf-8');
-      res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
-      return res.status(200).send(xml);
+      body = buildAtom(sliced, selfUrl, feedTitle);
+      contentType = 'application/atom+xml; charset=utf-8';
+    } else if (type === 'rss') {
+      body = buildRSS(sliced, selfUrl, feedTitle);
+      contentType = 'application/xml; charset=utf-8';
+    } else {
+      body = JSON.stringify(buildJSONFeed(sliced, selfUrl, feedTitle), null, 2);
+      contentType = 'application/json; charset=utf-8';
     }
-    if (type === 'rss') {
-      const xml = buildRSS(articles, baseUrl);
-      res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-      res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
-      return res.status(200).send(xml);
-    }
-    if (type === 'json') {
-      const json = buildJSONFeed(articles, baseUrl);
-      res.setHeader('Content-Type', 'application/json; charset=utf-8');
-      res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
-      return res.status(200).send(JSON.stringify(json, null, 2));
-    }
-    res.status(400).json({ error: 'Invalid type. Use ?type=atom, ?type=rss, or ?type=json' });
+
+    res.setHeader('Content-Type', contentType);
+    return res.status(200).send(body);
   } catch (error) {
     console.error('Feed 生成失败:', error.stack || error.message);
     res.status(500).send('Feed 生成失败');

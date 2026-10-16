@@ -182,6 +182,7 @@ function buildSelfUrl(type, q) {
   if (q.order !== 'desc') params.push('order=' + encodeURIComponent(q.order));
   if (q.limit > 0) params.push('limit=' + q.limit);
   if (q.offset > 0) params.push('offset=' + q.offset);
+  if (!q.xsl) params.push('xsl=0');
   return SITE.url + '/api/feed?' + params.join('&');
 }
 
@@ -203,7 +204,13 @@ function buildFeedTitle(q) {
   return parts.join(' · ');
 }
 
-function buildAtom(articles, selfUrl, feedTitle) {
+function xmlHeader(xsl) {
+  const base = '<?xml version="1.0" encoding="UTF-8" ?>\n';
+  if (!xsl) return base;
+  return base + '<?xml-stylesheet type="text/xsl" href="/assets/feed.xsl"?>\n';
+}
+
+function buildAtom(articles, selfUrl, feedTitle, xsl) {
   const now = new Date().toISOString();
   let entries = '';
   for (const item of articles) {
@@ -224,8 +231,7 @@ function buildAtom(articles, selfUrl, feedTitle) {
     entries += '\n    <content type="html">' + cdata(item._html) + '</content>';
     entries += '\n  </entry>';
   }
-  return '<?xml version="1.0" encoding="UTF-8" ?>\n' +
-    '<?xml-stylesheet type="text/xsl" href="/assets/feed.xsl"?>\n' +
+  return xmlHeader(xsl) +
     '<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="' + SITE.language + '">\n' +
     '  <id>' + escapeXml(selfUrl) + '</id>\n' +
     '  <title>' + escapeXml(feedTitle) + '</title>\n' +
@@ -238,7 +244,7 @@ function buildAtom(articles, selfUrl, feedTitle) {
     entries + '\n</feed>';
 }
 
-function buildRSS(articles, selfUrl, feedTitle) {
+function buildRSS(articles, selfUrl, feedTitle, xsl) {
   const now = new Date().toUTCString();
   let items = '';
   for (const item of articles) {
@@ -258,8 +264,7 @@ function buildRSS(articles, selfUrl, feedTitle) {
     items += '\n    <content:encoded>' + cdata(item._html) + '</content:encoded>';
     items += '\n  </item>';
   }
-  return '<?xml version="1.0" encoding="UTF-8" ?>\n' +
-    '<?xml-stylesheet type="text/xsl" href="/assets/feed.xsl"?>\n' +
+  return xmlHeader(xsl) +
     '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">\n' +
     '  <channel>\n' +
     '    <title>' + escapeXml(feedTitle) + '</title>\n' +
@@ -321,6 +326,9 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid type. Use ?type=atom, ?type=rss, or ?type=json' });
     }
 
+    const xslRaw = pickValue(req.query.xsl).toLowerCase();
+    const xsl = xslRaw !== '0' && xslRaw !== 'no' && xslRaw !== 'false';
+
     const q = {
       tag: pickValue(req.query.tag),
       year: pickValue(req.query.year),
@@ -329,7 +337,8 @@ module.exports = async function handler(req, res) {
       sort: pickValue(req.query.sort) || 'date',
       order: pickValue(req.query.order) || 'desc',
       limit: parseInt(pickValue(req.query.limit), 10) || 0,
-      offset: parseInt(pickValue(req.query.offset), 10) || 0
+      offset: parseInt(pickValue(req.query.offset), 10) || 0,
+      xsl: xsl
     };
 
     if (!['date', 'title', 'id', 'length', 'tags'].includes(q.sort)) q.sort = 'date';
@@ -355,10 +364,10 @@ module.exports = async function handler(req, res) {
 
     let body, contentType;
     if (type === 'atom') {
-      body = buildAtom(sliced, selfUrl, feedTitle);
+      body = buildAtom(sliced, selfUrl, feedTitle, xsl);
       contentType = 'application/atom+xml; charset=utf-8';
     } else if (type === 'rss') {
-      body = buildRSS(sliced, selfUrl, feedTitle);
+      body = buildRSS(sliced, selfUrl, feedTitle, xsl);
       contentType = 'application/xml; charset=utf-8';
     } else {
       body = JSON.stringify(buildJSONFeed(sliced, selfUrl, feedTitle), null, 2);

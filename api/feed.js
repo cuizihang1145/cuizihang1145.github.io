@@ -272,10 +272,8 @@ function buildRSS(articles, selfUrl, feedTitle, xsl) {
       for (const t of item.tags) items += '\n    <category>' + escapeXml(t) + '</category>';
     }
     if (item._cover) items += '\n    <enclosure url="' + escapeXml(item._cover) + '" type="image/*" length="0"/>';
-    if (item._isShort) {
-      items += '\n    <description>' + cdata(item._summary) + '</description>';
-    } else {
-      items += '\n    <description>' + cdata(item._summary) + '</description>';
+    items += '\n    <description>' + cdata(item._summary) + '</description>';
+    if (!item._isShort) {
       items += '\n    <content:encoded>' + cdata(item._html) + '</content:encoded>';
     }
     items += '\n  </item>';
@@ -323,11 +321,11 @@ function buildJSONFeed(articles, selfUrl, feedTitle) {
   };
 }
 
-function makeEtag(articles, type, selfUrl) {
+function makeEtag(articles, type, rawUrl) {
   const n = articles.length;
   const first = articles[0] ? articles[0].date || '' : '';
   const last = articles.length ? articles[articles.length - 1].date || '' : '';
-  return '"' + type + ':' + n + ':' + first + ':' + last + ':' + selfUrl + '"';
+  return '"' + type + ':' + n + ':' + first + ':' + last + ':' + rawUrl + '"';
 }
 
 function pickValue(v) {
@@ -375,7 +373,7 @@ module.exports = async function handler(req, res) {
     const selfUrl = buildSelfUrl(type, q);
     const feedTitle = buildFeedTitle(q);
 
-    const etag = makeEtag(sliced, type, selfUrl);
+    const etag = makeEtag(sliced, type, req.url);
     res.setHeader('ETag', etag);
     res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
     if (req.headers['if-none-match'] === etag) {

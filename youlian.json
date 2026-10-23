@@ -75,5 +75,12 @@
     "desc": "嵌入式技术网站|AKB亡灵厨",
     "logo": "https://r6blog.online/images/avatar.png",
     "feed": "https://r6blog.online/atom.xml"
+  },
+  {
+    "name": "本佬",
+    "url": "https://www.benlao.top/",
+    "desc": "奇珍收藏代理人",
+    "logo": "https://www.benlao.top/images/avatar.png",
+    "feed": ""
   }
 ]

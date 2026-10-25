@@ -130,6 +130,15 @@
       ],
       "delete": false,
       "content": "这是一篇::alt[牛逼炸了](莫名其妙)::的::alt[智慧](傻逼)::文章，我也不知道为什么要写这个，但是我写了（？）。\n\n:::flashcard\n请输入文本：你是人吗？\n不知道：↑\n:::\n\n:::mcq\ntitle:你是人吗？\n- A 不知道\n- B 不道\n- C 。？\n* D 可能罢\n^:请输入文本\n:::\n\n:::tree\n这并不是文件.txt\n你有病吗？.xml\n请输入文本/牛逼666.txt|114514.kb\n:::\n\n:::say 再临好萌\n你有病吗\n:::\n\n:::chat\n:::users\nks:https://www.cuizi.top/logo.png\n:::\n:::msg 再临好萌 11:45\n你有病吗？\n:::\n:::msg ks right 11:45\n请输入文本\n:::\n:::\n\n:::copy\n你有病吗？\n不知道\n:::\n\n:::key\n你有病吗+请输入文本\n:::\n\n::term[你有病吗]{我不知道}::\n\n::qr(https://www.cuizi.top/article.html?id=7)::\n\n::right 我不知道::\n::center 谁问你了::\n\n::color[我会飞吗](green)::\n:::ask\n你有病吗？\n:::\n\n::ruby 你好，世界(nǐ hǎo shì jiè)::\n\n::ruby 我不知道(谁 问 你 了)::\n\n::date[2025-4-15]::\n\n\n::alt[。？](你有病吗？)(我不知道)(请输入文本)(谁问你了)(你眼瞎吗)(这是个好日子)(我不会飞)(这集好莫名其妙)(这很牛逼)(你是谁？)(不要再看了)(…)(我已经在学校和滚木玩了一年多了)(？跟谁玩你倒是说啊)(不知道为什么我好想哭)(你哭个大鸡蛋啊)(wo huo zhe gan sha)(我们还有一万个明天)(但我有可能明天就会被雷劈死)(好诡异啊)(你到底是谁，为什么要看到这)(好吧你不要在想象了)(根本没有人会莫名其妙的跑来看你的狗屎文章的)(我到底在写什么鬼玩意)(好了后面没有了)(真的)(都说了没有了，你不要再看了)(拜拜)(。？别看了，真的没有了)::"
+    },
+    {
+      "title": "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈",
+      "date": "2026-10-25",
+      "tags": [
+        "哈哈哈哈哈"
+      ],
+      "delete": false,
+      "content": "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈\n:::ghr\ncuizihang1145/UpKram\n我的Markdown解析器\n:::\n\n是的事情可能就是这样，事情是什么？不知道，请不要用梦境攻击我。\n\n我看不明白，我到底写了个什么鬼\n\n:::pbar+ 滚木滚木\npct: 42\ncolor: #6b5acf\n:::\n\n:::vote 滚木滚木滚木\n- 请输入文本？ | 42\n- 不知道 | 37\n- 哈哈哈哈哈哈哈哈哈 | 82\n- 你好 | 14\n:::\n\n:::scr ratio=0.8 \"你有病吗？\" gold\nidk\n:::\n\nTable: 12345678910111213141516\n| 滚木 | 1 | 9 |\n| ---: | ---: | ---: |\n| 42 | 37 | 14 |\n| 17 | 82 | 63 |\n| 91 | 88 | 7 |\n\n:::game 地球Online\ncover: https://ts1.tc.mm.bing.net/th/id/OIP-C.wmi8GT__d_ta0v-f7WAw9QHaEK?r=0&dpr=2&pid=ImgDetMain&o=7&rm=3\ndesc: 不好玩\ntime: 不知道\nrate: -114514\n:::\n\n:::row 5:5\n:::left\n:::box\n123456\n:::\n:::right\n:::box square\n7891011\n:::\n:::\n:::\n:::\n\n:::chat 滚木\n:::users\n你是谁: color=#e74c6f avatar=https://api.dicebear.com/7.x/avataaars/svg?seed=a\n不认识: color=yellow avatar=https://api.dicebear.com/7.x/avataaars/svg?seed=b\n:::\n:::msg 你是谁 left 11:45 \"不知道送没送达\"\n你好呀\n:::\n:::msg 不认识 right \"不知道\" 11:45:14\n你是谁？\n:::\n:::msg 你是谁 left\n:::redpacket blessing=恭喜滚木，小吉滚木利 amount=1010011010 winners=\"滚木:滚木|作者:9981|红包已被抢完:1010001029\"\n:::\n:::\n:::\n\n:::blur\n我喜欢你（？\n:::\n\n？\n\n::alt[我他妈不想上学啊](？)(odlmryytlolcdqzwsbcxwrj)::\n\n:::tip\n:::hint\n:::important\n:::info\n:::warn\n:::caution\n:::attention\n:::danger\n:::error\n:::ask\n:::question\n:::help\n:::fail\n:::quote\n懒得塞了\n:::\n:::\n:::\n:::\n:::\n:::\n:::\n:::\n:::\n:::\n:::\n:::\n:::\n:::"
     }
   ]
 }

@@ -8,7 +8,7 @@ const SITE = {
   subtitle: 'ks的个人博客。保持好奇，保持诚实。',
   author: 'ks',
   language: 'zh-CN',
-  icon: 'https://www.cuizi.top/favicon.ico'
+  icon: 'https://www.cuizi.top/logo.png'
 };
 
 const SUMMARY_LEN = 200;
@@ -91,6 +91,12 @@ function truncateHtml(html, maxVisible) {
   return out + (i < len ? '…' : '');
 }
 
+function shouldIncludeInFeed(item) {
+  const a = item && item.all;
+  if (a === undefined || a === null || a === '') return true;
+  return String(a) !== '1';
+}
+
 async function loadArticles() {
   const filePath = path.join(__dirname, '..', 'articles', 'all.json');
   const raw = await fs.readFile(filePath, 'utf-8');
@@ -102,25 +108,27 @@ async function loadArticles() {
 async function getArticles() {
   if (_cache.list && Date.now() - _cache.stamp < CACHE_TTL) return _cache.list;
   const raw = await loadArticles();
-  const list = raw.map(item => {
-    let html;
-    try {
-      html = renderMarkdown(item.content || '');
-    } catch (e) {
-      html = escapeXml(item.content || '');
-    }
-    html = absolutize(html, SITE.url);
-    const visible = visibleLength(html);
-    const isShort = visible <= SUMMARY_LEN;
-    return Object.assign({}, item, {
-      _html: html,
-      _visible: visible,
-      _isShort: isShort,
-      _summary: isShort ? html : truncateHtml(html, SUMMARY_LEN),
-      _cover: pickCover(html),
-      _tagCount: Array.isArray(item.tags) ? item.tags.length : 0
+  const list = raw
+    .filter(shouldIncludeInFeed)
+    .map(item => {
+      let html;
+      try {
+        html = renderMarkdown(item.content || '');
+      } catch (e) {
+        html = escapeXml(item.content || '');
+      }
+      html = absolutize(html, SITE.url);
+      const visible = visibleLength(html);
+      const isShort = visible <= SUMMARY_LEN;
+      return Object.assign({}, item, {
+        _html: html,
+        _visible: visible,
+        _isShort: isShort,
+        _summary: isShort ? html : truncateHtml(html, SUMMARY_LEN),
+        _cover: pickCover(html),
+        _tagCount: Array.isArray(item.tags) ? item.tags.length : 0
+      });
     });
-  });
   _cache = { list, stamp: Date.now() };
   return list;
 }

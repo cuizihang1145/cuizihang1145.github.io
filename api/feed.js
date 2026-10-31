@@ -205,7 +205,7 @@ function buildSelfUrl(type, q) {
 
 function buildFeedTitle(q) {
   const parts = [SITE.title];
-  if (q.all === '1') parts.push('排除精选');
+  if (q.all === '1') parts.push('精选');
   else if (q.all && q.all !== '0') parts.push('all=' + q.all);
   if (q.tag) parts.push('#' + q.tag);
   if (q.date) parts.push(q.date);

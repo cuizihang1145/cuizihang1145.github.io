@@ -125,13 +125,15 @@ async function getArticles() {
   return list;
 }
 
+function allValue(item) {
+  if (item.all === undefined || item.all === null || item.all === '') return '0';
+  return String(item.all);
+}
+
 function filterArticles(articles, q) {
   let list = articles;
-  if (q.all && q.all !== '0') {
-    list = list.filter(a => {
-      const v = (a.all === undefined || a.all === null) ? '' : String(a.all);
-      return v === q.all;
-    });
+  if (q.all === '1') {
+    list = list.filter(a => allValue(a) === '0');
   }
   if (q.tag) {
     list = list.filter(a => Array.isArray(a.tags) && a.tags.indexOf(q.tag) >= 0);
@@ -203,7 +205,7 @@ function buildSelfUrl(type, q) {
 
 function buildFeedTitle(q) {
   const parts = [SITE.title];
-  if (q.all === '1') parts.push('精选');
+  if (q.all === '1') parts.push('排除精选');
   else if (q.all && q.all !== '0') parts.push('all=' + q.all);
   if (q.tag) parts.push('#' + q.tag);
   if (q.date) parts.push(q.date);

@@ -91,12 +91,6 @@ function truncateHtml(html, maxVisible) {
   return out + (i < len ? '…' : '');
 }
 
-function shouldIncludeInFeed(item) {
-  const a = item && item.all;
-  if (a === undefined || a === null || a === '') return true;
-  return String(a) !== '1';
-}
-
 async function loadArticles() {
   const filePath = path.join(__dirname, '..', 'articles', 'all.json');
   const raw = await fs.readFile(filePath, 'utf-8');
@@ -108,33 +102,37 @@ async function loadArticles() {
 async function getArticles() {
   if (_cache.list && Date.now() - _cache.stamp < CACHE_TTL) return _cache.list;
   const raw = await loadArticles();
-  const list = raw
-    .filter(shouldIncludeInFeed)
-    .map(item => {
-      let html;
-      try {
-        html = renderMarkdown(item.content || '');
-      } catch (e) {
-        html = escapeXml(item.content || '');
-      }
-      html = absolutize(html, SITE.url);
-      const visible = visibleLength(html);
-      const isShort = visible <= SUMMARY_LEN;
-      return Object.assign({}, item, {
-        _html: html,
-        _visible: visible,
-        _isShort: isShort,
-        _summary: isShort ? html : truncateHtml(html, SUMMARY_LEN),
-        _cover: pickCover(html),
-        _tagCount: Array.isArray(item.tags) ? item.tags.length : 0
-      });
+  const list = raw.map(item => {
+    let html;
+    try {
+      html = renderMarkdown(item.content || '');
+    } catch (e) {
+      html = escapeXml(item.content || '');
+    }
+    html = absolutize(html, SITE.url);
+    const visible = visibleLength(html);
+    const isShort = visible <= SUMMARY_LEN;
+    return Object.assign({}, item, {
+      _html: html,
+      _visible: visible,
+      _isShort: isShort,
+      _summary: isShort ? html : truncateHtml(html, SUMMARY_LEN),
+      _cover: pickCover(html),
+      _tagCount: Array.isArray(item.tags) ? item.tags.length : 0
     });
+  });
   _cache = { list, stamp: Date.now() };
   return list;
 }
 
 function filterArticles(articles, q) {
   let list = articles;
+  if (q.all && q.all !== '0') {
+    list = list.filter(a => {
+      const v = (a.all === undefined || a.all === null) ? '' : String(a.all);
+      return v === q.all;
+    });
+  }
   if (q.tag) {
     list = list.filter(a => Array.isArray(a.tags) && a.tags.indexOf(q.tag) >= 0);
   }
@@ -190,6 +188,7 @@ function paginate(articles, limit, offset) {
 
 function buildSelfUrl(type, q) {
   const params = ['type=' + encodeURIComponent(type)];
+  if (q.all) params.push('all=' + encodeURIComponent(q.all));
   if (q.tag) params.push('tag=' + encodeURIComponent(q.tag));
   if (q.year) params.push('year=' + encodeURIComponent(q.year));
   if (q.month) params.push('month=' + encodeURIComponent(q.month));
@@ -204,6 +203,8 @@ function buildSelfUrl(type, q) {
 
 function buildFeedTitle(q) {
   const parts = [SITE.title];
+  if (q.all === '1') parts.push('精选');
+  else if (q.all && q.all !== '0') parts.push('all=' + q.all);
   if (q.tag) parts.push('#' + q.tag);
   if (q.date) parts.push(q.date);
   else if (q.month) parts.push(q.month);
@@ -356,6 +357,7 @@ module.exports = async function handler(req, res) {
     const xsl = xslRaw !== '0' && xslRaw !== 'no' && xslRaw !== 'false';
 
     const q = {
+      all: pickValue(req.query.all),
       tag: pickValue(req.query.tag),
       year: pickValue(req.query.year),
       month: pickValue(req.query.month),
